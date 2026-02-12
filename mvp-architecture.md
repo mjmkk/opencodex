@@ -1,81 +1,184 @@
-# iPhone 作为前端、Mac 作为 Worker 的 Codex 客户端完整架构（MVP）
+# iPhone 作为前端、Mac 作为 Worker 的 Codex 客户端架构（可点击审批版本）
 
-> 技术选型：`TCA + exyte/Chat + EventSource`，后续平滑演进到自定义 Markdown/富文本。
+> 关键结论：如果 iPhone 端必须“可点击审批并回传”，则不能只用 `@openai/codex-sdk` 的 `run/runStreamed` 路径；必须走 OpenAI 官方 `codex app-server` 双向 JSON-RPC 协议。
+>
+> 因此本文档以 OpenAI 官方 `codex app-server` 协议与 schema 为实现基线；`@openai/codex-sdk` 仅作为非审批场景参考。
+
+## 0. 术语说明
+
+- `TS SDK-only`：仅使用 `@openai/codex-sdk` 的 `Codex.startThread()/thread.run()/thread.runStreamed()` 与其 JSON 事件流，不接入 `codex app-server` 的 server->client request 通道。
+- `官方优先`：本方案全部使用 OpenAI 官方能力。审批走官方 `codex app-server`，非审批场景可继续使用官方 `@openai/codex-sdk`。
+- `Project`（本项目定义）：Worker 维护的“可用工作目录（cwd）”抽象，不是 Codex 官方协议里的一等实体。
+- `Thread`（官方实体）：会话实体，携带 `id`，并记录该线程绑定的 `cwd`。
 
 ## 1. 目标与边界
+
 ### 1.1 MVP 目标（必须交付）
-- iOS：线程列表/切换、聊天对话、SSE 流式输出、审批弹窗、任务终态展示。
-- Mac Worker：7 个核心 API + SSE Hub（cursor 续流）、Job 状态机、Codex Adapter、审计落盘。
+- iOS：线程列表/切换、对话消息流、审批弹窗与回传、任务终态展示。
+- Mac Worker：
+  - 对接 `codex app-server`（stdio JSON-RPC）。
+  - 向 iOS 暴露 REST + SSE（cursor 续流）。
+  - 维护 Job 状态机与审批幂等。
+  - 审计落盘与事件回放。
 - 成功标准：
-  - 用户可完成“发消息 -> 看流式输出 -> 收到审批 -> allow/deny -> DONE/FAILED/CANCELLED”闭环。
+  - 用户可完成“发消息 -> 收到审批 -> 在 iPhone 点击 -> 任务继续/终止”的闭环。
   - SSE 断线后按 `cursor` 续流，不重跑任务。
-  - 审批与关键状态变化可审计、可回放。
+  - 审批决策与关键状态变化可审计、可回放。
 
-### 1.2 明确非 MVP（延后）
-- 文件树/文件读取/搜索。
-- diff/补丁编辑。
-- 远端终端会话。
-- Git commit/push/PR 自动化。
+### 1.2 非 MVP（延后）
+- 文件树/搜索面板。
+- 远端终端会话透传 UI。
+- Git push/PR 自动化流程编排。
 
-## 2. 核心选型与 ADR
-### 2.1 iOS 选型（主推组合）
-- 状态管理：`TCA`。
-- 聊天 UI：`exyte/Chat`。
-- SSE 客户端：`EventSource`。
+### 1.3 Project/Thread 的 MVP 决策
+- `Thread`：MVP 必须支持“创建 + 选择”。这是官方主工作流（`thread/start`、`thread/resume`、`thread/list`）。
+  - 选择语义：从列表选中后，前端默认显式调用 `activate`，Worker 执行 `thread/resume`。
+  - 兜底语义：`POST /v1/threads/{tid}/turns` 内部必须“先确保已加载再 turn/start”；若未加载，Worker 自动懒 `resume`。
+  - 设计结论：两条路径并存且不冲突。前端走显式 `activate`（状态清晰），Worker 保留懒 `resume`（容错兜底）。
+- `Project`：MVP 需要支持“选择”，不需要“创建”。
+  - 选择：创建线程时选择 `projectPath`（映射到 `thread/start.cwd`）。
+  - 创建：新建目录/初始化 git 仓库属于宿主文件系统能力，不属于 Codex 协议能力，MVP 不做。
 
-选型原因：
-- `TCA` 便于将线程、SSE、审批、任务状态机拆成可测试 Feature。
-- `exyte/Chat` 能快速交付消息流 UI，并支持用自定义消息体插入审批卡片/状态卡片。
-- `EventSource` 与 `cursor` 续流机制天然匹配，实现简单且可控。
+## 2. 事实基线（官方协议）
 
-### 2.2 关键约束
-- Domain 不绑定 UI 库：`Thread / Message / Job / Approval / EventEnvelope` 作为稳定核心模型。
-- iOS 仅消费标准化事件，不直接依赖 Codex 原始 JSONL 字段。
-- Worker 负责吸收上游字段变化（Normalizer 适配层）。
+以下能力均来自本地官方仓库 `openai/codex`：
+- `codex app-server` 是面向富客户端的官方接口，支持双向 JSON-RPC。默认 `stdio` 传输。
+- 审批是 server->client request：
+  - `item/commandExecution/requestApproval`
+  - `item/fileChange/requestApproval`
+- turn 生命周期与事件：
+  - `turn/start`
+  - `turn/interrupt`
+  - `turn/started`
+  - `turn/completed`
+  - `item/started`
+  - `item/completed`
+  - `item/agentMessage/delta`
+- `Thread` 对象包含 `cwd`（工作目录）；协议中没有独立 `Project` API/实体。
 
-## 3. 总览架构图
+对应参考：
+- `/Users/Apple/Dev/OpenCodex/codex/codex-rs/app-server/README.md`
+- `/Users/Apple/Dev/OpenCodex/codex/codex-rs/app-server-protocol/src/protocol/common.rs`
+- `/Users/Apple/Dev/OpenCodex/codex/codex-rs/app-server-protocol/schema/typescript/v2`
+- `/Users/Apple/Dev/OpenCodex/codex/sdk/typescript`
+
+## 3. 本地参考仓库路径映射
+
+| 角色 | 仓库 | 本地路径 | 优先参考入口 |
+|---|---|---|---|
+| iOS 状态管理 | pointfreeco/swift-composable-architecture | `/Users/Apple/Dev/OpenCodex/swift-composable-architecture` | `/Users/Apple/Dev/OpenCodex/swift-composable-architecture/Sources` |
+| iOS 聊天 UI | exyte/Chat | `/Users/Apple/Dev/OpenCodex/Chat` | `/Users/Apple/Dev/OpenCodex/Chat/Sources` |
+| iOS SSE 客户端 | Recouse/EventSource | `/Users/Apple/Dev/OpenCodex/EventSource` | `/Users/Apple/Dev/OpenCodex/EventSource/Sources/EventSource` |
+| 官方协议基线 | openai/codex | `/Users/Apple/Dev/OpenCodex/codex` | `/Users/Apple/Dev/OpenCodex/codex/codex-rs/app-server`、`/Users/Apple/Dev/OpenCodex/codex/codex-rs/app-server-protocol` |
+
+## 4. 总览架构
+
 ```mermaid
 flowchart LR
   subgraph iOS["iOS App (TCA + exyte/Chat + EventSource)"]
     ThreadsUI["Threads UI"]
     ChatUI["Chat UI"]
-    Composer["Composer + Slash Palette"]
     ApprovalSheet["Approval Sheet"]
     SSEClient["SSE Client"]
   end
 
-  subgraph Worker["Mac codex-worker (Node/TS)"]
-    API["HTTPS API"]
-    Auth["Auth/Pairing"]
-    Job["Job Orchestrator + State Machine"]
-    Adapter["Codex Adapter (SDK/CLI)"]
-    EventHub["SSE Hub + Cursor Replay"]
-    Store["Event Store (append-only)"]
+  subgraph Worker["Mac codex-worker"]
+    HTTP["REST API"]
+    SSEHub["SSE Hub + Cursor Replay"]
+    JobSM["Job State Machine"]
+    ApprovalMap["Pending Approval Map"]
+    EventStore["Event Store (append-only)"]
     Audit["Audit Log"]
+    RPCBridge["JSON-RPC Bridge"]
   end
 
-  subgraph LocalCodex["Local Codex Runtime"]
-    CLI["codex (JSONL events)"]
-    Sess["~/.codex/sessions"]
+  subgraph Codex["codex app-server"]
+    AppServer["codex app-server --listen stdio://"]
   end
 
-  ThreadsUI -->|REST| API
-  ChatUI -->|REST| API
-  SSEClient <-->|SSE| EventHub
-  ApprovalSheet -->|POST approve/deny| API
+  iOS -->|POST /turns| HTTP
+  iOS -->|POST /approve| HTTP
+  iOS -->|POST /cancel| HTTP
+  iOS <-->|GET /events?cursor| SSEHub
 
-  API --> Auth --> Job
-  Job --> Adapter --> CLI --> Sess
-  CLI --> Adapter --> Store --> EventHub
-  Job --> Audit
-  Store --> Audit
+  HTTP --> JobSM --> RPCBridge --> AppServer
+  AppServer --> RPCBridge --> EventStore --> SSEHub
+  AppServer --> RPCBridge --> ApprovalMap --> SSEHub
+  JobSM --> Audit
+  EventStore --> Audit
 ```
 
-## 4. 协议稳定层（对 iOS 稳定）
-### 4.1 事件 Envelope
+## 5. Worker API 契约（MVP）
+
+### 5.1 端点清单
+- `GET /v1/projects` 列出可选项目（Worker 本地抽象，返回 `projectId + projectPath + displayName`，数据源来自 Worker 配置白名单，不做全盘扫描）。
+- `POST /v1/threads` 创建线程。
+- `GET /v1/threads` 查询线程列表。
+- `POST /v1/threads/{tid}/activate` 激活（选择）线程，内部映射 `thread/resume`。
+- `POST /v1/threads/{tid}/turns` 发消息并创建 job。
+- `GET /v1/jobs/{jid}` 查询 job 快照。
+- `GET /v1/jobs/{jid}/events?cursor=N` 订阅 SSE。
+- `POST /v1/jobs/{jid}/approve` 提交审批决策。
+- `POST /v1/jobs/{jid}/cancel` 取消运行中的 turn/job。
+
+### 5.1.1 创建线程请求体（建议）
 ```json
 {
-  "type": "job.created | job.state | turn.started | item.started | item.delta | item.completed | approval.required | job.finished",
+  "projectId": "proj_xxx",
+  "projectPath": "/Users/me/project",
+  "threadName": "可选"
+}
+```
+
+约束：
+- `projectId` 与 `projectPath` 二选一，最终都映射为 `thread/start.cwd`。
+- 都不传时使用 Worker 默认项目目录（单项目模式）。
+- `projectPath` 必须在 `GET /v1/projects` 返回的白名单内，否则拒绝请求。
+
+### 5.1.2 线程激活语义（`POST /v1/threads/{tid}/activate`）
+- 目的：把历史线程加载到当前 app-server 进程（映射 `thread/resume`）。
+- 幂等：同一 `threadId` 重复激活应返回成功，不重复产生副作用。
+- 前端策略：用户切换到某线程详情页时立即调用，确保“进入即就绪”。
+
+### 5.1.3 发消息语义（`POST /v1/threads/{tid}/turns`）
+- Worker 必须执行 `ensureThreadLoaded(threadId)`：
+  - 已加载：直接 `turn/start`。
+  - 未加载：先 `thread/resume`，成功后 `turn/start`。
+- 结果保证：只要 `threadId` 合法且可恢复，`turns` 不应因“前端漏调 activate”而失败。
+
+### 5.2 iOS 侧审批请求体（Worker 对外）
+```json
+{
+  "approvalId": "appr_xxx",
+  "decision": "accept | accept_for_session | accept_with_execpolicy_amendment | decline | cancel",
+  "execPolicyAmendment": ["git", "push"]
+}
+```
+
+约束：
+- `accept_with_execpolicy_amendment` 仅允许命令审批；文件变更审批不支持该决策。
+- `decision=accept_with_execpolicy_amendment` 时必须传 `execPolicyAmendment` 且至少 1 个 token。
+- 其余 `decision` 下忽略 `execPolicyAmendment`。
+- `approvalId` 幂等：重复提交返回首次结果，不得重复影响状态。
+
+### 5.3 与官方 JSON-RPC 的映射
+- 线程激活：`thread/resume`
+  - 用途：将历史线程加载到当前 app-server 进程，供后续 `turn/start` 使用。
+- 发消息：`turn/start`
+  - 前置约束：必须先满足“线程已加载”（通过显式 `activate` 或 `turns` 内懒 `resume`）。
+- 命令审批请求：`item/commandExecution/requestApproval`
+  - Worker 响应：`CommandExecutionRequestApprovalResponse`
+  - 决策值：`accept | acceptForSession | {acceptWithExecpolicyAmendment} | decline | cancel`
+- 文件变更审批请求：`item/fileChange/requestApproval`
+  - Worker 响应：`FileChangeRequestApprovalResponse`
+  - 决策值：`accept | acceptForSession | decline | cancel`
+
+## 6. 协议稳定层（iOS 消费）
+
+### 6.1 Envelope
+```json
+{
+  "type": "job.created | job.state | thread.started | turn.started | item.started | item.completed | item.agentMessage.delta | item.commandExecution.outputDelta | item.fileChange.outputDelta | approval.required | approval.resolved | turn.completed | error | job.finished",
   "ts": "2026-02-12T16:00:00Z",
   "jobId": "job_xxx",
   "seq": 42,
@@ -83,222 +186,195 @@ flowchart LR
 }
 ```
 
-### 4.2 审批对象
+### 6.2 Worker 内部审批对象（不直接下发 iOS）
 ```json
 {
   "approvalId": "appr_xxx",
   "jobId": "job_xxx",
-  "riskLevel": "SAFE | RISKY | EXTERNAL",
-  "action": {
-    "kind": "command | write_file | network | git_push",
-    "preview": "string",
-    "cwd": "/repo",
-    "affectedPaths": []
-  },
-  "options": ["allow_once", "allow_session", "deny"],
+  "threadId": "thr_xxx",
+  "turnId": "turn_xxx",
+  "itemId": "item_xxx",
+  "kind": "command_execution | file_change",
+  "requestMethod": "item/commandExecution/requestApproval | item/fileChange/requestApproval",
+  "requestId": 123,
   "createdAt": "2026-02-12T16:00:00Z",
-  "expiresAt": "2026-02-12T16:05:00Z"
+  "command": "npm test",
+  "cwd": "/repo",
+  "commandActions": [],
+  "reason": "optional",
+  "changes": []
 }
 ```
 
-### 4.3 Job 状态机（Worker 权威）
+### 6.3 iOS 下发的审批事件对象
+```json
+{
+  "approvalId": "appr_xxx",
+  "jobId": "job_xxx",
+  "threadId": "thr_xxx",
+  "turnId": "turn_xxx",
+  "itemId": "item_xxx",
+  "kind": "command_execution | file_change",
+  "requestMethod": "item/commandExecution/requestApproval | item/fileChange/requestApproval",
+  "createdAt": "2026-02-12T16:00:00Z",
+  "command": "npm test",
+  "cwd": "/repo",
+  "commandActions": [],
+  "reason": "optional",
+  "changes": []
+}
+```
+
+说明：
+- `requestId` 仅 Worker 内部持有，不下发给 iOS（避免客户端越权构造回包）。
+- iOS 只基于 `approvalId` 交互。
+
+## 7. Job 状态机（审批友好）
+
 ```mermaid
 stateDiagram-v2
   [*] --> QUEUED
   QUEUED --> RUNNING
   RUNNING --> WAITING_APPROVAL: approval.required
-  WAITING_APPROVAL --> RUNNING: allow
-  WAITING_APPROVAL --> FAILED: deny
-  WAITING_APPROVAL --> FAILED: timeout
-  RUNNING --> CANCELLED: cancel
+  WAITING_APPROVAL --> RUNNING: approval.resolved
+  RUNNING --> DONE: turn.completed(status=completed)
+  RUNNING --> FAILED: turn.completed(status=failed) / error
+  RUNNING --> CANCELLED: turn.completed(status=interrupted)
   WAITING_APPROVAL --> CANCELLED: cancel
-  RUNNING --> FAILED: runtime_error
-  RUNNING --> DONE: turn.completed
+  QUEUED --> CANCELLED: cancel
   DONE --> [*]
   FAILED --> [*]
   CANCELLED --> [*]
 ```
 
 规则：
-- iOS 不推导状态，只展示 `job.state` 与 `job.finished`。
-- `approve(approvalId)` 必须幂等，同一 `approvalId` 重复提交返回首次结果。
-- `cancel(jobId)` 对终态无副作用，返回当前终态。
+- 终态由 `turn/completed.status` 权威决定（`completed | failed | interrupted`）。
+- `decline` 并不等价于 job 立刻失败；要等待后续 `turn/completed`。
+- `cancel(jobId)` 幂等；终态上重复取消无副作用。
 
-## 5. Worker（Mac）详细设计
-### 5.1 模块职责
-- API 层：REST + SSE（鉴权、参数校验、幂等保护）。
-- Job Orchestrator：一个 turn 对应一个 job，负责状态机、超时、取消。
-- Codex Adapter：调用 SDK/CLI，消费 JSONL 事件。
-- Event Normalizer：将 Codex 原始事件归一化为 8 类标准事件。
-- Event Store（append-only）：`seq` 单调递增，支持 cursor 回放。
-- Audit Log：审批、状态迁移、关键错误不可变落盘。
+## 8. Worker 实现细节
 
-### 5.2 API 契约（MVP 7 个端点）
-- `POST /v1/threads` 创建线程。
-- `GET /v1/threads` 查询线程列表。
-- `POST /v1/threads/{tid}/turns` 发消息并创建 job。
-- `GET /v1/jobs/{jid}` 查询 job 快照。
-- `GET /v1/jobs/{jid}/events?cursor=N` 订阅 SSE 续流。
-- `POST /v1/jobs/{jid}/approve` 提交审批。
-- `POST /v1/jobs/{jid}/cancel` 取消 job。
+### 8.1 JSON-RPC Bridge
+- 启动子进程：`codex app-server`（默认 `stdio://`）。
+- 启动线程时默认设置 `approvalPolicy=on-request`（否则不会进入审批请求链路）。
+- 创建线程时将 Worker 的 `projectPath` 映射到 `thread/start.cwd`。
+- 线程加载采用“双轨”：
+  - 显式轨：前端切线程时调用 `POST /v1/threads/{tid}/activate`，Worker 执行 `thread/resume`。
+  - 兜底轨：`POST /v1/threads/{tid}/turns` 内部自动懒 `resume`。
+- `turn/start` 前必须保证线程已加载：
+  - 若线程已加载：直接 `turn/start`。
+  - 若线程未加载：先 `thread/resume`，成功后再 `turn/start`。
+- 建立请求-响应路由：
+  - client request：Worker->Codex（`thread/start`, `thread/list`, `thread/resume`, `turn/start`, `turn/interrupt`）
+  - server request：Codex->Worker（审批请求）
+  - notification：Codex->Worker（turn/item/delta）
+- 初始化握手：`initialize` -> `initialized`。
+- 注意：当前官方实现下，`turn/started` 与 `turn/completed` 的 `turn.items` 可能为空；前端必须以 `item/*` 事件流为权威。
 
-### 5.3 SSE 与 cursor 续流
-- Store 持久化所有事件，`seq=0..N`。
-- iOS 重连携带最后确认的 `cursor`，服务端只推送 `seq > cursor` 的事件。
-- 断线续流不得触发任务重跑，重跑必须创建新 job。
+### 8.2 审批映射器
+- 收到审批请求时：
+  - 生成 `approvalId`。
+  - 建立 `approvalId -> (requestId, method, threadId, turnId, itemId)` 映射。
+  - 发 `approval.required` 事件给 iOS。
+- 收到 iOS `/approve` 时：
+  - 查映射并校验 job/线程一致性。
+  - 转换决策为官方 response payload 回写给 Codex。
+  - 发 `approval.resolved` 事件。
+  - 删除 pending 映射（幂等决策表保留）。
 
-### 5.4 安全与边界
-- 默认部署在本机/LAN；公网必须反代 TLS + 强鉴权（mTLS/JWT/短时 token）。
-- Worker 不重复实现命令/路径 allowlist，权限边界由 Codex 执行模式与审批暂停机制保证。
-- 平台负责鉴权、审批流转、审计追踪，不额外设计第二套权限系统。
+### 8.3 持久化最小结构
+- `threads(threadId PK, codexThreadId, createdAt, updatedAt)`
+- `jobs(jobId PK, threadId, turnId, state, createdAt, updatedAt, terminalAt, errorMessage?)`
+- `job_events(jobId, seq, type, ts, payload_json, PRIMARY KEY(jobId, seq))`
+- `approvals(approvalId PK, jobId, threadId, turnId, kind, request_method, request_id, createdAt, payload_json)`
+- `approval_decisions(approvalId PK, decision, decidedAt, actor, extra_json)`
 
-## 6. iOS（TCA + exyte/Chat）详细设计
-### 6.1 Domain 与 UI 解耦
-- Domain 模型：`Thread`、`Message`、`Job`、`Approval`、`EventEnvelope`。
-- UI Adapter：`DomainMessage -> exyte.ChatMessage`。
-- 迁移策略：后续替换 transcript 渲染时，仅替换 View/Adapter，不改 Reducer 与网络层。
+约束：
+- `job_events` append-only。
+- `approval_decisions.approvalId` 唯一约束作为幂等闸门。
+- 审计覆盖：turn start、approval required/resolved、interrupt、turn completed、error。
 
-### 6.2 Feature 拆分
-- `AppFeature`：全局认证、路由、当前线程。
-- `ThreadsFeature`：线程加载/创建/切换。
-- `ChatFeature`：消息列表、Job 状态、SSE 流、审批入口、输入框。
-- `SSEFeature`：连接、心跳、断线重连、cursor 更新。
-- `ComposerFeature`：输入草稿、slash 面板（MVP 先做本地命令列表）。
-- `ApprovalFeature`：审批弹窗与 approve/deny 回传。
+### 8.4 鉴权与边界
+- iOS->Worker：`Authorization: Bearer <token>`。
+- Worker->Codex：本机进程内 stdio，不暴露公网口。
+- 公网发布需在 Worker 外层加 TLS + 强鉴权。
 
-### 6.3 关键 reducer 逻辑
-- `item.delta` 合并到同一条 assistant 消息，禁止每个 delta 新增一条消息。
-- `item.completed` 标记流式消息结束，切换到稳定显示。
-- `approval.required` 写入 `pendingApproval` 并弹出审批 sheet。
-- `job.finished` 统一清理流式上下文并刷新终态卡片。
+## 9. SSE 与 cursor
 
-### 6.4 iOS MVP UI 清单
+- 单 job 内 `seq` 严格递增。
+- iOS 重连携带 `cursor`，服务端回放 `seq > cursor`。
+- 心跳：每 15 秒 `: ping`，不占用业务 `seq`。
+- 游标过期：返回 `409 CURSOR_EXPIRED`，客户端先 `GET /v1/jobs/{jid}` 再重连。
+
+## 10. iOS（TCA + exyte/Chat）
+
+### 10.1 Feature 拆分
+- `AppFeature`：鉴权、路由、全局连接管理。
+- `ThreadsFeature`：线程列表、创建、切换。
+- `ChatFeature`：turn 发送、消息流、任务状态。
+- `SSEFeature`：连接/断线重连/cursor。
+- `ApprovalFeature`：审批弹窗、accept/decline/cancel/accept_for_session。
+
+### 10.2 关键 Reducer 逻辑
+- `item/agentMessage/delta`：按 `itemId` 追加文本，实时刷新同一条 assistant 消息。
+- `item/completed(agentMessage)`：标记该消息完成态。
+- `approval.required`：写入 `pendingApproval` 并弹窗。
+- `approval.resolved`：关闭弹窗，更新审批卡状态。
+- `turn.completed`：依据 status 收敛 `DONE/FAILED/CANCELLED`。
+
+### 10.3 UI 清单
 - 线程列表与切换。
-- 聊天消息流（支持流式增量显示）。
-- 审批卡（动作预览、风险等级、allow/deny）。
+- 聊天消息流（delta 增量渲染）。
+- 审批卡（命令/改动摘要 + 决策按钮）。
 - 任务状态卡（RUNNING/WAITING_APPROVAL/DONE/FAILED/CANCELLED）。
 
-## 7. 请求生命周期（时序）
+## 11. 请求生命周期（含审批）
+
 ```mermaid
 sequenceDiagram
   autonumber
   participant User
   participant iOS
-  participant API
-  participant Job
-  participant CodexAdapter
-  participant CodexCLI
+  participant Worker
+  participant Codex
 
-  User->>iOS: 输入消息并发送
-  iOS->>API: POST /v1/threads/{tid}/turns
-  API->>Job: 创建 job(QUEUED->RUNNING)
-  Job->>CodexAdapter: runStreamed(input)
-  CodexAdapter->>CodexCLI: 启动/复用线程
-  CodexCLI-->>CodexAdapter: item.delta/item.completed
-  CodexAdapter-->>API: 标准化事件
-  API-->>iOS: SSE item.delta/job.state
+  User->>iOS: 进入某个线程
+  iOS->>Worker: POST /v1/threads/{tid}/activate
+  Worker->>Codex: thread/resume
+  User->>iOS: 发送消息
+  iOS->>Worker: POST /v1/threads/{tid}/turns
+  Worker->>Codex: turn/start
+  Codex-->>Worker: turn/started + item/* + deltas
+  Worker-->>iOS: SSE envelope
 
-  CodexCLI-->>CodexAdapter: approval.required
-  CodexAdapter-->>API: approval.required
-  API-->>iOS: SSE approval.required
-  User->>iOS: allow/deny
-  iOS->>API: POST /v1/jobs/{jid}/approve
-  API->>Job: 应用审批决策
+  Codex->>Worker: item/commandExecution/requestApproval
+  Worker-->>iOS: SSE approval.required
+  User->>iOS: 点击 accept/decline
+  iOS->>Worker: POST /v1/jobs/{jid}/approve
+  Worker->>Codex: response(item/commandExecution/requestApproval)
+  Worker-->>iOS: SSE approval.resolved
 
-  alt allow
-    Job->>CodexAdapter: 继续执行
-    CodexCLI-->>CodexAdapter: turn.completed
-    CodexAdapter-->>API: job.finished(DONE)
-    API-->>iOS: SSE job.finished
-  else deny
-    Job-->>API: job.finished(FAILED/CANCELLED)
-    API-->>iOS: SSE job.finished
-  else timeout
-    Job-->>API: job.finished(FAILED: approval timeout)
-    API-->>iOS: SSE job.finished
-  else 用户取消
-    iOS->>API: POST /v1/jobs/{jid}/cancel
-    API->>Job: cancel
-    Job-->>API: job.finished(CANCELLED)
-    API-->>iOS: SSE job.finished
-  end
+  Codex-->>Worker: turn/completed
+  Worker-->>iOS: SSE job.finished
 ```
 
-## 8. 交付计划与 DoD
-### 8.1 P0（MVP 必须）
-- Worker：7 API + SSE cursor 续流 + 状态机 + 审批幂等 + 审计落盘。
-- iOS：Threads/Chat/Stream/Approval 闭环，delta 合并，断线重连。
+## 12. 测试与验收（强制）
 
-DoD：
-- 主链路从 `POST /turns` 到 `job.finished` 可稳定跑通。
-- 审批 allow/deny/timeout 三条分支行为可验证且可回放。
-- SSE 断线续流不丢事件、不重跑任务。
+1. 正常对话：`turn.completed(status=completed)`，job 收敛 DONE。
+2. 命令审批 accept：任务继续并完成。
+3. 命令审批 decline：命令项 `declined`，turn 最终状态正确收敛。
+4. 文件审批 accept_for_session：后续同类审批按会话策略表现正确。
+5. 审批 cancel：turn 最终 `interrupted` 或等价终态，job 收敛 CANCELLED。
+6. 重复 `/approve`：命中幂等，结果稳定，无重复副作用。
+7. `turn/interrupt` 取消：最终 `turn.completed(status=interrupted)`。
+8. SSE 断线重连：按 cursor 续流，无丢失/乱序。
+9. 并发 job：审批不串单（approvalId 与 jobId 强绑定）。
+10. 审计完整性：可按 `jobId` 回放审批与终态。
 
-### 8.2 P1（体验增强）
-- 审批卡、状态卡、错误卡视觉规范统一。
-- slash 命令面板（本地命令 + 搜索过滤）。
-- Markdown 渲染增强（代码块、引用、列表）。
+## 13. ADR
 
-### 8.3 P2（能力扩展）
-- 自绘 transcript（替代 `exyte/Chat`）。
-- 富文本输入与结构化文档模型。
-- 文件/搜索/diff/终端能力按 roadmap 放开。
-
-## 9. 演进路线（从 exyte/Chat 到富文本）
-### 9.1 迁移阶段
-- MVP：`exyte/Chat + Markdown 展示 + 纯文本输入 + slash 面板`。
-- V1：替换消息区为 `ScrollView + LazyVStack` 自绘 transcript。
-- V2：输入区升级为富文本编辑（文档模型驱动）。
-- V3：命令块/卡片块（块级结构化内容）。
-
-### 9.2 数据模型前置设计
-`MessageContent` 预留多形态：
-- `markdown(String)`
-- `richDoc([DocNode])`
-- `card(CardModel)`
-
-这样可在不改 Reducer 的前提下替换 UI 渲染层。
-
-## 10. 测试与验收场景
-1. 正常对话流：最终到 `job.finished(DONE)`。
-2. 审批允许：`allow` 后任务继续并完成。
-3. 审批拒绝：`deny` 后进入 `FAILED` 或 `CANCELLED`。
-4. 审批超时：进入失败终态并返回可读原因。
-5. SSE 断线重连：按 `cursor` 续流，不重复执行任务。
-6. 幂等：重复提交 `approve/cancel` 不产生副作用。
-7. 并发：两个 job 并行运行，事件不串流。
-8. CLI 异常：`error` 被标准化后回传前端。
-9. 鉴权失败：未授权请求被正确拒绝（401/403）。
-10. 审计完整性：关键动作均有日志可追溯。
-
-## 11. 可观测与上线回滚
-### 11.1 指标
-- Worker：`job_duration`、`approval_wait_time`、`active_sse_connections`、`codex_error_rate`、`event_store_size`。
-- iOS：SSE 重连次数、重连耗时、每个 job 的 `seq` 连续性。
-
-### 11.2 上线检查
-- API 契约、状态机、事件类型一致性检查通过。
-- 鉴权、审批、SSE、审计四条主链路验收通过。
-- 指标与错误分类可观测。
-
-### 11.3 回滚触发与动作
-- 触发：审批流不可用，或 SSE 丢事件/重复推送导致状态错乱，或 `job.finished` 异常率超阈值。
-- 动作：回退到上一稳定 Worker 版本；保留全部事件和审计数据；按 `jobId` 回放故障样本定位根因。
-
-## 12. 风险与缓解
-- 风险：Codex/SDK 升级导致事件字段漂移。  
-  缓解：维持 Normalizer 适配层 + 契约回归测试 + 版本锁定。
-- 风险：审批信息不足导致误批复。  
-  缓解：审批卡强制展示 `preview/cwd/riskLevel`，高风险动作二次确认。
-- 风险：移动网络波动造成流式体验抖动。  
-  缓解：SSE 心跳 + cursor 重连 + delta 合并渲染。
-- 风险：UI 框架绑定过深导致后续演进成本高。  
-  缓解：坚持 Domain/UI 解耦，`exyte/Chat` 仅作为 MVP 渲染适配层。
-
-## 13. 决策记录（ADR 摘要）
-- ADR-001：MVP 仅做聊天 + 批复，文件与终端能力后置。
-- ADR-002：iOS 主推 `TCA + exyte/Chat + EventSource`，优先交付闭环和可测试性。
-- ADR-003：iOS 只消费标准化事件，Worker 负责吸收 Codex 字段变化。
-- ADR-004：所有写操作返回 `jobId`，过程细节统一经 SSE 输出。
-- ADR-005：Domain 不绑定 UI 库，允许平滑迁移到自绘 Markdown/富文本。
-- ADR-006：权限边界由 Codex 提供，平台负责鉴权、审批流转、审计追踪。
+- ADR-001：审批是产品核心能力，MVP 必须支持 iPhone 端点击决策。
+- ADR-002：为支持审批闭环，协议基线采用官方 `codex app-server`，不采用 TS SDK-only 路径。
+- ADR-003：iOS 不直接接 JSON-RPC；由 Worker 统一转 REST + SSE，降低移动端复杂度。
+- ADR-004：turn 终态以 `turn/completed.status` 为准，避免把 `decline` 错判为立即失败。
+- ADR-005：审批决策必须幂等并可审计回放。
