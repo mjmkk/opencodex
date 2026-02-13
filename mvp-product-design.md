@@ -202,6 +202,33 @@
 
 ## 13. App 交互逻辑（简版，参考 ChatGPT 手机端）
 
+### 13.0 交互流程图（Markdown）
+
+```mermaid
+flowchart LR
+  A["进入 App"] --> B["主界面（聊天）"]
+  B --> C["点击左上 toggle"]
+  C --> D["打开侧边栏"]
+  D --> E["按 cwd 分组浏览线程"]
+  E --> F["选择线程"]
+  F --> G["激活线程并关闭侧边栏"]
+  G --> B
+  D --> H["点击底部设置"]
+  H --> I["设置页（仅 IP）"]
+  I --> J["保存并连通性检查"]
+  J --> B
+```
+
+```mermaid
+stateDiagram-v2
+  [*] --> INPUT_ENABLED
+  INPUT_ENABLED --> WAITING_APPROVAL: approval.required
+  WAITING_APPROVAL --> APPROVAL_SUBMITTING: 点击接受/拒绝/取消
+  APPROVAL_SUBMITTING --> WAITING_APPROVAL: 回执超时（继续等待）
+  APPROVAL_SUBMITTING --> INPUT_ENABLED: approval.resolved
+  INPUT_ENABLED --> [*]
+```
+
 ### 13.1 顶部导航与侧边栏开关
 - 主界面左上角固定 `toggle`（切换）按钮。
 - 点击一次打开侧边栏，再点一次关闭侧边栏。

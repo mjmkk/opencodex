@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Browser Click Self Test</title>
+    <style>
+      :root {
+        --bg: #f3f7ff;
+        --card: #ffffff;
+        --text: #14213d;
+        --muted: #5c6784;
+        --brand: #0b7285;
+        --brand-weak: #d9f0f4;
+        --ok: #1b7f3b;
+        --warn: #9a6700;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: radial-gradient(circle at 20% 20%, #ffffff, var(--bg));
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        padding: 20px;
+      }
+
+      .panel {
+        width: min(680px, 100%);
+        background: var(--card);
+        border: 1px solid #d7e1ff;
+        border-radius: 16px;
+        box-shadow: 0 16px 40px rgba(18, 38, 85, 0.1);
+        padding: 24px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+
+      p {
+        margin: 8px 0 0;
+        color: var(--muted);
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+      }
+
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      #start-btn {
+        background: var(--brand);
+        color: #fff;
+      }
+
+      #finish-btn {
+        background: #0f5132;
+        color: #fff;
+      }
+
+      #finish-btn:disabled {
+        cursor: not-allowed;
+        background: #9cb6a8;
+      }
+
+      .badge {
+        margin-top: 18px;
+        display: inline-block;
+        border-radius: 999px;
+        padding: 6px 12px;
+        background: #eef3ff;
+        color: #3a4a70;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .status {
+        margin-top: 18px;
+        border-radius: 10px;
+        background: var(--brand-weak);
+        padding: 14px;
+      }
+
+      .status strong {
+        color: var(--brand);
+      }
+
+      #result.pass {
+        color: var(--ok);
+      }
+
+      #result.pending {
+        color: var(--warn);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="panel">
+      <h1>浏览器自动点击自测页</h1>
+      <p>目标：通过三步交互把状态从 <code>INIT</code> 推进到 <code>PASS</code>。</p>
+
+      <div class="badge" id="step-badge">当前步骤：0 / 2</div>
+
+      <div class="row">
+        <button id="start-btn" type="button">Step 1: 启动</button>
+        <label>
+          <input id="confirm-check" type="checkbox" disabled />
+          Step 2: 勾选确认
+        </label>
+        <button id="finish-btn" type="button" disabled>Step 3: 完成</button>
+      </div>
+
+      <div class="status">
+        <div>状态：<strong id="status-text">INIT</strong></div>
+        <div>结果：<strong id="result" class="pending">PENDING</strong></div>
+      </div>
+    </main>
+
+    <script type="module">
+      import { createClickSelftestController } from "./browser-click-selftest.js";
+
+      const controller = createClickSelftestController();
+
+      const stepBadge = document.getElementById("step-badge");
+      const startBtn = document.getElementById("start-btn");
+      const confirmCheck = document.getElementById("confirm-check");
+      const finishBtn = document.getElementById("finish-btn");
+      const statusText = document.getElementById("status-text");
+      const result = document.getElementById("result");
+
+      function render() {
+        const state = controller.snapshot();
+        stepBadge.textContent = `当前步骤：${state.step} / 2`;
+        statusText.textContent = state.statusText;
+
+        result.textContent = state.resultText;
+        result.className = state.resultClass;
+
+        confirmCheck.disabled = !state.confirmEnabled;
+        confirmCheck.checked = state.confirmChecked;
+        finishBtn.disabled = !state.finishEnabled;
+      }
+
+      startBtn.addEventListener("click", () => {
+        controller.start();
+        render();
+      });
+
+      confirmCheck.addEventListener("change", () => {
+        controller.setConfirmChecked(confirmCheck.checked);
+        render();
+      });
+
+      finishBtn.addEventListener("click", () => {
+        controller.finish();
+        render();
+      });
+
+      render();
+    </script>
+  </body>
+</html>
