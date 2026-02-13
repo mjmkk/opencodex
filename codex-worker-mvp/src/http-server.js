@@ -1,12 +1,39 @@
+/**
+ * HTTP 服务器模块
+ *
+ * 职责：
+ * - 提供 REST API 端点
+ * - 提供 SSE（Server-Sent Events）事件流
+ * - 提供静态 Web UI 文件服务
+ * - 处理鉴权（Bearer Token）
+ *
+ * @module http-server
+ * @see mvp-architecture.md 第 5 节 "Worker API 契约"
+ */
+
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { HttpError } from "./errors.js";
 
+// ==================== 常量定义 ====================
+
+/** JSON 请求体最大限制（字节）：1MB */
 const JSON_BODY_LIMIT_BYTES = 1024 * 1024;
+
+/** Web UI 静态文件根目录 */
 const UI_ROOT = fileURLToPath(new URL("../ui", import.meta.url));
 
+// ==================== 响应辅助函数 ====================
+
+/**
+ * 发送 JSON 响应
+ *
+ * @param {http.ServerResponse} res - HTTP 响应对象
+ * @param {number} status - HTTP 状态码
+ * @param {Object} payload - 响应体（会被 JSON 序列化）
+ */
 function sendJson(res, status, payload) {
   const body = JSON.stringify(payload);
   res.writeHead(status, {
@@ -16,6 +43,12 @@ function sendJson(res, status, payload) {
   res.end(body);
 }
 
+/**
+ * 根据文件扩展名获取 Content-Type
+ *
+ * @param {string} path - 文件路径
+ * @returns {string} Content-Type 值
+ */
 function contentType(path) {
   const ext = extname(path);
   switch (ext) {
@@ -36,15 +69,31 @@ function contentType(path) {
   }
 }
 
+// ==================== UI 静态文件服务 ====================
+
+/**
+ * 尝试提供 Web UI 静态文件
+ *
+ * UI 路由规则：
+ * - GET / → ui/index.html（主页）
+ * - GET /ui/* → ui/*（静态资源）
+ *
+ * 安全措施：
+ * - 检查路径遍历攻击（..）
+ * - 不需要鉴权（UI 本身是公开的，API 调用仍需鉴权）
+ *
+ * @param {http.IncomingMessage} req - HTTP 请求对象
+ * @param {http.ServerResponse} res - HTTP 响应对象
+ * @param {string} pathname - URL 路径
+ * @returns {Promise<boolean>} 是否处理了请求
+ */
 async function maybeServeUi(req, res, pathname) {
   const method = req.method ?? "GET";
   if (method !== "GET") {
     return false;
   }
 
-  // UI routes:
-  // - `/` -> ui/index.html
-  // - `/ui/*` -> static assets
+  // 解析 UI 路由
   let relativePath = null;
   if (pathname === "/" || pathname === "") {
     relativePath = "index.html";
@@ -54,31 +103,45 @@ async function maybeServeUi(req, res, pathname) {
     return false;
   }
 
-  // Prevent path traversal.
+  // 防止路径遍历攻击
   if (relativePath.includes("..")) {
     res.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
     res.end("Bad Request");
     return true;
   }
 
+  // 读取并返回文件
   try {
     const filePath = join(UI_ROOT, relativePath);
     const data = await readFile(filePath);
     res.writeHead(200, {
       "Content-Type": contentType(filePath),
-      "Cache-Control": "no-store",
+      "Cache-Control": "no-store",  // 开发环境禁用缓存
     });
     res.end(data);
     return true;
   } catch {
+    // 文件不存在
     res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
     res.end("Not Found");
     return true;
   }
 }
 
+// ==================== 错误处理 ====================
+
+/**
+ * 发送错误响应
+ *
+ * 将错误转换为标准 JSON 格式：
+ * { error: { code: string, message: string } }
+ *
+ * @param {http.ServerResponse} res - HTTP 响应对象
+ * @param {Error} error - 错误对象
+ */
 function sendError(res, error) {
   if (error instanceof HttpError) {
+    // 业务错误：使用定义的状态码和错误码
     sendJson(res, error.status, {
       error: {
         code: error.code,
@@ -88,6 +151,7 @@ function sendError(res, error) {
     return;
   }
 
+  // 未知错误：500 Internal Server Error
   sendJson(res, 500, {
     error: {
       code: "INTERNAL_ERROR",
@@ -96,18 +160,35 @@ function sendError(res, error) {
   });
 }
 
+// ==================== 请求处理辅助函数 ====================
+
+/**
+ * 读取并解析 JSON 请求体
+ *
+ * 特性：
+ * - 流式读取，支持大请求体
+ * - 大小限制（1MB）
+ * - 空请求体返回空对象
+ *
+ * @param {http.IncomingMessage} req - HTTP 请求对象
+ * @returns {Promise<Object>} 解析后的 JSON 对象
+ * @throws {HttpError} 413 如果请求体过大
+ * @throws {HttpError} 400 如果 JSON 格式错误
+ */
 async function readJsonBody(req) {
   const chunks = [];
   let total = 0;
 
   for await (const chunk of req) {
     total += chunk.length;
+    // 检查大小限制
     if (total > JSON_BODY_LIMIT_BYTES) {
       throw new HttpError(413, "PAYLOAD_TOO_LARGE", "请求体过大");
     }
     chunks.push(chunk);
   }
 
+  // 空请求体
   if (chunks.length === 0) {
     return {};
   }
@@ -117,6 +198,7 @@ async function readJsonBody(req) {
     return {};
   }
 
+  // 解析 JSON
   try {
     return JSON.parse(raw);
   } catch {
@@ -124,7 +206,17 @@ async function readJsonBody(req) {
   }
 }
 
+/**
+ * 检查鉴权
+ *
+ * 如果配置了 authToken，要求请求携带正确的 Bearer Token。
+ *
+ * @param {http.IncomingMessage} req - HTTP 请求对象
+ * @param {string|null} authToken - 配置的鉴权令牌
+ * @throws {HttpError} 401 如果令牌缺失或无效
+ */
 function requireAuth(req, authToken) {
+  // 未配置鉴权，跳过
   if (!authToken) {
     return;
   }
@@ -135,6 +227,15 @@ function requireAuth(req, authToken) {
   }
 }
 
+/**
+ * 解析游标参数
+ *
+ * 从查询字符串中解析 cursor 参数。
+ *
+ * @param {URLSearchParams} searchParams - URL 查询参数
+ * @returns {number|null} 游标值，或 null（表示从头开始）
+ * @throws {HttpError} 400 如果游标不是整数
+ */
 function parseCursor(searchParams) {
   const cursorRaw = searchParams.get("cursor");
   if (cursorRaw === null) {
@@ -149,17 +250,76 @@ function parseCursor(searchParams) {
   return cursor;
 }
 
+// ==================== SSE 辅助函数 ====================
+
+/**
+ * 写入 SSE 事件
+ *
+ * SSE 格式：
+ * ```
+ * id: <seq>
+ * event: <type>
+ * data: <json>
+ *
+ * ```
+ *
+ * @param {http.ServerResponse} res - HTTP 响应对象
+ * @param {Object} envelope - 事件信封
+ * @param {number} envelope.seq - 序列号
+ * @param {string} envelope.type - 事件类型
+ * @param {Object} envelope - 事件数据
+ */
 function writeSseEvent(res, envelope) {
   res.write(`id: ${envelope.seq}\n`);
   res.write(`event: ${envelope.type}\n`);
   res.write(`data: ${JSON.stringify(envelope)}\n\n`);
 }
 
+// ==================== 路由匹配 ====================
+
+/**
+ * URL 路径匹配
+ *
+ * @param {string} pathname - URL 路径
+ * @param {RegExp} pattern - 正则模式
+ * @returns {string[]|null} 捕获组数组，或 null（不匹配）
+ */
 function match(pathname, pattern) {
   const result = pathname.match(pattern);
   return result ? result.slice(1) : null;
 }
 
+// ==================== HTTP 服务器 ====================
+
+/**
+ * 创建 HTTP 服务器
+ *
+ * @param {Object} options - 配置选项
+ * @param {WorkerService} options.service - Worker 服务实例
+ * @param {string|null} [options.authToken] - 鉴权令牌
+ * @param {Object} [options.logger] - 日志器
+ * @returns {Object} 服务器对象，包含 listen 和 close 方法
+ *
+ * API 端点：
+ *
+ * | 方法 | 路径 | 说明 | 鉴权 |
+ * |------|------|------|------|
+ * | GET | /health | 健康检查 | 否 |
+ * | GET | /v1/projects | 列出项目 | 是 |
+ * | POST | /v1/threads | 创建线程 | 是 |
+ * | GET | /v1/threads | 列出线程 | 是 |
+ * | POST | /v1/threads/{id}/activate | 激活线程 | 是 |
+ * | POST | /v1/threads/{id}/turns | 发送消息 | 是 |
+ * | GET | /v1/jobs/{id} | 获取任务 | 是 |
+ * | GET | /v1/jobs/{id}/events | 获取事件（支持 SSE） | 是 |
+ * | POST | /v1/jobs/{id}/approve | 提交审批 | 是 |
+ * | POST | /v1/jobs/{id}/cancel | 取消任务 | 是 |
+ *
+ * @example
+ * const server = createHttpServer({ service, authToken: 'secret' });
+ * await server.listen(8787);
+ * // 服务器运行在 http://localhost:8787
+ */
 export function createHttpServer(options) {
   const service = options.service;
   const logger = options.logger ?? console;
@@ -171,23 +331,26 @@ export function createHttpServer(options) {
     const pathname = requestUrl.pathname;
 
     try {
-      // Avoid noisy 404 logs from browsers; we don't need a favicon for MVP.
+      // 跳过 favicon（减少日志噪音）
       if (method === "GET" && pathname === "/favicon.ico") {
         res.writeHead(204);
         res.end();
         return;
       }
 
-      // Serve the minimal web UI without requiring auth so it can load assets.
-      // API calls from the UI still follow the normal auth rules below.
+      // 尝试提供 UI 静态文件（不需要鉴权）
       if (await maybeServeUi(req, res, pathname)) {
         return;
       }
 
+      // 检查鉴权（health 端点除外）
       if (pathname !== "/health") {
         requireAuth(req, authToken);
       }
 
+      // ==================== API 路由 ====================
+
+      // GET /health - 健康检查
       if (method === "GET" && pathname === "/health") {
         sendJson(res, 200, {
           status: "ok",
@@ -196,6 +359,7 @@ export function createHttpServer(options) {
         return;
       }
 
+      // GET /v1/projects - 列出项目
       if (method === "GET" && pathname === "/v1/projects") {
         sendJson(res, 200, {
           data: service.listProjects(),
@@ -203,40 +367,41 @@ export function createHttpServer(options) {
         return;
       }
 
+      // POST /v1/threads - 创建线程
       if (method === "POST" && pathname === "/v1/threads") {
         const body = await readJsonBody(req);
         const thread = await service.createThread(body);
-        sendJson(res, 201, {
-          thread,
-        });
+        sendJson(res, 201, { thread });
         return;
       }
 
+      // GET /v1/threads - 列出线程
       if (method === "GET" && pathname === "/v1/threads") {
         const result = await service.listThreads();
         sendJson(res, 200, result);
         return;
       }
 
+      // POST /v1/threads/{threadId}/activate - 激活线程
       const activateMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/activate$/);
       if (method === "POST" && activateMatch) {
         const threadId = decodeURIComponent(activateMatch[0]);
         const thread = await service.activateThread(threadId);
-        sendJson(res, 200, {
-          thread,
-        });
+        sendJson(res, 200, { thread });
         return;
       }
 
+      // POST /v1/threads/{threadId}/turns - 发送消息
       const turnsMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/turns$/);
       if (method === "POST" && turnsMatch) {
         const threadId = decodeURIComponent(turnsMatch[0]);
         const body = await readJsonBody(req);
         const job = await service.startTurn(threadId, body);
-        sendJson(res, 202, job);
+        sendJson(res, 202, job);  // 202 Accepted
         return;
       }
 
+      // GET /v1/jobs/{jobId} - 获取任务
       const jobMatch = match(pathname, /^\/v1\/jobs\/([^/]+)$/);
       if (method === "GET" && jobMatch) {
         const jobId = decodeURIComponent(jobMatch[0]);
@@ -245,56 +410,65 @@ export function createHttpServer(options) {
         return;
       }
 
+      // GET /v1/jobs/{jobId}/events - 获取事件（支持 SSE）
       const eventsMatch = match(pathname, /^\/v1\/jobs\/([^/]+)\/events$/);
       if (method === "GET" && eventsMatch) {
         const jobId = decodeURIComponent(eventsMatch[0]);
         const cursor = parseCursor(requestUrl.searchParams);
 
+        // 检查是否请求 SSE
         const acceptsSse = (req.headers.accept ?? "").includes("text/event-stream");
         const events = service.listEvents(jobId, cursor);
         const jobSnapshot = events.job ?? null;
 
+        // 非 SSE 请求：返回 JSON
         if (!acceptsSse) {
           sendJson(res, 200, events);
           return;
         }
 
+        // SSE 请求：建立长连接
         res.writeHead(200, {
           "Content-Type": "text/event-stream",
           "Cache-Control": "no-cache, no-transform",
-          Connection: "keep-alive",
-          "X-Accel-Buffering": "no",
+          "Connection": "keep-alive",
+          "X-Accel-Buffering": "no",  // 禁用 nginx 缓冲
         });
 
+        // 发送初始连接确认
         res.write(": connected\n\n");
+
+        // 发送历史事件
         for (const envelope of events.data) {
           writeSseEvent(res, envelope);
         }
 
-        // If the job is already terminal and only replay is needed (common after restart),
-        // close the SSE stream after sending the backlog.
+        // 如果任务已终态，直接关闭连接（只需回放历史）
         if (jobSnapshot && ["DONE", "FAILED", "CANCELLED"].includes(jobSnapshot.state)) {
           res.write(": eof\n\n");
           res.end();
           return;
         }
 
+        // 订阅实时事件
         let unsubscribe = null;
         try {
           unsubscribe = service.subscribe(jobId, (envelope) => {
             writeSseEvent(res, envelope);
           });
-        } catch (err) {
-          // If the job isn't active in memory, fallback to replay-only behavior.
+        } catch {
+          // 任务不在内存中，仅回放历史
           res.write(": eof\n\n");
           res.end();
           return;
         }
 
+        // 心跳：每 15 秒发送 ping，保持连接
         const heartbeat = setInterval(() => {
           res.write(": ping\n\n");
         }, 15000);
 
+        // 客户端断开时清理
         req.on("close", () => {
           clearInterval(heartbeat);
           if (unsubscribe) {
@@ -305,6 +479,7 @@ export function createHttpServer(options) {
         return;
       }
 
+      // POST /v1/jobs/{jobId}/approve - 提交审批
       const approveMatch = match(pathname, /^\/v1\/jobs\/([^/]+)\/approve$/);
       if (method === "POST" && approveMatch) {
         const jobId = decodeURIComponent(approveMatch[0]);
@@ -314,6 +489,7 @@ export function createHttpServer(options) {
         return;
       }
 
+      // POST /v1/jobs/{jobId}/cancel - 取消任务
       const cancelMatch = match(pathname, /^\/v1\/jobs\/([^/]+)\/cancel$/);
       if (method === "POST" && cancelMatch) {
         const jobId = decodeURIComponent(cancelMatch[0]);
@@ -322,8 +498,11 @@ export function createHttpServer(options) {
         return;
       }
 
+      // 404 - 接口不存在
       throw new HttpError(404, "NOT_FOUND", "接口不存在");
+
     } catch (error) {
+      // 记录错误日志
       logger.error("request failed", {
         method,
         pathname,
@@ -333,7 +512,15 @@ export function createHttpServer(options) {
     }
   });
 
+  // 返回服务器控制接口
   return {
+    /**
+     * 启动服务器监听
+     *
+     * @param {number} port - 端口号
+     * @param {string} [host='0.0.0.0'] - 监听地址
+     * @returns {Promise<Object>} 服务器地址信息
+     */
     listen(port, host = "0.0.0.0") {
       return new Promise((resolve) => {
         server.listen(port, host, () => {
@@ -341,6 +528,12 @@ export function createHttpServer(options) {
         });
       });
     },
+
+    /**
+     * 关闭服务器
+     *
+     * @returns {Promise<void>}
+     */
     close() {
       return new Promise((resolve, reject) => {
         server.close((error) => {

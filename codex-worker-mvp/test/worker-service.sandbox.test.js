@@ -36,6 +36,19 @@ test("createThread 会把 sandbox 透传到 thread/start（并校验枚举）", 
 
   await service.init();
 
+  // Test camelCase input (official format)
+  await service.createThread({
+    projectPath: "/repo",
+    sandbox: "readOnly",
+    approvalPolicy: "unlessTrusted",
+  });
+
+  assert.ok(captured);
+  assert.equal(captured.sandbox, "readOnly");
+  assert.equal(captured.approvalPolicy, "unlessTrusted");
+
+  // Test kebab-case input (legacy format, should be converted)
+  captured = null;
   await service.createThread({
     projectPath: "/repo",
     sandbox: "read-only",
@@ -43,8 +56,8 @@ test("createThread 会把 sandbox 透传到 thread/start（并校验枚举）", 
   });
 
   assert.ok(captured);
-  assert.equal(captured.sandbox, "read-only");
-  assert.equal(captured.approvalPolicy, "untrusted");
+  assert.equal(captured.sandbox, "readOnly");
+  assert.equal(captured.approvalPolicy, "unlessTrusted");
 
   // invalid sandbox should fall back to default.
   captured = null;
@@ -53,6 +66,6 @@ test("createThread 会把 sandbox 透传到 thread/start（并校验枚举）", 
     sandbox: "not-a-real-sandbox",
   });
   assert.ok(captured);
-  assert.equal(captured.sandbox, "workspace-write");
+  assert.equal(captured.sandbox, "workspaceWrite");
 });
 

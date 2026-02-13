@@ -115,11 +115,19 @@ flowchart LR
 - `POST /v1/threads` 创建线程。
 - `GET /v1/threads` 查询线程列表。
 - `POST /v1/threads/{tid}/activate` 激活（选择）线程，内部映射 `thread/resume`。
+- `POST /v1/threads/{tid}/fork` 分支线程，复制历史记录创建新线程。
+- `POST /v1/threads/{tid}/archive` 归档线程。
+- `POST /v1/threads/{tid}/unarchive` 取消归档线程。
+- `POST /v1/threads/{tid}/review` 启动代码审查。
 - `POST /v1/threads/{tid}/turns` 发消息并创建 job。
 - `GET /v1/jobs/{jid}` 查询 job 快照。
 - `GET /v1/jobs/{jid}/events?cursor=N` 订阅 SSE。
 - `POST /v1/jobs/{jid}/approve` 提交审批决策。
 - `POST /v1/jobs/{jid}/cancel` 取消运行中的 turn/job。
+- `GET /v1/skills` 列出可用技能。
+- `POST /v1/skills` 列出可用技能（带参数）。
+- `GET /v1/apps` 列出可用应用。
+- `POST /v1/apps` 列出可用应用（带参数）。
 
 ### 5.1.1 创建线程请求体（建议）
 ```json
@@ -144,7 +152,36 @@ flowchart LR
 - Worker 必须执行 `ensureThreadLoaded(threadId)`：
   - 已加载：直接 `turn/start`。
   - 未加载：先 `thread/resume`，成功后 `turn/start`。
-- 结果保证：只要 `threadId` 合法且可恢复，`turns` 不应因“前端漏调 activate”而失败。
+- 结果保证：只要 `threadId` 合法且可恢复，`turns` 不应因"前端漏调 activate"而失败。
+
+### 5.1.4 线程分支（`POST /v1/threads/{tid}/fork`）
+- 目的：从现有线程创建分支，复制历史记录。
+- 返回：新线程对象。
+- 使用场景：想在不影响原线程的情况下探索不同方向。
+
+### 5.1.5 线程归档（`POST /v1/threads/{tid}/archive` / `unarchive`）
+- 归档：将线程移入归档目录，不在常规列表中显示。
+- 取消归档：将归档线程恢复到常规列表。
+- 使用场景：清理已完成或不再需要的线程。
+
+### 5.1.6 代码审查（`POST /v1/threads/{tid}/review`）
+请求体：
+```json
+{
+  "target": {
+    "type": "uncommittedChanges" | "baseBranch" | "commit" | "custom"
+  },
+  "delivery": "inline" | "detached"
+}
+```
+- `uncommittedChanges`：审查未提交的更改。
+- `baseBranch`：审查与指定分支的差异。
+- `commit`：审查特定提交。
+- `custom`：自定义审查指令。
+
+### 5.1.7 技能和应用查询
+- `GET/POST /v1/skills`：查询可用技能列表。
+- `GET/POST /v1/apps`：查询可用应用列表。
 
 ### 5.2 iOS 侧审批请求体（Worker 对外）
 ```json

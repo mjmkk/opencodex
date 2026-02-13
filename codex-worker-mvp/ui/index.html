@@ -47,18 +47,18 @@
             <label class="field">
               <span>审批策略（ApprovalPolicy：何时需要你确认）</span>
               <select id="threadApprovalPolicy">
-                <option value="on-request">on-request（仅当服务端要求审批时才弹）</option>
-                <option value="untrusted">untrusted（更严格，常用于强制走审批链路）</option>
-                <option value="on-failure">on-failure（失败风险时才审）</option>
+                <option value="onRequest">onRequest（仅当服务端要求审批时才弹）</option>
+                <option value="unlessTrusted">unlessTrusted（更严格，常用于强制走审批链路）</option>
+                <option value="onFailure">onFailure（失败风险时才审）</option>
                 <option value="never">never（不审批，危险）</option>
               </select>
             </label>
             <label class="field">
               <span>沙箱模式（Sandbox：运行权限范围）</span>
               <select id="sandbox">
-                <option value="workspace-write">workspace-write（允许写工作区）</option>
-                <option value="read-only">read-only（只读，更容易触发写入审批）</option>
-                <option value="danger-full-access">danger-full-access（全权限，危险）</option>
+                <option value="workspaceWrite">workspaceWrite（允许写工作区）</option>
+                <option value="readOnly">readOnly（只读，更容易触发写入审批）</option>
+                <option value="dangerFullAccess">dangerFullAccess（全权限，危险）</option>
               </select>
             </label>
             <button id="createThread" class="btn">创建线程</button>
@@ -88,9 +88,9 @@
               <span>本次审批策略（可选）</span>
               <select id="turnApprovalPolicy">
                 <option value="">（不覆盖）</option>
-                <option value="on-request">on-request</option>
-                <option value="untrusted">untrusted</option>
-                <option value="on-failure">on-failure</option>
+                <option value="onRequest">onRequest</option>
+                <option value="unlessTrusted">unlessTrusted</option>
+                <option value="onFailure">onFailure</option>
                 <option value="never">never</option>
               </select>
             </label>

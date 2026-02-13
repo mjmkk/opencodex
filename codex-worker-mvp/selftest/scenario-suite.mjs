@@ -307,8 +307,8 @@ async function main() {
           scenario: "basic_chat",
           baseUrl,
           projectPath: "/Users/Apple/Dev/OpenCodex",
-          approvalPolicy: "on-request",
-          sandbox: "workspace-write",
+          approvalPolicy: "onRequest",
+          sandbox: "workspaceWrite",
           text: '只回复一个单词：OK。不要解释，不要做任何额外操作。',
           timeoutMs: 90000,
         });
@@ -322,8 +322,8 @@ async function main() {
           scenario: "approval_command",
           baseUrl,
           projectPath: "/Users/Apple/Dev/OpenCodex",
-          approvalPolicy: "untrusted",
-          sandbox: "read-only",
+          approvalPolicy: "unlessTrusted",
+          sandbox: "readOnly",
           text:
             "只做两步：1) 在项目内创建文件 codex-worker-mvp/selftest/_scenario_approval.txt，写入一行：SCENARIO_OK。" +
             "2) 运行命令 `git status` 并返回输出。" +

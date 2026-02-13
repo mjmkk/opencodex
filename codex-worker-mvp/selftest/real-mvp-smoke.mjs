@@ -114,8 +114,8 @@ async function run() {
       body: JSON.stringify({
         projectPath: '/Users/Apple/Dev/OpenCodex',
         // 尽量强制触发审批
-        approvalPolicy: 'untrusted',
-        sandbox: 'read-only',
+        approvalPolicy: 'unlessTrusted',
+        sandbox: 'readOnly',
         threadName: 'mvp-smoke',
       }),
     });
@@ -132,7 +132,7 @@ async function run() {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        approvalPolicy: 'untrusted',
+        approvalPolicy: 'unlessTrusted',
         text:
           '请在项目内创建文件 codex-worker-mvp/selftest/_smoke_approval.txt，并写入一行：SMOKE_APPROVAL_OK。' +
           '然后运行命令：git status，并返回输出。',

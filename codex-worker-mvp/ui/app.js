@@ -162,9 +162,25 @@ async function refreshHealth() {
 
 let activeThreadId = null;
 let activeJobId = null;
+let activeJobState = null; // QUEUED | RUNNING | WAITING_APPROVAL | DONE | FAILED | CANCELLED
 let cursor = -1;
 let sseAbort = null;
 let activeApproval = null; // { approvalId, kind }
+let selftestInProgress = false;
+
+function isActiveJobState(state) {
+  return state === "QUEUED" || state === "RUNNING" || state === "WAITING_APPROVAL";
+}
+
+function updateControls() {
+  const hasThread = Boolean(activeThreadId);
+  const jobIsActive = Boolean(activeJobId) && isActiveJobState(activeJobState ?? "RUNNING");
+
+  els.send.disabled = !hasThread || jobIsActive;
+  els.cancel.disabled = !activeJobId || !jobIsActive;
+  els.runSelftest.disabled = jobIsActive;
+  els.runSelftest.textContent = selftestInProgress ? "自测中..." : "一键自测闭环";
+}
 
 async function activateThread(threadId) {
   await apiFetch(`/v1/threads/${encodeURIComponent(threadId)}/activate`, {
@@ -181,24 +197,26 @@ async function activateThread(threadId) {
 
 function resetJobUi() {
   activeJobId = null;
+  activeJobState = null;
   cursor = -1;
   els.activeJob.textContent = "无";
-  els.cancel.disabled = true;
   setBadge("-", "neutral");
   els.cursorHint.textContent = `cursor=${cursor}`;
+  updateControls();
 }
 
 function setActiveThread(threadId) {
   activeThreadId = threadId;
   els.activeThread.textContent = threadId ? threadId : "未选择";
   // 防止“没选线程直接发消息”，按钮态更直观。
-  els.send.disabled = !threadId;
+  updateControls();
 }
 
 function setActiveJob(jobId) {
   activeJobId = jobId;
   els.activeJob.textContent = jobId ? jobId : "无";
-  els.cancel.disabled = !jobId;
+  activeJobState = jobId ? "RUNNING" : null;
+  updateControls();
 }
 
 function closeApproval() {
@@ -306,10 +324,12 @@ async function startSseLoop(jobId) {
 
           if (ev.type === "job.state") {
             const st = ev.payload?.state || "-";
+            activeJobState = st;
             if (st === "WAITING_APPROVAL") setBadge(st, "warn");
             else if (st === "DONE") setBadge(st, "ok");
             else if (st === "FAILED" || st === "CANCELLED") setBadge(st, "warn");
             else setBadge(st, "neutral");
+            updateControls();
           }
 
           if (ev.type === "approval.required") {
@@ -322,9 +342,11 @@ async function startSseLoop(jobId) {
 
           if (ev.type === "job.finished") {
             const st = ev.payload?.state || "-";
+            activeJobState = st;
             if (st === "DONE") setBadge(st, "ok");
             else setBadge(st, "warn");
             appendLog(`[${nowTs()}] sse.done state=${st}`);
+            updateControls();
             return st;
           }
         }
@@ -478,6 +500,9 @@ function wireEvents() {
       if (!activeThreadId) {
         throw new Error("请先选择或创建线程");
       }
+      if (activeJobId && isActiveJobState(activeJobState ?? "RUNNING")) {
+        throw new Error("当前有进行中的任务，请等待完成或先点击“取消任务”");
+      }
       const text = String(els.input.value || "").trim();
       if (!text) {
         throw new Error("输入不能为空");
@@ -504,6 +529,7 @@ function wireEvents() {
       cursor = -1;
       els.cursorHint.textContent = `cursor=${cursor}`;
       setBadge("RUNNING", "neutral");
+      activeJobState = "RUNNING";
       closeApproval();
       appendLog(`[${nowTs()}] turn.start jobId=${jid}`);
       startSseLoop(jid);
@@ -513,6 +539,12 @@ function wireEvents() {
   });
 
   els.runSelftest.addEventListener("click", async () => {
+    if (activeJobId && isActiveJobState(activeJobState ?? "RUNNING")) {
+      appendLog(`[${nowTs()}] selftest.skip 当前有进行中的任务，请先等待完成或取消`);
+      return;
+    }
+    selftestInProgress = true;
+    updateControls();
     try {
       appendLog(`[${nowTs()}] selftest.start`);
 
@@ -538,8 +570,8 @@ function wireEvents() {
         body: JSON.stringify({
           projectPath,
           threadName: "ui-selftest",
-          approvalPolicy: "untrusted",
-          sandbox: "read-only",
+          approvalPolicy: "unlessTrusted",
+          sandbox: "readOnly",
         }),
       });
       const tid = created?.thread?.threadId;
@@ -556,7 +588,7 @@ function wireEvents() {
       appendLog(`[${nowTs()}] selftest.thread ${tid}`);
 
       const payload = {
-        approvalPolicy: "untrusted",
+        approvalPolicy: "unlessTrusted",
         text:
           "自测闭环：请在项目内创建文件 codex-worker-mvp/selftest/_ui_selftest.txt 并写入 UI_SELFTEST。然后运行 git status 并返回输出。",
       };
@@ -572,12 +604,16 @@ function wireEvents() {
       cursor = -1;
       els.cursorHint.textContent = `cursor=${cursor}`;
       setBadge("RUNNING", "neutral");
+      activeJobState = "RUNNING";
       appendLog(`[${nowTs()}] selftest.job ${jid}`);
 
       const finalState = await startSseLoop(jid);
       appendLog(`[${nowTs()}] selftest.PASS finalState=${finalState}`);
     } catch (e) {
       appendLog(`[${nowTs()}] selftest.FAIL ${(e && e.message) || String(e)}`);
+    } finally {
+      selftestInProgress = false;
+      updateControls();
     }
   });
 

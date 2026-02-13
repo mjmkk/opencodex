@@ -73,7 +73,8 @@ body {
 .grid {
   margin-top: 14px;
   display: grid;
-  grid-template-columns: 1fr 1.3fr;
+  /* 左侧线程面板固定在可控宽度范围内，避免长 threadId 把页面撑爆 */
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
   gap: 14px;
 }
 
@@ -88,6 +89,7 @@ body {
   background: var(--panel);
   border-radius: 16px;
   padding: 14px;
+  min-width: 0; /* 允许在 grid/flex 中收缩，避免横向溢出 */
 }
 
 h2 {

@@ -1,9 +1,31 @@
+/**
+ * codex-worker-mvp 入口文件
+ *
+ * 职责：
+ * - 加载配置并初始化各个模块
+ * - 管理 Worker 生命周期（启动、关闭）
+ * - 处理进程信号（SIGINT、SIGTERM）
+ *
+ * @module index
+ * @see mvp-architecture.md 第 4 节 "总览架构"
+ */
+
 import { loadConfig } from "./config.js";
 import { createHttpServer } from "./http-server.js";
 import { JsonRpcClient } from "./json-rpc-client.js";
 import { SqliteStore } from "./sqlite-store.js";
 import { WorkerService } from "./worker-service.js";
 
+/**
+ * 结构化日志输出
+ *
+ * 输出 JSON 格式日志，便于日志聚合和检索。
+ * 格式：{ level, ts, message, extra? }
+ *
+ * @param {string} level - 日志级别：info、warn、error
+ * @param {string} message - 日志消息
+ * @param {Object} [extra] - 额外的上下文信息
+ */
 function log(level, message, extra = undefined) {
   const payload = {
     level,
@@ -15,15 +37,32 @@ function log(level, message, extra = undefined) {
   console.log(JSON.stringify(payload));
 }
 
+/**
+ * 主函数：初始化并启动 Worker
+ *
+ * 启动顺序：
+ * 1. 加载配置（环境变量）
+ * 2. 创建 JSON-RPC 客户端（与 codex app-server 通信）
+ * 3. 初始化 SQLite 存储（持久化）
+ * 4. 创建 Worker 服务（核心业务逻辑）
+ * 5. 启动 HTTP 服务器（对外 API）
+ *
+ * 依赖注入模式：所有组件通过构造函数注入，便于测试和解耦。
+ */
 async function main() {
+  // 1. 加载配置
   const config = loadConfig();
 
+  // 2. 创建 JSON-RPC 客户端
+  // 负责：启动 codex app-server 子进程，通过 stdio 通信
   const rpc = new JsonRpcClient({
     command: config.rpc.command,
     args: config.rpc.args,
     cwd: config.rpc.cwd,
   });
 
+  // 3. 初始化 SQLite 存储
+  // 负责：线程、任务、事件、审批的持久化
   const store = new SqliteStore({
     dbPath: config.dbPath,
     logger: {
@@ -34,6 +73,8 @@ async function main() {
   });
   store.init();
 
+  // 4. 创建 Worker 服务
+  // 负责：线程管理、任务执行、审批处理、事件分发
   const service = new WorkerService({
     rpc,
     store,
@@ -46,8 +87,11 @@ async function main() {
     },
   });
 
+  // 初始化服务：启动子进程、握手 JSON-RPC
   await service.init();
 
+  // 5. 创建 HTTP 服务器
+  // 提供 REST API 和 SSE 事件流
   const server = createHttpServer({
     service,
     authToken: config.authToken,
@@ -56,6 +100,7 @@ async function main() {
     },
   });
 
+  // 启动监听
   await server.listen(config.port);
 
   log("info", "codex-worker-mvp started", {
@@ -64,6 +109,16 @@ async function main() {
     defaultProjectPath: config.defaultProjectPath,
   });
 
+  /**
+   * 优雅关闭函数
+   *
+   * 关闭顺序：
+   * 1. 关闭 HTTP 服务器（停止接受新请求）
+   * 2. 关闭 Worker 服务（停止子进程）
+   * 3. 关闭数据库连接
+   *
+   * @param {string} signal - 触发关闭的信号：SIGINT 或 SIGTERM
+   */
   const shutdown = async (signal) => {
     log("info", "shutdown requested", { signal });
     try {
@@ -79,6 +134,7 @@ async function main() {
     }
   };
 
+  // 注册信号处理：Ctrl+C 或 kill 命令
   process.on("SIGINT", () => {
     shutdown("SIGINT");
   });
@@ -87,6 +143,7 @@ async function main() {
   });
 }
 
+// 启动入口，捕获顶层异常
 main().catch((error) => {
   log("error", "worker bootstrap failed", {
     error: error instanceof Error ? error.message : String(error),
