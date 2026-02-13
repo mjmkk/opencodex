@@ -132,6 +132,41 @@ h3 {
   border-radius: 12px;
 }
 
+.thread-btn {
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.thread-btn:hover {
+  border-color: rgba(242, 183, 5, 0.35);
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.thread-btn:focus-visible {
+  outline: 2px solid rgba(242, 183, 5, 0.55);
+  outline-offset: 2px;
+}
+
+.thread-btn.active {
+  border-color: rgba(242, 183, 5, 0.60);
+}
+
+.thread-action {
+  flex: none;
+  align-self: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.16);
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .thread .meta {
   min-width: 0;
 }

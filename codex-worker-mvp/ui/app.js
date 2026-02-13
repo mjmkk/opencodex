@@ -25,6 +25,7 @@ const els = {
   autoApprove: $("autoApprove"),
   send: $("send"),
   cancel: $("cancel"),
+  runSelftest: $("runSelftest"),
   clearLog: $("clearLog"),
   cursorHint: $("cursorHint"),
   log: $("log"),
@@ -140,11 +141,43 @@ async function apiFetch(path, init = {}) {
   return json;
 }
 
+async function refreshHealth() {
+  const baseUrl = normalizeBaseUrl(els.baseUrl.value);
+  if (!baseUrl) {
+    return;
+  }
+  try {
+    const res = await fetch(`${baseUrl}/health`);
+    const json = await res.json().catch(() => null);
+    const authEnabled = Boolean(json?.authEnabled);
+    if (authEnabled && !String(els.token.value || "").trim()) {
+      appendLog(
+        `[${nowTs()}] 提示：当前 Worker 开启了鉴权（WORKER_TOKEN）。请在右上角 Token 输入框填写同一个值，否则 API 会 401。`
+      );
+    }
+  } catch {
+    // ignore
+  }
+}
+
 let activeThreadId = null;
 let activeJobId = null;
 let cursor = -1;
 let sseAbort = null;
 let activeApproval = null; // { approvalId, kind }
+
+async function activateThread(threadId) {
+  await apiFetch(`/v1/threads/${encodeURIComponent(threadId)}/activate`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({}),
+  });
+  setActiveThread(threadId);
+  resetJobUi();
+  closeApproval();
+  appendLog(`[${nowTs()}] thread.activate ${threadId}`);
+  await refreshThreads();
+}
 
 function resetJobUi() {
   activeJobId = null;
@@ -158,6 +191,8 @@ function resetJobUi() {
 function setActiveThread(threadId) {
   activeThreadId = threadId;
   els.activeThread.textContent = threadId ? threadId : "未选择";
+  // 防止“没选线程直接发消息”，按钮态更直观。
+  els.send.disabled = !threadId;
 }
 
 function setActiveJob(jobId) {
@@ -290,7 +325,7 @@ async function startSseLoop(jobId) {
             if (st === "DONE") setBadge(st, "ok");
             else setBadge(st, "warn");
             appendLog(`[${nowTs()}] sse.done state=${st}`);
-            return;
+            return st;
           }
         }
       }
@@ -310,9 +345,25 @@ async function startSseLoop(jobId) {
 
 function renderThreads(threads) {
   els.threads.textContent = "";
+  if (!Array.isArray(threads) || threads.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "hint";
+    empty.textContent = "没有可选线程。你可以先在下面创建一个新线程。";
+    els.threads.appendChild(empty);
+    return;
+  }
+
   for (const t of threads) {
-    const wrap = document.createElement("div");
-    wrap.className = "thread";
+    const wrap = document.createElement("button");
+    wrap.type = "button";
+    wrap.className = `thread thread-btn${t.threadId === activeThreadId ? " active" : ""}`;
+    wrap.addEventListener("click", async () => {
+      try {
+        await activateThread(t.threadId);
+      } catch (e) {
+        appendLog(`[${nowTs()}] ERROR ${(e && e.message) || String(e)}`);
+      }
+    });
 
     const meta = document.createElement("div");
     meta.className = "meta";
@@ -329,28 +380,8 @@ function renderThreads(threads) {
     meta.appendChild(sub);
 
     const actions = document.createElement("div");
-    actions.className = "row";
-
-    const btn = document.createElement("button");
-    btn.className = "btn btn-ghost";
-    btn.textContent = "选择";
-    btn.addEventListener("click", async () => {
-      try {
-        await apiFetch(`/v1/threads/${encodeURIComponent(t.threadId)}/activate`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({}),
-        });
-        setActiveThread(t.threadId);
-        resetJobUi();
-        closeApproval();
-        appendLog(`[${nowTs()}] thread.activate ${t.threadId}`);
-      } catch (e) {
-        appendLog(`[${nowTs()}] ERROR ${(e && e.message) || String(e)}`);
-      }
-    });
-
-    actions.appendChild(btn);
+    actions.className = "thread-action";
+    actions.textContent = t.threadId === activeThreadId ? "已选择" : "点击选择";
     wrap.appendChild(meta);
     wrap.appendChild(actions);
     els.threads.appendChild(wrap);
@@ -378,6 +409,10 @@ async function refreshProjects() {
 async function refreshThreads() {
   const data = await apiFetch("/v1/threads", { headers: { Accept: "application/json" } });
   const threads = Array.isArray(data?.data) ? data.data : [];
+  if (!activeThreadId && threads.length > 0) {
+    setActiveThread(threads[0].threadId);
+    appendLog(`[${nowTs()}] thread.auto_select ${threads[0].threadId}`);
+  }
   renderThreads(threads);
 }
 
@@ -397,6 +432,7 @@ function wireEvents() {
     try {
       storage.set("baseUrl", normalizeBaseUrl(els.baseUrl.value));
       storage.set("token", String(els.token.value || ""));
+      await refreshHealth();
       await refreshProjects();
       await refreshThreads();
       appendLog(`[${nowTs()}] refreshed`);
@@ -429,11 +465,8 @@ function wireEvents() {
       });
       const tid = created?.thread?.threadId;
       if (tid) {
-        setActiveThread(tid);
-        resetJobUi();
-        closeApproval();
         appendLog(`[${nowTs()}] thread.create ${tid}`);
-        await refreshThreads();
+        await activateThread(tid);
       }
     } catch (e) {
       appendLog(`[${nowTs()}] ERROR ${(e && e.message) || String(e)}`);
@@ -476,6 +509,75 @@ function wireEvents() {
       startSseLoop(jid);
     } catch (e) {
       appendLog(`[${nowTs()}] ERROR ${(e && e.message) || String(e)}`);
+    }
+  });
+
+  els.runSelftest.addEventListener("click", async () => {
+    try {
+      appendLog(`[${nowTs()}] selftest.start`);
+
+      if (!normalizeBaseUrl(els.baseUrl.value)) {
+        els.baseUrl.value = normalizeBaseUrl(location.origin);
+        storage.set("baseUrl", els.baseUrl.value);
+      }
+
+      // 自测：默认自动接受审批，避免用户参与测试。
+      els.autoApprove.checked = true;
+      storage.setBool("autoApprove", true);
+
+      await refreshProjects();
+
+      const projectPath = String(els.projectPath.value || "").trim();
+      if (!projectPath) {
+        throw new Error("未找到可用项目目录（/v1/projects 为空或未配置白名单）");
+      }
+
+      const created = await apiFetch("/v1/threads", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          projectPath,
+          threadName: "ui-selftest",
+          approvalPolicy: "untrusted",
+          sandbox: "read-only",
+        }),
+      });
+      const tid = created?.thread?.threadId;
+      if (!tid) throw new Error("创建线程失败：未返回 threadId");
+
+      await apiFetch(`/v1/threads/${encodeURIComponent(tid)}/activate`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      setActiveThread(tid);
+      resetJobUi();
+      closeApproval();
+      appendLog(`[${nowTs()}] selftest.thread ${tid}`);
+
+      const payload = {
+        approvalPolicy: "untrusted",
+        text:
+          "自测闭环：请在项目内创建文件 codex-worker-mvp/selftest/_ui_selftest.txt 并写入 UI_SELFTEST。然后运行 git status 并返回输出。",
+      };
+      const job = await apiFetch(`/v1/threads/${encodeURIComponent(tid)}/turns`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const jid = job?.jobId;
+      if (!jid) throw new Error("发起任务失败：未返回 jobId");
+
+      setActiveJob(jid);
+      cursor = -1;
+      els.cursorHint.textContent = `cursor=${cursor}`;
+      setBadge("RUNNING", "neutral");
+      appendLog(`[${nowTs()}] selftest.job ${jid}`);
+
+      const finalState = await startSseLoop(jid);
+      appendLog(`[${nowTs()}] selftest.PASS finalState=${finalState}`);
+    } catch (e) {
+      appendLog(`[${nowTs()}] selftest.FAIL ${(e && e.message) || String(e)}`);
     }
   });
 
@@ -538,8 +640,10 @@ async function main() {
   bootstrapDefaults();
   wireEvents();
   resetJobUi();
+  setActiveThread(null);
 
   try {
+    await refreshHealth();
     await refreshProjects();
     await refreshThreads();
     appendLog(`[${nowTs()}] ready`);
@@ -551,4 +655,3 @@ async function main() {
 main().catch((e) => {
   appendLog(`[${nowTs()}] FATAL ${(e && e.message) || String(e)}`);
 });
-

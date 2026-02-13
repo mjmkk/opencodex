@@ -135,8 +135,7 @@ async function run() {
         approvalPolicy: 'untrusted',
         text:
           '请在项目内创建文件 codex-worker-mvp/selftest/_smoke_approval.txt，并写入一行：SMOKE_APPROVAL_OK。' +
-          '然后运行命令：git status。' +
-          '如果需要审批请发起审批请求，等待我点击 accept 之后继续执行。最后把输出返回。',
+          '然后运行命令：git status，并返回输出。',
       }),
     });
 

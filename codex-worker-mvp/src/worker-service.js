@@ -66,6 +66,7 @@ function isNonEmptyString(value) {
 export class WorkerService {
   constructor(options) {
     this.rpc = options.rpc;
+    this.store = options.store ?? null;
     this.logger = options.logger ?? console;
     this.eventRetention = options.eventRetention ?? 2000;
 
@@ -154,7 +155,9 @@ export class WorkerService {
     this.#upsertThread(thread);
     this.loadedThreads.add(thread.id);
 
-    return this.#toThreadDto(thread);
+    const dto = this.#toThreadDto(thread);
+    this.store?.upsertThread?.(dto);
+    return dto;
   }
 
   async listThreads() {
@@ -168,6 +171,7 @@ export class WorkerService {
     const threads = Array.isArray(result.data) ? result.data : [];
     for (const thread of threads) {
       this.#upsertThread(thread);
+      this.store?.upsertThread?.(this.#toThreadDto(thread));
     }
 
     return {
@@ -207,7 +211,9 @@ export class WorkerService {
     this.#upsertThread(thread);
     this.loadedThreads.add(threadId);
 
-    return this.#toThreadDto(thread);
+    const dto = this.#toThreadDto(thread);
+    this.store?.upsertThread?.(dto);
+    return dto;
   }
 
   async startTurn(threadId, payload = {}) {
@@ -268,13 +274,29 @@ export class WorkerService {
 
   getJob(jobId) {
     const job = this.jobs.get(jobId);
-    if (!job) {
+    if (job) {
+      return this.#toJobSnapshot(job);
+    }
+
+    const persisted = this.store?.getJob?.(jobId) ?? null;
+    if (!persisted) {
       throw new HttpError(404, "JOB_NOT_FOUND", `任务 ${jobId} 不存在`);
     }
-    return this.#toJobSnapshot(job);
+    return persisted;
   }
 
   listEvents(jobId, cursor = null) {
+    // 启用 SQLite 后，优先回放落盘事件，支持 Worker 重启后的追溯。
+    if (this.store?.listEvents) {
+      const snapshot = this.getJob(jobId);
+      const persisted = this.store.listEvents(jobId, cursor);
+      return {
+        ...persisted,
+        firstSeq: 0,
+        job: snapshot,
+      };
+    }
+
     const job = this.jobs.get(jobId);
     if (!job) {
       throw new HttpError(404, "JOB_NOT_FOUND", `任务 ${jobId} 不存在`);
@@ -356,6 +378,14 @@ export class WorkerService {
       approvalId,
       decision: decisionText,
       decidedAt: approval.decidedAt,
+    });
+
+    this.store?.insertDecision?.({
+      approvalId,
+      decision: decisionText,
+      decidedAt: approval.decidedAt,
+      actor: "api",
+      extra: payload.execPolicyAmendment ? { execPolicyAmendment: payload.execPolicyAmendment } : null,
     });
 
     job.pendingApprovalIds.delete(approvalId);
@@ -526,6 +556,8 @@ export class WorkerService {
 
     this.#setJobState(job, "WAITING_APPROVAL");
 
+    this.store?.insertApproval?.(approval);
+
     this.#appendEvent(job, "approval.required", {
       approvalId,
       jobId: job.jobId,
@@ -617,6 +649,7 @@ export class WorkerService {
     };
 
     this.jobs.set(job.jobId, job);
+    this.store?.insertJob?.(this.#toJobSnapshot(job));
     return job;
   }
 
@@ -644,6 +677,8 @@ export class WorkerService {
       });
       job.finishedEmitted = true;
     }
+
+    this.store?.updateJob?.(this.#toJobSnapshot(job));
   }
 
   #appendEvent(job, type, payload) {
@@ -668,6 +703,8 @@ export class WorkerService {
     for (const listener of job.subscribers) {
       listener(envelope);
     }
+
+    this.store?.appendEvent?.(envelope);
   }
 
   #locateJob(threadId, turnId) {

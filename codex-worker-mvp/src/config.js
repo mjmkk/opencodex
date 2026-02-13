@@ -28,12 +28,18 @@ export function loadConfig(env = process.env) {
     throw new Error(`invalid WORKER_EVENT_RETENTION: ${eventRetentionRaw}`);
   }
 
+  const dbPath =
+    env.WORKER_DB_PATH?.trim() ||
+    // 默认落盘到仓库内，方便单机 MVP 使用与排查。
+    `${process.cwd()}/data/worker.db`;
+
   return {
     port,
     authToken: env.WORKER_TOKEN?.trim() || null,
     projectPaths,
     defaultProjectPath,
     eventRetention,
+    dbPath,
     rpc: {
       command,
       args,

@@ -18,12 +18,25 @@ npm start
 ## 2. 环境变量
 
 - `PORT`：HTTP 端口，默认 `8787`
-- `WORKER_TOKEN`：可选，开启 Bearer 鉴权
+- `WORKER_TOKEN`：可选，开启 Bearer 鉴权（下面有解释）
 - `WORKER_PROJECT_PATHS`：可选，项目白名单，逗号分隔
 - `WORKER_DEFAULT_PROJECT`：可选，默认项目路径
 - `CODEX_COMMAND`：可选，Codex 可执行文件，默认 `codex`
 - `CODEX_APP_SERVER_ARGS`：可选，app-server 启动参数，逗号分隔；默认 `app-server`
 - `WORKER_EVENT_RETENTION`：可选，单任务保留事件条数，默认 `2000`
+- `WORKER_DB_PATH`：可选，SQLite 数据库路径；默认 `./data/worker.db`
+
+### WORKER_TOKEN 是什么？
+
+`WORKER_TOKEN` 是 Worker 对外 HTTP API 的 **Bearer Token（请求鉴权令牌）**。
+
+- 作用：防止别人直接访问你的 Worker API（例如同一局域网里）。
+- 形式：你自己随便定一个随机字符串，例如 `devtoken123`。
+- 使用方式：
+  - 启动 Worker 时设置：`WORKER_TOKEN=devtoken123 npm start`
+  - 客户端请求时带上 HTTP Header：`Authorization: Bearer devtoken123`
+  - Web UI（`/`）右上角的 `Token` 输入框就是填这个。
+- 只在本机测试：不要设置 `WORKER_TOKEN`（或设为空），就不需要填。
 
 ## 3. 最小 API
 
@@ -59,4 +72,11 @@ npm start
 ```bash
 cd /Users/Apple/Dev/OpenCodex/codex-worker-mvp
 npm test
+```
+
+完整自测（覆盖：单元/集成/系统/场景）：
+
+```bash
+cd /Users/Apple/Dev/OpenCodex/codex-worker-mvp
+npm run test:all
 ```

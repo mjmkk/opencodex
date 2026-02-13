@@ -1,6 +1,7 @@
 import { loadConfig } from "./config.js";
 import { createHttpServer } from "./http-server.js";
 import { JsonRpcClient } from "./json-rpc-client.js";
+import { SqliteStore } from "./sqlite-store.js";
 import { WorkerService } from "./worker-service.js";
 
 function log(level, message, extra = undefined) {
@@ -23,8 +24,19 @@ async function main() {
     cwd: config.rpc.cwd,
   });
 
+  const store = new SqliteStore({
+    dbPath: config.dbPath,
+    logger: {
+      warn: (msg) => log("warn", msg),
+      error: (msg, extra) => log("error", msg, extra),
+    },
+    eventPageLimit: config.eventRetention,
+  });
+  store.init();
+
   const service = new WorkerService({
     rpc,
+    store,
     projectPaths: config.projectPaths,
     defaultProjectPath: config.defaultProjectPath,
     eventRetention: config.eventRetention,
@@ -57,6 +69,7 @@ async function main() {
     try {
       await server.close();
       await service.shutdown();
+      store.close();
       process.exit(0);
     } catch (error) {
       log("error", "shutdown failed", {

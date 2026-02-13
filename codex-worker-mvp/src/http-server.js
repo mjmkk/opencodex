@@ -171,6 +171,13 @@ export function createHttpServer(options) {
     const pathname = requestUrl.pathname;
 
     try {
+      // Avoid noisy 404 logs from browsers; we don't need a favicon for MVP.
+      if (method === "GET" && pathname === "/favicon.ico") {
+        res.writeHead(204);
+        res.end();
+        return;
+      }
+
       // Serve the minimal web UI without requiring auth so it can load assets.
       // API calls from the UI still follow the normal auth rules below.
       if (await maybeServeUi(req, res, pathname)) {
@@ -184,6 +191,7 @@ export function createHttpServer(options) {
       if (method === "GET" && pathname === "/health") {
         sendJson(res, 200, {
           status: "ok",
+          authEnabled: Boolean(authToken),
         });
         return;
       }
@@ -244,6 +252,7 @@ export function createHttpServer(options) {
 
         const acceptsSse = (req.headers.accept ?? "").includes("text/event-stream");
         const events = service.listEvents(jobId, cursor);
+        const jobSnapshot = events.job ?? null;
 
         if (!acceptsSse) {
           sendJson(res, 200, events);
@@ -262,9 +271,25 @@ export function createHttpServer(options) {
           writeSseEvent(res, envelope);
         }
 
-        const unsubscribe = service.subscribe(jobId, (envelope) => {
-          writeSseEvent(res, envelope);
-        });
+        // If the job is already terminal and only replay is needed (common after restart),
+        // close the SSE stream after sending the backlog.
+        if (jobSnapshot && ["DONE", "FAILED", "CANCELLED"].includes(jobSnapshot.state)) {
+          res.write(": eof\n\n");
+          res.end();
+          return;
+        }
+
+        let unsubscribe = null;
+        try {
+          unsubscribe = service.subscribe(jobId, (envelope) => {
+            writeSseEvent(res, envelope);
+          });
+        } catch (err) {
+          // If the job isn't active in memory, fallback to replay-only behavior.
+          res.write(": eof\n\n");
+          res.end();
+          return;
+        }
 
         const heartbeat = setInterval(() => {
           res.write(": ping\n\n");
@@ -272,7 +297,9 @@ export function createHttpServer(options) {
 
         req.on("close", () => {
           clearInterval(heartbeat);
-          unsubscribe();
+          if (unsubscribe) {
+            unsubscribe();
+          }
         });
 
         return;
