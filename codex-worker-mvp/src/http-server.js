@@ -97,6 +97,8 @@ async function maybeServeUi(req, res, pathname) {
   let relativePath = null;
   if (pathname === "/" || pathname === "") {
     relativePath = "index.html";
+  } else if (pathname === "/ui" || pathname === "/ui/") {
+    relativePath = "index.html";
   } else if (pathname.startsWith("/ui/")) {
     relativePath = pathname.slice("/ui/".length);
   } else {
@@ -309,6 +311,7 @@ function match(pathname, pattern) {
  * | POST | /v1/threads | 创建线程 | 是 |
  * | GET | /v1/threads | 列出线程 | 是 |
  * | POST | /v1/threads/{id}/activate | 激活线程 | 是 |
+ * | GET | /v1/threads/{id}/events | 获取线程历史事件 | 是 |
  * | POST | /v1/threads/{id}/turns | 发送消息 | 是 |
  * | GET | /v1/jobs/{id} | 获取任务 | 是 |
  * | GET | /v1/jobs/{id}/events | 获取事件（支持 SSE） | 是 |
@@ -388,6 +391,15 @@ export function createHttpServer(options) {
         const threadId = decodeURIComponent(activateMatch[0]);
         const thread = await service.activateThread(threadId);
         sendJson(res, 200, { thread });
+        return;
+      }
+
+      // GET /v1/threads/{threadId}/events - 获取线程历史事件
+      const threadEventsMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/events$/);
+      if (method === "GET" && threadEventsMatch) {
+        const threadId = decodeURIComponent(threadEventsMatch[0]);
+        const events = service.listThreadEvents(threadId);
+        sendJson(res, 200, { data: events });
         return;
       }
 

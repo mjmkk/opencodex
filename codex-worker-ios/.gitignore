@@ -1,0 +1,35 @@
+# Swift Package Manager 构建产物
+.build/
+
+# Xcode 构建产物
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+*.xcworkspace/*
+!*.xcworkspace/contents.xcworkspacedata
+!*.xcworkspace/xcshareddata/
+
+# SwiftPM 包缓存
+.swiftpm/
+Package.resolved
+
+# CocoaPods
+Pods/
+
+# Carthage
+Carthage/Build/
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# macOS 系统文件
+.DS_Store
+*.swp
+*~.nib
+
+# Xcode 用户数据
+*.xcuserstate
+*.xcuserdatad

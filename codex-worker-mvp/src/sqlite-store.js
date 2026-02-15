@@ -220,6 +220,19 @@ export class SqliteStore {
       lastSeq: db.prepare(`
         SELECT seq FROM job_events WHERE jobId = ? ORDER BY seq DESC LIMIT 1
       `),
+      listJobsByThread: db.prepare(`
+        SELECT jobId, threadId, turnId, state, createdAt, updatedAt, terminalAt
+        FROM jobs
+        WHERE threadId = ?
+        ORDER BY createdAt ASC
+      `),
+      listEventsByThread: db.prepare(`
+        SELECT e.jobId, e.seq, e.type, e.ts, e.payload_json
+        FROM job_events e
+        JOIN jobs j ON e.jobId = j.jobId
+        WHERE j.threadId = ?
+        ORDER BY j.createdAt ASC, e.seq ASC
+      `),
     };
 
     this.db = db;
@@ -452,5 +465,33 @@ export class SqliteStore {
     const nextCursor = data.length > 0 ? data[data.length - 1].seq : normalizedCursor;
 
     return { data, nextCursor };
+  }
+
+  /**
+   * 获取线程的所有事件（用于历史回放）
+   *
+   * @param {string} threadId - 线程 ID
+   * @returns {Array<Object>} 事件列表
+   */
+  listEventsByThread(threadId) {
+    if (!this.db) this.init();
+
+    const rows = this.stmt.listEventsByThread.all(threadId);
+
+    return rows.map((r) => {
+      let payload = null;
+      try {
+        payload = JSON.parse(r.payload_json);
+      } catch {
+        // JSON 解析失败，保留 null
+      }
+      return {
+        jobId: r.jobId,
+        seq: r.seq,
+        type: r.type,
+        ts: r.ts,
+        payload,
+      };
+    });
   }
 }

@@ -628,6 +628,21 @@ export class WorkerService {
     };
   }
 
+  /**
+   * 获取线程的历史事件
+   *
+   * 用于在切换线程时回放历史消息。
+   *
+   * @param {string} threadId - 线程 ID
+   * @returns {Array<Object>} 事件列表
+   */
+  listThreadEvents(threadId) {
+    if (!this.store?.listEventsByThread) {
+      return [];
+    }
+    return this.store.listEventsByThread(threadId);
+  }
+
   // ==================== 审批管理 ====================
 
   /**
