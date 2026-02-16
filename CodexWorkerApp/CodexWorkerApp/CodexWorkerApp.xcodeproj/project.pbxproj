@@ -6,12 +6,16 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		1828EB0B2F421B5D00400F7D /* CodexWorker in Frameworks */ = {isa = PBXBuildFile; productRef = 1828EB0D2F421B5D00400F7D /* CodexWorker */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
-		183E31422F421AA000EE4863 /* CodexWorkerApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CodexWorkerApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1828EAFD2F421B5C00400F7D /* CodexWorkerApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CodexWorkerApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		183E31442F421AA000EE4863 /* CodexWorkerApp */ = {
+		1828EAFF2F421B5C00400F7D /* CodexWorkerApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = CodexWorkerApp;
 			sourceTree = "<group>";
@@ -19,28 +23,29 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		183E313F2F421AA000EE4863 /* Frameworks */ = {
+		1828EAFA2F421B5C00400F7D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1828EB0B2F421B5D00400F7D /* CodexWorker in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		183E31392F421AA000EE4863 = {
+		1828EAF42F421B5C00400F7D = {
 			isa = PBXGroup;
 			children = (
-				183E31442F421AA000EE4863 /* CodexWorkerApp */,
-				183E31432F421AA000EE4863 /* Products */,
+				1828EAFF2F421B5C00400F7D /* CodexWorkerApp */,
+				1828EAFE2F421B5C00400F7D /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		183E31432F421AA000EE4863 /* Products */ = {
+		1828EAFE2F421B5C00400F7D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				183E31422F421AA000EE4863 /* CodexWorkerApp.app */,
+				1828EAFD2F421B5C00400F7D /* CodexWorkerApp.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,64 +53,68 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		183E31412F421AA000EE4863 /* CodexWorkerApp */ = {
+		1828EAFC2F421B5C00400F7D /* CodexWorkerApp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 183E314D2F421AA100EE4863 /* Build configuration list for PBXNativeTarget "CodexWorkerApp" */;
+			buildConfigurationList = 1828EB082F421B5D00400F7D /* Build configuration list for PBXNativeTarget "CodexWorkerApp" */;
 			buildPhases = (
-				183E313E2F421AA000EE4863 /* Sources */,
-				183E313F2F421AA000EE4863 /* Frameworks */,
-				183E31402F421AA000EE4863 /* Resources */,
+				1828EAF92F421B5C00400F7D /* Sources */,
+				1828EAFA2F421B5C00400F7D /* Frameworks */,
+				1828EAFB2F421B5C00400F7D /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				183E31442F421AA000EE4863 /* CodexWorkerApp */,
+				1828EAFF2F421B5C00400F7D /* CodexWorkerApp */,
 			);
 			name = CodexWorkerApp;
 			packageProductDependencies = (
+				1828EB0D2F421B5D00400F7D /* CodexWorker */,
 			);
 			productName = CodexWorkerApp;
-			productReference = 183E31422F421AA000EE4863 /* CodexWorkerApp.app */;
+			productReference = 1828EAFD2F421B5C00400F7D /* CodexWorkerApp.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		183E313A2F421AA000EE4863 /* Project object */ = {
+		1828EAF52F421B5C00400F7D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
-					183E31412F421AA000EE4863 = {
+					1828EAFC2F421B5C00400F7D = {
 						CreatedOnToolsVersion = 26.2;
 					};
 				};
 			};
-			buildConfigurationList = 183E313D2F421AA000EE4863 /* Build configuration list for PBXProject "CodexWorkerApp" */;
+			buildConfigurationList = 1828EAF82F421B5C00400F7D /* Build configuration list for PBXProject "CodexWorkerApp" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = 183E31392F421AA000EE4863;
+			mainGroup = 1828EAF42F421B5C00400F7D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				1828EB0C2F421B5D00400F7D /* XCLocalSwiftPackageReference "../../codex-worker-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 183E31432F421AA000EE4863 /* Products */;
+			productRefGroup = 1828EAFE2F421B5C00400F7D /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				183E31412F421AA000EE4863 /* CodexWorkerApp */,
+				1828EAFC2F421B5C00400F7D /* CodexWorkerApp */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		183E31402F421AA000EE4863 /* Resources */ = {
+		1828EAFB2F421B5C00400F7D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -115,7 +124,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		183E313E2F421AA000EE4863 /* Sources */ = {
+		1828EAF92F421B5C00400F7D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -125,7 +134,7 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		183E314B2F421AA100EE4863 /* Debug */ = {
+		1828EB062F421B5D00400F7D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -188,7 +197,7 @@
 			};
 			name = Debug;
 		};
-		183E314C2F421AA100EE4863 /* Release */ = {
+		1828EB072F421B5D00400F7D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -244,7 +253,7 @@
 			};
 			name = Release;
 		};
-		183E314E2F421AA100EE4863 /* Debug */ = {
+		1828EB092F421B5D00400F7D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -275,7 +284,7 @@
 			};
 			name = Debug;
 		};
-		183E314F2F421AA100EE4863 /* Release */ = {
+		1828EB0A2F421B5D00400F7D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -309,25 +318,39 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		183E313D2F421AA000EE4863 /* Build configuration list for PBXProject "CodexWorkerApp" */ = {
+		1828EAF82F421B5C00400F7D /* Build configuration list for PBXProject "CodexWorkerApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				183E314B2F421AA100EE4863 /* Debug */,
-				183E314C2F421AA100EE4863 /* Release */,
+				1828EB062F421B5D00400F7D /* Debug */,
+				1828EB072F421B5D00400F7D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		183E314D2F421AA100EE4863 /* Build configuration list for PBXNativeTarget "CodexWorkerApp" */ = {
+		1828EB082F421B5D00400F7D /* Build configuration list for PBXNativeTarget "CodexWorkerApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				183E314E2F421AA100EE4863 /* Debug */,
-				183E314F2F421AA100EE4863 /* Release */,
+				1828EB092F421B5D00400F7D /* Debug */,
+				1828EB0A2F421B5D00400F7D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		1828EB0C2F421B5D00400F7D /* XCLocalSwiftPackageReference "../../codex-worker-ios" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../codex-worker-ios;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1828EB0D2F421B5D00400F7D /* CodexWorker */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CodexWorker;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = 183E313A2F421AA000EE4863 /* Project object */;
+	rootObject = 1828EAF52F421B5C00400F7D /* Project object */;
 }

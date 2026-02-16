@@ -8,10 +8,10 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct ThreadsView: View {
+public struct ThreadsView: View {
     let store: StoreOf<ThreadsFeature>
 
-    var body: some View {
+    public var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
             List {
                 if let errorMessage = viewStore.errorMessage {

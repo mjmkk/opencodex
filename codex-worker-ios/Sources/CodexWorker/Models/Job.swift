@@ -15,7 +15,7 @@ import Foundation
 /// ```
 /// QUEUED -> RUNNING -> WAITING_APPROVAL -> RUNNING -> DONE/FAILED/CANCELLED
 /// ```
-enum JobState: String, Codable, Equatable, Sendable {
+public enum JobState: String, Codable, Equatable, Sendable {
     /// 排队中
     case queued = "QUEUED"
     /// 运行中
@@ -30,7 +30,7 @@ enum JobState: String, Codable, Equatable, Sendable {
     case cancelled = "CANCELLED"
 
     /// 是否为终态（不会再变化）
-    var isTerminal: Bool {
+    public var isTerminal: Bool {
         switch self {
         case .done, .failed, .cancelled:
             return true
@@ -40,7 +40,7 @@ enum JobState: String, Codable, Equatable, Sendable {
     }
 
     /// 是否为活跃状态（正在执行）
-    var isActive: Bool {
+    public var isActive: Bool {
         switch self {
         case .queued, .running, .waitingApproval:
             return true
@@ -70,60 +70,82 @@ enum JobState: String, Codable, Equatable, Sendable {
 ///   "errorMessage": null
 /// }
 /// ```
-struct Job: Identifiable, Codable, Equatable, Sendable {
+public struct Job: Identifiable, Codable, Equatable, Sendable {
     /// 任务唯一标识符
-    let jobId: String
+    public let jobId: String
 
     /// 所属线程 ID
-    let threadId: String
+    public let threadId: String
 
     /// Turn ID（对话轮次标识）
-    var turnId: String?
+    public var turnId: String?
 
     /// 当前状态
-    var state: JobState
+    public var state: JobState
 
     /// 待处理审批数量
-    var pendingApprovalCount: Int
+    public var pendingApprovalCount: Int
 
     /// 创建时间（ISO 8601 格式）
-    let createdAt: String
+    public let createdAt: String
 
     /// 更新时间（ISO 8601 格式）
-    var updatedAt: String
+    public var updatedAt: String
 
     /// 终态时间（进入终态的时间）
-    var terminalAt: String?
+    public var terminalAt: String?
 
     /// 错误消息（失败时）
-    var errorMessage: String?
+    public var errorMessage: String?
 
     // MARK: - Identifiable
 
-    var id: String { jobId }
+    public var id: String { jobId }
+
+    public init(
+        jobId: String,
+        threadId: String,
+        turnId: String?,
+        state: JobState,
+        pendingApprovalCount: Int,
+        createdAt: String,
+        updatedAt: String,
+        terminalAt: String?,
+        errorMessage: String?
+    ) {
+        self.jobId = jobId
+        self.threadId = threadId
+        self.turnId = turnId
+        self.state = state
+        self.pendingApprovalCount = pendingApprovalCount
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.terminalAt = terminalAt
+        self.errorMessage = errorMessage
+    }
 }
 
 // MARK: - 计算属性
 
 extension Job {
     /// 创建时间 Date
-    var createdDate: Date? {
+    public var createdDate: Date? {
         ISO8601DateFormatter().date(from: createdAt)
     }
 
     /// 更新时间 Date
-    var updatedDate: Date? {
+    public var updatedDate: Date? {
         ISO8601DateFormatter().date(from: updatedAt)
     }
 
     /// 终态时间 Date
-    var terminalDate: Date? {
+    public var terminalDate: Date? {
         guard let terminalAt = terminalAt else { return nil }
         return ISO8601DateFormatter().date(from: terminalAt)
     }
 
     /// 是否有错误
-    var hasError: Bool {
+    public var hasError: Bool {
         errorMessage != nil && !errorMessage!.isEmpty
     }
 }
@@ -133,24 +155,35 @@ extension Job {
 /// 发送消息（创建 Turn）请求体
 ///
 /// 对应 `POST /v1/threads/{threadId}/turns` 请求格式
-struct StartTurnRequest: Codable, Sendable {
+public struct StartTurnRequest: Codable, Sendable {
     /// 文本消息（与 input 二选一）
-    var text: String?
+    public var text: String?
 
     /// 结构化输入数组（与 text 二选一）
-    var input: [TurnInput]?
+    public var input: [TurnInput]?
 
     /// 覆盖审批策略（可选）
-    var approvalPolicy: String?
+    public var approvalPolicy: String?
+
+    public init(text: String?, input: [TurnInput]?, approvalPolicy: String?) {
+        self.text = text
+        self.input = input
+        self.approvalPolicy = approvalPolicy
+    }
 }
 
 /// Turn 输入项
-struct TurnInput: Codable, Sendable {
+public struct TurnInput: Codable, Sendable {
     /// 输入类型（通常为 "text"）
-    let type: String
+    public let type: String
 
     /// 文本内容
-    let text: String
+    public let text: String
+
+    public init(type: String, text: String) {
+        self.type = type
+        self.text = text
+    }
 }
 
 // MARK: - Turn 响应
@@ -158,16 +191,16 @@ struct TurnInput: Codable, Sendable {
 /// 发送消息响应
 ///
 /// 对应 `POST /v1/threads/{threadId}/turns` 返回
-struct StartTurnResponse: Codable, Sendable {
+public struct StartTurnResponse: Codable, Sendable {
     /// 任务 ID
-    let jobId: String
+    public let jobId: String
 
     /// 任务状态
-    let state: String
+    public let state: String
 
     /// 线程 ID
-    let threadId: String?
+    public let threadId: String?
 
     /// Turn ID
-    let turnId: String?
+    public let turnId: String?
 }

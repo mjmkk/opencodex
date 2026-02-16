@@ -13,53 +13,53 @@ import Foundation
 /// API 客户端协议（支持 TCA 依赖注入）
 ///
 /// 定义了与后端 Worker 交互的所有 REST API 操作
-struct APIClient: DependencyKey, Sendable {
+public struct APIClient: DependencyKey, Sendable {
     // MARK: - API 操作
 
     /// 列出可用项目
-    var listProjects: @Sendable () async throws -> [Project]
+    public var listProjects: @Sendable () async throws -> [Project]
 
     /// 创建线程
-    var createThread: @Sendable (_ request: CreateThreadRequest) async throws -> Thread
+    public var createThread: @Sendable (_ request: CreateThreadRequest) async throws -> Thread
 
     /// 列出线程
-    var listThreads: @Sendable () async throws -> ThreadsListResponse
+    public var listThreads: @Sendable () async throws -> ThreadsListResponse
 
     /// 激活线程
-    var activateThread: @Sendable (_ threadId: String) async throws -> Thread
+    public var activateThread: @Sendable (_ threadId: String) async throws -> Thread
 
     /// 获取线程历史事件
-    var listThreadEvents: @Sendable (_ threadId: String) async throws -> [EventEnvelope]
+    public var listThreadEvents: @Sendable (_ threadId: String) async throws -> [EventEnvelope]
 
     /// 发送消息（创建 Turn）
-    var startTurn: @Sendable (_ threadId: String, _ request: StartTurnRequest) async throws -> StartTurnResponse
+    public var startTurn: @Sendable (_ threadId: String, _ request: StartTurnRequest) async throws -> StartTurnResponse
 
     /// 获取任务快照
-    var getJob: @Sendable (_ jobId: String) async throws -> Job
+    public var getJob: @Sendable (_ jobId: String) async throws -> Job
 
     /// 获取任务事件列表（非 SSE）
-    var listEvents: @Sendable (_ jobId: String, _ cursor: Int?) async throws -> EventsListResponse
+    public var listEvents: @Sendable (_ jobId: String, _ cursor: Int?) async throws -> EventsListResponse
 
     /// 提交审批决策
-    var approve: @Sendable (_ jobId: String, _ request: ApprovalRequest) async throws -> ApprovalResponse
+    public var approve: @Sendable (_ jobId: String, _ request: ApprovalRequest) async throws -> ApprovalResponse
 
     /// 取消任务
-    var cancel: @Sendable (_ jobId: String) async throws -> CancelResponse
+    public var cancel: @Sendable (_ jobId: String) async throws -> CancelResponse
 
     /// 健康检查
-    var healthCheck: @Sendable () async throws -> HealthCheckResponse
+    public var healthCheck: @Sendable () async throws -> HealthCheckResponse
 
     // MARK: - DependencyKey
 
-    static let liveValue = APIClient.live
-    static let testValue = APIClient.mock
-    static let previewValue = APIClient.mock
+    public static let liveValue = APIClient.live
+    public static let testValue = APIClient.mock
+    public static let previewValue = APIClient.mock
 }
 
 // MARK: - Dependency Values
 
 extension DependencyValues {
-    var apiClient: APIClient {
+    public var apiClient: APIClient {
         get { self[APIClient.self] }
         set { self[APIClient.self] = newValue }
     }
@@ -68,16 +68,16 @@ extension DependencyValues {
 // MARK: - 健康检查响应
 
 /// 健康检查响应
-struct HealthCheckResponse: Codable, Sendable {
-    let status: String
-    let authEnabled: Bool
+public struct HealthCheckResponse: Codable, Sendable {
+    public let status: String
+    public let authEnabled: Bool
 }
 
 // MARK: - Live Implementation
 
 extension APIClient {
     /// 创建真实 API 客户端
-    static var live: APIClient {
+    public static var live: APIClient {
         let impl = LiveAPIClient()
         return APIClient(
             listProjects: { try await impl.listProjects() },
@@ -215,7 +215,11 @@ actor LiveAPIClient {
     func listThreads() async throws -> ThreadsListResponse {
         let url = try buildURL(path: "/v1/threads")
         let request = try buildRequest(url: url)
-        return try await performRequest(request)
+        let response: ThreadsListResponse = try await performRequest(request)
+#if DEBUG
+        print("[APIClient] listThreads ok, count=\(response.data.count)")
+#endif
+        return response
     }
 
     func activateThread(threadId: String) async throws -> Thread {
@@ -289,7 +293,7 @@ actor LiveAPIClient {
 
 extension APIClient {
     /// Mock 客户端（用于测试和预览）
-    static var mock: APIClient {
+    public static var mock: APIClient {
         APIClient(
             listProjects: {
                 [

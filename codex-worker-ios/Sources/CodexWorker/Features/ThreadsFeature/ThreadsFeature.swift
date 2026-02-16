@@ -8,23 +8,25 @@
 import ComposableArchitecture
 
 @Reducer
-struct ThreadsFeature {
+public struct ThreadsFeature {
     @ObservableState
-    struct State: Equatable {
-        var items: [Thread] = []
-        var isLoading = false
-        var selectedThreadId: String?
-        var errorMessage: String?
+    public struct State: Equatable {
+        public var items: [Thread] = []
+        public var isLoading = false
+        public var selectedThreadId: String?
+        public var errorMessage: String?
 
         /// 按更新时间倒序展示线程，保证最近活跃优先
-        var sortedItems: [Thread] {
+        public var sortedItems: [Thread] {
             items.sorted { lhs, rhs in
                 (lhs.lastActiveAt ?? .distantPast) > (rhs.lastActiveAt ?? .distantPast)
             }
         }
+
+        public init() {}
     }
 
-    enum Action {
+    public enum Action {
         case onAppear
         case refresh
         case loadResponse(Result<ThreadsListResponse, CodexError>)
@@ -34,19 +36,20 @@ struct ThreadsFeature {
         case delegate(Delegate)
     }
 
-    enum Delegate {
+    public enum Delegate {
         case didActivateThread(Thread)
     }
 
-    @Dependency(\.apiClient) var apiClient
+    public init() {}
 
-    var body: some ReducerOf<Self> {
+    public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .onAppear, .refresh:
                 state.isLoading = true
                 state.errorMessage = nil
                 return .run { send in
+                    @Dependency(\.apiClient) var apiClient
                     await send(
                         .loadResponse(
                             Result {
@@ -70,6 +73,7 @@ struct ThreadsFeature {
                 state.selectedThreadId = threadId
                 state.errorMessage = nil
                 return .run { send in
+                    @Dependency(\.apiClient) var apiClient
                     await send(
                         .selectResponse(
                             Result {

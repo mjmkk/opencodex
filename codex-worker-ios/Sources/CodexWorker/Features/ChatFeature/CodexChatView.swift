@@ -9,10 +9,10 @@ import ComposableArchitecture
 import ExyteChat
 import SwiftUI
 
-struct CodexChatView: View {
+public struct CodexChatView: View {
     let store: StoreOf<ChatFeature>
 
-    var body: some View {
+    public var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
             VStack(spacing: 0) {
                 header(viewStore: viewStore)

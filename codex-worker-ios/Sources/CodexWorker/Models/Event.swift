@@ -12,7 +12,7 @@ import Foundation
 /// SSE 事件类型
 ///
 /// 对应后端事件信封中的 `type` 字段
-enum EventType: String, CaseIterable, Sendable {
+public enum EventType: String, CaseIterable, Sendable {
     // MARK: - 生命周期事件
 
     /// 任务创建
@@ -56,7 +56,7 @@ enum EventType: String, CaseIterable, Sendable {
     // MARK: - 分类
 
     /// 是否为消息相关事件
-    var isMessageEvent: Bool {
+    public var isMessageEvent: Bool {
         switch self {
         case .itemStarted, .itemCompleted, .itemAgentMessageDelta,
              .itemCommandExecutionOutputDelta, .itemFileChangeOutputDelta:
@@ -67,7 +67,7 @@ enum EventType: String, CaseIterable, Sendable {
     }
 
     /// 是否为审批相关事件
-    var isApprovalEvent: Bool {
+    public var isApprovalEvent: Bool {
         self == .approvalRequired || self == .approvalResolved
     }
 }
@@ -94,48 +94,56 @@ enum EventType: String, CaseIterable, Sendable {
 ///   "payload": { ... }
 /// }
 /// ```
-struct EventEnvelope: Codable, Equatable, Sendable {
+public struct EventEnvelope: Codable, Equatable, Sendable {
     /// 事件类型
-    let type: String
+    public let type: String
 
     /// 时间戳（ISO 8601 格式）
-    let ts: String
+    public let ts: String
 
     /// 任务 ID
-    let jobId: String
+    public let jobId: String
 
     /// 序列号（严格递增）
-    let seq: Int
+    public let seq: Int
 
     /// 事件负载数据
-    let payload: [String: JSONValue]?
+    public let payload: [String: JSONValue]?
+
+    public init(type: String, ts: String, jobId: String, seq: Int, payload: [String: JSONValue]?) {
+        self.type = type
+        self.ts = ts
+        self.jobId = jobId
+        self.seq = seq
+        self.payload = payload
+    }
 }
 
 // MARK: - 事件信封扩展
 
 extension EventEnvelope {
     /// 解析事件类型枚举
-    var eventType: EventType? {
+    public var eventType: EventType? {
         EventType(rawValue: type)
     }
 
     /// 解析时间 Date
-    var timestamp: Date? {
+    public var timestamp: Date? {
         ISO8601DateFormatter().date(from: ts)
     }
 
     /// 从 payload 提取字符串
-    func payloadString(_ key: String) -> String? {
+    public func payloadString(_ key: String) -> String? {
         payload?[key]?.stringValue
     }
 
     /// 从 payload 提取整数
-    func payloadInt(_ key: String) -> Int? {
+    public func payloadInt(_ key: String) -> Int? {
         payload?[key]?.intValue
     }
 
     /// 从 payload 提取布尔值
-    func payloadBool(_ key: String) -> Bool? {
+    public func payloadBool(_ key: String) -> Bool? {
         payload?[key]?.boolValue
     }
 }
@@ -145,7 +153,7 @@ extension EventEnvelope {
 /// JSON 值类型（用于解析动态 payload）
 ///
 /// 支持解析后端返回的动态 JSON 结构
-enum JSONValue: Codable, Equatable, Sendable {
+public enum JSONValue: Codable, Equatable, Sendable {
     case string(String)
     case int(Int)
     case double(Double)
@@ -156,7 +164,7 @@ enum JSONValue: Codable, Equatable, Sendable {
 
     // MARK: - Codable
 
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
 
         if container.decodeNil() {
@@ -182,7 +190,7 @@ enum JSONValue: Codable, Equatable, Sendable {
         }
     }
 
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
 
         switch self {
@@ -206,38 +214,38 @@ enum JSONValue: Codable, Equatable, Sendable {
     // MARK: - 值提取
 
     /// 提取字符串值
-    var stringValue: String? {
+    public var stringValue: String? {
         if case .string(let value) = self { return value }
         return nil
     }
 
     /// 提取整数值
-    var intValue: Int? {
+    public var intValue: Int? {
         if case .int(let value) = self { return value }
         return nil
     }
 
     /// 提取浮点数值
-    var doubleValue: Double? {
+    public var doubleValue: Double? {
         if case .double(let value) = self { return value }
         if case .int(let value) = self { return Double(value) }
         return nil
     }
 
     /// 提取布尔值
-    var boolValue: Bool? {
+    public var boolValue: Bool? {
         if case .bool(let value) = self { return value }
         return nil
     }
 
     /// 提取对象
-    var objectValue: [String: JSONValue]? {
+    public var objectValue: [String: JSONValue]? {
         if case .object(let value) = self { return value }
         return nil
     }
 
     /// 提取数组
-    var arrayValue: [JSONValue]? {
+    public var arrayValue: [JSONValue]? {
         if case .array(let value) = self { return value }
         return nil
     }
@@ -248,18 +256,18 @@ enum JSONValue: Codable, Equatable, Sendable {
 /// 事件列表 API 响应
 ///
 /// 对应 `GET /v1/jobs/{jobId}/events?cursor=N` 返回
-struct EventsListResponse: Codable, Sendable {
+public struct EventsListResponse: Codable, Sendable {
     /// 事件数据数组
-    let data: [EventEnvelope]
+    public let data: [EventEnvelope]
 
     /// 下一个游标
-    let nextCursor: Int
+    public let nextCursor: Int
 
     /// 第一个序列号
-    let firstSeq: Int?
+    public let firstSeq: Int?
 
     /// 任务快照（可选）
-    let job: Job?
+    public let job: Job?
 }
 
 // MARK: - 线程历史事件响应
@@ -267,6 +275,6 @@ struct EventsListResponse: Codable, Sendable {
 /// 线程历史事件响应
 ///
 /// 对应 `GET /v1/threads/{threadId}/events` 返回
-struct ThreadEventsResponse: Codable, Sendable {
-    let data: [EventEnvelope]
+public struct ThreadEventsResponse: Codable, Sendable {
+    public let data: [EventEnvelope]
 }

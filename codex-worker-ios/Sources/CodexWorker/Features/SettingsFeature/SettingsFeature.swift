@@ -8,20 +8,24 @@
 import ComposableArchitecture
 
 @Reducer
-struct SettingsFeature {
+public struct SettingsFeature {
     @ObservableState
-    struct State: Equatable {
-        var baseURL = WorkerConfiguration.load()?.baseURL ?? WorkerConfiguration.default.baseURL
-        var token = WorkerConfiguration.load()?.token ?? ""
-        var saveSucceeded = false
+    public struct State: Equatable {
+        public var baseURL = WorkerConfiguration.load()?.baseURL ?? WorkerConfiguration.default.baseURL
+        public var token = WorkerConfiguration.load()?.token ?? ""
+        public var saveSucceeded = false
+
+        public init() {}
     }
 
-    enum Action: BindableAction {
+    public enum Action: BindableAction {
         case binding(BindingAction<State>)
         case saveTapped
     }
 
-    var body: some ReducerOf<Self> {
+    public init() {}
+
+    public var body: some ReducerOf<Self> {
         BindingReducer()
         Reduce { state, action in
             switch action {

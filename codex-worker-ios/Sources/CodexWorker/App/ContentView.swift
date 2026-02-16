@@ -8,10 +8,14 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct ContentView: View {
-    let store: StoreOf<AppFeature>
+public struct ContentView: View {
+    public let store: StoreOf<AppFeature>
 
-    var body: some View {
+    public init(store: StoreOf<AppFeature>) {
+        self.store = store
+    }
+
+    public var body: some View {
         NavigationStack {
             Group {
                 if viewStore.activeThread == nil {

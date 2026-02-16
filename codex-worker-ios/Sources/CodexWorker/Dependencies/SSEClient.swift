@@ -14,7 +14,7 @@ import Foundation
 /// SSE 客户端协议（支持 TCA 依赖注入）
 ///
 /// 封装 EventSource 库，提供类型安全的 SSE 事件流
-struct SSEClient: DependencyKey, Sendable {
+public struct SSEClient: DependencyKey, Sendable {
     // MARK: - SSE 操作
 
     /// 订阅任务事件流
@@ -23,22 +23,22 @@ struct SSEClient: DependencyKey, Sendable {
     ///   - jobId: 任务 ID
     ///   - cursor: 游标（从哪个序列号开始）
     /// - Returns: 事件异步流
-    var subscribe: @Sendable (_ jobId: String, _ cursor: Int) async throws -> AsyncStream<EventEnvelope>
+    public var subscribe: @Sendable (_ jobId: String, _ cursor: Int) async throws -> AsyncStream<EventEnvelope>
 
     /// 取消订阅
-    var cancel: @Sendable () -> Void
+    public var cancel: @Sendable () -> Void
 
     // MARK: - DependencyKey
 
-    static let liveValue = SSEClient.live
-    static let testValue = SSEClient.mock
-    static let previewValue = SSEClient.mock
+    public static let liveValue = SSEClient.live
+    public static let testValue = SSEClient.mock
+    public static let previewValue = SSEClient.mock
 }
 
 // MARK: - Dependency Values
 
 extension DependencyValues {
-    var sseClient: SSEClient {
+    public var sseClient: SSEClient {
         get { self[SSEClient.self] }
         set { self[SSEClient.self] = newValue }
     }
@@ -48,7 +48,7 @@ extension DependencyValues {
 
 extension SSEClient {
     /// 创建真实 SSE 客户端
-    static var live: SSEClient {
+    public static var live: SSEClient {
         let impl = LiveSSEClient()
         return SSEClient(
             subscribe: { try await impl.subscribe(jobId: $0, cursor: $1) },
@@ -190,7 +190,6 @@ actor LiveSSEClient {
 
             } catch {
                 handleError(error, jobId: jobId)
-
                 // 检查是否需要重连
                 if attempt < reconnectStrategy.maxAttempts {
                     let delay = reconnectStrategy.delay(for: attempt)
@@ -297,7 +296,7 @@ struct ReconnectStrategy: Sendable {
 
 extension SSEClient {
     /// Mock 客户端（用于测试和预览）
-    static var mock: SSEClient {
+    public static var mock: SSEClient {
         SSEClient(
             subscribe: { jobId, _ in
                 AsyncStream { continuation in

@@ -8,20 +8,22 @@
 import ComposableArchitecture
 
 @Reducer
-struct ApprovalFeature {
+public struct ApprovalFeature {
     @ObservableState
-    struct State: Equatable {
-        var currentApproval: Approval?
-        var isSubmitting = false
-        var errorMessage: String?
-        var submittedDecision: ApprovalDecision?
+    public struct State: Equatable {
+        public var currentApproval: Approval?
+        public var isSubmitting = false
+        public var errorMessage: String?
+        public var submittedDecision: ApprovalDecision?
 
-        var isPresented: Bool {
+        public var isPresented: Bool {
             currentApproval != nil
         }
+
+        public init() {}
     }
 
-    enum Action {
+    public enum Action {
         case present(Approval)
         case dismiss
         case submitTapped(ApprovalDecision)
@@ -29,9 +31,9 @@ struct ApprovalFeature {
         case clearError
     }
 
-    @Dependency(\.apiClient) var apiClient
+    public init() {}
 
-    var body: some ReducerOf<Self> {
+    public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .present(let approval):
@@ -54,6 +56,7 @@ struct ApprovalFeature {
                 state.submittedDecision = decision
 
                 return .run { send in
+                    @Dependency(\.apiClient) var apiClient
                     let request = ApprovalRequest(
                         approvalId: approval.approvalId,
                         decision: decision.rawValue,

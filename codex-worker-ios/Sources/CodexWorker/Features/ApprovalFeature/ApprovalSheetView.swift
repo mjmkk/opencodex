@@ -8,10 +8,10 @@
 import ComposableArchitecture
 import SwiftUI
 
-struct ApprovalSheetView: View {
+public struct ApprovalSheetView: View {
     let store: StoreOf<ApprovalFeature>
 
-    var body: some View {
+    public var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
             if let approval = viewStore.currentApproval {
                 VStack(alignment: .leading, spacing: 12) {

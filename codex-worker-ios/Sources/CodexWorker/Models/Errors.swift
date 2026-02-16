@@ -10,7 +10,7 @@ import Foundation
 // MARK: - Codex 错误
 
 /// Codex Worker 错误类型
-enum CodexError: Error, Equatable, Sendable {
+public enum CodexError: Error, Equatable, Sendable {
     // MARK: - 网络错误
 
     /// 连接失败
@@ -53,11 +53,11 @@ enum CodexError: Error, Equatable, Sendable {
 // MARK: - LocalizedError
 
 extension CodexError: LocalizedError {
-    var errorDescription: String? {
+    public var errorDescription: String? {
         localizedDescription
     }
 
-    var localizedDescription: String {
+    public var localizedDescription: String {
         switch self {
         // 网络错误
         case let .connectionFailed(msg):
@@ -109,10 +109,10 @@ extension CodexError: LocalizedError {
 ///   }
 /// }
 /// ```
-struct APIErrorResponse: Codable, Sendable {
+public struct APIErrorResponse: Codable, Sendable {
     let error: APIErrorDetail
 
-    struct APIErrorDetail: Codable, Sendable {
+    public struct APIErrorDetail: Codable, Sendable {
         let code: String
         let message: String
     }
@@ -200,7 +200,7 @@ protocol RecoverableError: Error {
 }
 
 /// 恢复策略
-enum RecoveryStrategy: Sendable {
+public enum RecoveryStrategy: Sendable {
     /// 重试
     case retry
     /// 重连

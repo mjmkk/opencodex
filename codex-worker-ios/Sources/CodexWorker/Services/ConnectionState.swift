@@ -11,7 +11,7 @@ import SwiftUI
 // MARK: - 连接状态
 
 /// 全局连接状态
-enum ConnectionState: Equatable, Sendable {
+public enum ConnectionState: Equatable, Sendable {
     /// 未连接
     case disconnected
     /// 连接中
@@ -26,7 +26,7 @@ enum ConnectionState: Equatable, Sendable {
     // MARK: - 计算属性
 
     /// 状态标签
-    var label: String {
+    public var label: String {
         switch self {
         case .disconnected:
             return "未连接"
@@ -42,7 +42,7 @@ enum ConnectionState: Equatable, Sendable {
     }
 
     /// 状态颜色
-    var color: Color {
+    public var color: Color {
         switch self {
         case .disconnected:
             return .gray
@@ -56,12 +56,12 @@ enum ConnectionState: Equatable, Sendable {
     }
 
     /// 是否已连接
-    var isConnected: Bool {
+    public var isConnected: Bool {
         self == .connected
     }
 
     /// 是否正在连接
-    var isConnecting: Bool {
+    public var isConnecting: Bool {
         switch self {
         case .connecting, .reconnecting:
             return true
@@ -71,7 +71,7 @@ enum ConnectionState: Equatable, Sendable {
     }
 
     /// 是否需要显示状态条
-    var shouldShowBanner: Bool {
+    public var shouldShowBanner: Bool {
         self != .connected
     }
 }

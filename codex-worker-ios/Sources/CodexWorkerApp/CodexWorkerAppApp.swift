@@ -1,12 +1,13 @@
 import SwiftUI
+import ComposableArchitecture
 import CodexWorker
 
 @main
-struct CodexWorkerApp: App {
+struct CodexWorkerAppApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView(
-                store: .init(
+                store: Store(
                     initialState: AppFeature.State(),
                     reducer: { AppFeature() }
                 )

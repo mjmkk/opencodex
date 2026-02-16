@@ -11,7 +11,7 @@ import ExyteChat
 // MARK: - 消息发送者
 
 /// 消息发送者类型
-enum MessageSender: Sendable {
+public enum MessageSender: Sendable {
     /// 当前用户（iPhone 用户）
     case user
     /// AI 助手
@@ -23,7 +23,7 @@ enum MessageSender: Sendable {
 // MARK: - 预定义用户
 
 /// 预定义用户集合
-enum ChatUsers {
+public enum ChatUsers {
     /// 当前用户（iPhone 用户）
     static let currentUser = User(
         id: "user",
@@ -64,7 +64,7 @@ enum ChatUsers {
 // MARK: - ChatMessage 适配器
 
 /// 将 Codex 消息适配到 exyte/Chat 的 Message
-enum ChatMessageAdapter {
+public enum ChatMessageAdapter {
     /// 从事件数据构建消息
     ///
     /// - Parameters:
@@ -125,9 +125,9 @@ enum ChatMessageAdapter {
 /// 消息增量状态（用于 delta 合并）
 ///
 /// 用于处理 `item.agentMessage.delta` 事件的增量文本合并
-struct MessageDelta: Identifiable, Equatable, Sendable {
+public struct MessageDelta: Identifiable, Equatable, Sendable {
     /// 消息 ID（itemId）
-    let id: String
+    public let id: String
 
     /// 累积的文本内容
     var text: String
@@ -269,7 +269,7 @@ actor MessageAggregator {
 // MARK: - 非并发版本（用于 TCA State）
 
 /// 消息聚合状态（非 actor 版本，用于 TCA State）
-struct MessageAggregationState: Equatable, Sendable {
+public struct MessageAggregationState: Equatable, Sendable {
     /// 已完成的消息列表
     var messages: [String: Message] = [:]
 

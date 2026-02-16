@@ -13,14 +13,16 @@ let package = Package(
             name: "CodexWorker",
             targets: ["CodexWorker"]
         ),
+        // 注意：iOS 不支持 .executable，需要在 Xcode App 项目中使用此库
+        // 如需创建 iOS App，请参考项目根目录的 README 或创建新的 Xcode App 项目
     ],
     dependencies: [
-        // TCA - Composable Architecture（本地路径）
+        // TCA（The Composable Architecture，组合式架构库）
         .package(path: "../swift-composable-architecture"),
-        // exyte/Chat - 聊天 UI 组件（本地路径）
-        .package(path: "../Chat"),
-        // EventSource - SSE 客户端（本地路径）
-        .package(path: "../EventSource"),
+        // Exyte Chat（聊天 UI 组件）
+        .package(url: "https://github.com/exyte/Chat.git", from: "2.7.6"),
+        // EventSource（SSE，Server-Sent Events 客户端）
+        .package(url: "https://github.com/Recouse/EventSource.git", from: "0.1.5"),
     ],
     targets: [
         .target(
@@ -34,6 +36,13 @@ let package = Package(
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency")
             ]
+        ),
+        // 保留 CodexWorkerApp 源代码供 Xcode App 项目使用
+        // 注意：这是一个普通 target，不是 executable
+        .target(
+            name: "CodexWorkerApp",
+            dependencies: ["CodexWorker"],
+            path: "Sources/CodexWorkerApp"
         ),
         .testTarget(
             name: "CodexWorkerTests",

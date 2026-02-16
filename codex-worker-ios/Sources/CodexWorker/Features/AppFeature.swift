@@ -8,18 +8,20 @@
 import ComposableArchitecture
 
 @Reducer
-struct AppFeature {
+public struct AppFeature {
     @ObservableState
-    struct State: Equatable {
-        var connectionState: ConnectionState = .disconnected
-        var threads = ThreadsFeature.State()
-        var chat = ChatFeature.State()
-        var approval = ApprovalFeature.State()
-        var settings = SettingsFeature.State()
-        var activeThread: Thread?
+    public struct State: Equatable {
+        public var connectionState: ConnectionState = .disconnected
+        public var threads = ThreadsFeature.State()
+        public var chat = ChatFeature.State()
+        public var approval = ApprovalFeature.State()
+        public var settings = SettingsFeature.State()
+        public var activeThread: Thread?
+
+        public init() {}
     }
 
-    enum Action {
+    public enum Action {
         case onAppear
         case threads(ThreadsFeature.Action)
         case chat(ChatFeature.Action)
@@ -28,7 +30,9 @@ struct AppFeature {
         case setConnectionState(ConnectionState)
     }
 
-    var body: some ReducerOf<Self> {
+    public init() {}
+
+    public var body: some ReducerOf<Self> {
         Scope(state: \.threads, action: \.threads) { ThreadsFeature() }
         Scope(state: \.chat, action: \.chat) { ChatFeature() }
         Scope(state: \.approval, action: \.approval) { ApprovalFeature() }

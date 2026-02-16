@@ -10,7 +10,7 @@ import Foundation
 // MARK: - 线程状态
 
 /// 线程状态枚举
-enum ThreadState: String, Codable, Sendable {
+public enum ThreadState: String, Codable, Sendable {
     /// 空闲，无活跃任务
     case idle = "idle"
     /// 有活跃任务
@@ -36,48 +36,159 @@ enum ThreadState: String, Codable, Sendable {
 ///   "modelProvider": "openai"
 /// }
 /// ```
-struct Thread: Identifiable, Codable, Equatable, Sendable {
+public struct Thread: Identifiable, Codable, Equatable, Sendable {
     /// 线程唯一标识符
-    let threadId: String
+    public let threadId: String
 
     /// 最近消息预览文本
-    var preview: String?
+    public var preview: String?
 
     /// 当前工作目录（Current Working Directory）
-    var cwd: String?
+    public var cwd: String?
 
     /// 创建时间（ISO 8601 格式）
-    var createdAt: String?
+    public var createdAt: String?
 
     /// 更新时间（ISO 8601 格式）
-    var updatedAt: String?
+    public var updatedAt: String?
 
     /// 模型提供者（如 openai、anthropic）
-    var modelProvider: String?
+    public var modelProvider: String?
 
     // MARK: - Identifiable
 
-    var id: String { threadId }
+    public var id: String { threadId }
+
+    public init(
+        threadId: String,
+        preview: String?,
+        cwd: String?,
+        createdAt: String?,
+        updatedAt: String?,
+        modelProvider: String?
+    ) {
+        self.threadId = threadId
+        self.preview = preview
+        self.cwd = cwd
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.modelProvider = modelProvider
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case threadId
+        case id
+        case thread_id
+        case preview
+        case cwd
+        case createdAt
+        case created_at
+        case updatedAt
+        case updated_at
+        case modelProvider
+        case model_provider
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        guard
+            let decodedThreadId = try Self.decodeLossyString(
+                from: container,
+                keys: [.threadId, .id, .thread_id]
+            ),
+            !decodedThreadId.isEmpty
+        else {
+            throw DecodingError.keyNotFound(
+                CodingKeys.threadId,
+                DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "threadId/id 缺失"
+                )
+            )
+        }
+
+        self.threadId = decodedThreadId
+        self.preview = Self.decodeLossyString(from: container, keys: [.preview])
+        self.cwd = Self.decodeLossyString(from: container, keys: [.cwd])
+        self.createdAt = Self.decodeTimestampString(from: container, keys: [.createdAt, .created_at])
+        self.updatedAt = Self.decodeTimestampString(from: container, keys: [.updatedAt, .updated_at])
+        self.modelProvider = Self.decodeLossyString(from: container, keys: [.modelProvider, .model_provider])
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(threadId, forKey: .threadId)
+        try container.encodeIfPresent(preview, forKey: .preview)
+        try container.encodeIfPresent(cwd, forKey: .cwd)
+        try container.encodeIfPresent(createdAt, forKey: .createdAt)
+        try container.encodeIfPresent(updatedAt, forKey: .updatedAt)
+        try container.encodeIfPresent(modelProvider, forKey: .modelProvider)
+    }
+
+    private static func decodeLossyString(
+        from container: KeyedDecodingContainer<CodingKeys>,
+        keys: [CodingKeys]
+    ) -> String? {
+        for key in keys {
+            if let value = try? container.decodeIfPresent(String.self, forKey: key) {
+                return value
+            }
+            if let value = try? container.decodeIfPresent(Int.self, forKey: key) {
+                return String(value)
+            }
+            if let value = try? container.decodeIfPresent(Double.self, forKey: key) {
+                return String(value)
+            }
+            if let value = try? container.decodeIfPresent(Bool.self, forKey: key) {
+                return String(value)
+            }
+        }
+        return nil
+    }
+
+    private static func decodeTimestampString(
+        from container: KeyedDecodingContainer<CodingKeys>,
+        keys: [CodingKeys]
+    ) -> String? {
+        for key in keys {
+            if let value = try? container.decodeIfPresent(String.self, forKey: key) {
+                return value
+            }
+            if let value = try? container.decodeIfPresent(Int.self, forKey: key) {
+                return iso8601String(fromEpoch: Double(value))
+            }
+            if let value = try? container.decodeIfPresent(Double.self, forKey: key) {
+                return iso8601String(fromEpoch: value)
+            }
+        }
+        return nil
+    }
+
+    private static func iso8601String(fromEpoch epoch: Double) -> String {
+        let seconds = epoch > 10_000_000_000 ? (epoch / 1000.0) : epoch
+        return ISO8601DateFormatter().string(from: Date(timeIntervalSince1970: seconds))
+    }
 }
 
 // MARK: - 计算属性
 
 extension Thread {
     /// 显示名称（从 cwd 提取最后一段）
-    var displayName: String {
+    public var displayName: String {
         guard let cwd = cwd else { return "Untitled" }
         let components = cwd.split(separator: "/")
         return components.last.map(String.init) ?? "Untitled"
     }
 
     /// 最后活跃时间（解析 ISO 8601 时间戳）
-    var lastActiveAt: Date? {
+    public var lastActiveAt: Date? {
         guard let updatedAt = updatedAt else { return nil }
         return ISO8601DateFormatter().date(from: updatedAt)
     }
 
     /// 创建时间 Date
-    var createdDate: Date? {
+    public var createdDate: Date? {
         guard let createdAt = createdAt else { return nil }
         return ISO8601DateFormatter().date(from: createdAt)
     }
@@ -88,12 +199,58 @@ extension Thread {
 /// 线程列表 API 响应
 ///
 /// 对应 `GET /v1/threads` 返回格式
-struct ThreadsListResponse: Codable, Sendable {
+public struct ThreadsListResponse: Codable, Sendable {
     /// 线程数据数组
-    let data: [Thread]
+    public let data: [Thread]
 
     /// 分页游标（用于获取下一页）
-    let nextCursor: String?
+    public let nextCursor: String?
+
+    public init(data: [Thread], nextCursor: String?) {
+        self.data = data
+        self.nextCursor = nextCursor
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case data
+        case items
+        case nextCursor
+        case next_cursor
+    }
+
+    public init(from decoder: Decoder) throws {
+        // 兼容直接返回数组的场景
+        if let singleValue = try? decoder.singleValueContainer(),
+           let threads = try? singleValue.decode([Thread].self)
+        {
+            self.data = threads
+            self.nextCursor = nil
+            return
+        }
+
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if container.contains(.data) {
+            self.data = try container.decode([Thread].self, forKey: .data)
+        } else if container.contains(.items) {
+            self.data = try container.decode([Thread].self, forKey: .items)
+        } else {
+            self.data = []
+        }
+
+        let nextCursorString =
+            (try? container.decodeIfPresent(String.self, forKey: .nextCursor))
+            ?? (try? container.decodeIfPresent(String.self, forKey: .next_cursor))
+        let nextCursorInt =
+            (try? container.decodeIfPresent(Int.self, forKey: .nextCursor))
+            ?? (try? container.decodeIfPresent(Int.self, forKey: .next_cursor))
+        self.nextCursor = nextCursorString ?? nextCursorInt.map(String.init)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(data, forKey: .data)
+        try container.encodeIfPresent(nextCursor, forKey: .nextCursor)
+    }
 }
 
 // MARK: - 创建线程请求
@@ -101,21 +258,35 @@ struct ThreadsListResponse: Codable, Sendable {
 /// 创建线程请求体
 ///
 /// 对应 `POST /v1/threads` 请求格式
-struct CreateThreadRequest: Codable, Sendable {
+public struct CreateThreadRequest: Codable, Sendable {
     /// 项目 ID（与 projectPath 二选一）
-    var projectId: String?
+    public var projectId: String?
 
     /// 项目路径（与 projectId 二选一）
-    var projectPath: String?
+    public var projectPath: String?
 
     /// 线程名称（可选）
-    var threadName: String?
+    public var threadName: String?
 
     /// 审批策略（默认 on-request）
-    var approvalPolicy: String?
+    public var approvalPolicy: String?
 
     /// 沙箱模式（默认 workspace-write）
-    var sandbox: String?
+    public var sandbox: String?
+
+    public init(
+        projectId: String? = nil,
+        projectPath: String? = nil,
+        threadName: String? = nil,
+        approvalPolicy: String? = nil,
+        sandbox: String? = nil
+    ) {
+        self.projectId = projectId
+        self.projectPath = projectPath
+        self.threadName = threadName
+        self.approvalPolicy = approvalPolicy
+        self.sandbox = sandbox
+    }
 }
 
 // MARK: - 项目模型
@@ -123,22 +294,28 @@ struct CreateThreadRequest: Codable, Sendable {
 /// 项目信息
 ///
 /// 对应 `GET /v1/projects` 返回的项目对象
-struct Project: Identifiable, Codable, Equatable, Sendable {
+public struct Project: Identifiable, Codable, Equatable, Sendable {
     /// 项目唯一标识符
-    let projectId: String
+    public let projectId: String
 
     /// 项目路径
-    let projectPath: String
+    public let projectPath: String
 
     /// 显示名称
-    let displayName: String
+    public let displayName: String
 
     // MARK: - Identifiable
 
-    var id: String { projectId }
+    public var id: String { projectId }
+
+    public init(projectId: String, projectPath: String, displayName: String) {
+        self.projectId = projectId
+        self.projectPath = projectPath
+        self.displayName = displayName
+    }
 }
 
 /// 项目列表响应
-struct ProjectsListResponse: Codable, Sendable {
-    let data: [Project]
+public struct ProjectsListResponse: Codable, Sendable {
+    public let data: [Project]
 }

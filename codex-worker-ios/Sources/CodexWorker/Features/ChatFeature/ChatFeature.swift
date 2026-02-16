@@ -10,31 +10,33 @@ import ExyteChat
 import Foundation
 
 @Reducer
-struct ChatFeature {
+public struct ChatFeature {
     private enum CancelID {
         case sseStream
     }
 
     @ObservableState
-    struct State: Equatable {
-        var activeThread: Thread?
-        var currentJobId: String?
-        var cursor: Int = -1
-        var messages: [Message] = []
-        var pendingAssistantDeltas: [String: MessageDelta] = [:]
-        var inputText = ""
-        var isSending = false
-        var isStreaming = false
-        var isApprovalLocked = false
-        var errorMessage: String?
-        var jobState: JobState?
+    public struct State: Equatable {
+        public var activeThread: Thread?
+        public var currentJobId: String?
+        public var cursor: Int = -1
+        public var messages: [Message] = []
+        public var pendingAssistantDeltas: [String: MessageDelta] = [:]
+        public var inputText = ""
+        public var isSending = false
+        public var isStreaming = false
+        public var isApprovalLocked = false
+        public var errorMessage: String?
+        public var jobState: JobState?
 
-        var canSend: Bool {
+        public var canSend: Bool {
             activeThread != nil && !isSending && !isApprovalLocked
         }
+
+        public init() {}
     }
 
-    enum Action: BindableAction {
+    public enum Action: BindableAction {
         case binding(BindingAction<State>)
         case onAppear
         case onDisappear
@@ -50,15 +52,14 @@ struct ChatFeature {
         case delegate(Delegate)
     }
 
-    enum Delegate {
+    public enum Delegate {
         case approvalRequired(Approval)
         case approvalResolved(approvalId: String, decision: String?)
     }
 
-    @Dependency(\.apiClient) var apiClient
-    @Dependency(\.sseClient) var sseClient
+    public init() {}
 
-    var body: some ReducerOf<Self> {
+    public var body: some ReducerOf<Self> {
         BindingReducer()
         Reduce { state, action in
             switch action {
@@ -68,7 +69,10 @@ struct ChatFeature {
             case .onDisappear:
                 state.isStreaming = false
                 return .merge(
-                    .run { _ in sseClient.cancel() },
+                    .run { _ in
+                        @Dependency(\.sseClient) var sseClient
+                        sseClient.cancel()
+                    },
                     .cancel(id: CancelID.sseStream)
                 )
 
@@ -85,7 +89,10 @@ struct ChatFeature {
                 state.errorMessage = nil
                 state.jobState = nil
                 return .merge(
-                    .run { _ in sseClient.cancel() },
+                    .run { _ in
+                        @Dependency(\.sseClient) var sseClient
+                        sseClient.cancel()
+                    },
                     .cancel(id: CancelID.sseStream)
                 )
 
@@ -106,6 +113,7 @@ struct ChatFeature {
                 state.errorMessage = nil
 
                 return .run { send in
+                    @Dependency(\.apiClient) var apiClient
                     let request = StartTurnRequest(
                         text: text,
                         input: nil,
@@ -135,19 +143,25 @@ struct ChatFeature {
             case .startStreaming(let jobId, let cursor):
                 state.isStreaming = true
                 return .run { send in
-                    let stream = try await sseClient.subscribe(jobId, cursor)
-                    for await envelope in stream {
-                        await send(.streamEventReceived(envelope))
+                    @Dependency(\.sseClient) var sseClient
+                    do {
+                        let stream = try await sseClient.subscribe(jobId, cursor)
+                        for await envelope in stream {
+                            await send(.streamEventReceived(envelope))
+                        }
+                    } catch {
+                        await send(.streamFailed(CodexError.from(error)))
                     }
-                } catch: { error, send in
-                    await send(.streamFailed(CodexError.from(error)))
                 }
                 .cancellable(id: CancelID.sseStream, cancelInFlight: true)
 
             case .stopStreaming:
                 state.isStreaming = false
                 return .merge(
-                    .run { _ in sseClient.cancel() },
+                    .run { _ in
+                        @Dependency(\.sseClient) var sseClient
+                        sseClient.cancel()
+                    },
                     .cancel(id: CancelID.sseStream)
                 )
 

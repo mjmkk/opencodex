@@ -11,7 +11,7 @@ import SwiftUI
 // MARK: - 审批类型
 
 /// 审批类型枚举
-enum ApprovalKind: String, Codable, Sendable {
+public enum ApprovalKind: String, Codable, Sendable {
     /// 命令执行审批
     case commandExecution = "command_execution"
     /// 文件变更审批
@@ -43,7 +43,7 @@ enum ApprovalKind: String, Codable, Sendable {
 /// 审批决策枚举
 ///
 /// 对应后端 `/approve` 接口的 `decision` 字段
-enum ApprovalDecision: String, Codable, Sendable {
+public enum ApprovalDecision: String, Codable, Sendable {
     /// 接受本次
     case accept
     /// 会话内接受（后续同类请求自动通过）
@@ -80,7 +80,7 @@ enum ApprovalDecision: String, Codable, Sendable {
 // MARK: - 风险等级
 
 /// 审批风险等级
-enum RiskLevel: Int, Codable, Sendable {
+public enum RiskLevel: Int, Codable, Sendable {
     case low = 0
     case medium = 1
     case high = 2
@@ -146,63 +146,95 @@ enum RiskLevel: Int, Codable, Sendable {
 ///   "grantRoot": false
 /// }
 /// ```
-struct Approval: Identifiable, Codable, Equatable, Sendable {
+public struct Approval: Identifiable, Codable, Equatable, Sendable {
     /// 审批唯一标识符
-    let approvalId: String
+    public let approvalId: String
 
     /// 所属任务 ID
-    let jobId: String
+    public let jobId: String
 
     /// 所属线程 ID
-    let threadId: String
+    public let threadId: String
 
     /// Turn ID
-    let turnId: String?
+    public let turnId: String?
 
     /// Item ID
-    let itemId: String?
+    public let itemId: String?
 
     /// 审批类型
-    let kind: ApprovalKind
+    public let kind: ApprovalKind
 
     /// 请求方法（如 item/commandExecution/requestApproval）
-    let requestMethod: String
+    public let requestMethod: String
 
     /// 创建时间（ISO 8601 格式）
-    let createdAt: String
+    public let createdAt: String
 
     // MARK: - 命令审批字段
 
     /// 要执行的命令
-    var command: String?
+    public var command: String?
 
     /// 工作目录
-    var cwd: String?
+    public var cwd: String?
 
     /// 命令动作列表
-    var commandActions: [String]?
+    public var commandActions: [String]?
 
     /// 审批原因
-    var reason: String?
+    public var reason: String?
 
     /// 是否需要 root 权限
-    var grantRoot: Bool?
+    public var grantRoot: Bool?
 
     /// 建议的命令修改
-    var proposedExecpolicyAmendment: [String]?
+    public var proposedExecpolicyAmendment: [String]?
 
     // MARK: - 文件变更审批字段（待扩展）
 
     // MARK: - Identifiable
 
-    var id: String { approvalId }
+    public var id: String { approvalId }
+
+    public init(
+        approvalId: String,
+        jobId: String,
+        threadId: String,
+        turnId: String?,
+        itemId: String?,
+        kind: ApprovalKind,
+        requestMethod: String,
+        createdAt: String,
+        command: String?,
+        cwd: String?,
+        commandActions: [String]?,
+        reason: String?,
+        grantRoot: Bool?,
+        proposedExecpolicyAmendment: [String]?
+    ) {
+        self.approvalId = approvalId
+        self.jobId = jobId
+        self.threadId = threadId
+        self.turnId = turnId
+        self.itemId = itemId
+        self.kind = kind
+        self.requestMethod = requestMethod
+        self.createdAt = createdAt
+        self.command = command
+        self.cwd = cwd
+        self.commandActions = commandActions
+        self.reason = reason
+        self.grantRoot = grantRoot
+        self.proposedExecpolicyAmendment = proposedExecpolicyAmendment
+    }
 }
 
 // MARK: - 风险评估
 
 extension Approval {
     /// 从 SSE payload 构建审批对象
-    static func fromPayload(_ payload: [String: JSONValue], fallbackJobId: String) -> Approval? {
+    public static func fromPayload(_ payload: [String: JSONValue], fallbackJobId: String) -> Approval? {
         guard
             let approvalId = payload["approvalId"]?.stringValue,
             let threadId = payload["threadId"]?.stringValue,
@@ -247,7 +279,7 @@ extension Approval {
     /// 计算风险等级
     ///
     /// 基于命令内容和路径判断风险级别
-    var riskLevel: RiskLevel {
+    public var riskLevel: RiskLevel {
         guard let cmd = command else { return .low }
 
         let lowerCmd = cmd.lowercased()
@@ -307,12 +339,12 @@ extension Approval {
     }
 
     /// 是否为高风险
-    var isHighRisk: Bool {
+    public var isHighRisk: Bool {
         riskLevel == .high
     }
 
     /// 格式化的命令预览
-    var formattedCommand: String {
+    public var formattedCommand: String {
         guard let cmd = command else { return "" }
         // 限制长度，超过 200 字符截断
         if cmd.count > 200 {
@@ -327,15 +359,21 @@ extension Approval {
 /// 提交审批请求体
 ///
 /// 对应 `POST /v1/jobs/{jobId}/approve` 请求格式
-struct ApprovalRequest: Codable, Sendable {
+public struct ApprovalRequest: Codable, Sendable {
     /// 审批 ID
-    let approvalId: String
+    public let approvalId: String
 
     /// 决策
-    let decision: String
+    public let decision: String
 
     /// 修改后的命令（仅用于 accept_with_execpolicy_amendment）
-    var execPolicyAmendment: [String]?
+    public var execPolicyAmendment: [String]?
+
+    public init(approvalId: String, decision: String, execPolicyAmendment: [String]?) {
+        self.approvalId = approvalId
+        self.decision = decision
+        self.execPolicyAmendment = execPolicyAmendment
+    }
 }
 
 // MARK: - 审批响应
@@ -343,15 +381,15 @@ struct ApprovalRequest: Codable, Sendable {
 /// 审批响应
 ///
 /// 对应 `POST /v1/jobs/{jobId}/approve` 返回
-struct ApprovalResponse: Codable, Sendable {
+public struct ApprovalResponse: Codable, Sendable {
     /// 审批 ID
-    let approvalId: String
+    public let approvalId: String
 
     /// 状态（submitted / already_submitted）
-    let status: String
+    public let status: String
 
     /// 决策
-    let decision: String?
+    public let decision: String?
 }
 
 // MARK: - 取消请求
@@ -359,10 +397,10 @@ struct ApprovalResponse: Codable, Sendable {
 /// 取消任务响应
 ///
 /// 对应 `POST /v1/jobs/{jobId}/cancel` 返回
-struct CancelResponse: Codable, Sendable {
+public struct CancelResponse: Codable, Sendable {
     /// 任务 ID
-    let jobId: String
+    public let jobId: String
 
     /// 任务状态
-    let state: String
+    public let state: String
 }
