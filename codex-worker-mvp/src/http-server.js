@@ -4,7 +4,6 @@
  * 职责：
  * - 提供 REST API 端点
  * - 提供 SSE（Server-Sent Events）事件流
- * - 提供静态 Web UI 文件服务
  * - 处理鉴权（Bearer Token）
  *
  * @module http-server
@@ -12,18 +11,12 @@
  */
 
 import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
-import { extname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { HttpError } from "./errors.js";
 
 // ==================== 常量定义 ====================
 
 /** JSON 请求体最大限制（字节）：1MB */
 const JSON_BODY_LIMIT_BYTES = 1024 * 1024;
-
-/** Web UI 静态文件根目录 */
-const UI_ROOT = fileURLToPath(new URL("../ui", import.meta.url));
 
 // ==================== 响应辅助函数 ====================
 
@@ -41,93 +34,6 @@ function sendJson(res, status, payload) {
     "Content-Length": Buffer.byteLength(body),
   });
   res.end(body);
-}
-
-/**
- * 根据文件扩展名获取 Content-Type
- *
- * @param {string} path - 文件路径
- * @returns {string} Content-Type 值
- */
-function contentType(path) {
-  const ext = extname(path);
-  switch (ext) {
-    case ".html":
-      return "text/html; charset=utf-8";
-    case ".js":
-      return "text/javascript; charset=utf-8";
-    case ".css":
-      return "text/css; charset=utf-8";
-    case ".json":
-      return "application/json; charset=utf-8";
-    case ".png":
-      return "image/png";
-    case ".svg":
-      return "image/svg+xml; charset=utf-8";
-    default:
-      return "application/octet-stream";
-  }
-}
-
-// ==================== UI 静态文件服务 ====================
-
-/**
- * 尝试提供 Web UI 静态文件
- *
- * UI 路由规则：
- * - GET / → ui/index.html（主页）
- * - GET /ui/* → ui/*（静态资源）
- *
- * 安全措施：
- * - 检查路径遍历攻击（..）
- * - 不需要鉴权（UI 本身是公开的，API 调用仍需鉴权）
- *
- * @param {http.IncomingMessage} req - HTTP 请求对象
- * @param {http.ServerResponse} res - HTTP 响应对象
- * @param {string} pathname - URL 路径
- * @returns {Promise<boolean>} 是否处理了请求
- */
-async function maybeServeUi(req, res, pathname) {
-  const method = req.method ?? "GET";
-  if (method !== "GET") {
-    return false;
-  }
-
-  // 解析 UI 路由
-  let relativePath = null;
-  if (pathname === "/" || pathname === "") {
-    relativePath = "index.html";
-  } else if (pathname === "/ui" || pathname === "/ui/") {
-    relativePath = "index.html";
-  } else if (pathname.startsWith("/ui/")) {
-    relativePath = pathname.slice("/ui/".length);
-  } else {
-    return false;
-  }
-
-  // 防止路径遍历攻击
-  if (relativePath.includes("..")) {
-    res.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
-    res.end("Bad Request");
-    return true;
-  }
-
-  // 读取并返回文件
-  try {
-    const filePath = join(UI_ROOT, relativePath);
-    const data = await readFile(filePath);
-    res.writeHead(200, {
-      "Content-Type": contentType(filePath),
-      "Cache-Control": "no-store",  // 开发环境禁用缓存
-    });
-    res.end(data);
-    return true;
-  } catch {
-    // 文件不存在
-    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-    res.end("Not Found");
-    return true;
-  }
 }
 
 // ==================== 错误处理 ====================
@@ -358,11 +264,6 @@ export function createHttpServer(options) {
       if (method === "GET" && pathname === "/favicon.ico") {
         res.writeHead(204);
         res.end();
-        return;
-      }
-
-      // 尝试提供 UI 静态文件（不需要鉴权）
-      if (await maybeServeUi(req, res, pathname)) {
         return;
       }
 

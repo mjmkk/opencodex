@@ -15,6 +15,16 @@ npm start
 
 默认端口：`8787`
 
+## 代码结构（可扩展）
+
+- `src/index.js`：进程启动与依赖装配（配置、RPC、存储、HTTP）。
+- `src/http-server.js`：纯 API 网关层（REST + SSE），不承载业务状态机。
+- `src/worker-service.js`：核心编排层（线程/任务/审批状态机）。
+- `src/worker-service/shared.js`：跨领域常量与基础纯函数（状态枚举、标准化、时间与字符串处理）。
+- `src/worker-service/approval.js`：审批决策映射（API 入参 -> app-server RPC 格式）。
+- `src/worker-service/thread-events.js`：线程历史分页与回放事件构建。
+- `src/sqlite-store.js`：SQLite 持久化适配层（缓存与断线恢复）。
+
 ## 2. 环境变量
 
 - `PORT`：HTTP 端口，默认 `8787`
@@ -35,7 +45,6 @@ npm start
 - 使用方式：
   - 启动 Worker 时设置：`WORKER_TOKEN=devtoken123 npm start`
   - 客户端请求时带上 HTTP Header：`Authorization: Bearer devtoken123`
-  - Web UI（`/`）右上角的 `Token` 输入框就是填这个。
 - 只在本机测试：不要设置 `WORKER_TOKEN`（或设为空），就不需要填。
 
 ## 3. 最小 API
@@ -67,14 +76,14 @@ npm start
 - `accept_with_execpolicy_amendment` 仅用于命令审批。
 - 该决策下必须提供非空 `execPolicyAmendment`。
 
-## 5. 自测
+## 5. 测试
 
 ```bash
 cd /Users/Apple/Dev/OpenCodex/codex-worker-mvp
 npm test
 ```
 
-完整自测（覆盖：单元/集成/系统/场景）：
+完整测试（当前等同于 `npm test`）：
 
 ```bash
 cd /Users/Apple/Dev/OpenCodex/codex-worker-mvp

@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { WorkerService } from "../src/worker-service.js";
 import { FakeRpcClient } from "./helpers/fake-rpc.js";
 
-test("createThread 会把 sandbox 透传到 thread/start（并校验枚举）", async () => {
+test("createThread 会把 sandbox/approvalPolicy 标准化为 kebab-case", async () => {
   const rpc = new FakeRpcClient();
 
   rpc.onRequest("initialize", () => ({}));
@@ -36,7 +36,7 @@ test("createThread 会把 sandbox 透传到 thread/start（并校验枚举）", 
 
   await service.init();
 
-  // Test camelCase input (official format)
+  // camelCase 是历史兼容格式，当前应回退到默认值
   await service.createThread({
     projectPath: "/repo",
     sandbox: "readOnly",
@@ -44,8 +44,8 @@ test("createThread 会把 sandbox 透传到 thread/start（并校验枚举）", 
   });
 
   assert.ok(captured);
-  assert.equal(captured.sandbox, "readOnly");
-  assert.equal(captured.approvalPolicy, "unlessTrusted");
+  assert.equal(captured.sandbox, "workspace-write");
+  assert.equal(captured.approvalPolicy, "on-request");
 
   // Test kebab-case input (legacy format, should be converted)
   captured = null;
@@ -56,8 +56,8 @@ test("createThread 会把 sandbox 透传到 thread/start（并校验枚举）", 
   });
 
   assert.ok(captured);
-  assert.equal(captured.sandbox, "readOnly");
-  assert.equal(captured.approvalPolicy, "unlessTrusted");
+  assert.equal(captured.sandbox, "read-only");
+  assert.equal(captured.approvalPolicy, "untrusted");
 
   // invalid sandbox should fall back to default.
   captured = null;
@@ -66,6 +66,5 @@ test("createThread 会把 sandbox 透传到 thread/start（并校验枚举）", 
     sandbox: "not-a-real-sandbox",
   });
   assert.ok(captured);
-  assert.equal(captured.sandbox, "workspaceWrite");
+  assert.equal(captured.sandbox, "workspace-write");
 });
-

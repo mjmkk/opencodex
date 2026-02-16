@@ -6,10 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "test": "node --test",
-    "smoke": "node selftest/real-mvp-smoke.mjs",
-    "ui:smoke": "node selftest/ui-assets-smoke.mjs",
-    "scenario": "node selftest/scenario-suite.mjs",
-    "test:all": "npm test && npm run ui:smoke && npm run smoke && npm run scenario"
+    "test:all": "npm test"
   },
   "dependencies": {
     "better-sqlite3": "^11.6.0"

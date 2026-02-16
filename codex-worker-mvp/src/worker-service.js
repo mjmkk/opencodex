@@ -21,158 +21,25 @@
 
 import { HttpError } from "./errors.js";
 import { createId } from "./ids.js";
-
-// ==================== 常量定义 ====================
-
-/**
- * 终态集合：任务已完成，不会再变化
- * 进入终态后：不可取消、不可发消息、SSE 流自动关闭
- */
-const TERMINAL_STATES = new Set(["DONE", "FAILED", "CANCELLED"]);
-
-/**
- * 活跃状态集合：任务正在进行中
- * 处于活跃状态时：线程不能再发起新任务
- */
-const ACTIVE_STATES = new Set(["QUEUED", "RUNNING", "WAITING_APPROVAL"]);
-/** 线程历史分页默认大小 */
-const THREAD_EVENTS_PAGE_LIMIT_DEFAULT = 200;
-/** 线程历史分页最大大小 */
-const THREAD_EVENTS_PAGE_LIMIT_MAX = 1000;
-
-/**
- * 支持的 JSON-RPC 通知方法
- * 从 codex app-server 接收的事件类型
- */
-const SUPPORTED_EVENT_METHODS = new Set([
-  "thread/started",           // 线程启动
-  "turn/started",             // 轮次启动
-  "turn/completed",           // 轮次完成（终态）
-  "item/started",             // 项目开始（如 agentMessage）
-  "item/completed",           // 项目完成
-  "item/agentMessage/delta",  // AI 消息增量
-  "item/commandExecution/outputDelta",  // 命令输出增量
-  "item/fileChange/outputDelta",        // 文件变更输出
-  "error",                    // 错误
-]);
-
-// ==================== 辅助函数 ====================
-
-/**
- * 获取当前时间的 ISO 8601 格式字符串
- * @returns {string} 如 '2026-02-13T10:30:00.000Z'
- */
-function nowIso() {
-  return new Date().toISOString();
-}
-
-/**
- * 标准化审批策略值
- *
- * 将用户输入转换为有效的审批策略。
- * 必须与 codex app-server 的 AskForApproval 枚举保持同步。
- *
- * @param {string} [value] - 用户输入的审批策略
- * @returns {string|null} 标准化后的策略，或 null（使用默认值）
- *
- * 有效值：
- * - 'untrusted'：不信任，所有操作都需要审批
- * - 'on-failure'：失败时审批
- * - 'on-request'：按需审批（默认）
- * - 'never'：从不审批
- */
-function normalizeApprovalPolicy(value) {
-  if (typeof value !== "string") {
-    return null;
-  }
-  const normalized = value.trim();
-  if (normalized.length === 0) {
-    return null;
-  }
-  // 与 codex app-server 的 AskForApproval 枚举保持同步（kebab-case）
-  const allowed = new Set(["untrusted", "on-failure", "on-request", "never"]);
-  return allowed.has(normalized) ? normalized : null;
-}
-
-/**
- * 标准化沙箱模式值
- *
- * 必须与 codex app-server 的 SandboxMode 枚举保持同步。
- *
- * @param {string} [value] - 用户输入的沙箱模式
- * @returns {string|null} 标准化后的模式，或 null（使用默认值）
- *
- * 有效值：
- * - 'read-only'：只读模式，不允许任何修改
- * - 'workspace-write'：工作区写入模式（默认）
- * - 'danger-full-access'：完全访问模式（危险）
- */
-function normalizeSandboxMode(value) {
-  if (typeof value !== "string") {
-    return null;
-  }
-  const normalized = value.trim();
-  if (normalized.length === 0) {
-    return null;
-  }
-  // 与 codex app-server 的 SandboxMode 枚举保持同步（kebab-case）
-  const allowed = new Set(["read-only", "workspace-write", "danger-full-access"]);
-  return allowed.has(normalized) ? normalized : null;
-}
-
-/**
- * 将 turn 状态转换为 job 状态
- *
- * turn 的终态（completed/failed/interrupted）需要映射到 job 的终态。
- *
- * @param {string} turnStatus - turn 的状态
- * @returns {string} job 的状态
- *
- * 映射关系：
- * - completed → DONE
- * - failed → FAILED
- * - interrupted → CANCELLED
- * - inProgress → RUNNING
- */
-function toJobStateFromTurnStatus(turnStatus) {
-  switch (turnStatus) {
-    case "completed":
-      return "DONE";
-    case "failed":
-      return "FAILED";
-    case "interrupted":
-      return "CANCELLED";
-    case "inProgress":
-    default:
-      return "RUNNING";
-  }
-}
-
-/**
- * 检查是否为非空字符串
- * @param {*} value - 待检查的值
- * @returns {boolean}
- */
-function isNonEmptyString(value) {
-  return typeof value === "string" && value.trim().length > 0;
-}
-
-/**
- * 去除 ANSI 颜色转义序列
- *
- * codex app-server 的 stderr 可能包含 ANSI 颜色代码，
- * 需要去除以便日志更干净。
- *
- * @param {string} value - 可能包含 ANSI 序列的字符串
- * @returns {string} 去除 ANSI 后的字符串
- */
-function stripAnsi(value) {
-  if (typeof value !== "string" || value.length === 0) {
-    return value;
-  }
-  // 最小化的 ANSI 颜色剥离
-  return value.replace(/\x1b\[[0-9;]*m/g, "");
-}
+import { mapDecisionToRpc } from "./worker-service/approval.js";
+import {
+  ACTIVE_STATES,
+  RPC_EVENT_TYPE_MAP,
+  SUPPORTED_EVENT_METHODS,
+  TERMINAL_STATES,
+  isNonEmptyString,
+  normalizeApprovalPolicy,
+  normalizeSandboxMode,
+  nowIso,
+  stripAnsi,
+  toJobStateFromTurnStatus,
+} from "./worker-service/shared.js";
+import {
+  buildThreadReplayEvents,
+  normalizeThreadCursor,
+  normalizeThreadEventsLimit,
+  sliceThreadEventsByCursor,
+} from "./worker-service/thread-events.js";
 
 // ==================== WorkerService 类 ====================
 
@@ -645,8 +512,8 @@ export class WorkerService {
    */
   async listThreadEvents(threadId, options = {}) {
     this.#validateThreadId(threadId);
-    const normalizedCursor = this.#normalizeThreadCursor(options.cursor);
-    const limit = this.#normalizeThreadEventsLimit(options.limit);
+    const normalizedCursor = normalizeThreadCursor(options.cursor);
+    const limit = normalizeThreadEventsLimit(options.limit);
 
     // 优先从 codex app-server 读取完整线程上下文（含 turns/items）。
     // 这是主数据源；SQLite 仅作为回退缓存。
@@ -659,7 +526,12 @@ export class WorkerService {
         includeTurns: true,
       });
       const turns = Array.isArray(result?.thread?.turns) ? result.thread.turns : [];
-      const replayEvents = this.#buildThreadReplayEvents(threadId, turns);
+      const replayEvents = buildThreadReplayEvents({
+        threadId,
+        turns,
+        turnToJob: this.turnToJob,
+        turnKey: (currentThreadId, turnId) => this.#turnKey(currentThreadId, turnId),
+      });
       events = replayEvents;
     } catch (error) {
       if (typeof this.logger?.warn === "function") {
@@ -671,7 +543,7 @@ export class WorkerService {
     if (events.length === 0 && this.store?.listEventsByThread) {
       events = this.store.listEventsByThread(threadId);
     }
-    return this.#sliceThreadEventsByCursor(events, normalizedCursor, limit);
+    return sliceThreadEventsByCursor(events, normalizedCursor, limit);
   }
 
   // ==================== 审批管理 ====================
@@ -728,7 +600,7 @@ export class WorkerService {
     const decisionText = payload.decision;
     const execPolicyAmendment =
       payload.execPolicyAmendment ?? payload.exec_policy_amendment;
-    const decisionResult = this.#mapDecisionToRpc(
+    const decisionResult = mapDecisionToRpc(
       approval.kind,
       decisionText,
       execPolicyAmendment
@@ -916,17 +788,7 @@ export class WorkerService {
       return;
     }
 
-    // 其他事件类型映射
-    const eventTypeMap = {
-      "thread/started": "thread.started",
-      "item/started": "item.started",
-      "item/completed": "item.completed",
-      "item/agentMessage/delta": "item.agentMessage.delta",
-      "item/commandExecution/outputDelta": "item.commandExecution.outputDelta",
-      "item/fileChange/outputDelta": "item.fileChange.outputDelta",
-    };
-
-    const mappedType = eventTypeMap[method];
+    const mappedType = RPC_EVENT_TYPE_MAP[method];
     if (mappedType) {
       this.#appendEvent(job, mappedType, params);
     }
@@ -1223,229 +1085,6 @@ export class WorkerService {
   }
 
   /**
-   * 标准化线程历史游标
-   *
-   * @private
-   * @param {number|null} cursor - 原始游标
-   * @returns {number} 标准化游标
-   */
-  #normalizeThreadCursor(cursor) {
-    if (cursor === null || cursor === undefined) {
-      return -1;
-    }
-    if (!Number.isInteger(cursor) || cursor < -1) {
-      throw new HttpError(400, "INVALID_CURSOR", "cursor 必须是大于等于 -1 的整数");
-    }
-    return cursor;
-  }
-
-  /**
-   * 标准化线程历史分页大小
-   *
-   * @private
-   * @param {number|undefined} limit - 原始分页大小
-   * @returns {number} 标准化后的分页大小
-   */
-  #normalizeThreadEventsLimit(limit) {
-    if (limit === undefined || limit === null) {
-      return THREAD_EVENTS_PAGE_LIMIT_DEFAULT;
-    }
-    if (!Number.isInteger(limit) || limit <= 0) {
-      throw new HttpError(400, "INVALID_LIMIT", "limit 必须是正整数");
-    }
-    return Math.min(limit, THREAD_EVENTS_PAGE_LIMIT_MAX);
-  }
-
-  /**
-   * 根据线程游标切片事件分页
-   *
-   * 注意：线程游标是“线程级位置”，不等于事件信封里的 seq。
-   *
-   * @private
-   * @param {Array<Object>} events - 全量事件
-   * @param {number} cursor - 线程游标
-   * @param {number} limit - 分页大小
-   * @returns {Object} 分页结果
-   */
-  #sliceThreadEventsByCursor(events, cursor, limit) {
-    const total = Array.isArray(events) ? events.length : 0;
-
-    if (total === 0) {
-      return {
-        data: [],
-        nextCursor: -1,
-        hasMore: false,
-      };
-    }
-
-    if (cursor >= total) {
-      throw new HttpError(
-        409,
-        "THREAD_CURSOR_EXPIRED",
-        `cursor=${cursor} 超出当前线程历史范围（total=${total}）`
-      );
-    }
-
-    const start = cursor + 1;
-    if (start >= total) {
-      return {
-        data: [],
-        nextCursor: cursor,
-        hasMore: false,
-      };
-    }
-
-    const endExclusive = Math.min(start + limit, total);
-    const data = events.slice(start, endExclusive);
-    const nextCursor = endExclusive - 1;
-    return {
-      data,
-      nextCursor,
-      hasMore: endExclusive < total,
-    };
-  }
-
-  /**
-   * 将 thread/read 返回的 turns/items 转换为前端可回放的事件流
-   *
-   * 说明：
-   * - 历史回放阶段不依赖实时 delta；核心是 item.completed 的完整消息。
-   * - 为降低大线程切换时的卡顿，只保留聊天必需字段（user/assistant 消息）。
-   * - 对于无法映射到真实 jobId 的 inProgress turn，不发 RUNNING 状态，
-   *   避免 iOS 误以为可直接订阅该 job。
-   *
-   * @private
-   * @param {string} threadId - 线程 ID
-   * @param {Array<Object>} turns - thread/read 返回的 turns
-   * @returns {Array<Object>} 事件数组
-   */
-  #buildThreadReplayEvents(threadId, turns) {
-    if (!Array.isArray(turns) || turns.length === 0) {
-      return [];
-    }
-
-    const events = [];
-
-    for (const turn of turns) {
-      if (!turn || !isNonEmptyString(turn.id)) {
-        continue;
-      }
-
-      const turnId = turn.id;
-      const existingJobId = this.turnToJob.get(this.#turnKey(threadId, turnId)) ?? null;
-      const jobId = existingJobId ?? this.#buildHistoryJobId(threadId, turnId);
-      let seq = 0;
-
-      const append = (type, payload) => {
-        events.push({
-          type,
-          ts: nowIso(),
-          jobId,
-          seq,
-          payload,
-        });
-        seq += 1;
-      };
-
-      const turnStatus = isNonEmptyString(turn.status) ? turn.status : "completed";
-      const turnErrorMessage = turn?.error?.message;
-
-      const items = Array.isArray(turn.items) ? turn.items : [];
-      let itemIndex = 0;
-      for (const rawItem of items) {
-        if (!rawItem || typeof rawItem !== "object") {
-          continue;
-        }
-        const fallbackItemId = `item_${itemIndex}`;
-        const itemId = isNonEmptyString(rawItem.id) ? rawItem.id : fallbackItemId;
-        const item = this.#toReplayChatItem(rawItem, itemId);
-        if (!item) {
-          itemIndex += 1;
-          continue;
-        }
-
-        append("item.completed", {
-          threadId,
-          turnId,
-          itemId,
-          item,
-        });
-        itemIndex += 1;
-      }
-
-      const mappedState = toJobStateFromTurnStatus(turnStatus);
-      const canEmitState = mappedState !== "RUNNING" || isNonEmptyString(existingJobId);
-      if (canEmitState) {
-        append("job.state", {
-          state: mappedState,
-          errorMessage: isNonEmptyString(turnErrorMessage) ? turnErrorMessage : null,
-        });
-
-        if (TERMINAL_STATES.has(mappedState)) {
-          append("job.finished", {
-            state: mappedState,
-            errorMessage: isNonEmptyString(turnErrorMessage) ? turnErrorMessage : null,
-          });
-        }
-      }
-
-      if (turnStatus === "failed" && isNonEmptyString(turnErrorMessage)) {
-        append("error", {
-          message: turnErrorMessage,
-          threadId,
-          turnId,
-        });
-      }
-    }
-
-    return events;
-  }
-
-  /**
-   * 生成历史回放使用的虚拟 jobId
-   *
-   * @private
-   * @param {string} threadId - 线程 ID
-   * @param {string} turnId - 轮次 ID
-   * @returns {string}
-   */
-  #buildHistoryJobId(threadId, turnId) {
-    return `hist_${threadId}_${turnId}`;
-  }
-
-  /**
-   * 仅保留聊天回放必需的 item 字段
-   *
-   * @private
-   * @param {Object} rawItem - 原始 ThreadItem
-   * @param {string} itemId - 规范化后的 itemId
-   * @returns {Object|null} 可回放的 item，或 null（跳过）
-   */
-  #toReplayChatItem(rawItem, itemId) {
-    if (!isNonEmptyString(rawItem?.type)) {
-      return null;
-    }
-
-    if (rawItem.type === "userMessage") {
-      return {
-        type: "userMessage",
-        id: itemId,
-        content: Array.isArray(rawItem.content) ? rawItem.content : [],
-      };
-    }
-
-    if (rawItem.type === "agentMessage") {
-      return {
-        type: "agentMessage",
-        id: itemId,
-        text: isNonEmptyString(rawItem.text) ? rawItem.text : "",
-      };
-    }
-
-    return null;
-  }
-
-  /**
    * 定位 Job
    *
    * 查找策略（按优先级）：
@@ -1514,76 +1153,6 @@ export class WorkerService {
       }
     }
     return found;
-  }
-
-  /**
-   * 将决策文本映射为 RPC 响应格式
-   *
-   * @private
-   * @param {string} kind - 审批类型：command_execution 或 file_change
-   * @param {string} decision - 决策文本
-   * @param {string[]} [execPolicyAmendment] - 修改后的命令
-   * @returns {string|Object} RPC 响应格式的决策
-   * @throws {HttpError} 如果决策无效
-   */
-  #mapDecisionToRpc(kind, decision, execPolicyAmendment) {
-    if (!isNonEmptyString(decision)) {
-      throw new HttpError(400, "INVALID_DECISION", "decision 不能为空");
-    }
-
-    switch (decision) {
-      case "accept":
-        return "accept";
-      case "accept_for_session":
-        return "acceptForSession";
-      case "decline":
-        return "decline";
-      case "cancel":
-        return "cancel";
-      case "accept_with_execpolicy_amendment": {
-        // 仅支持命令审批
-        if (kind !== "command_execution") {
-          throw new HttpError(
-            400,
-            "INVALID_DECISION_FOR_KIND",
-            "accept_with_execpolicy_amendment 仅支持命令审批"
-          );
-        }
-
-        // 必须提供修改后的命令
-        if (!Array.isArray(execPolicyAmendment) || execPolicyAmendment.length === 0) {
-          throw new HttpError(
-            400,
-            "INVALID_EXEC_POLICY_AMENDMENT",
-            "decision=accept_with_execpolicy_amendment 时必须提供非空 execPolicyAmendment 数组"
-          );
-        }
-
-        // 验证每个 token
-        const sanitized = execPolicyAmendment.map((token) => {
-          if (!isNonEmptyString(token)) {
-            throw new HttpError(
-              400,
-              "INVALID_EXEC_POLICY_AMENDMENT",
-              "execPolicyAmendment 只能包含非空字符串"
-            );
-          }
-          return token;
-        });
-
-        return {
-          acceptWithExecpolicyAmendment: {
-            execpolicy_amendment: sanitized,
-          },
-        };
-      }
-      default:
-        throw new HttpError(
-          400,
-          "INVALID_DECISION",
-          "decision 必须是 accept/accept_for_session/accept_with_execpolicy_amendment/decline/cancel"
-        );
-    }
   }
 
   /**
