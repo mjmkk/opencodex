@@ -16,52 +16,59 @@ public struct ContentView: View {
     }
 
     public var body: some View {
-        NavigationStack {
-            Group {
-                if viewStore.activeThread == nil {
+        WithViewStore(store, observe: { $0 }) { viewStore in
+            GeometryReader { geometry in
+                let drawerWidth = min(geometry.size.width * 0.84, 360)
+
+                ZStack(alignment: .leading) {
+                    CodexChatView(
+                        store: store.scope(
+                            state: \.chat,
+                            action: \.chat
+                        ),
+                        onSidebarTap: {
+                            viewStore.send(.setDrawerPresented(true))
+                        }
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .allowsHitTesting(!viewStore.isDrawerPresented)
+
+                    if viewStore.isDrawerPresented {
+                        Color.black.opacity(0.18)
+                            .ignoresSafeArea()
+                            .onTapGesture {
+                                viewStore.send(.setDrawerPresented(false))
+                            }
+                    }
+
                     ThreadsView(
                         store: store.scope(
                             state: \.threads,
                             action: \.threads
+                        ),
+                        onDismiss: {
+                            viewStore.send(.setDrawerPresented(false))
+                        }
+                    )
+                    .frame(width: drawerWidth)
+                    .background(.ultraThinMaterial)
+                    .offset(x: viewStore.isDrawerPresented ? 0 : (-drawerWidth - 12))
+                    .shadow(color: Color.black.opacity(0.15), radius: 12, x: 4, y: 0)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .animation(.spring(response: 0.28, dampingFraction: 0.9), value: viewStore.isDrawerPresented)
+            }
+            .safeAreaInset(edge: .bottom) {
+                if viewStore.approval.isPresented {
+                    ApprovalSheetView(
+                        store: store.scope(
+                            state: \.approval,
+                            action: \.approval
                         )
                     )
-                } else {
-                    VStack(spacing: 0) {
-                        ThreadsView(
-                            store: store.scope(
-                                state: \.threads,
-                                action: \.threads
-                            )
-                        )
-                        .frame(maxHeight: 280)
-
-                        Divider()
-
-                        CodexChatView(
-                            store: store.scope(
-                                state: \.chat,
-                                action: \.chat
-                            )
-                        )
-                    }
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
+            .onAppear { viewStore.send(.onAppear) }
         }
-        .safeAreaInset(edge: .bottom) {
-            if viewStore.approval.isPresented {
-                ApprovalSheetView(
-                    store: store.scope(
-                        state: \.approval,
-                        action: \.approval
-                    )
-                )
-            }
-        }
-        .onAppear { viewStore.send(.onAppear) }
-    }
-
-    private var viewStore: ViewStoreOf<AppFeature> {
-        ViewStore(self.store, observe: { $0 })
     }
 }

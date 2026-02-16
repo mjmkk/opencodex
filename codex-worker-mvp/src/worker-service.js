@@ -704,7 +704,8 @@ export class WorkerService {
       throw new HttpError(404, "JOB_NOT_FOUND", `任务 ${jobId} 不存在`);
     }
 
-    const approvalId = payload.approvalId;
+    // 兼容不同客户端字段风格（camelCase / snake_case）。
+    const approvalId = payload.approvalId ?? payload.approval_id;
     if (!isNonEmptyString(approvalId)) {
       throw new HttpError(400, "INVALID_APPROVAL_ID", "approvalId 不能为空");
     }
@@ -725,10 +726,12 @@ export class WorkerService {
 
     // 转换决策格式
     const decisionText = payload.decision;
+    const execPolicyAmendment =
+      payload.execPolicyAmendment ?? payload.exec_policy_amendment;
     const decisionResult = this.#mapDecisionToRpc(
       approval.kind,
       decisionText,
-      payload.execPolicyAmendment
+      execPolicyAmendment
     );
 
     // 响应服务端请求
@@ -754,7 +757,7 @@ export class WorkerService {
       decision: decisionText,
       decidedAt: approval.decidedAt,
       actor: "api",
-      extra: payload.execPolicyAmendment ? { execPolicyAmendment: payload.execPolicyAmendment } : null,
+      extra: execPolicyAmendment ? { execPolicyAmendment } : null,
     });
 
     // 更新 Job 状态

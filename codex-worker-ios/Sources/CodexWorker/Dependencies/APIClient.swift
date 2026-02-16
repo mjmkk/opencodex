@@ -116,7 +116,8 @@ actor LiveAPIClient {
 
         // 配置编码器
         self.encoder = JSONEncoder()
-        encoder.keyEncodingStrategy = .convertToSnakeCase
+        // 后端当前请求体契约使用 camelCase，避免自动转换导致字段不匹配。
+        encoder.keyEncodingStrategy = .useDefaultKeys
     }
 
     // MARK: - 基础请求方法

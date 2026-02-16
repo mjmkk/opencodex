@@ -51,6 +51,11 @@ public struct ApprovalFeature {
 
             case .submitTapped(let decision):
                 guard let approval = state.currentApproval, !state.isSubmitting else { return .none }
+                let approvalId = approval.approvalId.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !approvalId.isEmpty else {
+                    state.errorMessage = "审批请求缺少 approvalId，请重试或刷新线程。"
+                    return .none
+                }
                 state.isSubmitting = true
                 state.errorMessage = nil
                 state.submittedDecision = decision
@@ -58,7 +63,7 @@ public struct ApprovalFeature {
                 return .run { send in
                     @Dependency(\.apiClient) var apiClient
                     let request = ApprovalRequest(
-                        approvalId: approval.approvalId,
+                        approvalId: approvalId,
                         decision: decision.rawValue,
                         execPolicyAmendment: nil
                     )

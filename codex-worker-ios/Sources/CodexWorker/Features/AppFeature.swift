@@ -17,6 +17,7 @@ public struct AppFeature {
         public var approval = ApprovalFeature.State()
         public var settings = SettingsFeature.State()
         public var activeThread: Thread?
+        public var isDrawerPresented = true
 
         public init() {}
     }
@@ -28,6 +29,7 @@ public struct AppFeature {
         case approval(ApprovalFeature.Action)
         case settings(SettingsFeature.Action)
         case setConnectionState(ConnectionState)
+        case setDrawerPresented(Bool)
     }
 
     public init() {}
@@ -44,14 +46,22 @@ public struct AppFeature {
                 if WorkerConfiguration.load() == nil {
                     WorkerConfiguration.save(.default)
                 }
+                if state.activeThread == nil {
+                    state.isDrawerPresented = true
+                }
                 return .none
 
             case .setConnectionState(let newState):
                 state.connectionState = newState
                 return .none
 
+            case .setDrawerPresented(let presented):
+                state.isDrawerPresented = presented
+                return .none
+
             case .threads(.delegate(.didActivateThread(let thread))):
                 state.activeThread = thread
+                state.isDrawerPresented = false
                 return .send(.chat(.setActiveThread(thread)))
 
             case .chat(.delegate(.approvalRequired(let approval))):

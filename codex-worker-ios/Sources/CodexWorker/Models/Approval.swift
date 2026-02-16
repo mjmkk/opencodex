@@ -236,27 +236,36 @@ extension Approval {
     /// 从 SSE payload 构建审批对象
     public static func fromPayload(_ payload: [String: JSONValue], fallbackJobId: String) -> Approval? {
         guard
-            let approvalId = payload["approvalId"]?.stringValue,
-            let threadId = payload["threadId"]?.stringValue,
-            let kindRaw = payload["kind"]?.stringValue,
+            let approvalId = nonEmptyString(in: payload, keys: ["approvalId", "approval_id"]),
+            let threadId = nonEmptyString(in: payload, keys: ["threadId", "thread_id"]),
+            let kindRaw = nonEmptyString(in: payload, keys: ["kind"]),
             let kind = ApprovalKind(rawValue: kindRaw),
-            let requestMethod = payload["requestMethod"]?.stringValue,
-            let createdAt = payload["createdAt"]?.stringValue
+            let requestMethod = nonEmptyString(in: payload, keys: ["requestMethod", "request_method"]),
+            let createdAt = nonEmptyString(in: payload, keys: ["createdAt", "created_at"])
         else {
             return nil
         }
 
-        let jobId = payload["jobId"]?.stringValue ?? fallbackJobId
-        let turnId = payload["turnId"]?.stringValue
-        let itemId = payload["itemId"]?.stringValue
-        let command = payload["command"]?.stringValue
-        let cwd = payload["cwd"]?.stringValue
-        let reason = payload["reason"]?.stringValue
-        let grantRoot = payload["grantRoot"]?.boolValue
+        let jobId = nonEmptyString(in: payload, keys: ["jobId", "job_id"]) ?? fallbackJobId
+        let turnId = nonEmptyString(in: payload, keys: ["turnId", "turn_id"])
+        let itemId = nonEmptyString(in: payload, keys: ["itemId", "item_id"])
+        let command = nonEmptyString(in: payload, keys: ["command"])
+        let cwd = nonEmptyString(in: payload, keys: ["cwd"])
+        let reason = nonEmptyString(in: payload, keys: ["reason"])
+        let grantRoot = bool(in: payload, keys: ["grantRoot", "grant_root"])
 
-        let commandActions: [String]? = payload["commandActions"]?.arrayValue?.compactMap { $0.stringValue }
+        let commandActions = stringArray(
+            in: payload,
+            keys: ["commandActions", "command_actions"]
+        )
         let proposedExecpolicyAmendment: [String]? =
-            payload["proposedExecpolicyAmendment"]?.arrayValue?.compactMap { $0.stringValue }
+            stringArray(
+                in: payload,
+                keys: [
+                    "proposedExecpolicyAmendment",
+                    "proposed_execpolicy_amendment",
+                ]
+            )
 
         return Approval(
             approvalId: approvalId,
@@ -274,6 +283,40 @@ extension Approval {
             grantRoot: grantRoot,
             proposedExecpolicyAmendment: proposedExecpolicyAmendment
         )
+    }
+
+    private static func nonEmptyString(in payload: [String: JSONValue], keys: [String]) -> String? {
+        for key in keys {
+            guard let raw = payload[key]?.stringValue?.trimmingCharacters(in: .whitespacesAndNewlines) else {
+                continue
+            }
+            if !raw.isEmpty {
+                return raw
+            }
+        }
+        return nil
+    }
+
+    private static func bool(in payload: [String: JSONValue], keys: [String]) -> Bool? {
+        for key in keys {
+            if let value = payload[key]?.boolValue {
+                return value
+            }
+        }
+        return nil
+    }
+
+    private static func stringArray(in payload: [String: JSONValue], keys: [String]) -> [String]? {
+        for key in keys {
+            guard let array = payload[key]?.arrayValue else { continue }
+            let values = array
+                .compactMap { $0.stringValue?.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+            if !values.isEmpty {
+                return values
+            }
+        }
+        return nil
     }
 
     /// 计算风险等级

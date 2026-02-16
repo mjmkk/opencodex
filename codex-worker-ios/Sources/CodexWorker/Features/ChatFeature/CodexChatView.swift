@@ -11,6 +11,15 @@ import SwiftUI
 
 public struct CodexChatView: View {
     let store: StoreOf<ChatFeature>
+    let onSidebarTap: (() -> Void)?
+
+    public init(
+        store: StoreOf<ChatFeature>,
+        onSidebarTap: (() -> Void)? = nil
+    ) {
+        self.store = store
+        self.onSidebarTap = onSidebarTap
+    }
 
     public var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
@@ -26,7 +35,7 @@ public struct CodexChatView: View {
                 .showDateHeaders(false)
                 .showMessageTimeView(false)
                 .keyboardDismissMode(.onDrag)
-                .setAvailableInputs(viewStore.isApprovalLocked ? [] : [.text])
+                .setAvailableInputs((viewStore.isApprovalLocked || viewStore.activeThread == nil) ? [] : [.text])
                 .id(viewStore.activeThread?.threadId ?? "no-thread")
             }
             .onAppear { viewStore.send(.onAppear) }
@@ -38,6 +47,14 @@ public struct CodexChatView: View {
     private func header(viewStore: ViewStoreOf<ChatFeature>) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
+                Button {
+                    onSidebarTap?()
+                } label: {
+                    Image(systemName: "sidebar.leading")
+                        .font(.headline)
+                }
+                .buttonStyle(.plain)
+
                 Text(viewStore.activeThread?.displayName ?? "未选择线程")
                     .font(.headline)
                 Spacer()

@@ -107,6 +107,49 @@ test("审批请求可被回传并保持幂等", async () => {
   assert.equal(rpc.responses.length, 1, "重复提交不应再次写回 RPC");
 });
 
+test("审批接口兼容 snake_case 请求体字段", async () => {
+  const { service, rpc } = setupService();
+  await service.init();
+
+  const thread = await service.createThread({ projectPath: "/repo" });
+  const job = await service.startTurn(thread.threadId, {
+    text: "请执行测试",
+  });
+
+  rpc.emit("request", {
+    id: 109,
+    method: "item/commandExecution/requestApproval",
+    params: {
+      threadId: thread.threadId,
+      turnId: "turn_1",
+      itemId: "item_cmd_2",
+      command: "npm test",
+      cwd: "/repo",
+      commandActions: [],
+    },
+  });
+
+  const approvalEvent = service
+    .listEvents(job.jobId, null)
+    .data.find((event) => event.type === "approval.required");
+  assert.ok(approvalEvent, "应该产生 approval.required 事件");
+
+  const result = await service.approve(job.jobId, {
+    approval_id: approvalEvent.payload.approvalId,
+    decision: "accept",
+    exec_policy_amendment: ["echo", "safe-run"],
+  });
+
+  assert.equal(result.status, "submitted");
+  assert.equal(rpc.responses.length, 1);
+  assert.deepEqual(rpc.responses[0], {
+    id: 109,
+    result: {
+      decision: "accept",
+    },
+  });
+});
+
 test("turn/completed 事件会收敛成 DONE", async () => {
   const { service, rpc } = setupService();
   await service.init();

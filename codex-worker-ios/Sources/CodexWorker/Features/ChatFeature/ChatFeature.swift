@@ -287,7 +287,10 @@ public struct ChatFeature {
             return .send(.delegate(.approvalRequired(approval)))
 
         case .approvalResolved:
-            let approvalId = envelope.payload?["approvalId"]?.stringValue ?? ""
+            let approvalId =
+                envelope.payload?["approvalId"]?.stringValue
+                ?? envelope.payload?["approval_id"]?.stringValue
+                ?? ""
             let decision = envelope.payload?["decision"]?.stringValue
             state.isApprovalLocked = false
             return .send(.delegate(.approvalResolved(approvalId: approvalId, decision: decision)))
