@@ -221,8 +221,25 @@ public struct ChatFeature {
                 )
 
             case .streamEventReceived(let envelope):
+                guard state.currentJobId == nil || envelope.jobId == state.currentJobId else {
+                    return .none
+                }
                 state.cursor = max(state.cursor, envelope.seq)
-                return self.handleStreamEvent(state: &state, envelope: envelope)
+                let uiEffect = self.handleStreamEvent(state: &state, envelope: envelope)
+                guard let threadId = state.activeThread?.threadId else {
+                    return uiEffect
+                }
+                return .merge(
+                    uiEffect,
+                    .run { _ in
+                        @Dependency(\.threadHistoryStore) var threadHistoryStore
+                        do {
+                            try await threadHistoryStore.appendLiveEvent(threadId, envelope)
+                        } catch {
+                            // 本地缓存失败不应影响主链路（消息流展示优先）。
+                        }
+                    }
+                )
 
             case .streamFailed(let error):
                 state.isStreaming = false

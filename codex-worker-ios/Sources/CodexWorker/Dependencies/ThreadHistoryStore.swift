@@ -25,6 +25,11 @@ public struct ThreadHistoryStore: DependencyKey, Sendable {
         _ requestCursor: Int,
         _ page: ThreadEventsResponse
     ) async throws -> [EventEnvelope]
+    /// 追加实时流式事件到本地缓存（用于崩溃恢复/离线回看）
+    public var appendLiveEvent: @Sendable (
+        _ threadId: String,
+        _ event: EventEnvelope
+    ) async throws -> Void
     /// 清空线程缓存（游标过期时用于重建）
     public var resetThread: @Sendable (_ threadId: String) async throws -> Void
 
@@ -53,6 +58,10 @@ public struct ThreadHistoryStore: DependencyKey, Sendable {
                     page: page
                 )
             },
+            appendLiveEvent: { threadId, event in
+                guard let store else { return }
+                try await store.appendLiveEvent(threadId: threadId, event: event)
+            },
             resetThread: { threadId in
                 guard let store else { return }
                 try await store.resetThread(threadId: threadId)
@@ -67,6 +76,7 @@ public struct ThreadHistoryStore: DependencyKey, Sendable {
         loadCachedEvents: { _ in [] },
         loadCursor: { _ in -1 },
         mergeRemotePage: { _, _, page in page.data },
+        appendLiveEvent: { _, _ in },
         resetThread: { _ in }
     )
 }
@@ -189,6 +199,63 @@ actor LiveThreadHistoryStore {
         return try loadCachedEvents(threadId: threadId)
     }
 
+    func appendLiveEvent(threadId: String, event: EventEnvelope) throws {
+        try dbQueue.write { db in
+            // 同一线程内，使用 (jobId, seq, type) 作为去重键，避免重复写入同一事件。
+            if let existingCursor = try Int.fetchOne(
+                db,
+                sql: """
+                SELECT threadCursor
+                FROM thread_events
+                WHERE threadId = ? AND jobId = ? AND seq = ? AND type = ?
+                LIMIT 1
+                """,
+                arguments: [threadId, event.jobId, event.seq, event.type]
+            ) {
+                try db.execute(
+                    sql: """
+                    UPDATE thread_events
+                    SET ts = ?, payloadJson = ?
+                    WHERE threadId = ? AND threadCursor = ?
+                    """,
+                    arguments: [
+                        event.ts,
+                        try encodePayload(event.payload),
+                        threadId,
+                        existingCursor,
+                    ]
+                )
+                try upsertCursor(db: db, threadId: threadId, cursor: existingCursor)
+                return
+            }
+
+            let maxCursor = (try Int.fetchOne(
+                db,
+                sql: "SELECT MAX(threadCursor) FROM thread_events WHERE threadId = ?",
+                arguments: [threadId]
+            )) ?? -1
+            let nextCursor = maxCursor + 1
+
+            try db.execute(
+                sql: """
+                INSERT INTO thread_events(
+                    threadId, threadCursor, jobId, seq, type, ts, payloadJson
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                arguments: [
+                    threadId,
+                    nextCursor,
+                    event.jobId,
+                    event.seq,
+                    event.type,
+                    event.ts,
+                    try encodePayload(event.payload),
+                ]
+            )
+            try upsertCursor(db: db, threadId: threadId, cursor: nextCursor)
+        }
+    }
+
     func resetThread(threadId: String) throws {
         try dbQueue.write { db in
             try db.execute(
@@ -212,6 +279,25 @@ actor LiveThreadHistoryStore {
         guard let payloadJson, !payloadJson.isEmpty else { return nil }
         guard let data = payloadJson.data(using: .utf8) else { return nil }
         return try decoder.decode([String: JSONValue].self, from: data)
+    }
+
+    private func upsertCursor(db: Database, threadId: String, cursor: Int) throws {
+        let existingCursor = (try Int.fetchOne(
+            db,
+            sql: "SELECT nextCursor FROM thread_sync_state WHERE threadId = ?",
+            arguments: [threadId]
+        )) ?? -1
+        let mergedCursor = max(existingCursor, cursor)
+        try db.execute(
+            sql: """
+            INSERT INTO thread_sync_state(threadId, nextCursor, updatedAt)
+            VALUES (?, ?, ?)
+            ON CONFLICT(threadId) DO UPDATE SET
+                nextCursor = excluded.nextCursor,
+                updatedAt = excluded.updatedAt
+            """,
+            arguments: [threadId, mergedCursor, ISO8601DateFormatter().string(from: Date())]
+        )
     }
 }
 
@@ -240,6 +326,14 @@ private extension LiveThreadHistoryStore {
                     nextCursor INTEGER NOT NULL,
                     updatedAt TEXT NOT NULL
                 );
+                """
+            )
+        }
+        migrator.registerMigration("add_thread_events_unique_event_key_v2") { db in
+            try db.execute(
+                sql: """
+                CREATE UNIQUE INDEX IF NOT EXISTS idx_thread_events_unique_event_key
+                ON thread_events(threadId, jobId, seq, type);
                 """
             )
         }
