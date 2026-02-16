@@ -9,6 +9,10 @@ import ComposableArchitecture
 
 @Reducer
 public struct AppFeature {
+    private enum CancelID {
+        case healthMonitor
+    }
+
     @ObservableState
     public struct State: Equatable {
         public var connectionState: ConnectionState = .disconnected
@@ -24,12 +28,14 @@ public struct AppFeature {
 
     public enum Action {
         case onAppear
+        case onDisappear
         case threads(ThreadsFeature.Action)
         case chat(ChatFeature.Action)
         case approval(ApprovalFeature.Action)
         case settings(SettingsFeature.Action)
         case setConnectionState(ConnectionState)
         case setDrawerPresented(Bool)
+        case healthCheckNow
     }
 
     public init() {}
@@ -49,7 +55,33 @@ public struct AppFeature {
                 if state.activeThread == nil {
                     state.isDrawerPresented = true
                 }
-                return .none
+                return .merge(
+                    .send(.healthCheckNow),
+                    .run { send in
+                        @Dependency(\.continuousClock) var clock
+                        while !Task.isCancelled {
+                            try await clock.sleep(for: .seconds(15))
+                            await send(.healthCheckNow)
+                        }
+                    }
+                    .cancellable(id: CancelID.healthMonitor, cancelInFlight: true)
+                )
+
+            case .onDisappear:
+                return .cancel(id: CancelID.healthMonitor)
+
+            case .healthCheckNow:
+                state.connectionState = .connecting
+                return .run { send in
+                    @Dependency(\.apiClient) var apiClient
+                    do {
+                        _ = try await apiClient.healthCheck()
+                        await send(.setConnectionState(.connected))
+                    } catch {
+                        let message = CodexError.from(error).localizedDescription
+                        await send(.setConnectionState(.failed(message)))
+                    }
+                }
 
             case .setConnectionState(let newState):
                 state.connectionState = newState
@@ -75,6 +107,9 @@ public struct AppFeature {
                     .send(.approval(.dismiss)),
                     .send(.chat(.setApprovalLocked(false)))
                 )
+
+            case .settings(.saveTapped):
+                return .send(.healthCheckNow)
 
             case .threads, .chat, .approval, .settings:
                 return .none

@@ -10,6 +10,7 @@ import SwiftUI
 
 public struct ContentView: View {
     public let store: StoreOf<AppFeature>
+    @State private var isSettingsPresented = false
 
     public init(store: StoreOf<AppFeature>) {
         self.store = store
@@ -26,8 +27,12 @@ public struct ContentView: View {
                             state: \.chat,
                             action: \.chat
                         ),
+                        connectionState: viewStore.connectionState,
                         onSidebarTap: {
                             viewStore.send(.setDrawerPresented(true))
+                        },
+                        onSettingsTap: {
+                            isSettingsPresented = true
                         }
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -69,6 +74,19 @@ public struct ContentView: View {
                 }
             }
             .onAppear { viewStore.send(.onAppear) }
+            .onDisappear { viewStore.send(.onDisappear) }
+            .sheet(isPresented: $isSettingsPresented) {
+                SettingsSheetView(
+                    store: store.scope(
+                        state: \.settings,
+                        action: \.settings
+                    ),
+                    connectionState: viewStore.connectionState,
+                    onClose: {
+                        isSettingsPresented = false
+                    }
+                )
+            }
         }
     }
 }

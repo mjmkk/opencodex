@@ -18,17 +18,27 @@ public struct SettingsFeature {
         public init() {}
     }
 
-    public enum Action: BindableAction {
-        case binding(BindingAction<State>)
+    public enum Action {
+        case baseURLChanged(String)
+        case tokenChanged(String)
         case saveTapped
     }
 
     public init() {}
 
     public var body: some ReducerOf<Self> {
-        BindingReducer()
         Reduce { state, action in
             switch action {
+            case .baseURLChanged(let value):
+                state.baseURL = value
+                state.saveSucceeded = false
+                return .none
+
+            case .tokenChanged(let value):
+                state.token = value
+                state.saveSucceeded = false
+                return .none
+
             case .saveTapped:
                 let token = state.token.trimmingCharacters(in: .whitespacesAndNewlines)
                 WorkerConfiguration.save(
@@ -38,10 +48,6 @@ public struct SettingsFeature {
                     )
                 )
                 state.saveSucceeded = true
-                return .none
-
-            case .binding:
-                state.saveSucceeded = false
                 return .none
             }
         }

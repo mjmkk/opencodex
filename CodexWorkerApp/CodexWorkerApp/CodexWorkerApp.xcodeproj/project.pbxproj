@@ -260,6 +260,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GP469W4M7H;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -291,6 +292,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = GP469W4M7H;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -341,7 +343,7 @@
 /* Begin XCLocalSwiftPackageReference section */
 		1828EB0C2F421B5D00400F7D /* XCLocalSwiftPackageReference "../../codex-worker-ios" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../codex-worker-ios;
+			relativePath = "../../codex-worker-ios";
 		};
 /* End XCLocalSwiftPackageReference section */
 

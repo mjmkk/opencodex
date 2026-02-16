@@ -18,7 +18,7 @@ public struct WorkerConfiguration: Codable, Equatable, Sendable {
 
     /// 默认配置（开发态）
     public static let `default` = WorkerConfiguration(
-        baseURL: "http://127.0.0.1:8787",
+        baseURL: "http://100.83.35.124:8787",
         token: nil
     )
 
