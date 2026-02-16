@@ -1,1 +1,0 @@
-cmd_Release/sqlite3.a := rm -f Release/sqlite3.a && /opt/homebrew/opt/python@3.14/bin/python3.14 gyp-mac-tool filter-libtool libtool  -static -o Release/sqlite3.a Release/obj.target/sqlite3/gen/sqlite3/sqlite3.o

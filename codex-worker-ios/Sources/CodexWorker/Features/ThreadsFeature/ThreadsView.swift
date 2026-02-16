@@ -7,6 +7,7 @@
 
 import ComposableArchitecture
 import SwiftUI
+import UIKit
 
 public struct ThreadsView: View {
     let store: StoreOf<ThreadsFeature>
@@ -39,12 +40,14 @@ public struct ThreadsView: View {
                     } else {
                         ForEach(viewStore.sortedItems, id: \.threadId) { thread in
                             Button {
+                                dismissKeyboard()
                                 viewStore.send(.threadTapped(thread.threadId))
                             } label: {
                                 ThreadRow(
                                     thread: thread,
                                     isSelected: viewStore.selectedThreadId == thread.threadId
                                 )
+                                .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
                         }
@@ -54,6 +57,18 @@ public struct ThreadsView: View {
             .navigationTitle("Threads")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
+                    if viewStore.isCreating {
+                        ProgressView()
+                    } else {
+                        Button {
+                            viewStore.send(.createTapped)
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                        .disabled(viewStore.isLoading)
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     if viewStore.isLoading {
                         ProgressView()
                     } else {
@@ -62,6 +77,7 @@ public struct ThreadsView: View {
                         } label: {
                             Image(systemName: "arrow.clockwise")
                         }
+                        .disabled(viewStore.isCreating)
                     }
                 }
             }
@@ -69,6 +85,15 @@ public struct ThreadsView: View {
             .refreshable { viewStore.send(.refresh) }
         }
     }
+}
+
+private func dismissKeyboard() {
+    UIApplication.shared.sendAction(
+        #selector(UIResponder.resignFirstResponder),
+        to: nil,
+        from: nil,
+        for: nil
+    )
 }
 
 private struct ThreadRow: View {

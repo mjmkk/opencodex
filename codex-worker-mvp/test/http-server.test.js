@@ -30,6 +30,35 @@ async function setup() {
     },
   }));
   rpc.onRequest("thread/list", () => ({ data: [], nextCursor: null }));
+  rpc.onRequest("thread/read", ({ threadId }) => ({
+    thread: {
+      id: threadId,
+      preview: "",
+      cwd: "/repo",
+      createdAt: 1,
+      updatedAt: 1,
+      modelProvider: "openai",
+      turns: [
+        {
+          id: "turn_history_1",
+          status: "completed",
+          error: null,
+          items: [
+            {
+              type: "userMessage",
+              id: "user_1",
+              content: [{ type: "text", text: "历史消息" }],
+            },
+            {
+              type: "agentMessage",
+              id: "assistant_1",
+              text: "已恢复上下文",
+            },
+          ],
+        },
+      ],
+    },
+  }));
   rpc.onRequest("turn/start", () => ({
     turn: {
       id: "turn_http",
@@ -104,6 +133,37 @@ test("HTTP 最小流程：创建线程 -> 发起任务 -> 查询事件", async (
   const eventsPayload = await eventsRes.json();
   assert.ok(Array.isArray(eventsPayload.data));
   assert.ok(eventsPayload.data.length >= 2);
+
+  const threadEventsRes = await fetch(`${base}/v1/threads/thr_http/events`, {
+    headers: {
+      Authorization: "Bearer token123",
+      Accept: "application/json",
+    },
+  });
+  assert.equal(threadEventsRes.status, 200);
+  const threadEventsPayload = await threadEventsRes.json();
+  assert.ok(Array.isArray(threadEventsPayload.data));
+  assert.equal(typeof threadEventsPayload.nextCursor, "number");
+  assert.equal(typeof threadEventsPayload.hasMore, "boolean");
+  assert.ok(
+    threadEventsPayload.data.some((event) => event.type === "item.completed"),
+    "线程历史应该包含 item.completed 事件"
+  );
+
+  const incrementalRes = await fetch(
+    `${base}/v1/threads/thr_http/events?cursor=${threadEventsPayload.nextCursor}&limit=10`,
+    {
+      headers: {
+        Authorization: "Bearer token123",
+        Accept: "application/json",
+      },
+    }
+  );
+  assert.equal(incrementalRes.status, 200);
+  const incrementalPayload = await incrementalRes.json();
+  assert.ok(Array.isArray(incrementalPayload.data));
+  assert.equal(incrementalPayload.data.length, 0);
+  assert.equal(incrementalPayload.hasMore, false);
 
   const unauthorized = await fetch(`${base}/v1/threads`, {
     headers: {

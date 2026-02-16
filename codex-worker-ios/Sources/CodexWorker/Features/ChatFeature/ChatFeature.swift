@@ -13,6 +13,7 @@ import Foundation
 public struct ChatFeature {
     private enum CancelID {
         case sseStream
+        case threadHistoryLoad
     }
 
     @ObservableState
@@ -41,6 +42,8 @@ public struct ChatFeature {
         case onAppear
         case onDisappear
         case setActiveThread(Thread?)
+        case threadHistoryCacheResponse(threadId: String, Result<[EventEnvelope], CodexError>)
+        case threadHistorySyncResponse(threadId: String, Result<[EventEnvelope], CodexError>)
         case didSendDraft(DraftMessage)
         case startTurnResponse(Result<StartTurnResponse, CodexError>)
         case startStreaming(jobId: String, cursor: Int)
@@ -88,13 +91,65 @@ public struct ChatFeature {
                 state.isApprovalLocked = false
                 state.errorMessage = nil
                 state.jobState = nil
-                return .merge(
+                let cancelEffect: Effect<Action> = .merge(
                     .run { _ in
                         @Dependency(\.sseClient) var sseClient
                         sseClient.cancel()
                     },
-                    .cancel(id: CancelID.sseStream)
+                    .cancel(id: CancelID.sseStream),
+                    .cancel(id: CancelID.threadHistoryLoad)
                 )
+                guard let thread else { return cancelEffect }
+                return .merge(
+                    cancelEffect,
+                    .run { send in
+                        @Dependency(\.apiClient) var apiClient
+                        @Dependency(\.threadHistoryStore) var threadHistoryStore
+
+                        // 第一步：先读本地缓存，保证切线程秒开。
+                        await send(
+                            .threadHistoryCacheResponse(
+                                threadId: thread.threadId,
+                                Result {
+                                    try await threadHistoryStore.loadCachedEvents(thread.threadId)
+                                }.mapError { CodexError.from($0) }
+                            )
+                        )
+
+                        // 第二步：远端按 cursor 增量同步并落库，再刷新 UI。
+                        await send(
+                            .threadHistorySyncResponse(
+                                threadId: thread.threadId,
+                                Result {
+                                    try await Self.syncThreadHistory(
+                                        threadId: thread.threadId,
+                                        apiClient: apiClient,
+                                        threadHistoryStore: threadHistoryStore
+                                    )
+                                }.mapError { CodexError.from($0) }
+                            )
+                        )
+                    }
+                )
+                .cancellable(id: CancelID.threadHistoryLoad, cancelInFlight: true)
+
+            case .threadHistoryCacheResponse(let threadId, .success(let events)):
+                guard state.activeThread?.threadId == threadId else { return .none }
+                return applyThreadReplay(state: &state, events: events)
+
+            case .threadHistoryCacheResponse(let threadId, .failure(let error)):
+                guard state.activeThread?.threadId == threadId else { return .none }
+                state.errorMessage = "读取本地缓存失败：\(error.localizedDescription)"
+                return .none
+
+            case .threadHistorySyncResponse(let threadId, .success(let events)):
+                guard state.activeThread?.threadId == threadId else { return .none }
+                return applyThreadReplay(state: &state, events: events)
+
+            case .threadHistorySyncResponse(let threadId, .failure(let error)):
+                guard state.activeThread?.threadId == threadId else { return .none }
+                state.errorMessage = error.localizedDescription
+                return .none
 
             case .didSendDraft(let draft):
                 guard state.canSend else { return .none }
@@ -277,4 +332,223 @@ public struct ChatFeature {
             messages.append(message)
         }
     }
+
+    /// 应用线程历史回放结果到当前状态
+    private func applyThreadReplay(state: inout State, events: [EventEnvelope]) -> Effect<Action> {
+        let replay = replayThreadEvents(events)
+        state.messages = replay.messages
+        state.pendingAssistantDeltas = replay.pendingAssistantDeltas
+        state.currentJobId = replay.currentJobId
+        state.cursor = replay.cursor
+        state.jobState = replay.jobState
+        state.isApprovalLocked = replay.isApprovalLocked
+        state.errorMessage = replay.errorMessage
+
+        if events.isEmpty,
+           state.messages.isEmpty,
+           let thread = state.activeThread
+        {
+            let preview = thread.preview?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            if !preview.isEmpty {
+                state.messages = [
+                    ChatMessageAdapter.makeMessage(
+                        id: "thread-preview-\(thread.threadId)",
+                        sender: .system,
+                        text: "该线程暂无可回放历史，先展示预览：\n\(preview)"
+                    ),
+                ]
+            }
+        }
+
+        guard
+            let activeJobId = replay.currentJobId,
+            let activeState = replay.jobState,
+            activeState.isActive
+        else {
+            return .none
+        }
+        return .send(.startStreaming(jobId: activeJobId, cursor: replay.cursor))
+    }
+
+    /// 基于线程游标执行远端增量同步
+    private static func syncThreadHistory(
+        threadId: String,
+        apiClient: APIClient,
+        threadHistoryStore: ThreadHistoryStore
+    ) async throws -> [EventEnvelope] {
+        var cursor = try await threadHistoryStore.loadCursor(threadId)
+        var syncedEvents = try await threadHistoryStore.loadCachedEvents(threadId)
+        var hasResetOnce = false
+
+        while true {
+            do {
+                let page = try await apiClient.listThreadEvents(threadId, cursor, 200)
+                if page.hasMore, page.nextCursor <= cursor {
+                    throw CodexError.invalidState
+                }
+                syncedEvents = try await threadHistoryStore.mergeRemotePage(threadId, cursor, page)
+                cursor = page.nextCursor
+                if !page.hasMore {
+                    return syncedEvents
+                }
+            } catch let error as CodexError where error == .cursorExpired {
+                if hasResetOnce {
+                    throw error
+                }
+                hasResetOnce = true
+                try await threadHistoryStore.resetThread(threadId)
+                cursor = -1
+                syncedEvents = []
+            }
+        }
+    }
+
+    /// 将线程历史事件回放为聊天状态
+    private func replayThreadEvents(_ events: [EventEnvelope]) -> ThreadHistoryReplay {
+        var replay = ThreadHistoryReplay()
+        var lastSeqByJob: [String: Int] = [:]
+
+        for envelope in events {
+            replay.currentJobId = envelope.jobId
+            lastSeqByJob[envelope.jobId] = max(lastSeqByJob[envelope.jobId] ?? -1, envelope.seq)
+
+            switch envelope.eventType {
+            case .jobState:
+                if let raw = envelope.payload?["state"]?.stringValue, let mapped = JobState(rawValue: raw) {
+                    replay.jobState = mapped
+                    if mapped != .waitingApproval {
+                        replay.isApprovalLocked = false
+                    }
+                }
+
+            case .approvalRequired:
+                replay.jobState = .waitingApproval
+                replay.isApprovalLocked = true
+
+            case .approvalResolved:
+                replay.isApprovalLocked = false
+
+            case .itemStarted, .itemCompleted:
+                if let userMessage = userMessage(from: envelope) {
+                    upsertMessage(&replay.messages, with: userMessage)
+                }
+                handleAssistantCompletionIfNeeded(replay: &replay, envelope: envelope)
+
+            case .itemAgentMessageDelta:
+                guard let payload = envelope.payload else { continue }
+                let itemId = payload["itemId"]?.stringValue ?? "assistant-\(envelope.jobId)-\(envelope.seq)"
+                let delta = payload["delta"]?.stringValue
+                    ?? payload["textDelta"]?.stringValue
+                    ?? payload["text"]?.stringValue
+                    ?? ""
+                guard !delta.isEmpty else { continue }
+
+                if var existing = replay.pendingAssistantDeltas[itemId] {
+                    existing.append(delta)
+                    replay.pendingAssistantDeltas[itemId] = existing
+                    upsertMessage(&replay.messages, with: existing.toMessage())
+                } else {
+                    var newDelta = MessageDelta(id: itemId, text: "", sender: .assistant)
+                    newDelta.append(delta)
+                    replay.pendingAssistantDeltas[itemId] = newDelta
+                    upsertMessage(&replay.messages, with: newDelta.toMessage())
+                }
+
+            case .jobFinished:
+                if let raw = envelope.payload?["state"]?.stringValue, let mapped = JobState(rawValue: raw) {
+                    replay.jobState = mapped
+                }
+
+            case .error:
+                replay.errorMessage = envelope.payload?["message"]?.stringValue ?? replay.errorMessage
+
+            default:
+                continue
+            }
+        }
+
+        if replay.jobState?.isActive != true {
+            replay.isApprovalLocked = false
+        }
+        replay.cursor = replay.currentJobId.flatMap { lastSeqByJob[$0] } ?? -1
+        return replay
+    }
+
+    /// 从 item.started / item.completed 中提取用户消息
+    private func userMessage(from envelope: EventEnvelope) -> Message? {
+        guard
+            let payload = envelope.payload,
+            let item = payload["item"]?.objectValue,
+            item["type"]?.stringValue == "userMessage",
+            let itemId = item["id"]?.stringValue
+        else {
+            return nil
+        }
+
+        var fragments: [String] = []
+        if let content = item["content"]?.arrayValue {
+            for entry in content {
+                guard let object = entry.objectValue else { continue }
+                if let text = object["text"]?.stringValue, !text.isEmpty {
+                    fragments.append(text)
+                }
+            }
+        }
+
+        let fallbackText = item["text"]?.stringValue ?? payload["text"]?.stringValue
+        let text = fragments.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+        let finalText = text.isEmpty ? fallbackText ?? "" : text
+        guard !finalText.isEmpty else { return nil }
+
+        return ChatMessageAdapter.makeMessage(
+            id: itemId,
+            sender: .user,
+            text: finalText,
+            createdAt: envelope.timestamp ?? Date()
+        )
+    }
+
+    /// 在 item.completed 时收敛助手消息，兜底处理无 delta 的场景
+    private func handleAssistantCompletionIfNeeded(
+        replay: inout ThreadHistoryReplay,
+        envelope: EventEnvelope
+    ) {
+        guard
+            envelope.eventType == .itemCompleted,
+            let payload = envelope.payload,
+            let item = payload["item"]?.objectValue,
+            item["type"]?.stringValue == "agentMessage",
+            let itemId = item["id"]?.stringValue
+        else {
+            return
+        }
+
+        if var delta = replay.pendingAssistantDeltas[itemId] {
+            delta.markComplete()
+            replay.pendingAssistantDeltas[itemId] = nil
+            upsertMessage(&replay.messages, with: delta.toMessage())
+            return
+        }
+
+        // 某些历史数据只保留 completed 文本，不含 delta，需兜底展示。
+        if let fullText = item["text"]?.stringValue, !fullText.isEmpty {
+            let message = ChatMessageAdapter.makeMessage(
+                id: itemId,
+                sender: .assistant,
+                text: fullText,
+                createdAt: envelope.timestamp ?? Date()
+            )
+            upsertMessage(&replay.messages, with: message)
+        }
+    }
+}
+
+private struct ThreadHistoryReplay: Sendable {
+    var currentJobId: String?
+    var cursor: Int = -1
+    var messages: [Message] = []
+    var pendingAssistantDeltas: [String: MessageDelta] = [:]
+    var jobState: JobState?
+    var isApprovalLocked = false
+    var errorMessage: String?
 }

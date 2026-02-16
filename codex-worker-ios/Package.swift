@@ -23,6 +23,8 @@ let package = Package(
         .package(url: "https://github.com/exyte/Chat.git", from: "2.7.6"),
         // EventSource（SSE，Server-Sent Events 客户端）
         .package(url: "https://github.com/Recouse/EventSource.git", from: "0.1.5"),
+        // GRDB（SQLite 封装）
+        .package(url: "https://github.com/groue/GRDB.swift.git", from: "6.0.0"),
     ],
     targets: [
         .target(
@@ -31,6 +33,7 @@ let package = Package(
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
                 .product(name: "ExyteChat", package: "Chat"),
                 .product(name: "EventSource", package: "EventSource"),
+                .product(name: "GRDB", package: "GRDB.swift"),
             ],
             path: "Sources/CodexWorker",
             swiftSettings: [

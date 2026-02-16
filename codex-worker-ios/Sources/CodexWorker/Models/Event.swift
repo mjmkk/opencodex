@@ -277,4 +277,14 @@ public struct EventsListResponse: Codable, Sendable {
 /// 对应 `GET /v1/threads/{threadId}/events` 返回
 public struct ThreadEventsResponse: Codable, Sendable {
     public let data: [EventEnvelope]
+    /// 线程级游标（不是事件 seq）
+    public let nextCursor: Int
+    /// 是否还有后续分页
+    public let hasMore: Bool
+
+    public init(data: [EventEnvelope], nextCursor: Int, hasMore: Bool) {
+        self.data = data
+        self.nextCursor = nextCursor
+        self.hasMore = hasMore
+    }
 }

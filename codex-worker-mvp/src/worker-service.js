@@ -35,6 +35,10 @@ const TERMINAL_STATES = new Set(["DONE", "FAILED", "CANCELLED"]);
  * 处于活跃状态时：线程不能再发起新任务
  */
 const ACTIVE_STATES = new Set(["QUEUED", "RUNNING", "WAITING_APPROVAL"]);
+/** 线程历史分页默认大小 */
+const THREAD_EVENTS_PAGE_LIMIT_DEFAULT = 200;
+/** 线程历史分页最大大小 */
+const THREAD_EVENTS_PAGE_LIMIT_MAX = 1000;
 
 /**
  * 支持的 JSON-RPC 通知方法
@@ -634,13 +638,40 @@ export class WorkerService {
    * 用于在切换线程时回放历史消息。
    *
    * @param {string} threadId - 线程 ID
-   * @returns {Array<Object>} 事件列表
+   * @param {Object} [options={}] - 分页参数
+   * @param {number|null} [options.cursor=null] - 线程级游标，返回游标之后的事件
+   * @param {number} [options.limit=200] - 分页大小，最大 1000
+   * @returns {Promise<Object>} { data: Event[], nextCursor: number, hasMore: boolean }
    */
-  listThreadEvents(threadId) {
-    if (!this.store?.listEventsByThread) {
-      return [];
+  async listThreadEvents(threadId, options = {}) {
+    this.#validateThreadId(threadId);
+    const normalizedCursor = this.#normalizeThreadCursor(options.cursor);
+    const limit = this.#normalizeThreadEventsLimit(options.limit);
+
+    // 优先从 codex app-server 读取完整线程上下文（含 turns/items）。
+    // 这是主数据源；SQLite 仅作为回退缓存。
+    let events = [];
+    try {
+      await this.#ensureThreadLoaded(threadId);
+
+      const result = await this.rpc.request("thread/read", {
+        threadId,
+        includeTurns: true,
+      });
+      const turns = Array.isArray(result?.thread?.turns) ? result.thread.turns : [];
+      const replayEvents = this.#buildThreadReplayEvents(threadId, turns);
+      events = replayEvents;
+    } catch (error) {
+      if (typeof this.logger?.warn === "function") {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn(`[thread-events] thread/read 失败，回退 SQLite 缓存: threadId=${threadId}, error=${message}`);
+      }
     }
-    return this.store.listEventsByThread(threadId);
+
+    if (events.length === 0 && this.store?.listEventsByThread) {
+      events = this.store.listEventsByThread(threadId);
+    }
+    return this.#sliceThreadEventsByCursor(events, normalizedCursor, limit);
   }
 
   // ==================== 审批管理 ====================
@@ -1186,6 +1217,229 @@ export class WorkerService {
 
     // 持久化
     this.store?.appendEvent?.(envelope);
+  }
+
+  /**
+   * 标准化线程历史游标
+   *
+   * @private
+   * @param {number|null} cursor - 原始游标
+   * @returns {number} 标准化游标
+   */
+  #normalizeThreadCursor(cursor) {
+    if (cursor === null || cursor === undefined) {
+      return -1;
+    }
+    if (!Number.isInteger(cursor) || cursor < -1) {
+      throw new HttpError(400, "INVALID_CURSOR", "cursor 必须是大于等于 -1 的整数");
+    }
+    return cursor;
+  }
+
+  /**
+   * 标准化线程历史分页大小
+   *
+   * @private
+   * @param {number|undefined} limit - 原始分页大小
+   * @returns {number} 标准化后的分页大小
+   */
+  #normalizeThreadEventsLimit(limit) {
+    if (limit === undefined || limit === null) {
+      return THREAD_EVENTS_PAGE_LIMIT_DEFAULT;
+    }
+    if (!Number.isInteger(limit) || limit <= 0) {
+      throw new HttpError(400, "INVALID_LIMIT", "limit 必须是正整数");
+    }
+    return Math.min(limit, THREAD_EVENTS_PAGE_LIMIT_MAX);
+  }
+
+  /**
+   * 根据线程游标切片事件分页
+   *
+   * 注意：线程游标是“线程级位置”，不等于事件信封里的 seq。
+   *
+   * @private
+   * @param {Array<Object>} events - 全量事件
+   * @param {number} cursor - 线程游标
+   * @param {number} limit - 分页大小
+   * @returns {Object} 分页结果
+   */
+  #sliceThreadEventsByCursor(events, cursor, limit) {
+    const total = Array.isArray(events) ? events.length : 0;
+
+    if (total === 0) {
+      return {
+        data: [],
+        nextCursor: -1,
+        hasMore: false,
+      };
+    }
+
+    if (cursor >= total) {
+      throw new HttpError(
+        409,
+        "THREAD_CURSOR_EXPIRED",
+        `cursor=${cursor} 超出当前线程历史范围（total=${total}）`
+      );
+    }
+
+    const start = cursor + 1;
+    if (start >= total) {
+      return {
+        data: [],
+        nextCursor: cursor,
+        hasMore: false,
+      };
+    }
+
+    const endExclusive = Math.min(start + limit, total);
+    const data = events.slice(start, endExclusive);
+    const nextCursor = endExclusive - 1;
+    return {
+      data,
+      nextCursor,
+      hasMore: endExclusive < total,
+    };
+  }
+
+  /**
+   * 将 thread/read 返回的 turns/items 转换为前端可回放的事件流
+   *
+   * 说明：
+   * - 历史回放阶段不依赖实时 delta；核心是 item.completed 的完整消息。
+   * - 为降低大线程切换时的卡顿，只保留聊天必需字段（user/assistant 消息）。
+   * - 对于无法映射到真实 jobId 的 inProgress turn，不发 RUNNING 状态，
+   *   避免 iOS 误以为可直接订阅该 job。
+   *
+   * @private
+   * @param {string} threadId - 线程 ID
+   * @param {Array<Object>} turns - thread/read 返回的 turns
+   * @returns {Array<Object>} 事件数组
+   */
+  #buildThreadReplayEvents(threadId, turns) {
+    if (!Array.isArray(turns) || turns.length === 0) {
+      return [];
+    }
+
+    const events = [];
+
+    for (const turn of turns) {
+      if (!turn || !isNonEmptyString(turn.id)) {
+        continue;
+      }
+
+      const turnId = turn.id;
+      const existingJobId = this.turnToJob.get(this.#turnKey(threadId, turnId)) ?? null;
+      const jobId = existingJobId ?? this.#buildHistoryJobId(threadId, turnId);
+      let seq = 0;
+
+      const append = (type, payload) => {
+        events.push({
+          type,
+          ts: nowIso(),
+          jobId,
+          seq,
+          payload,
+        });
+        seq += 1;
+      };
+
+      const turnStatus = isNonEmptyString(turn.status) ? turn.status : "completed";
+      const turnErrorMessage = turn?.error?.message;
+
+      const items = Array.isArray(turn.items) ? turn.items : [];
+      let itemIndex = 0;
+      for (const rawItem of items) {
+        if (!rawItem || typeof rawItem !== "object") {
+          continue;
+        }
+        const fallbackItemId = `item_${itemIndex}`;
+        const itemId = isNonEmptyString(rawItem.id) ? rawItem.id : fallbackItemId;
+        const item = this.#toReplayChatItem(rawItem, itemId);
+        if (!item) {
+          itemIndex += 1;
+          continue;
+        }
+
+        append("item.completed", {
+          threadId,
+          turnId,
+          itemId,
+          item,
+        });
+        itemIndex += 1;
+      }
+
+      const mappedState = toJobStateFromTurnStatus(turnStatus);
+      const canEmitState = mappedState !== "RUNNING" || isNonEmptyString(existingJobId);
+      if (canEmitState) {
+        append("job.state", {
+          state: mappedState,
+          errorMessage: isNonEmptyString(turnErrorMessage) ? turnErrorMessage : null,
+        });
+
+        if (TERMINAL_STATES.has(mappedState)) {
+          append("job.finished", {
+            state: mappedState,
+            errorMessage: isNonEmptyString(turnErrorMessage) ? turnErrorMessage : null,
+          });
+        }
+      }
+
+      if (turnStatus === "failed" && isNonEmptyString(turnErrorMessage)) {
+        append("error", {
+          message: turnErrorMessage,
+          threadId,
+          turnId,
+        });
+      }
+    }
+
+    return events;
+  }
+
+  /**
+   * 生成历史回放使用的虚拟 jobId
+   *
+   * @private
+   * @param {string} threadId - 线程 ID
+   * @param {string} turnId - 轮次 ID
+   * @returns {string}
+   */
+  #buildHistoryJobId(threadId, turnId) {
+    return `hist_${threadId}_${turnId}`;
+  }
+
+  /**
+   * 仅保留聊天回放必需的 item 字段
+   *
+   * @private
+   * @param {Object} rawItem - 原始 ThreadItem
+   * @param {string} itemId - 规范化后的 itemId
+   * @returns {Object|null} 可回放的 item，或 null（跳过）
+   */
+  #toReplayChatItem(rawItem, itemId) {
+    if (!isNonEmptyString(rawItem?.type)) {
+      return null;
+    }
+
+    if (rawItem.type === "userMessage") {
+      return {
+        type: "userMessage",
+        id: itemId,
+        content: Array.isArray(rawItem.content) ? rawItem.content : [],
+      };
+    }
+
+    if (rawItem.type === "agentMessage") {
+      return {
+        type: "agentMessage",
+        id: itemId,
+        text: isNonEmptyString(rawItem.text) ? rawItem.text : "",
+      };
+    }
+
+    return null;
   }
 
   /**

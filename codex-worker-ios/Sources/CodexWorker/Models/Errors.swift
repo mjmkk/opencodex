@@ -144,6 +144,8 @@ extension CodexError {
                 return .threadHasActiveJob(message)
             case "CURSOR_EXPIRED":
                 return .cursorExpired
+            case "THREAD_CURSOR_EXPIRED":
+                return .cursorExpired
             default:
                 return .apiError(code: code, message: message)
             }

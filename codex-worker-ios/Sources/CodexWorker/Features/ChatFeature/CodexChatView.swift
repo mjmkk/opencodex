@@ -25,7 +25,9 @@ public struct CodexChatView: View {
                 )
                 .showDateHeaders(false)
                 .showMessageTimeView(false)
+                .keyboardDismissMode(.onDrag)
                 .setAvailableInputs(viewStore.isApprovalLocked ? [] : [.text])
+                .id(viewStore.activeThread?.threadId ?? "no-thread")
             }
             .onAppear { viewStore.send(.onAppear) }
             .onDisappear { viewStore.send(.onDisappear) }

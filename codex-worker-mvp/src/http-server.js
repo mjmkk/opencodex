@@ -252,6 +252,26 @@ function parseCursor(searchParams) {
   return cursor;
 }
 
+/**
+ * 解析 limit 参数
+ *
+ * @param {URLSearchParams} searchParams - URL 查询参数
+ * @returns {number|undefined} 分页大小，未传返回 undefined
+ * @throws {HttpError} 400 如果 limit 不是正整数
+ */
+function parseLimit(searchParams) {
+  const limitRaw = searchParams.get("limit");
+  if (limitRaw === null) {
+    return undefined;
+  }
+
+  const limit = Number.parseInt(limitRaw, 10);
+  if (!Number.isInteger(limit) || limit <= 0) {
+    throw new HttpError(400, "INVALID_LIMIT", "limit 必须是正整数");
+  }
+  return limit;
+}
+
 // ==================== SSE 辅助函数 ====================
 
 /**
@@ -398,8 +418,10 @@ export function createHttpServer(options) {
       const threadEventsMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/events$/);
       if (method === "GET" && threadEventsMatch) {
         const threadId = decodeURIComponent(threadEventsMatch[0]);
-        const events = service.listThreadEvents(threadId);
-        sendJson(res, 200, { data: events });
+        const cursor = parseCursor(requestUrl.searchParams);
+        const limit = parseLimit(requestUrl.searchParams);
+        const page = await service.listThreadEvents(threadId, { cursor, limit });
+        sendJson(res, 200, page);
         return;
       }
 

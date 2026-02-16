@@ -28,8 +28,8 @@ public struct APIClient: DependencyKey, Sendable {
     /// 激活线程
     public var activateThread: @Sendable (_ threadId: String) async throws -> Thread
 
-    /// 获取线程历史事件
-    public var listThreadEvents: @Sendable (_ threadId: String) async throws -> [EventEnvelope]
+    /// 获取线程历史事件分页（线程级游标）
+    public var listThreadEvents: @Sendable (_ threadId: String, _ cursor: Int?, _ limit: Int?) async throws -> ThreadEventsResponse
 
     /// 发送消息（创建 Turn）
     public var startTurn: @Sendable (_ threadId: String, _ request: StartTurnRequest) async throws -> StartTurnResponse
@@ -84,7 +84,7 @@ extension APIClient {
             createThread: { try await impl.createThread(request: $0) },
             listThreads: { try await impl.listThreads() },
             activateThread: { try await impl.activateThread(threadId: $0) },
-            listThreadEvents: { try await impl.listThreadEvents(threadId: $0) },
+            listThreadEvents: { try await impl.listThreadEvents(threadId: $0, cursor: $1, limit: $2) },
             startTurn: { try await impl.startTurn(threadId: $0, request: $1) },
             getJob: { try await impl.getJob(jobId: $0) },
             listEvents: { try await impl.listEvents(jobId: $0, cursor: $1) },
@@ -234,16 +234,19 @@ actor LiveAPIClient {
         return response.thread
     }
 
-    func listThreadEvents(threadId: String) async throws -> [EventEnvelope] {
-        let url = try buildURL(path: "/v1/threads/\(threadId)/events")
-        let request = try buildRequest(url: url)
-
-        struct ThreadEventsResponse: Codable {
-            let data: [EventEnvelope]
+    func listThreadEvents(threadId: String, cursor: Int?, limit: Int?) async throws -> ThreadEventsResponse {
+        var queryItems: [URLQueryItem] = []
+        if let cursor {
+            queryItems.append(URLQueryItem(name: "cursor", value: String(cursor)))
+        }
+        if let limit {
+            queryItems.append(URLQueryItem(name: "limit", value: String(limit)))
         }
 
+        let url = try buildURL(path: "/v1/threads/\(threadId)/events", queryItems: queryItems)
+        let request = try buildRequest(url: url)
         let response: ThreadEventsResponse = try await performRequest(request)
-        return response.data
+        return response
     }
 
     func startTurn(threadId: String, request: StartTurnRequest) async throws -> StartTurnResponse {
@@ -335,7 +338,9 @@ extension APIClient {
                     modelProvider: "openai"
                 )
             },
-            listThreadEvents: { _ in [] },
+            listThreadEvents: { _, _, _ in
+                ThreadEventsResponse(data: [], nextCursor: -1, hasMore: false)
+            },
             startTurn: { threadId, _ in
                 StartTurnResponse(
                     jobId: "job_mock",

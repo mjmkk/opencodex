@@ -4,10 +4,25 @@
 # Xcode user-specific state
 **/xcuserdata/
 **/*.xcuserstate
+DerivedData/
 
 # Swift Package Manager local workspace state
 **/.swiftpm/
 **/.build/
 
+# JavaScript dependencies
+**/node_modules/
+
+# Local environment config
+.env
+.env.*
+!.env.example
+
 # Common local outputs
 output/
+*.log
+
+# Runtime SQLite cache/data
+codex-worker-mvp/data/*.db
+codex-worker-mvp/data/*.db-shm
+codex-worker-mvp/data/*.db-wal
