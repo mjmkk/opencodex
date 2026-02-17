@@ -7,6 +7,7 @@
 
 import ComposableArchitecture
 import ExyteChat
+import MarkdownUI
 import SwiftUI
 
 public struct CodexChatView: View {
@@ -16,6 +17,9 @@ public struct CodexChatView: View {
     let onSettingsTap: (() -> Void)?
     let executionAccessMode: ExecutionAccessMode
     let onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)?
+    private let renderPipeline: MessageRenderPipeline
+    private let codeSyntaxHighlighter: CodeSyntaxHighlighter
+    private let chatBackgroundColor = Color(uiColor: .systemGroupedBackground)
 
     public init(
         store: StoreOf<ChatFeature>,
@@ -23,7 +27,9 @@ public struct CodexChatView: View {
         onSidebarTap: (() -> Void)? = nil,
         onSettingsTap: (() -> Void)? = nil,
         executionAccessMode: ExecutionAccessMode = .defaultPermissions,
-        onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)? = nil
+        onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)? = nil,
+        renderPipeline: MessageRenderPipeline = .live,
+        codeSyntaxHighlighter: CodeSyntaxHighlighter = CodexCodeSyntaxHighlighter()
     ) {
         self.store = store
         self.connectionState = connectionState
@@ -31,6 +37,8 @@ public struct CodexChatView: View {
         self.onSettingsTap = onSettingsTap
         self.executionAccessMode = executionAccessMode
         self.onExecutionAccessModeChanged = onExecutionAccessModeChanged
+        self.renderPipeline = renderPipeline
+        self.codeSyntaxHighlighter = codeSyntaxHighlighter
     }
 
     public var body: some View {
@@ -58,7 +66,11 @@ public struct CodexChatView: View {
                         viewStore.send(.didSendDraft(draft))
                     },
                     messageBuilder: { message, _, _, _, _, _, _ in
-                        CodexMessageBubble(message: message)
+                        CodexMessageBubble(
+                            message: message,
+                            renderPipeline: renderPipeline,
+                            codeSyntaxHighlighter: codeSyntaxHighlighter
+                        )
                     }
                 )
                 .showDateHeaders(false)
@@ -67,6 +79,7 @@ public struct CodexChatView: View {
                 .setAvailableInputs((viewStore.isApprovalLocked || viewStore.activeThread == nil) ? [] : [.text])
                 .id(viewStore.activeThread?.threadId ?? "no-thread")
             }
+            .background(chatBackgroundColor)
             .onAppear { viewStore.send(.onAppear) }
             .onDisappear { viewStore.send(.onDisappear) }
         }
@@ -154,6 +167,13 @@ public struct CodexChatView: View {
 
 private struct CodexMessageBubble: View {
     let message: Message
+    let renderPipeline: MessageRenderPipeline
+    let codeSyntaxHighlighter: CodeSyntaxHighlighter
+    private let assistantBubbleColor = Color(uiColor: .secondarySystemGroupedBackground)
+    private let assistantInnerCodeColor = Color(uiColor: .tertiarySystemFill)
+    private let assistantBorderColor = Color(uiColor: .separator).opacity(0.2)
+    private let assistantTableEvenRowColor = Color(uiColor: .systemBackground).opacity(0.35)
+    private let assistantTableOddRowColor = Color(uiColor: .tertiarySystemFill).opacity(0.75)
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
@@ -176,28 +196,68 @@ private struct CodexMessageBubble: View {
                     }
                 }
             } else {
+                let rendered = renderPipeline.render(message.text)
                 VStack(alignment: .leading, spacing: 0) {
-                    Text(markdownText(message.text))
-                        .font(.body)
+                    Markdown(rendered.markdownContent)
+                        .markdownTheme(.gitHub)
+                        .markdownTextStyle(\.text) {
+                            ForegroundColor(.primary)
+                            BackgroundColor(nil)
+                        }
+                        .markdownTextStyle(\.code) {
+                            FontFamilyVariant(.monospaced)
+                            FontSize(.em(0.85))
+                            BackgroundColor(assistantInnerCodeColor)
+                        }
+                        .markdownBlockStyle(\.codeBlock) { configuration in
+                            ScrollView(.horizontal) {
+                                configuration.label
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .relativeLineSpacing(.em(0.225))
+                                    .markdownTextStyle {
+                                        FontFamilyVariant(.monospaced)
+                                        FontSize(.em(0.85))
+                                    }
+                                    .padding(12)
+                            }
+                            .background(assistantInnerCodeColor)
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .markdownMargin(top: 0, bottom: 12)
+                        }
+                        .markdownBlockStyle(\.table) { configuration in
+                            configuration.label
+                                .fixedSize(horizontal: false, vertical: true)
+                                .markdownTableBorderStyle(.init(color: assistantBorderColor))
+                                .markdownTableBackgroundStyle(
+                                    .alternatingRows(assistantTableEvenRowColor, assistantTableOddRowColor)
+                                )
+                                .markdownMargin(top: 0, bottom: 12)
+                        }
+                        .markdownCodeSyntaxHighlighter(codeSyntaxHighlighter)
                         .textSelection(.enabled)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color(.secondarySystemBackground))
+                        .background(assistantBubbleColor)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(assistantBorderColor, lineWidth: 0.5)
+                        )
                         .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                    if let hint = rendered.compatibilityHint {
+                        Text(hint)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .padding(.top, 4)
+                            .padding(.horizontal, 6)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 2)
-    }
-
-    private func markdownText(_ raw: String) -> AttributedString {
-        if let parsed = try? AttributedString(markdown: raw) {
-            return parsed
-        }
-        return AttributedString(raw)
     }
 
     private func statusStyle(_ status: Message.Status?) -> (icon: String, tint: Color)? {

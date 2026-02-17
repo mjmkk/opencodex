@@ -21,6 +21,8 @@ let package = Package(
         .package(path: "../swift-composable-architecture"),
         // Exyte Chat（聊天 UI 组件）
         .package(url: "https://github.com/exyte/Chat.git", from: "2.7.6"),
+        // MarkdownUI（完整 Markdown 渲染，支持 GitHub 风格 Markdown 的表格/任务列表）
+        .package(url: "https://github.com/gonzalezreal/swift-markdown-ui.git", from: "2.0.2"),
         // EventSource（SSE，Server-Sent Events 客户端）
         .package(url: "https://github.com/Recouse/EventSource.git", from: "0.1.5"),
         // GRDB（SQLite 封装）
@@ -32,6 +34,7 @@ let package = Package(
             dependencies: [
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
                 .product(name: "ExyteChat", package: "Chat"),
+                .product(name: "MarkdownUI", package: "swift-markdown-ui"),
                 .product(name: "EventSource", package: "EventSource"),
                 .product(name: "GRDB", package: "GRDB.swift"),
             ],
