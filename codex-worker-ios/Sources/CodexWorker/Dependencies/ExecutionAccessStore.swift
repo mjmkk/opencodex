@@ -19,7 +19,7 @@ public enum ExecutionAccessMode: String, CaseIterable, Codable, Equatable, Senda
     public var title: String {
         switch self {
         case .defaultPermissions:
-            return "Default"
+            return "Default Permission"
         case .fullAccess:
             return "Full Access"
         }

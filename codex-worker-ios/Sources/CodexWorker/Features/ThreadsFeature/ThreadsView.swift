@@ -117,6 +117,8 @@ public struct ThreadsView: View {
 
     @ViewBuilder
     private func header(viewStore: ViewStoreOf<ThreadsFeature>) -> some View {
+        let selectedModeTint = executionAccessMode == .fullAccess ? Color.red : Color.blue
+
         VStack(spacing: 8) {
             HStack(spacing: 12) {
                 if let onDismiss {
@@ -174,7 +176,11 @@ public struct ThreadsView: View {
                             onExecutionAccessModeChanged?(mode)
                         } label: {
                             HStack {
+                                Image(systemName: accessModeIconName(for: mode))
+                                    .foregroundStyle(accessModeTint(for: mode))
                                 Text(mode.title)
+                                    .lineLimit(1)
+                                    .foregroundStyle(accessModeTint(for: mode))
                                 Spacer()
                                 if mode == executionAccessMode {
                                     Image(systemName: "checkmark")
@@ -183,16 +189,7 @@ public struct ThreadsView: View {
                         }
                     }
                 } label: {
-                    HStack(spacing: 6) {
-                        Text(executionAccessMode.title)
-                            .font(.caption.weight(.semibold))
-                        Image(systemName: "chevron.down")
-                            .font(.caption2.weight(.semibold))
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(Color(.tertiarySystemFill))
-                    .clipShape(Capsule())
+                    accessModePill(mode: executionAccessMode, tint: selectedModeTint)
                 }
             }
             .padding(.horizontal, 2)
@@ -200,6 +197,49 @@ public struct ThreadsView: View {
         .padding(.horizontal, 14)
         .padding(.top, 12)
         .padding(.bottom, 8)
+    }
+
+    private func accessModeIconName(for mode: ExecutionAccessMode) -> String {
+        switch mode {
+        case .defaultPermissions:
+            return "shield.fill"
+        case .fullAccess:
+            return "exclamationmark.shield.fill"
+        }
+    }
+
+    private func accessModeTint(for mode: ExecutionAccessMode) -> Color {
+        switch mode {
+        case .defaultPermissions:
+            return .blue
+        case .fullAccess:
+            return .red
+        }
+    }
+
+    @ViewBuilder
+    private func accessModePill(mode: ExecutionAccessMode, tint: Color) -> some View {
+        accessModePillContent(mode: mode, tint: tint)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color(.tertiarySystemFill))
+        .clipShape(Capsule())
+    }
+
+    @ViewBuilder
+    private func accessModePillContent(mode: ExecutionAccessMode, tint: Color) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: accessModeIconName(for: mode))
+                .foregroundStyle(tint)
+            Text(mode.title)
+                .font(.caption.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .foregroundStyle(tint)
+            Image(systemName: "chevron.down")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(tint)
+        }
     }
 
     @ViewBuilder

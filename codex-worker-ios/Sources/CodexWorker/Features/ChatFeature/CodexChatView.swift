@@ -131,6 +131,8 @@ public struct CodexChatView: View {
 
     @ViewBuilder
     private func header(viewStore: ViewStoreOf<ChatFeature>) -> some View {
+        let selectedModeTint = executionAccessMode == .fullAccess ? Color.red : Color.blue
+
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Button {
@@ -143,6 +145,9 @@ public struct CodexChatView: View {
 
                 Text(viewStore.activeThread?.displayName ?? "未选择线程")
                     .font(.headline)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .layoutPriority(2)
                 Spacer()
                 ConnectionStateBadge(state: connectionState)
 
@@ -152,7 +157,11 @@ public struct CodexChatView: View {
                             onExecutionAccessModeChanged?(mode)
                         } label: {
                             HStack {
+                                Image(systemName: accessModeIconName(for: mode))
+                                    .foregroundStyle(accessModeTint(for: mode))
                                 Text(mode.title)
+                                    .lineLimit(1)
+                                    .foregroundStyle(accessModeTint(for: mode))
                                 Spacer()
                                 if mode == executionAccessMode {
                                     Image(systemName: "checkmark")
@@ -161,18 +170,9 @@ public struct CodexChatView: View {
                         }
                     }
                 } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "shield.lefthalf.filled")
-                        Text(executionAccessMode.title)
-                        Image(systemName: "chevron.down")
-                            .font(.caption2)
-                    }
-                    .font(.caption.weight(.semibold))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 5)
-                    .background(Color(.tertiarySystemFill))
-                    .clipShape(Capsule())
+                    accessModePill(mode: executionAccessMode, tint: selectedModeTint)
                 }
+                .layoutPriority(0)
                 .disabled(viewStore.isSending || viewStore.isStreaming)
 
                 Button {
@@ -206,6 +206,50 @@ public struct CodexChatView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(chatSecondaryBackgroundColor)
+    }
+
+    private func accessModeIconName(for mode: ExecutionAccessMode) -> String {
+        switch mode {
+        case .defaultPermissions:
+            return "shield.fill"
+        case .fullAccess:
+            return "exclamationmark.shield.fill"
+        }
+    }
+
+    private func accessModeTint(for mode: ExecutionAccessMode) -> Color {
+        switch mode {
+        case .defaultPermissions:
+            return .blue
+        case .fullAccess:
+            return .red
+        }
+    }
+
+    @ViewBuilder
+    private func accessModePill(mode: ExecutionAccessMode, tint: Color) -> some View {
+        accessModePillContent(mode: mode, tint: tint)
+        .font(.caption.weight(.semibold))
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(Color(.tertiarySystemFill))
+        .clipShape(Capsule())
+        .layoutPriority(-1)
+    }
+
+    @ViewBuilder
+    private func accessModePillContent(mode: ExecutionAccessMode, tint: Color) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: accessModeIconName(for: mode))
+                .foregroundStyle(tint)
+            Text(mode.title)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .foregroundStyle(tint)
+            Image(systemName: "chevron.down")
+                .font(.caption2)
+                .foregroundStyle(tint)
+        }
     }
 }
 
