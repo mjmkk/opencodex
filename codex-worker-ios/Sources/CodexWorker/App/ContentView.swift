@@ -9,6 +9,8 @@ import ComposableArchitecture
 import SwiftUI
 
 public struct ContentView: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     private struct ViewState: Equatable {
         let connectionState: ConnectionState
         let executionAccessMode: ExecutionAccessMode
@@ -57,7 +59,7 @@ public struct ContentView: View {
                     .allowsHitTesting(!viewStore.isDrawerPresented)
 
                     if viewStore.isDrawerPresented {
-                        Color.black.opacity(0.18)
+                        Color.black.opacity(drawerMaskOpacity)
                             .ignoresSafeArea()
                             .onTapGesture {
                                 viewStore.send(.setDrawerPresented(false))
@@ -80,7 +82,7 @@ public struct ContentView: View {
                     .frame(width: drawerWidth)
                     .background(.ultraThinMaterial)
                     .offset(x: viewStore.isDrawerPresented ? 0 : (-drawerWidth - 12))
-                    .shadow(color: Color.black.opacity(0.15), radius: 12, x: 4, y: 0)
+                    .shadow(color: drawerShadowColor, radius: 12, x: 4, y: 0)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .animation(.spring(response: 0.28, dampingFraction: 0.9), value: viewStore.isDrawerPresented)
@@ -110,5 +112,13 @@ public struct ContentView: View {
                 )
             }
         }
+    }
+
+    private var drawerMaskOpacity: Double {
+        colorScheme == .dark ? 0.34 : 0.18
+    }
+
+    private var drawerShadowColor: Color {
+        Color.black.opacity(colorScheme == .dark ? 0.26 : 0.15)
     }
 }

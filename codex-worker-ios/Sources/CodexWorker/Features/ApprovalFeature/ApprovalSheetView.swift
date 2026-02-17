@@ -9,6 +9,8 @@ import ComposableArchitecture
 import SwiftUI
 
 public struct ApprovalSheetView: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     let store: StoreOf<ApprovalFeature>
 
     public var body: some View {
@@ -96,12 +98,20 @@ public struct ApprovalSheetView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 14))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                        .stroke(panelBorderColor, lineWidth: 1)
                 )
                 .padding(.horizontal, 12)
                 .padding(.bottom, 10)
-                .shadow(radius: 12, y: 4)
+                .shadow(color: panelShadowColor, radius: 12, y: 4)
             }
         }
+    }
+
+    private var panelBorderColor: Color {
+        Color(uiColor: .separator).opacity(colorScheme == .dark ? 0.55 : 0.24)
+    }
+
+    private var panelShadowColor: Color {
+        Color.black.opacity(colorScheme == .dark ? 0.34 : 0.12)
     }
 }

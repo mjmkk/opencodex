@@ -168,4 +168,71 @@ struct ChatFeatureEventTests {
         #expect(store.state.messages.first?.text == "回放文本")
         #expect(store.state.pendingAssistantDeltas.isEmpty)
     }
+
+    @Test
+    func replayApprovalRequiredEmitsDelegateForCurrentThread() async {
+        let approvalPayload: [String: JSONValue] = [
+            "approvalId": .string("appr_replay_1"),
+            "jobId": .string("job_replay_approval_1"),
+            "threadId": .string("thread_replay_approval_1"),
+            "turnId": .string("turn_replay_approval_1"),
+            "kind": .string("command_execution"),
+            "requestMethod": .string("item/commandExecution/requestApproval"),
+            "createdAt": .string("2026-02-17T00:02:00.000Z"),
+            "command": .string("npm test"),
+            "cwd": .string("/tmp/project"),
+            "commandActions": .array([.string("run")]),
+        ]
+        let expectedApproval = Approval.fromPayload(approvalPayload, fallbackJobId: "job_replay_approval_1")
+
+        var initialState = ChatFeature.State()
+        initialState.activeThread = Thread(
+            threadId: "thread_replay_approval_1",
+            preview: nil,
+            cwd: nil,
+            createdAt: nil,
+            updatedAt: nil,
+            modelProvider: nil
+        )
+
+        let store = TestStore(initialState: initialState) {
+            ChatFeature()
+        } withDependencies: { dependencies in
+            var apiClient = APIClient.mock
+            apiClient.listEvents = { _, _ in
+                EventsListResponse(data: [], nextCursor: -1, firstSeq: nil, job: nil)
+            }
+            dependencies.apiClient = apiClient
+            dependencies.sseClient = SSEClient(
+                subscribe: { _, _ in
+                    AsyncStream { continuation in
+                        continuation.finish()
+                    }
+                },
+                cancel: {}
+            )
+        }
+        store.exhaustivity = .off
+
+        let approvalEnvelope = EventEnvelope(
+            type: EventType.approvalRequired.rawValue,
+            ts: "2026-02-17T00:02:00.000Z",
+            jobId: "job_replay_approval_1",
+            seq: 11,
+            payload: approvalPayload
+        )
+
+        await store.send(
+            .threadHistorySyncResponse(
+                threadId: "thread_replay_approval_1",
+                .success([approvalEnvelope])
+            )
+        )
+
+        if let expectedApproval {
+            await store.receive(.delegate(.approvalRequired(expectedApproval)))
+        }
+        #expect(store.state.isApprovalLocked == true)
+        #expect(store.state.currentJobId == "job_replay_approval_1")
+    }
 }

@@ -126,18 +126,36 @@ public struct AppFeature {
             case .threads(.delegate(.didActivateThread(let thread))):
                 state.activeThread = thread
                 state.isDrawerPresented = false
-                return .send(.chat(.setActiveThread(thread)))
+                return .merge(
+                    // 切线程时先清理旧线程审批弹层，避免跨线程串窗。
+                    .send(.approval(.dismiss)),
+                    .send(.chat(.setApprovalLocked(false))),
+                    .send(.chat(.setActiveThread(thread)))
+                )
 
             case .chat(.delegate(.approvalRequired(let approval))):
+                if let idx = state.threads.items.firstIndex(where: { $0.threadId == approval.threadId }) {
+                    state.threads.items[idx].pendingApprovalCount = max(
+                        1,
+                        state.threads.items[idx].pendingApprovalCount
+                    )
+                }
                 return .merge(
                     .send(.approval(.present(approval))),
-                    .send(.chat(.setApprovalLocked(true)))
+                    .send(.chat(.setApprovalLocked(true))),
+                    .send(.threads(.refresh))
                 )
 
             case .chat(.delegate(.approvalResolved)):
+                if let threadId = state.approval.currentApproval?.threadId,
+                   let idx = state.threads.items.firstIndex(where: { $0.threadId == threadId })
+                {
+                    state.threads.items[idx].pendingApprovalCount = 0
+                }
                 return .merge(
                     .send(.approval(.dismiss)),
-                    .send(.chat(.setApprovalLocked(false)))
+                    .send(.chat(.setApprovalLocked(false))),
+                    .send(.threads(.refresh))
                 )
 
             case .chat(.delegate(.streamConnectionChanged(let streamConnectionState))):

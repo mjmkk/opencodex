@@ -256,12 +256,31 @@ public struct ChatFeature {
                 return .merge(
                     streamStateEffect,
                     .run { send in
+                        @Dependency(\.apiClient) var apiClient
                         @Dependency(\.sseClient) var sseClient
                         do {
-                            let stream = try await sseClient.subscribe(jobId, cursor)
+                            // 先走一次 JSON 拉取做“断线恢复”，避免直接 SSE 遇到 cursor 过期。
+                            // 如果游标过期，回退到无 cursor 全量窗口，并让 UI 通过事件回放恢复审批状态。
+                            let bootstrapPage: EventsListResponse
+                            do {
+                                bootstrapPage = try await apiClient.listEvents(jobId, cursor)
+                            } catch let error as CodexError where error == .cursorExpired {
+                                bootstrapPage = try await apiClient.listEvents(jobId, nil)
+                            }
+
+                            for envelope in bootstrapPage.data {
+                                await send(.streamEventReceived(envelope))
+                            }
+                            if Task.isCancelled {
+                                return
+                            }
+
+                            let stream = try await sseClient.subscribe(jobId, bootstrapPage.nextCursor)
                             for await envelope in stream {
                                 await send(.streamEventReceived(envelope))
                             }
+                        } catch is CancellationError {
+                            return
                         } catch {
                             await send(.streamFailed(CodexError.from(error)))
                         }
@@ -286,6 +305,9 @@ public struct ChatFeature {
 
             case .streamEventReceived(let envelope):
                 guard state.currentJobId == nil || envelope.jobId == state.currentJobId else {
+                    return .none
+                }
+                if envelope.seq <= state.cursor {
                     return .none
                 }
                 state.cursor = max(state.cursor, envelope.seq)
@@ -414,6 +436,11 @@ public struct ChatFeature {
         state.isApprovalLocked = replay.isApprovalLocked
         state.errorMessage = replay.errorMessage
 
+        var effect: Effect<Action> = .none
+        if let approval = replay.pendingApproval {
+            effect = .merge(effect, .send(.delegate(.approvalRequired(approval))))
+        }
+
         if events.isEmpty,
            state.messages.isEmpty,
            let thread = state.activeThread
@@ -435,9 +462,12 @@ public struct ChatFeature {
             let activeState = replay.jobState,
             activeState.isActive
         else {
-            return .none
+            return effect
         }
-        return .send(.startStreaming(jobId: activeJobId, cursor: replay.cursor))
+        return .merge(
+            effect,
+            .send(.startStreaming(jobId: activeJobId, cursor: replay.cursor))
+        )
     }
 
     /// 基于线程游标执行远端增量同步
@@ -477,6 +507,8 @@ public struct ChatFeature {
     private func replayThreadEvents(_ events: [EventEnvelope]) -> ThreadHistoryReplay {
         var replay = ThreadHistoryReplay()
         var lastSeqByJob: [String: Int] = [:]
+        var pendingApprovalsById: [String: Approval] = [:]
+        var approvalOrder: [String] = []
 
         for envelope in events {
             replay.currentJobId = envelope.jobId
@@ -488,7 +520,7 @@ public struct ChatFeature {
             var isApprovalLocked = replay.isApprovalLocked
             var errorMessage = replay.errorMessage
 
-            _ = applyEventEnvelope(
+            let output = applyEventEnvelope(
                 messages: &messages,
                 pendingAssistantDeltas: &pendingAssistantDeltas,
                 jobState: &jobState,
@@ -497,6 +529,20 @@ public struct ChatFeature {
                 envelope: envelope,
                 mode: .replay
             )
+
+            if let approval = output.approvalRequired {
+                pendingApprovalsById[approval.approvalId] = approval
+                approvalOrder.removeAll { $0 == approval.approvalId }
+                approvalOrder.append(approval.approvalId)
+            }
+            if let resolved = output.approvalResolved {
+                if resolved.approvalId.isEmpty {
+                    pendingApprovalsById.removeAll()
+                    approvalOrder.removeAll()
+                } else {
+                    pendingApprovalsById.removeValue(forKey: resolved.approvalId)
+                }
+            }
 
             replay.messages = messages
             replay.pendingAssistantDeltas = pendingAssistantDeltas
@@ -509,7 +555,33 @@ public struct ChatFeature {
             replay.isApprovalLocked = false
         }
         replay.cursor = replay.currentJobId.flatMap { lastSeqByJob[$0] } ?? -1
+        replay.pendingApproval = latestPendingApproval(
+            pendingApprovalsById: pendingApprovalsById,
+            approvalOrder: approvalOrder,
+            preferredJobId: replay.currentJobId
+        )
         return replay
+    }
+
+    private func latestPendingApproval(
+        pendingApprovalsById: [String: Approval],
+        approvalOrder: [String],
+        preferredJobId: String?
+    ) -> Approval? {
+        if let preferredJobId {
+            for approvalId in approvalOrder.reversed() {
+                guard let approval = pendingApprovalsById[approvalId] else { continue }
+                if approval.jobId == preferredJobId {
+                    return approval
+                }
+            }
+        }
+        for approvalId in approvalOrder.reversed() {
+            if let approval = pendingApprovalsById[approvalId] {
+                return approval
+            }
+        }
+        return nil
     }
 
     /// 从 item.started / item.completed 中提取用户消息
@@ -653,8 +725,7 @@ public struct ChatFeature {
         case .approvalRequired:
             isApprovalLocked = true
             jobState = .waitingApproval
-            if mode == .live,
-               let payload = envelope.payload,
+            if let payload = envelope.payload,
                let approval = Approval.fromPayload(payload, fallbackJobId: envelope.jobId)
             {
                 output.approvalRequired = approval
@@ -662,9 +733,7 @@ public struct ChatFeature {
 
         case .approvalResolved:
             isApprovalLocked = false
-            if mode == .live {
-                output.approvalResolved = approvalResolvedPayload(from: envelope)
-            }
+            output.approvalResolved = approvalResolvedPayload(from: envelope)
 
         case .itemAgentMessageDelta:
             applyAssistantDelta(
@@ -745,4 +814,5 @@ private struct ThreadHistoryReplay: Sendable {
     var jobState: JobState?
     var isApprovalLocked = false
     var errorMessage: String?
+    var pendingApproval: Approval?
 }

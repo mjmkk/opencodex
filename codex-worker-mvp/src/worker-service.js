@@ -521,7 +521,29 @@ export class WorkerService {
         turnToJob: this.turnToJob,
         turnKey: (currentThreadId, turnId) => this.#turnKey(currentThreadId, turnId),
       });
-      events = replayEvents;
+      const activeJob = this.#findActiveJobByThread(threadId);
+      if (activeJob && Array.isArray(activeJob.events) && activeJob.events.length > 0) {
+        // 活跃任务的运行期事件（含 approval.required / approval.resolved）只在内存里，
+        // 需要拼入线程回放，避免 iOS 重进线程后丢审批弹窗。
+        const merged = [...replayEvents, ...activeJob.events];
+        const deduped = [];
+        const seen = new Set();
+        for (const event of merged) {
+          if (!event || !isNonEmptyString(event.type) || !isNonEmptyString(event.jobId)) {
+            continue;
+          }
+          const seq = Number.isInteger(event.seq) ? event.seq : -1;
+          const key = `${event.jobId}:${seq}:${event.type}`;
+          if (seen.has(key)) {
+            continue;
+          }
+          seen.add(key);
+          deduped.push(event);
+        }
+        events = deduped;
+      } else {
+        events = replayEvents;
+      }
     } catch (error) {
       if (typeof this.logger?.warn === "function") {
         const message = error instanceof Error ? error.message : String(error);
@@ -1165,6 +1187,8 @@ export class WorkerService {
    * @returns {Object} Thread DTO
    */
   #toThreadDto(thread) {
+    const activeJob = this.#findActiveJobByThread(thread.id);
+    const pendingApprovalCount = activeJob?.pendingApprovalIds?.size ?? 0;
     return {
       threadId: thread.id,
       preview: thread.preview,
@@ -1172,6 +1196,7 @@ export class WorkerService {
       createdAt: thread.createdAt,
       updatedAt: thread.updatedAt,
       modelProvider: thread.modelProvider,
+      pendingApprovalCount,
     };
   }
 

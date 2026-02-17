@@ -232,3 +232,48 @@ test("拒绝审批时可携带拒绝理由并写入事件", async () => {
   assert.equal(resolvedEvent.payload.decision, "decline");
   assert.equal(resolvedEvent.payload.declineReason, "当前分支未完成代码审查，禁止执行");
 });
+
+test("线程列表返回 pendingApprovalCount，便于前端显示审批标记", async () => {
+  const { service, rpc } = setupService();
+  rpc.onRequest("thread/list", () => ({
+    data: [
+      {
+        id: "thr_1",
+        preview: "",
+        cwd: "/repo",
+        createdAt: 1,
+        updatedAt: 1,
+        modelProvider: "openai",
+      },
+    ],
+    nextCursor: null,
+  }));
+
+  await service.init();
+
+  const thread = await service.createThread({ projectPath: "/repo" });
+  const job = await service.startTurn(thread.threadId, {
+    text: "请执行测试",
+  });
+
+  rpc.emit("request", {
+    id: 309,
+    method: "item/commandExecution/requestApproval",
+    params: {
+      threadId: thread.threadId,
+      turnId: "turn_1",
+      itemId: "item_cmd_4",
+      command: "npm test",
+      cwd: "/repo",
+      commandActions: [],
+    },
+  });
+
+  const snapshot = service.getJob(job.jobId);
+  assert.equal(snapshot.pendingApprovalCount, 1);
+
+  const threads = await service.listThreads();
+  const target = threads.data.find((item) => item.threadId === thread.threadId);
+  assert.ok(target, "线程列表应该包含当前线程");
+  assert.equal(target.pendingApprovalCount, 1);
+});

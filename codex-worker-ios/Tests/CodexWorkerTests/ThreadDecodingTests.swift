@@ -12,7 +12,8 @@ struct ThreadDecodingTests {
           "cwd": "/tmp/project",
           "createdAt": 1771240692,
           "updatedAt": 1771240717,
-          "modelProvider": "openai"
+          "modelProvider": "openai",
+          "pendingApprovalCount": 2
         }
         """
 
@@ -27,6 +28,7 @@ struct ThreadDecodingTests {
         #expect(thread.updatedAt != nil)
         #expect(thread.createdDate != nil)
         #expect(thread.lastActiveAt != nil)
+        #expect(thread.pendingApprovalCount == 2)
     }
 
     @Test
@@ -39,7 +41,8 @@ struct ThreadDecodingTests {
               "preview": "latest message",
               "cwd": "/Users/me/project",
               "createdAt": 1771240692,
-              "updatedAt": 1771240717
+              "updatedAt": 1771240717,
+              "pending_approval_count": 1
             }
           ],
           "next_cursor": 42
@@ -52,5 +55,6 @@ struct ThreadDecodingTests {
         #expect(response.data.count == 1)
         #expect(response.data.first?.threadId == "thread_abc")
         #expect(response.nextCursor == "42")
+        #expect(response.data.first?.pendingApprovalCount == 1)
     }
 }

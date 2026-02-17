@@ -11,6 +11,8 @@ import MarkdownUI
 import SwiftUI
 
 public struct CodexChatView: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     let store: StoreOf<ChatFeature>
     let connectionState: ConnectionState
     let onSidebarTap: (() -> Void)?
@@ -19,12 +21,6 @@ public struct CodexChatView: View {
     let onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)?
     private let renderPipeline: MessageRenderPipeline
     private let codeSyntaxHighlighter: CodeSyntaxHighlighter
-    private let pageBackgroundColor = Color(uiColor: .systemGroupedBackground)
-    private let chatMainBackgroundColor = Color(uiColor: .systemGroupedBackground)
-    private let chatSecondaryBackgroundColor = Color(uiColor: .secondarySystemBackground)
-    private let chatElevatedInputColor = Color(uiColor: .systemBackground)
-    private let chatPrimaryTextColor = Color(uiColor: .label)
-    private let chatSecondaryTextColor = Color(uiColor: .secondaryLabel)
 
     public init(
         store: StoreOf<ChatFeature>,
@@ -62,7 +58,7 @@ public struct CodexChatView: View {
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(Color(.secondarySystemBackground))
+                    .background(chatSecondaryBackgroundColor)
                 }
 
                 ChatView(
@@ -74,7 +70,8 @@ public struct CodexChatView: View {
                         CodexMessageBubble(
                             message: message,
                             renderPipeline: renderPipeline,
-                            codeSyntaxHighlighter: codeSyntaxHighlighter
+                            codeSyntaxHighlighter: codeSyntaxHighlighter,
+                            colorScheme: colorScheme
                         )
                     }
                 )
@@ -104,6 +101,32 @@ public struct CodexChatView: View {
             .onAppear { viewStore.send(.onAppear) }
             .onDisappear { viewStore.send(.onDisappear) }
         }
+    }
+
+    private var pageBackgroundColor: Color {
+        Color(uiColor: .systemGroupedBackground)
+    }
+
+    private var chatMainBackgroundColor: Color {
+        Color(uiColor: .systemGroupedBackground)
+    }
+
+    private var chatSecondaryBackgroundColor: Color {
+        Color(uiColor: .secondarySystemBackground)
+    }
+
+    private var chatElevatedInputColor: Color {
+        colorScheme == .dark
+            ? Color(uiColor: .tertiarySystemBackground)
+            : Color(uiColor: .systemBackground)
+    }
+
+    private var chatPrimaryTextColor: Color {
+        Color(uiColor: .label)
+    }
+
+    private var chatSecondaryTextColor: Color {
+        Color(uiColor: .secondaryLabel)
     }
 
     @ViewBuilder
@@ -182,7 +205,7 @@ public struct CodexChatView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(Color(.secondarySystemBackground))
+        .background(chatSecondaryBackgroundColor)
     }
 }
 
@@ -190,12 +213,7 @@ private struct CodexMessageBubble: View {
     let message: Message
     let renderPipeline: MessageRenderPipeline
     let codeSyntaxHighlighter: CodeSyntaxHighlighter
-    private let assistantBubbleColor = Color(uiColor: .systemBackground)
-    private let assistantInnerCodeColor = Color(uiColor: .secondarySystemBackground)
-    private let assistantBorderColor = Color(uiColor: .separator).opacity(0.32)
-    private let assistantShadowColor = Color.black.opacity(0.05)
-    private let assistantTableEvenRowColor = Color(uiColor: .systemBackground).opacity(0.6)
-    private let assistantTableOddRowColor = Color(uiColor: .secondarySystemFill).opacity(0.9)
+    let colorScheme: ColorScheme
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
@@ -281,6 +299,38 @@ private struct CodexMessageBubble: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 2)
+    }
+
+    private var assistantBubbleColor: Color {
+        colorScheme == .dark
+            ? Color(uiColor: .secondarySystemBackground)
+            : Color(uiColor: .systemBackground)
+    }
+
+    private var assistantInnerCodeColor: Color {
+        colorScheme == .dark
+            ? Color(uiColor: .tertiarySystemBackground)
+            : Color(uiColor: .secondarySystemBackground)
+    }
+
+    private var assistantBorderColor: Color {
+        Color(uiColor: .separator).opacity(colorScheme == .dark ? 0.5 : 0.28)
+    }
+
+    private var assistantShadowColor: Color {
+        Color.black.opacity(colorScheme == .dark ? 0.24 : 0.05)
+    }
+
+    private var assistantTableEvenRowColor: Color {
+        colorScheme == .dark
+            ? Color(uiColor: .secondarySystemBackground).opacity(0.72)
+            : Color(uiColor: .systemBackground).opacity(0.6)
+    }
+
+    private var assistantTableOddRowColor: Color {
+        colorScheme == .dark
+            ? Color(uiColor: .tertiarySystemFill).opacity(0.92)
+            : Color(uiColor: .secondarySystemFill).opacity(0.9)
     }
 
     private func statusStyle(_ status: Message.Status?) -> (icon: String, tint: Color)? {

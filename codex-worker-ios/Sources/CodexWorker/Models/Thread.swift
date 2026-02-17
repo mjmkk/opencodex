@@ -55,6 +55,9 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
     /// 模型提供者（如 openai、anthropic）
     public var modelProvider: String?
 
+    /// 待处理审批数量（用于线程列表标记）
+    public var pendingApprovalCount: Int
+
     // MARK: - Identifiable
 
     public var id: String { threadId }
@@ -65,7 +68,8 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
         cwd: String?,
         createdAt: String?,
         updatedAt: String?,
-        modelProvider: String?
+        modelProvider: String?,
+        pendingApprovalCount: Int = 0
     ) {
         self.threadId = threadId
         self.preview = preview
@@ -73,6 +77,7 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.modelProvider = modelProvider
+        self.pendingApprovalCount = max(0, pendingApprovalCount)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -87,6 +92,8 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
         case updated_at
         case modelProvider
         case model_provider
+        case pendingApprovalCount
+        case pending_approval_count
     }
 
     public init(from decoder: Decoder) throws {
@@ -114,6 +121,10 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
         self.createdAt = Self.decodeTimestampString(from: container, keys: [.createdAt, .created_at])
         self.updatedAt = Self.decodeTimestampString(from: container, keys: [.updatedAt, .updated_at])
         self.modelProvider = Self.decodeLossyString(from: container, keys: [.modelProvider, .model_provider])
+        self.pendingApprovalCount = max(
+            0,
+            Self.decodeLossyInt(from: container, keys: [.pendingApprovalCount, .pending_approval_count]) ?? 0
+        )
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -124,6 +135,7 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
         try container.encodeIfPresent(createdAt, forKey: .createdAt)
         try container.encodeIfPresent(updatedAt, forKey: .updatedAt)
         try container.encodeIfPresent(modelProvider, forKey: .modelProvider)
+        try container.encode(pendingApprovalCount, forKey: .pendingApprovalCount)
     }
 
     private static func decodeLossyString(
@@ -160,6 +172,26 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
             }
             if let value = try? container.decodeIfPresent(Double.self, forKey: key) {
                 return iso8601String(fromEpoch: value)
+            }
+        }
+        return nil
+    }
+
+    private static func decodeLossyInt(
+        from container: KeyedDecodingContainer<CodingKeys>,
+        keys: [CodingKeys]
+    ) -> Int? {
+        for key in keys {
+            if let value = try? container.decodeIfPresent(Int.self, forKey: key) {
+                return value
+            }
+            if let value = try? container.decodeIfPresent(String.self, forKey: key),
+               let intValue = Int(value.trimmingCharacters(in: .whitespacesAndNewlines))
+            {
+                return intValue
+            }
+            if let value = try? container.decodeIfPresent(Double.self, forKey: key) {
+                return Int(value)
             }
         }
         return nil

@@ -254,6 +254,22 @@ private struct ThreadRow: View {
                         .foregroundStyle(.secondary)
                 }
 
+                if thread.pendingApprovalCount > 0 {
+                    HStack(spacing: 4) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.caption2)
+                        if thread.pendingApprovalCount > 1 {
+                            Text("\(thread.pendingApprovalCount)")
+                                .font(.caption2.weight(.semibold))
+                        }
+                    }
+                    .foregroundStyle(.orange)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color.orange.opacity(0.14))
+                    .clipShape(Capsule())
+                }
+
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundStyle(.green)
