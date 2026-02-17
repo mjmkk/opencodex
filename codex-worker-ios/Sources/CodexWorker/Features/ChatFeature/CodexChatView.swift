@@ -14,17 +14,23 @@ public struct CodexChatView: View {
     let connectionState: ConnectionState
     let onSidebarTap: (() -> Void)?
     let onSettingsTap: (() -> Void)?
+    let executionAccessMode: ExecutionAccessMode
+    let onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)?
 
     public init(
         store: StoreOf<ChatFeature>,
         connectionState: ConnectionState = .disconnected,
         onSidebarTap: (() -> Void)? = nil,
-        onSettingsTap: (() -> Void)? = nil
+        onSettingsTap: (() -> Void)? = nil,
+        executionAccessMode: ExecutionAccessMode = .defaultPermissions,
+        onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)? = nil
     ) {
         self.store = store
         self.connectionState = connectionState
         self.onSidebarTap = onSidebarTap
         self.onSettingsTap = onSettingsTap
+        self.executionAccessMode = executionAccessMode
+        self.onExecutionAccessModeChanged = onExecutionAccessModeChanged
     }
 
     public var body: some View {
@@ -32,10 +38,27 @@ public struct CodexChatView: View {
             VStack(spacing: 0) {
                 header(viewStore: viewStore)
 
+                if viewStore.shouldShowGeneratingIndicator {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                            .scaleEffect(0.9)
+                        Text("正在生成...")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color(.secondarySystemBackground))
+                }
+
                 ChatView(
                     messages: viewStore.messages,
                     didSendMessage: { draft in
                         viewStore.send(.didSendDraft(draft))
+                    },
+                    messageBuilder: { message, _, _, _, _, _, _ in
+                        CodexMessageBubble(message: message)
                     }
                 )
                 .showDateHeaders(false)
@@ -66,10 +89,34 @@ public struct CodexChatView: View {
                 Spacer()
                 ConnectionStateBadge(state: connectionState)
 
-                if viewStore.isStreaming {
-                    ProgressView()
-                        .scaleEffect(0.8)
+                Menu {
+                    ForEach(ExecutionAccessMode.allCases, id: \.self) { mode in
+                        Button {
+                            onExecutionAccessModeChanged?(mode)
+                        } label: {
+                            HStack {
+                                Text(mode.title)
+                                Spacer()
+                                if mode == executionAccessMode {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "shield.lefthalf.filled")
+                        Text(executionAccessMode.title)
+                        Image(systemName: "chevron.down")
+                            .font(.caption2)
+                    }
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .background(Color(.tertiarySystemFill))
+                    .clipShape(Capsule())
                 }
+                .disabled(viewStore.isSending || viewStore.isStreaming)
 
                 Button {
                     onSettingsTap?()
@@ -102,6 +149,71 @@ public struct CodexChatView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(Color(.secondarySystemBackground))
+    }
+}
+
+private struct CodexMessageBubble: View {
+    let message: Message
+
+    var body: some View {
+        HStack(alignment: .bottom, spacing: 8) {
+            if message.user.isCurrentUser {
+                Spacer(minLength: 24)
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text(message.text)
+                        .font(.body)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(Color.accentColor)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .frame(maxWidth: 280, alignment: .trailing)
+
+                    if let style = statusStyle(message.status) {
+                        Image(systemName: style.icon)
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(style.tint)
+                    }
+                }
+            } else {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(markdownText(message.text))
+                        .font(.body)
+                        .textSelection(.enabled)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color(.secondarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 2)
+    }
+
+    private func markdownText(_ raw: String) -> AttributedString {
+        if let parsed = try? AttributedString(markdown: raw) {
+            return parsed
+        }
+        return AttributedString(raw)
+    }
+
+    private func statusStyle(_ status: Message.Status?) -> (icon: String, tint: Color)? {
+        guard let status else { return nil }
+        switch status {
+        case .sending:
+            return ("clock", .secondary)
+        case .sent:
+            return ("checkmark.circle.fill", .green)
+        case .delivered:
+            return ("checkmark.circle.fill", .green)
+        case .read:
+            return ("checkmark.circle.fill", .blue)
+        case .error:
+            return ("exclamationmark.circle.fill", .red)
+        }
     }
 }
 

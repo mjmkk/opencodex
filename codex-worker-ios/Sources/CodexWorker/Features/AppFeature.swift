@@ -25,6 +25,7 @@ public struct AppFeature {
         public var connectionState: ConnectionState = .disconnected
         public var workerReachability: WorkerReachability = .unknown
         public var streamConnectionState: ChatFeature.StreamConnectionState = .idle
+        public var executionAccessMode: ExecutionAccessMode = .defaultPermissions
         public var threads = ThreadsFeature.State()
         public var chat = ChatFeature.State()
         public var approval = ApprovalFeature.State()
@@ -43,6 +44,7 @@ public struct AppFeature {
         case approval(ApprovalFeature.Action)
         case settings(SettingsFeature.Action)
         case setDrawerPresented(Bool)
+        case setExecutionAccessMode(ExecutionAccessMode)
         case healthCheckNow
         case healthCheckResponse(Result<HealthCheckResponse, CodexError>)
     }
@@ -64,9 +66,11 @@ public struct AppFeature {
                 return .merge(
                     .run { send in
                         @Dependency(\.workerConfigurationStore) var workerConfigurationStore
+                        @Dependency(\.executionAccessStore) var executionAccessStore
                         if workerConfigurationStore.load() == nil {
                             workerConfigurationStore.save(.default)
                         }
+                        await send(.setExecutionAccessMode(executionAccessStore.load()))
                         await send(.healthCheckNow)
                     },
                     .run { send in
@@ -111,6 +115,13 @@ public struct AppFeature {
             case .setDrawerPresented(let presented):
                 state.isDrawerPresented = presented
                 return .none
+
+            case .setExecutionAccessMode(let mode):
+                state.executionAccessMode = mode
+                return .run { _ in
+                    @Dependency(\.executionAccessStore) var executionAccessStore
+                    executionAccessStore.save(mode)
+                }
 
             case .threads(.delegate(.didActivateThread(let thread))):
                 state.activeThread = thread

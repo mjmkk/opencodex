@@ -165,10 +165,19 @@ public struct StartTurnRequest: Codable, Sendable {
     /// 覆盖审批策略（可选）
     public var approvalPolicy: String?
 
-    public init(text: String?, input: [TurnInput]?, approvalPolicy: String?) {
+    /// 覆盖沙箱模式（可选）
+    public var sandbox: String?
+
+    public init(
+        text: String?,
+        input: [TurnInput]?,
+        approvalPolicy: String?,
+        sandbox: String? = nil
+    ) {
         self.text = text
         self.input = input
         self.approvalPolicy = approvalPolicy
+        self.sandbox = sandbox
     }
 }
 

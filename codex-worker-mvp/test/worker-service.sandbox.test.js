@@ -68,3 +68,90 @@ test("createThread 会把 sandbox/approvalPolicy 标准化为 kebab-case", async
   assert.ok(captured);
   assert.equal(captured.sandbox, "workspace-write");
 });
+
+test("startTurn 支持覆盖 approvalPolicy/sandbox，并标准化输入", async () => {
+  const rpc = new FakeRpcClient();
+
+  rpc.onRequest("initialize", () => ({}));
+  rpc.onRequest("thread/start", (params) => ({
+    thread: {
+      id: "thr_turn_sandbox",
+      preview: "",
+      cwd: params.cwd,
+      createdAt: 1,
+      updatedAt: 1,
+      modelProvider: "openai",
+    },
+  }));
+  rpc.onRequest("thread/resume", ({ threadId }) => ({
+    thread: {
+      id: threadId,
+      preview: "",
+      cwd: "/repo",
+      createdAt: 1,
+      updatedAt: 1,
+      modelProvider: "openai",
+    },
+  }));
+
+  let capturedTurnStart = null;
+  rpc.onRequest("turn/start", (params) => {
+    capturedTurnStart = params;
+    return {
+      turn: {
+        id: "turn_turn_sandbox",
+        status: "inProgress",
+        items: [],
+        error: null,
+      },
+    };
+  });
+
+  const service = new WorkerService({
+    rpc,
+    projectPaths: ["/repo"],
+    defaultProjectPath: "/repo",
+    logger: {
+      warn: () => {},
+      error: () => {},
+    },
+  });
+
+  await service.init();
+  const thread = await service.createThread({ projectPath: "/repo" });
+
+  await service.startTurn(thread.threadId, {
+    text: "hello",
+    approvalPolicy: "never",
+    sandbox: "danger-full-access",
+  });
+
+  assert.ok(capturedTurnStart);
+  assert.equal(capturedTurnStart.approvalPolicy, "never");
+  assert.equal(capturedTurnStart.sandbox, "danger-full-access");
+
+  // 将第一次 turn 收敛为终态，避免并发保护拦截第二次 startTurn。
+  rpc.emit("notification", {
+    method: "turn/completed",
+    params: {
+      threadId: thread.threadId,
+      turn: {
+        id: "turn_turn_sandbox",
+        status: "completed",
+        items: [],
+        error: null,
+      },
+    },
+  });
+
+  capturedTurnStart = null;
+  await service.startTurn(thread.threadId, {
+    text: "hello again",
+    approvalPolicy: "bad-policy",
+    sandbox: "bad-sandbox",
+  });
+
+  assert.ok(capturedTurnStart);
+  assert.equal(capturedTurnStart.approvalPolicy, undefined);
+  assert.equal(capturedTurnStart.sandbox, undefined);
+});

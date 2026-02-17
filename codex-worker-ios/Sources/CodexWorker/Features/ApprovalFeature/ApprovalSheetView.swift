@@ -49,6 +49,23 @@ public struct ApprovalSheetView: View {
                             .foregroundStyle(.red)
                     }
 
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("拒绝理由（可选）")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        TextField(
+                            "例如：此命令会修改生产环境，不允许执行",
+                            text: Binding(
+                                get: { viewStore.declineReasonInput },
+                                set: { viewStore.send(.declineReasonChanged($0)) }
+                            ),
+                            axis: .vertical
+                        )
+                        .textFieldStyle(.roundedBorder)
+                        .lineLimit(2 ... 4)
+                    }
+
                     HStack(spacing: 8) {
                         Button("拒绝") {
                             viewStore.send(.submitTapped(.decline))

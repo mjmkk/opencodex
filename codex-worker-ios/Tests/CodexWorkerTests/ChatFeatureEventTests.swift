@@ -6,6 +6,93 @@ import Testing
 @MainActor
 struct ChatFeatureEventTests {
     @Test
+    func liveDeltaDoesNotRenderPartialMessageBeforeCompletion() async {
+        var initialState = ChatFeature.State()
+        initialState.currentJobId = "job_live_delta_1"
+        let store = TestStore(initialState: initialState) {
+            ChatFeature()
+        }
+        store.exhaustivity = .off
+
+        let deltaEnvelope = EventEnvelope(
+            type: EventType.itemAgentMessageDelta.rawValue,
+            ts: "2026-02-17T00:00:00.000Z",
+            jobId: "job_live_delta_1",
+            seq: 1,
+            payload: [
+                "itemId": .string("assistant_item_delta"),
+                "delta": .string("hello"),
+            ]
+        )
+
+        await store.send(.streamEventReceived(deltaEnvelope))
+
+        #expect(store.state.messages.isEmpty)
+        #expect(store.state.pendingAssistantDeltas["assistant_item_delta"]?.text == "hello")
+
+        let completedEnvelope = EventEnvelope(
+            type: EventType.itemCompleted.rawValue,
+            ts: "2026-02-17T00:00:01.000Z",
+            jobId: "job_live_delta_1",
+            seq: 2,
+            payload: [
+                "item": .object([
+                    "id": .string("assistant_item_delta"),
+                    "type": .string("agentMessage"),
+                ]),
+            ]
+        )
+
+        await store.send(.streamEventReceived(completedEnvelope))
+
+        #expect(store.state.messages.count == 1)
+        #expect(store.state.messages.first?.id == "assistant_item_delta")
+        #expect(store.state.messages.first?.text == "hello")
+        #expect(store.state.pendingAssistantDeltas.isEmpty)
+    }
+
+    @Test
+    func jobFinishedFlushesPendingAssistantDelta() async {
+        var initialState = ChatFeature.State()
+        initialState.currentJobId = "job_live_finish_1"
+        let store = TestStore(initialState: initialState) {
+            ChatFeature()
+        }
+        store.exhaustivity = .off
+
+        let deltaEnvelope = EventEnvelope(
+            type: EventType.itemAgentMessageDelta.rawValue,
+            ts: "2026-02-17T00:00:00.000Z",
+            jobId: "job_live_finish_1",
+            seq: 1,
+            payload: [
+                "itemId": .string("assistant_item_finish"),
+                "delta": .string("finalized by job.finished"),
+            ]
+        )
+
+        await store.send(.streamEventReceived(deltaEnvelope))
+        #expect(store.state.messages.isEmpty)
+
+        let finishedEnvelope = EventEnvelope(
+            type: EventType.jobFinished.rawValue,
+            ts: "2026-02-17T00:00:01.000Z",
+            jobId: "job_live_finish_1",
+            seq: 2,
+            payload: [
+                "state": .string("DONE"),
+            ]
+        )
+
+        await store.send(.streamEventReceived(finishedEnvelope))
+
+        #expect(store.state.messages.count == 1)
+        #expect(store.state.messages.first?.id == "assistant_item_finish")
+        #expect(store.state.messages.first?.text == "finalized by job.finished")
+        #expect(store.state.pendingAssistantDeltas.isEmpty)
+    }
+
+    @Test
     func liveItemCompletedWithoutDeltaFallsBackToCompletedText() async {
         var initialState = ChatFeature.State()
         initialState.currentJobId = "job_live_1"
@@ -29,7 +116,6 @@ struct ChatFeatureEventTests {
         )
 
         await store.send(.streamEventReceived(envelope))
-        await store.skipReceivedActions()
 
         #expect(store.state.cursor == 7)
         #expect(store.state.messages.count == 1)

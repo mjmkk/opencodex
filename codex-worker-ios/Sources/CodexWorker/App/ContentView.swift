@@ -11,11 +11,13 @@ import SwiftUI
 public struct ContentView: View {
     private struct ViewState: Equatable {
         let connectionState: ConnectionState
+        let executionAccessMode: ExecutionAccessMode
         let isDrawerPresented: Bool
         let isApprovalPresented: Bool
 
         init(_ state: AppFeature.State) {
             self.connectionState = state.connectionState
+            self.executionAccessMode = state.executionAccessMode
             self.isDrawerPresented = state.isDrawerPresented
             self.isApprovalPresented = state.approval.isPresented
         }
@@ -45,6 +47,10 @@ public struct ContentView: View {
                         },
                         onSettingsTap: {
                             isSettingsPresented = true
+                        },
+                        executionAccessMode: viewStore.executionAccessMode,
+                        onExecutionAccessModeChanged: { mode in
+                            viewStore.send(.setExecutionAccessMode(mode))
                         }
                     )
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -65,6 +71,10 @@ public struct ContentView: View {
                         ),
                         onDismiss: {
                             viewStore.send(.setDrawerPresented(false))
+                        },
+                        executionAccessMode: viewStore.executionAccessMode,
+                        onExecutionAccessModeChanged: { mode in
+                            viewStore.send(.setExecutionAccessMode(mode))
                         }
                     )
                     .frame(width: drawerWidth)

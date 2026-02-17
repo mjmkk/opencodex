@@ -71,7 +71,7 @@ export class WorkerService {
    *
    * @param {Object} options - 配置选项
    * @param {JsonRpcClient} options.rpc - JSON-RPC 客户端
-   * @param {SqliteStore} [options.store] - 持久化存储（可选，不传则只使用内存）
+   * @param {SqliteStore} [options.store] - 本地缓存存储（可选，不作为真相源）
    * @param {string[]} [options.projectPaths] - 项目路径白名单
    * @param {string} [options.defaultProjectPath] - 默认项目路径
    * @param {number} [options.eventRetention=2000] - 单任务保留事件数
@@ -332,6 +332,7 @@ export class WorkerService {
    * @param {string} [payload.text] - 文本消息
    * @param {Array} [payload.input] - 结构化输入（与 text 二选一）
    * @param {string} [payload.approvalPolicy] - 覆盖审批策略
+   * @param {string} [payload.sandbox] - 覆盖沙箱模式
    * @returns {Promise<Object>} Job 快照
    * @throws {HttpError} 409 如果线程已有活跃任务
    */
@@ -339,6 +340,7 @@ export class WorkerService {
     this.#validateThreadId(threadId);
     const input = this.#normalizeTurnInput(payload);
     const approvalPolicy = normalizeApprovalPolicy(payload.approvalPolicy);
+    const sandbox = normalizeSandboxMode(payload.sandbox);
 
     // 检查是否有活跃任务（防止同一线程并发执行）
     const activeJob = this.#findActiveJobByThread(threadId);
@@ -367,6 +369,7 @@ export class WorkerService {
         threadId,
         input,
         ...(approvalPolicy ? { approvalPolicy } : {}),
+        ...(sandbox ? { sandbox } : {}),
       });
 
       // 记录 turnId
@@ -397,7 +400,8 @@ export class WorkerService {
   /**
    * 获取任务快照
    *
-   * 优先从内存获取，如果不存在则从持久化存储获取。
+   * 仅从内存读取任务状态。
+   * 真相源为 app-server；SQLite 仅用于缓存，不参与此接口读路径。
    *
    * @param {string} jobId - 任务 ID
    * @returns {Object} Job 快照
@@ -408,19 +412,15 @@ export class WorkerService {
     if (job) {
       return this.#toJobSnapshot(job);
     }
-
-    // 尝试从持久化存储获取
-    const persisted = this.store?.getJob?.(jobId) ?? null;
-    if (!persisted) {
-      throw new HttpError(404, "JOB_NOT_FOUND", `任务 ${jobId} 不存在`);
-    }
-    return persisted;
+    throw new HttpError(404, "JOB_NOT_FOUND", `任务 ${jobId} 不存在`);
   }
 
   /**
    * 获取任务事件列表
    *
    * 支持游标（cursor）分页，用于 SSE 断线续流。
+   * 该接口仅读取当前 Worker 进程内任务事件，不从 SQLite 回放旧数据。
+   * SQLite 仅作为线程历史的降级缓存（见 listThreadEvents）。
    *
    * @param {string} jobId - 任务 ID
    * @param {number|null} [cursor=null] - 游标，返回 seq > cursor 的事件
@@ -429,18 +429,7 @@ export class WorkerService {
    * @throws {HttpError} 409 如果游标已过期
    */
   listEvents(jobId, cursor = null) {
-    // 启用 SQLite 后，优先回放落盘事件，支持 Worker 重启后的追溯
-    if (this.store?.listEvents) {
-      const snapshot = this.getJob(jobId);
-      const persisted = this.store.listEvents(jobId, cursor);
-      return {
-        ...persisted,
-        firstSeq: 0,
-        job: snapshot,
-      };
-    }
-
-    // 内存模式
+    // 内存读路径（权威）
     const job = this.jobs.get(jobId);
     if (!job) {
       throw new HttpError(404, "JOB_NOT_FOUND", `任务 ${jobId} 不存在`);
@@ -567,6 +556,7 @@ export class WorkerService {
    * @param {string} payload.approvalId - 审批 ID
    * @param {string} payload.decision - 决策值
    * @param {string[]} [payload.execPolicyAmendment] - 修改后的命令（仅用于 accept_with_execpolicy_amendment）
+   * @param {string} [payload.declineReason] - 拒绝原因（可选，兼容 decline_reason）
    * @returns {Promise<Object>} { approvalId, status, decision }
    * @throws {HttpError} 404 如果审批不存在或不属于该任务
    */
@@ -600,6 +590,10 @@ export class WorkerService {
     const decisionText = payload.decision;
     const execPolicyAmendment =
       payload.execPolicyAmendment ?? payload.exec_policy_amendment;
+    const declineReasonRaw = payload.declineReason ?? payload.decline_reason;
+    const declineReason = isNonEmptyString(declineReasonRaw)
+      ? declineReasonRaw.trim()
+      : null;
     const decisionResult = mapDecisionToRpc(
       approval.kind,
       decisionText,
@@ -621,15 +615,23 @@ export class WorkerService {
       approvalId,
       decision: decisionText,
       decidedAt: approval.decidedAt,
+      ...(declineReason ? { declineReason } : {}),
     });
 
     // 持久化决策
+    const extraPayload = {};
+    if (execPolicyAmendment) {
+      extraPayload.execPolicyAmendment = execPolicyAmendment;
+    }
+    if (declineReason) {
+      extraPayload.declineReason = declineReason;
+    }
     this.store?.insertDecision?.({
       approvalId,
       decision: decisionText,
       decidedAt: approval.decidedAt,
       actor: "api",
-      extra: execPolicyAmendment ? { execPolicyAmendment } : null,
+      extra: Object.keys(extraPayload).length > 0 ? extraPayload : null,
     });
 
     // 更新 Job 状态

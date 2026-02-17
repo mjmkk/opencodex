@@ -15,6 +15,7 @@ public struct ApprovalFeature {
         public var isSubmitting = false
         public var errorMessage: String?
         public var submittedDecision: ApprovalDecision?
+        public var declineReasonInput = ""
 
         public var isPresented: Bool {
             currentApproval != nil
@@ -26,6 +27,7 @@ public struct ApprovalFeature {
     public enum Action {
         case present(Approval)
         case dismiss
+        case declineReasonChanged(String)
         case submitTapped(ApprovalDecision)
         case submitResponse(Result<ApprovalResponse, CodexError>)
         case clearError
@@ -40,6 +42,7 @@ public struct ApprovalFeature {
                 state.currentApproval = approval
                 state.errorMessage = nil
                 state.submittedDecision = nil
+                state.declineReasonInput = ""
                 return .none
 
             case .dismiss:
@@ -47,6 +50,11 @@ public struct ApprovalFeature {
                 state.isSubmitting = false
                 state.errorMessage = nil
                 state.submittedDecision = nil
+                state.declineReasonInput = ""
+                return .none
+
+            case .declineReasonChanged(let value):
+                state.declineReasonInput = value
                 return .none
 
             case .submitTapped(let decision):
@@ -59,13 +67,18 @@ public struct ApprovalFeature {
                 state.isSubmitting = true
                 state.errorMessage = nil
                 state.submittedDecision = decision
+                let declineReason = state.declineReasonInput
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
 
                 return .run { send in
                     @Dependency(\.apiClient) var apiClient
                     let request = ApprovalRequest(
                         approvalId: approvalId,
                         decision: decision.rawValue,
-                        execPolicyAmendment: nil
+                        execPolicyAmendment: nil,
+                        declineReason: decision == .decline
+                            ? (declineReason.isEmpty ? nil : declineReason)
+                            : nil
                     )
                     await send(
                         .submitResponse(

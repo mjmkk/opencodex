@@ -77,6 +77,7 @@ public enum ChatMessageAdapter {
         id: String,
         sender: MessageSender,
         text: String,
+        status: Message.Status = .sent,
         createdAt: Date = Date()
     ) -> Message {
         let user = ChatUsers.user(for: sender)
@@ -84,7 +85,7 @@ public enum ChatMessageAdapter {
         return Message(
             id: id,
             user: user,
-            status: .sent,
+            status: status,
             createdAt: createdAt,
             text: text,
             attachments: [],
@@ -328,4 +329,3 @@ public struct MessageAggregationState: Equatable, Sendable {
         messageOrder.removeAll()
     }
 }
-

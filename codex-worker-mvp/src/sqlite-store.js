@@ -1,12 +1,13 @@
 /**
- * SQLite 持久化存储模块
+ * SQLite 本地缓存模块
  *
  * 职责：
- * - 持久化线程、任务、事件、审批数据
- * - 支持事件回放（断线重连、Worker 重启后追溯）
- * - 提供审计日志基础
+ * - 缓存线程、任务、事件、审批数据
+ * - 支持降级回放（例如 thread/read 失败时）
+ * - 提供本地审计线索
  *
  * 设计原则：
+ * - app-server 是唯一真相源，SQLite 仅缓存，不作为权威读源
  * - append-only 事件日志：事件只追加，不修改
  * - 幂等操作：重复插入不报错
  * - 外键约束：保证数据完整性
@@ -20,7 +21,7 @@ import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
 /**
- * SQLite 持久化存储类
+ * SQLite 本地缓存存储类
  *
  * 使用 better-sqlite3 库，提供同步的 SQLite API。
  * 采用 WAL（Write-Ahead Logging）模式提高并发性能。

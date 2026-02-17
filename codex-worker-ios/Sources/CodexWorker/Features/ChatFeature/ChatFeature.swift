@@ -23,6 +23,7 @@ public struct ChatFeature {
         public var cursor: Int = -1
         public var messages: [Message] = []
         public var pendingAssistantDeltas: [String: MessageDelta] = [:]
+        public var pendingLocalUserMessageId: String?
         public var inputText = ""
         public var isSending = false
         public var isStreaming = false
@@ -33,6 +34,10 @@ public struct ChatFeature {
 
         public var canSend: Bool {
             activeThread != nil && !isSending && !isApprovalLocked
+        }
+
+        public var shouldShowGeneratingIndicator: Bool {
+            isStreaming && (jobState?.isActive ?? false) && !isApprovalLocked
         }
 
         public init() {}
@@ -46,7 +51,7 @@ public struct ChatFeature {
         case threadHistoryCacheResponse(threadId: String, Result<[EventEnvelope], CodexError>)
         case threadHistorySyncResponse(threadId: String, Result<[EventEnvelope], CodexError>)
         case didSendDraft(DraftMessage)
-        case startTurnResponse(Result<StartTurnResponse, CodexError>)
+        case startTurnResponse(localMessageId: String, Result<StartTurnResponse, CodexError>)
         case startStreaming(jobId: String, cursor: Int)
         case stopStreaming
         case streamEventReceived(EventEnvelope)
@@ -80,6 +85,7 @@ public struct ChatFeature {
 
             case .onDisappear:
                 state.isStreaming = false
+                state.pendingLocalUserMessageId = nil
                 let streamStateEffect = updateStreamConnectionState(
                     state: &state,
                     newValue: .idle
@@ -100,6 +106,7 @@ public struct ChatFeature {
                 state.cursor = -1
                 state.messages = []
                 state.pendingAssistantDeltas.removeAll()
+                state.pendingLocalUserMessageId = nil
                 state.isSending = false
                 state.isStreaming = false
                 state.isApprovalLocked = false
@@ -174,27 +181,35 @@ public struct ChatFeature {
                 guard state.canSend else { return .none }
                 let text = draft.text.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !text.isEmpty, let threadId = state.activeThread?.threadId else { return .none }
+                let localMessageId = "local-user-\(UUID().uuidString)"
 
                 // 先本地回显用户消息，提升交互反馈
                 let localUserMessage = ChatMessageAdapter.makeMessage(
-                    id: "local-user-\(UUID().uuidString)",
+                    id: localMessageId,
                     sender: .user,
                     text: text,
+                    status: .sending,
                     createdAt: draft.createdAt
                 )
                 state.messages.append(localUserMessage)
+                state.pendingLocalUserMessageId = localMessageId
                 state.isSending = true
                 state.errorMessage = nil
 
                 return .run { send in
                     @Dependency(\.apiClient) var apiClient
+                    @Dependency(\.executionAccessStore) var executionAccessStore
+                    let mode = executionAccessStore.load()
+                    let settings = mode.turnRequestSettings
                     let request = StartTurnRequest(
                         text: text,
                         input: nil,
-                        approvalPolicy: nil
+                        approvalPolicy: settings.approvalPolicy,
+                        sandbox: settings.sandbox
                     )
                     await send(
                         .startTurnResponse(
+                            localMessageId: localMessageId,
                             Result {
                                 try await apiClient.startTurn(threadId, request)
                             }.mapError { CodexError.from($0) }
@@ -202,16 +217,34 @@ public struct ChatFeature {
                     )
                 }
 
-            case .startTurnResponse(.success(let response)):
+            case .startTurnResponse(let localMessageId, .success(let response)):
                 state.isSending = false
                 state.currentJobId = response.jobId
                 state.cursor = -1
                 state.jobState = .running
+                markMessageStatus(state: &state, messageId: localMessageId, status: .sent)
+                state.pendingLocalUserMessageId = nil
                 return .send(.startStreaming(jobId: response.jobId, cursor: state.cursor))
 
-            case .startTurnResponse(.failure(let error)):
+            case .startTurnResponse(let localMessageId, .failure(let error)):
                 state.isSending = false
                 state.errorMessage = error.localizedDescription
+                markMessageStatus(
+                    state: &state,
+                    messageId: localMessageId,
+                    status: .error(
+                        DraftMessage(
+                            id: localMessageId,
+                            text: messageText(in: state.messages, messageId: localMessageId),
+                            medias: [],
+                            giphyMedia: nil,
+                            recording: nil,
+                            replyMessage: nil,
+                            createdAt: Date()
+                        )
+                    )
+                )
+                state.pendingLocalUserMessageId = nil
                 return .none
 
             case .startStreaming(let jobId, let cursor):
@@ -363,8 +396,18 @@ public struct ChatFeature {
     /// 应用线程历史回放结果到当前状态
     private func applyThreadReplay(state: inout State, events: [EventEnvelope]) -> Effect<Action> {
         let replay = replayThreadEvents(events)
-        state.messages = replay.messages
-        state.pendingAssistantDeltas = replay.pendingAssistantDeltas
+        var replayMessages = replay.messages
+        var replayPendingDeltas = replay.pendingAssistantDeltas
+
+        if replay.jobState?.isActive != true {
+            finalizePendingAssistantMessages(
+                messages: &replayMessages,
+                pendingAssistantDeltas: &replayPendingDeltas
+            )
+        }
+
+        state.messages = replayMessages
+        state.pendingAssistantDeltas = replayPendingDeltas
         state.currentJobId = replay.currentJobId
         state.cursor = replay.cursor
         state.jobState = replay.jobState
@@ -543,6 +586,7 @@ public struct ChatFeature {
         pendingAssistantDeltas: inout [String: MessageDelta],
         envelope: EventEnvelope
     ) {
+        _ = messages
         guard let payload = envelope.payload else { return }
         let itemId = payload["itemId"]?.stringValue ?? "assistant-\(envelope.jobId)-\(envelope.seq)"
         let delta = payload["delta"]?.stringValue
@@ -554,13 +598,26 @@ public struct ChatFeature {
         if var existing = pendingAssistantDeltas[itemId] {
             existing.append(delta)
             pendingAssistantDeltas[itemId] = existing
-            upsertMessage(&messages, with: existing.toMessage())
         } else {
             var newDelta = MessageDelta(id: itemId, text: "", sender: .assistant)
             newDelta.append(delta)
             pendingAssistantDeltas[itemId] = newDelta
-            upsertMessage(&messages, with: newDelta.toMessage())
         }
+    }
+
+    /// 收敛所有未完成的助手增量（用于收到 job.finished 但缺少 item.completed 的场景）
+    private func finalizePendingAssistantMessages(
+        messages: inout [Message],
+        pendingAssistantDeltas: inout [String: MessageDelta]
+    ) {
+        guard !pendingAssistantDeltas.isEmpty else { return }
+        let orderedKeys = pendingAssistantDeltas.keys.sorted()
+        for key in orderedKeys {
+            guard var delta = pendingAssistantDeltas[key] else { continue }
+            delta.markComplete()
+            upsertMessage(&messages, with: delta.toMessage())
+        }
+        pendingAssistantDeltas.removeAll()
     }
 
     private func approvalResolvedPayload(from envelope: EventEnvelope) -> ApprovalResolvedPayload {
@@ -632,6 +689,10 @@ public struct ChatFeature {
             if let raw = envelope.payload?["state"]?.stringValue, let mapped = JobState(rawValue: raw) {
                 jobState = mapped
             }
+            finalizePendingAssistantMessages(
+                messages: &messages,
+                pendingAssistantDeltas: &pendingAssistantDeltas
+            )
             if mode == .live {
                 output.shouldStopStreaming = true
             }
@@ -661,6 +722,19 @@ public struct ChatFeature {
         case live
         case replay
     }
+}
+
+private func markMessageStatus(
+    state: inout ChatFeature.State,
+    messageId: String,
+    status: Message.Status
+) {
+    guard let idx = state.messages.firstIndex(where: { $0.id == messageId }) else { return }
+    state.messages[idx].status = status
+}
+
+private func messageText(in messages: [Message], messageId: String) -> String {
+    messages.first(where: { $0.id == messageId })?.text ?? ""
 }
 
 private struct ThreadHistoryReplay: Sendable {

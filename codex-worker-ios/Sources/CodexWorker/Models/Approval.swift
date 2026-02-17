@@ -412,10 +412,19 @@ public struct ApprovalRequest: Codable, Sendable {
     /// 修改后的命令（仅用于 accept_with_execpolicy_amendment）
     public var execPolicyAmendment: [String]?
 
-    public init(approvalId: String, decision: String, execPolicyAmendment: [String]?) {
+    /// 拒绝原因（仅用于 decline，可选）
+    public var declineReason: String?
+
+    public init(
+        approvalId: String,
+        decision: String,
+        execPolicyAmendment: [String]?,
+        declineReason: String? = nil
+    ) {
         self.approvalId = approvalId
         self.decision = decision
         self.execPolicyAmendment = execPolicyAmendment
+        self.declineReason = declineReason
     }
 }
 

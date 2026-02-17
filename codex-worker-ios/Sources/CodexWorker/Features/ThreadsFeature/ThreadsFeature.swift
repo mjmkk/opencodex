@@ -140,10 +140,18 @@ public struct ThreadsFeature {
                 state.errorMessage = nil
                 return .run { send in
                     @Dependency(\.apiClient) var apiClient
+                    @Dependency(\.executionAccessStore) var executionAccessStore
+                    let mode = executionAccessStore.load()
+                    let settings = mode.threadRequestSettings
                     await send(
                         .createResponse(
                             Result {
-                                try await apiClient.createThread(.init())
+                                try await apiClient.createThread(
+                                    .init(
+                                        approvalPolicy: settings.approvalPolicy,
+                                        sandbox: settings.sandbox
+                                    )
+                                )
                             }.mapError { CodexError.from($0) }
                         )
                     )

@@ -14,13 +14,19 @@ import UIKit
 public struct ThreadsView: View {
     let store: StoreOf<ThreadsFeature>
     let onDismiss: (() -> Void)?
+    let executionAccessMode: ExecutionAccessMode
+    let onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)?
 
     public init(
         store: StoreOf<ThreadsFeature>,
-        onDismiss: (() -> Void)? = nil
+        onDismiss: (() -> Void)? = nil,
+        executionAccessMode: ExecutionAccessMode = .defaultPermissions,
+        onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)? = nil
     ) {
         self.store = store
         self.onDismiss = onDismiss
+        self.executionAccessMode = executionAccessMode
+        self.onExecutionAccessModeChanged = onExecutionAccessModeChanged
     }
 
     public var body: some View {
@@ -111,47 +117,85 @@ public struct ThreadsView: View {
 
     @ViewBuilder
     private func header(viewStore: ViewStoreOf<ThreadsFeature>) -> some View {
-        HStack(spacing: 12) {
-            if let onDismiss {
-                Button {
-                    onDismiss()
-                } label: {
-                    Image(systemName: "sidebar.leading")
-                        .font(.headline)
+        VStack(spacing: 8) {
+            HStack(spacing: 12) {
+                if let onDismiss {
+                    Button {
+                        onDismiss()
+                    } label: {
+                        Image(systemName: "sidebar.leading")
+                            .font(.headline)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
+
+                Text("Threads")
+                    .font(.title3.weight(.semibold))
+
+                Spacer()
+
+                if viewStore.isLoading {
+                    ProgressView()
+                } else {
+                    Button {
+                        viewStore.send(.refresh)
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.headline)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(viewStore.isCreating)
+                }
+
+                if viewStore.isCreating {
+                    ProgressView()
+                } else {
+                    Button {
+                        viewStore.send(.createTapped)
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.headline)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(viewStore.isLoading)
+                }
             }
 
-            Text("Threads")
-                .font(.title3.weight(.semibold))
+            HStack(spacing: 8) {
+                Label("权限", systemImage: "lock.shield")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
 
-            Spacer()
+                Spacer()
 
-            if viewStore.isLoading {
-                ProgressView()
-            } else {
-                Button {
-                    viewStore.send(.refresh)
+                Menu {
+                    ForEach(ExecutionAccessMode.allCases, id: \.self) { mode in
+                        Button {
+                            onExecutionAccessModeChanged?(mode)
+                        } label: {
+                            HStack {
+                                Text(mode.title)
+                                Spacer()
+                                if mode == executionAccessMode {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
                 } label: {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.headline)
+                    HStack(spacing: 6) {
+                        Text(executionAccessMode.title)
+                            .font(.caption.weight(.semibold))
+                        Image(systemName: "chevron.down")
+                            .font(.caption2.weight(.semibold))
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Color(.tertiarySystemFill))
+                    .clipShape(Capsule())
                 }
-                .buttonStyle(.plain)
-                .disabled(viewStore.isCreating)
             }
-
-            if viewStore.isCreating {
-                ProgressView()
-            } else {
-                Button {
-                    viewStore.send(.createTapped)
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.headline)
-                }
-                .buttonStyle(.plain)
-                .disabled(viewStore.isLoading)
-            }
+            .padding(.horizontal, 2)
         }
         .padding(.horizontal, 14)
         .padding(.top, 12)

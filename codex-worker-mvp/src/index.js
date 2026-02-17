@@ -61,8 +61,8 @@ async function main() {
     cwd: config.rpc.cwd,
   });
 
-  // 3. 初始化 SQLite 存储
-  // 负责：线程、任务、事件、审批的持久化
+  // 3. 初始化 SQLite 本地缓存
+  // 负责：线程、任务、事件、审批的缓存与降级回放（非真相源）
   const store = new SqliteStore({
     dbPath: config.dbPath,
     logger: {
