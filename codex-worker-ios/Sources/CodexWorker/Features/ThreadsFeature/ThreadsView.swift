@@ -7,7 +7,9 @@
 
 import ComposableArchitecture
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#endif
 
 public struct ThreadsView: View {
     let store: StoreOf<ThreadsFeature>
@@ -178,12 +180,14 @@ public struct ThreadsView: View {
 }
 
 private func dismissKeyboard() {
+#if canImport(UIKit)
     UIApplication.shared.sendAction(
         #selector(UIResponder.resignFirstResponder),
         to: nil,
         from: nil,
         for: nil
     )
+#endif
 }
 
 private struct ThreadRow: View {

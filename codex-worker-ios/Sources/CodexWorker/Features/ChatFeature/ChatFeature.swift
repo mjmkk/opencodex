@@ -26,6 +26,7 @@ public struct ChatFeature {
         public var inputText = ""
         public var isSending = false
         public var isStreaming = false
+        public var streamConnectionState: StreamConnectionState = .idle
         public var isApprovalLocked = false
         public var errorMessage: String?
         public var jobState: JobState?
@@ -58,6 +59,14 @@ public struct ChatFeature {
     public enum Delegate {
         case approvalRequired(Approval)
         case approvalResolved(approvalId: String, decision: String?)
+        case streamConnectionChanged(StreamConnectionState)
+    }
+
+    public enum StreamConnectionState: Equatable, Sendable {
+        case idle
+        case connecting
+        case connected
+        case failed(String)
     }
 
     public init() {}
@@ -71,7 +80,12 @@ public struct ChatFeature {
 
             case .onDisappear:
                 state.isStreaming = false
+                let streamStateEffect = updateStreamConnectionState(
+                    state: &state,
+                    newValue: .idle
+                )
                 return .merge(
+                    streamStateEffect,
                     .run { _ in
                         @Dependency(\.sseClient) var sseClient
                         sseClient.cancel()
@@ -91,7 +105,12 @@ public struct ChatFeature {
                 state.isApprovalLocked = false
                 state.errorMessage = nil
                 state.jobState = nil
+                let streamStateEffect = updateStreamConnectionState(
+                    state: &state,
+                    newValue: .idle
+                )
                 let cancelEffect: Effect<Action> = .merge(
+                    streamStateEffect,
                     .run { _ in
                         @Dependency(\.sseClient) var sseClient
                         sseClient.cancel()
@@ -197,22 +216,34 @@ public struct ChatFeature {
 
             case .startStreaming(let jobId, let cursor):
                 state.isStreaming = true
-                return .run { send in
-                    @Dependency(\.sseClient) var sseClient
-                    do {
-                        let stream = try await sseClient.subscribe(jobId, cursor)
-                        for await envelope in stream {
-                            await send(.streamEventReceived(envelope))
+                let streamStateEffect = updateStreamConnectionState(
+                    state: &state,
+                    newValue: .connecting
+                )
+                return .merge(
+                    streamStateEffect,
+                    .run { send in
+                        @Dependency(\.sseClient) var sseClient
+                        do {
+                            let stream = try await sseClient.subscribe(jobId, cursor)
+                            for await envelope in stream {
+                                await send(.streamEventReceived(envelope))
+                            }
+                        } catch {
+                            await send(.streamFailed(CodexError.from(error)))
                         }
-                    } catch {
-                        await send(.streamFailed(CodexError.from(error)))
                     }
-                }
-                .cancellable(id: CancelID.sseStream, cancelInFlight: true)
+                    .cancellable(id: CancelID.sseStream, cancelInFlight: true)
+                )
 
             case .stopStreaming:
                 state.isStreaming = false
+                let streamStateEffect = updateStreamConnectionState(
+                    state: &state,
+                    newValue: .idle
+                )
                 return .merge(
+                    streamStateEffect,
                     .run { _ in
                         @Dependency(\.sseClient) var sseClient
                         sseClient.cancel()
@@ -225,11 +256,16 @@ public struct ChatFeature {
                     return .none
                 }
                 state.cursor = max(state.cursor, envelope.seq)
-                let uiEffect = self.handleStreamEvent(state: &state, envelope: envelope)
+                let streamStateEffect = updateStreamConnectionState(
+                    state: &state,
+                    newValue: .connected
+                )
+                let uiEffect = self.handleLiveEvent(state: &state, envelope: envelope)
                 guard let threadId = state.activeThread?.threadId else {
-                    return uiEffect
+                    return .merge(streamStateEffect, uiEffect)
                 }
                 return .merge(
+                    streamStateEffect,
                     uiEffect,
                     .run { _ in
                         @Dependency(\.threadHistoryStore) var threadHistoryStore
@@ -244,7 +280,10 @@ public struct ChatFeature {
             case .streamFailed(let error):
                 state.isStreaming = false
                 state.errorMessage = error.localizedDescription
-                return .none
+                return updateStreamConnectionState(
+                    state: &state,
+                    newValue: .failed(error.localizedDescription)
+                )
 
             case .clearError:
                 state.errorMessage = nil
@@ -263,85 +302,53 @@ public struct ChatFeature {
         }
     }
 
-    /// 统一处理 SSE 事件
-    private func handleStreamEvent(state: inout State, envelope: EventEnvelope) -> Effect<Action> {
-        switch envelope.eventType {
-        case .jobState:
-            if let raw = envelope.payload?["state"]?.stringValue, let mapped = JobState(rawValue: raw) {
-                state.jobState = mapped
-                if mapped != .waitingApproval {
-                    state.isApprovalLocked = false
-                }
-            }
-            return .none
+    /// 处理实时流事件（会触发 delegate / stopStreaming 副作用）
+    private func handleLiveEvent(state: inout State, envelope: EventEnvelope) -> Effect<Action> {
+        var messages = state.messages
+        var pendingAssistantDeltas = state.pendingAssistantDeltas
+        var jobState = state.jobState
+        var isApprovalLocked = state.isApprovalLocked
+        var errorMessage = state.errorMessage
 
-        case .approvalRequired:
-            guard
-                let payload = envelope.payload,
-                let approval = Approval.fromPayload(payload, fallbackJobId: envelope.jobId)
-            else {
-                return .none
-            }
-            state.jobState = .waitingApproval
-            state.isApprovalLocked = true
-            return .send(.delegate(.approvalRequired(approval)))
+        let output = applyEventEnvelope(
+            messages: &messages,
+            pendingAssistantDeltas: &pendingAssistantDeltas,
+            jobState: &jobState,
+            isApprovalLocked: &isApprovalLocked,
+            errorMessage: &errorMessage,
+            envelope: envelope,
+            mode: .live
+        )
 
-        case .approvalResolved:
-            let approvalId =
-                envelope.payload?["approvalId"]?.stringValue
-                ?? envelope.payload?["approval_id"]?.stringValue
-                ?? ""
-            let decision = envelope.payload?["decision"]?.stringValue
-            state.isApprovalLocked = false
-            return .send(.delegate(.approvalResolved(approvalId: approvalId, decision: decision)))
+        state.messages = messages
+        state.pendingAssistantDeltas = pendingAssistantDeltas
+        state.jobState = jobState
+        state.isApprovalLocked = isApprovalLocked
+        state.errorMessage = errorMessage
 
-        case .itemAgentMessageDelta:
-            guard let payload = envelope.payload else { return .none }
-            let itemId = payload["itemId"]?.stringValue ?? "assistant-\(envelope.seq)"
-            let delta = payload["delta"]?.stringValue
-                ?? payload["textDelta"]?.stringValue
-                ?? payload["text"]?.stringValue
-                ?? ""
-            guard !delta.isEmpty else { return .none }
-            if var existing = state.pendingAssistantDeltas[itemId] {
-                existing.append(delta)
-                state.pendingAssistantDeltas[itemId] = existing
-                upsertMessage(&state.messages, with: existing.toMessage())
-            } else {
-                var newDelta = MessageDelta(id: itemId, text: "", sender: .assistant)
-                newDelta.append(delta)
-                state.pendingAssistantDeltas[itemId] = newDelta
-                upsertMessage(&state.messages, with: newDelta.toMessage())
-            }
-            return .none
-
-        case .itemCompleted:
-            if let payload = envelope.payload {
-                let itemId =
-                    payload["itemId"]?.stringValue
-                    ?? payload["item"]?.objectValue?["id"]?.stringValue
-                if let itemId, var delta = state.pendingAssistantDeltas[itemId] {
-                    delta.markComplete()
-                    state.pendingAssistantDeltas[itemId] = nil
-                    upsertMessage(&state.messages, with: delta.toMessage())
-                }
-            }
-            return .none
-
-        case .jobFinished:
-            if let raw = envelope.payload?["state"]?.stringValue, let mapped = JobState(rawValue: raw) {
-                state.jobState = mapped
-            }
-            return .send(.stopStreaming)
-
-        case .error:
-            let msg = envelope.payload?["message"]?.stringValue ?? "SSE 出现错误"
-            state.errorMessage = msg
-            return .none
-
-        default:
-            return .none
+        var effect: Effect<Action> = .none
+        if let approval = output.approvalRequired {
+            effect = .merge(effect, .send(.delegate(.approvalRequired(approval))))
         }
+        if let resolved = output.approvalResolved {
+            effect = .merge(
+                effect,
+                .send(.delegate(.approvalResolved(approvalId: resolved.approvalId, decision: resolved.decision)))
+            )
+        }
+        if output.shouldStopStreaming {
+            effect = .merge(effect, .send(.stopStreaming))
+        }
+        return effect
+    }
+
+    private func updateStreamConnectionState(
+        state: inout State,
+        newValue: StreamConnectionState
+    ) -> Effect<Action> {
+        guard state.streamConnectionState != newValue else { return .none }
+        state.streamConnectionState = newValue
+        return .send(.delegate(.streamConnectionChanged(newValue)))
     }
 
     /// 按消息 id 更新或插入，避免重复气泡
@@ -432,59 +439,27 @@ public struct ChatFeature {
             replay.currentJobId = envelope.jobId
             lastSeqByJob[envelope.jobId] = max(lastSeqByJob[envelope.jobId] ?? -1, envelope.seq)
 
-            switch envelope.eventType {
-            case .jobState:
-                if let raw = envelope.payload?["state"]?.stringValue, let mapped = JobState(rawValue: raw) {
-                    replay.jobState = mapped
-                    if mapped != .waitingApproval {
-                        replay.isApprovalLocked = false
-                    }
-                }
+            var messages = replay.messages
+            var pendingAssistantDeltas = replay.pendingAssistantDeltas
+            var jobState = replay.jobState
+            var isApprovalLocked = replay.isApprovalLocked
+            var errorMessage = replay.errorMessage
 
-            case .approvalRequired:
-                replay.jobState = .waitingApproval
-                replay.isApprovalLocked = true
+            _ = applyEventEnvelope(
+                messages: &messages,
+                pendingAssistantDeltas: &pendingAssistantDeltas,
+                jobState: &jobState,
+                isApprovalLocked: &isApprovalLocked,
+                errorMessage: &errorMessage,
+                envelope: envelope,
+                mode: .replay
+            )
 
-            case .approvalResolved:
-                replay.isApprovalLocked = false
-
-            case .itemStarted, .itemCompleted:
-                if let userMessage = userMessage(from: envelope) {
-                    upsertMessage(&replay.messages, with: userMessage)
-                }
-                handleAssistantCompletionIfNeeded(replay: &replay, envelope: envelope)
-
-            case .itemAgentMessageDelta:
-                guard let payload = envelope.payload else { continue }
-                let itemId = payload["itemId"]?.stringValue ?? "assistant-\(envelope.jobId)-\(envelope.seq)"
-                let delta = payload["delta"]?.stringValue
-                    ?? payload["textDelta"]?.stringValue
-                    ?? payload["text"]?.stringValue
-                    ?? ""
-                guard !delta.isEmpty else { continue }
-
-                if var existing = replay.pendingAssistantDeltas[itemId] {
-                    existing.append(delta)
-                    replay.pendingAssistantDeltas[itemId] = existing
-                    upsertMessage(&replay.messages, with: existing.toMessage())
-                } else {
-                    var newDelta = MessageDelta(id: itemId, text: "", sender: .assistant)
-                    newDelta.append(delta)
-                    replay.pendingAssistantDeltas[itemId] = newDelta
-                    upsertMessage(&replay.messages, with: newDelta.toMessage())
-                }
-
-            case .jobFinished:
-                if let raw = envelope.payload?["state"]?.stringValue, let mapped = JobState(rawValue: raw) {
-                    replay.jobState = mapped
-                }
-
-            case .error:
-                replay.errorMessage = envelope.payload?["message"]?.stringValue ?? replay.errorMessage
-
-            default:
-                continue
-            }
+            replay.messages = messages
+            replay.pendingAssistantDeltas = pendingAssistantDeltas
+            replay.jobState = jobState
+            replay.isApprovalLocked = isApprovalLocked
+            replay.errorMessage = errorMessage
         }
 
         if replay.jobState?.isActive != true {
@@ -530,7 +505,8 @@ public struct ChatFeature {
 
     /// 在 item.completed 时收敛助手消息，兜底处理无 delta 的场景
     private func handleAssistantCompletionIfNeeded(
-        replay: inout ThreadHistoryReplay,
+        messages: inout [Message],
+        pendingAssistantDeltas: inout [String: MessageDelta],
         envelope: EventEnvelope
     ) {
         guard
@@ -543,10 +519,10 @@ public struct ChatFeature {
             return
         }
 
-        if var delta = replay.pendingAssistantDeltas[itemId] {
+        if var delta = pendingAssistantDeltas[itemId] {
             delta.markComplete()
-            replay.pendingAssistantDeltas[itemId] = nil
-            upsertMessage(&replay.messages, with: delta.toMessage())
+            pendingAssistantDeltas[itemId] = nil
+            upsertMessage(&messages, with: delta.toMessage())
             return
         }
 
@@ -558,8 +534,132 @@ public struct ChatFeature {
                 text: fullText,
                 createdAt: envelope.timestamp ?? Date()
             )
-            upsertMessage(&replay.messages, with: message)
+            upsertMessage(&messages, with: message)
         }
+    }
+
+    private func applyAssistantDelta(
+        messages: inout [Message],
+        pendingAssistantDeltas: inout [String: MessageDelta],
+        envelope: EventEnvelope
+    ) {
+        guard let payload = envelope.payload else { return }
+        let itemId = payload["itemId"]?.stringValue ?? "assistant-\(envelope.jobId)-\(envelope.seq)"
+        let delta = payload["delta"]?.stringValue
+            ?? payload["textDelta"]?.stringValue
+            ?? payload["text"]?.stringValue
+            ?? ""
+        guard !delta.isEmpty else { return }
+
+        if var existing = pendingAssistantDeltas[itemId] {
+            existing.append(delta)
+            pendingAssistantDeltas[itemId] = existing
+            upsertMessage(&messages, with: existing.toMessage())
+        } else {
+            var newDelta = MessageDelta(id: itemId, text: "", sender: .assistant)
+            newDelta.append(delta)
+            pendingAssistantDeltas[itemId] = newDelta
+            upsertMessage(&messages, with: newDelta.toMessage())
+        }
+    }
+
+    private func approvalResolvedPayload(from envelope: EventEnvelope) -> ApprovalResolvedPayload {
+        ApprovalResolvedPayload(
+            approvalId:
+                envelope.payload?["approvalId"]?.stringValue
+                ?? envelope.payload?["approval_id"]?.stringValue
+                ?? "",
+            decision: envelope.payload?["decision"]?.stringValue
+        )
+    }
+
+    private func applyEventEnvelope(
+        messages: inout [Message],
+        pendingAssistantDeltas: inout [String: MessageDelta],
+        jobState: inout JobState?,
+        isApprovalLocked: inout Bool,
+        errorMessage: inout String?,
+        envelope: EventEnvelope,
+        mode: EventApplyMode
+    ) -> EventApplyOutput {
+        var output = EventApplyOutput()
+
+        switch envelope.eventType {
+        case .jobState:
+            if let raw = envelope.payload?["state"]?.stringValue, let mapped = JobState(rawValue: raw) {
+                jobState = mapped
+                if mapped != .waitingApproval {
+                    isApprovalLocked = false
+                }
+            }
+
+        case .approvalRequired:
+            isApprovalLocked = true
+            jobState = .waitingApproval
+            if mode == .live,
+               let payload = envelope.payload,
+               let approval = Approval.fromPayload(payload, fallbackJobId: envelope.jobId)
+            {
+                output.approvalRequired = approval
+            }
+
+        case .approvalResolved:
+            isApprovalLocked = false
+            if mode == .live {
+                output.approvalResolved = approvalResolvedPayload(from: envelope)
+            }
+
+        case .itemAgentMessageDelta:
+            applyAssistantDelta(
+                messages: &messages,
+                pendingAssistantDeltas: &pendingAssistantDeltas,
+                envelope: envelope
+            )
+
+        case .itemStarted, .itemCompleted:
+            if mode == .replay,
+               let userMessage = userMessage(from: envelope)
+            {
+                upsertMessage(&messages, with: userMessage)
+            }
+            handleAssistantCompletionIfNeeded(
+                messages: &messages,
+                pendingAssistantDeltas: &pendingAssistantDeltas,
+                envelope: envelope
+            )
+
+        case .jobFinished:
+            if let raw = envelope.payload?["state"]?.stringValue, let mapped = JobState(rawValue: raw) {
+                jobState = mapped
+            }
+            if mode == .live {
+                output.shouldStopStreaming = true
+            }
+
+        case .error:
+            errorMessage = envelope.payload?["message"]?.stringValue ?? "SSE 出现错误"
+
+        default:
+            break
+        }
+
+        return output
+    }
+
+    private struct ApprovalResolvedPayload: Sendable {
+        let approvalId: String
+        let decision: String?
+    }
+
+    private struct EventApplyOutput: Sendable {
+        var approvalRequired: Approval?
+        var approvalResolved: ApprovalResolvedPayload?
+        var shouldStopStreaming = false
+    }
+
+    private enum EventApplyMode: Equatable, Sendable {
+        case live
+        case replay
     }
 }
 

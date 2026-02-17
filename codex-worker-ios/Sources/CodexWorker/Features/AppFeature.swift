@@ -13,9 +13,18 @@ public struct AppFeature {
         case healthMonitor
     }
 
+    public enum WorkerReachability: Equatable, Sendable {
+        case unknown
+        case checking
+        case reachable
+        case unreachable(String)
+    }
+
     @ObservableState
     public struct State: Equatable {
         public var connectionState: ConnectionState = .disconnected
+        public var workerReachability: WorkerReachability = .unknown
+        public var streamConnectionState: ChatFeature.StreamConnectionState = .idle
         public var threads = ThreadsFeature.State()
         public var chat = ChatFeature.State()
         public var approval = ApprovalFeature.State()
@@ -33,9 +42,9 @@ public struct AppFeature {
         case chat(ChatFeature.Action)
         case approval(ApprovalFeature.Action)
         case settings(SettingsFeature.Action)
-        case setConnectionState(ConnectionState)
         case setDrawerPresented(Bool)
         case healthCheckNow
+        case healthCheckResponse(Result<HealthCheckResponse, CodexError>)
     }
 
     public init() {}
@@ -49,14 +58,17 @@ public struct AppFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                if WorkerConfiguration.load() == nil {
-                    WorkerConfiguration.save(.default)
-                }
                 if state.activeThread == nil {
                     state.isDrawerPresented = true
                 }
                 return .merge(
-                    .send(.healthCheckNow),
+                    .run { send in
+                        @Dependency(\.workerConfigurationStore) var workerConfigurationStore
+                        if workerConfigurationStore.load() == nil {
+                            workerConfigurationStore.save(.default)
+                        }
+                        await send(.healthCheckNow)
+                    },
                     .run { send in
                         @Dependency(\.continuousClock) var clock
                         while !Task.isCancelled {
@@ -71,20 +83,29 @@ public struct AppFeature {
                 return .cancel(id: CancelID.healthMonitor)
 
             case .healthCheckNow:
-                state.connectionState = .connecting
+                if shouldEnterCheckingState(state.workerReachability) {
+                    state.workerReachability = .checking
+                    recalculateConnectionState(state: &state)
+                }
                 return .run { send in
                     @Dependency(\.apiClient) var apiClient
-                    do {
-                        _ = try await apiClient.healthCheck()
-                        await send(.setConnectionState(.connected))
-                    } catch {
-                        let message = CodexError.from(error).localizedDescription
-                        await send(.setConnectionState(.failed(message)))
-                    }
+                    await send(
+                        .healthCheckResponse(
+                            Result {
+                                try await apiClient.healthCheck()
+                            }.mapError { CodexError.from($0) }
+                        )
+                    )
                 }
 
-            case .setConnectionState(let newState):
-                state.connectionState = newState
+            case .healthCheckResponse(.success):
+                state.workerReachability = .reachable
+                recalculateConnectionState(state: &state)
+                return .none
+
+            case .healthCheckResponse(.failure(let error)):
+                state.workerReachability = .unreachable(error.localizedDescription)
+                recalculateConnectionState(state: &state)
                 return .none
 
             case .setDrawerPresented(let presented):
@@ -108,11 +129,48 @@ public struct AppFeature {
                     .send(.chat(.setApprovalLocked(false)))
                 )
 
-            case .settings(.saveTapped):
+            case .chat(.delegate(.streamConnectionChanged(let streamConnectionState))):
+                state.streamConnectionState = streamConnectionState
+                recalculateConnectionState(state: &state)
+                return .none
+
+            case .settings(.saveFinished):
                 return .send(.healthCheckNow)
 
             case .threads, .chat, .approval, .settings:
                 return .none
+            }
+        }
+    }
+
+    private func shouldEnterCheckingState(_ reachability: WorkerReachability) -> Bool {
+        switch reachability {
+        case .unknown, .unreachable:
+            return true
+        case .checking, .reachable:
+            return false
+        }
+    }
+
+    private func recalculateConnectionState(state: inout State) {
+        switch state.workerReachability {
+        case .unknown:
+            state.connectionState = .disconnected
+
+        case .checking:
+            state.connectionState = .connecting
+
+        case .unreachable(let message):
+            state.connectionState = .failed(message)
+
+        case .reachable:
+            switch state.streamConnectionState {
+            case .idle, .connected:
+                state.connectionState = .connected
+            case .connecting:
+                state.connectionState = .connecting
+            case .failed(let message):
+                state.connectionState = .failed("实时流连接失败：\(message)")
             }
         }
     }

@@ -9,6 +9,18 @@ import ComposableArchitecture
 import SwiftUI
 
 public struct ContentView: View {
+    private struct ViewState: Equatable {
+        let connectionState: ConnectionState
+        let isDrawerPresented: Bool
+        let isApprovalPresented: Bool
+
+        init(_ state: AppFeature.State) {
+            self.connectionState = state.connectionState
+            self.isDrawerPresented = state.isDrawerPresented
+            self.isApprovalPresented = state.approval.isPresented
+        }
+    }
+
     public let store: StoreOf<AppFeature>
     @State private var isSettingsPresented = false
 
@@ -17,7 +29,7 @@ public struct ContentView: View {
     }
 
     public var body: some View {
-        WithViewStore(store, observe: { $0 }) { viewStore in
+        WithViewStore(store, observe: ViewState.init) { viewStore in
             GeometryReader { geometry in
                 let drawerWidth = min(geometry.size.width * 0.84, 360)
 
@@ -64,7 +76,7 @@ public struct ContentView: View {
                 .animation(.spring(response: 0.28, dampingFraction: 0.9), value: viewStore.isDrawerPresented)
             }
             .safeAreaInset(edge: .bottom) {
-                if viewStore.approval.isPresented {
+                if viewStore.isApprovalPresented {
                     ApprovalSheetView(
                         store: store.scope(
                             state: \.approval,

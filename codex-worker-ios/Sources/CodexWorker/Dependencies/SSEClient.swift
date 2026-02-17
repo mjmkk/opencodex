@@ -112,6 +112,7 @@ actor LiveSSEClient {
         continuation: AsyncStream<EventEnvelope>.Continuation
     ) async {
         var attempt = 0
+        var currentCursor = cursor
 
         while !Task.isCancelled {
             do {
@@ -134,7 +135,7 @@ actor LiveSSEClient {
                 }
 
                 // 构建请求
-                let urlString = "\(config.baseURL)/v1/jobs/\(jobId)/events?cursor=\(cursor)"
+                let urlString = "\(config.baseURL)/v1/jobs/\(jobId)/events?cursor=\(currentCursor)"
                 guard let url = URL(string: urlString) else {
                     throw CodexError.invalidState
                 }
@@ -161,6 +162,7 @@ actor LiveSSEClient {
                     switch event {
                     case let .event(serverEvent):
                         if let envelope = parseEvent(serverEvent) {
+                            currentCursor = max(currentCursor, envelope.seq)
                             continuation.yield(envelope)
 
                             // 检查是否为终态

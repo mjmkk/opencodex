@@ -87,6 +87,9 @@ public struct SettingsSheetView: View {
                     }
                 }
             }
+            .onAppear {
+                viewStore.send(.onAppear)
+            }
         }
     }
 
