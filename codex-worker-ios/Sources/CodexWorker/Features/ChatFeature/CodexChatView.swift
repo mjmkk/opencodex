@@ -19,7 +19,12 @@ public struct CodexChatView: View {
     let onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)?
     private let renderPipeline: MessageRenderPipeline
     private let codeSyntaxHighlighter: CodeSyntaxHighlighter
-    private let chatBackgroundColor = Color(uiColor: .systemGroupedBackground)
+    private let pageBackgroundColor = Color(uiColor: .systemGroupedBackground)
+    private let chatMainBackgroundColor = Color(uiColor: .systemGroupedBackground)
+    private let chatSecondaryBackgroundColor = Color(uiColor: .secondarySystemBackground)
+    private let chatElevatedInputColor = Color(uiColor: .systemBackground)
+    private let chatPrimaryTextColor = Color(uiColor: .label)
+    private let chatSecondaryTextColor = Color(uiColor: .secondaryLabel)
 
     public init(
         store: StoreOf<ChatFeature>,
@@ -78,8 +83,24 @@ public struct CodexChatView: View {
                 .keyboardDismissMode(.onDrag)
                 .setAvailableInputs((viewStore.isApprovalLocked || viewStore.activeThread == nil) ? [] : [.text])
                 .id(viewStore.activeThread?.threadId ?? "no-thread")
+                .chatTheme(
+                    colors: ChatTheme.Colors(
+                        mainBG: chatMainBackgroundColor,
+                        mainTint: chatSecondaryTextColor,
+                        messageMyBG: .accentColor,
+                        messageMyText: .white,
+                        inputBG: chatElevatedInputColor,
+                        inputText: chatPrimaryTextColor,
+                        inputPlaceholderText: chatSecondaryTextColor,
+                        inputSignatureBG: chatElevatedInputColor,
+                        inputSignatureText: chatPrimaryTextColor,
+                        inputSignaturePlaceholderText: chatSecondaryTextColor,
+                        menuBG: chatSecondaryBackgroundColor,
+                        sendButtonBackground: .accentColor
+                    )
+                )
             }
-            .background(chatBackgroundColor)
+            .background(pageBackgroundColor)
             .onAppear { viewStore.send(.onAppear) }
             .onDisappear { viewStore.send(.onDisappear) }
         }
@@ -169,11 +190,12 @@ private struct CodexMessageBubble: View {
     let message: Message
     let renderPipeline: MessageRenderPipeline
     let codeSyntaxHighlighter: CodeSyntaxHighlighter
-    private let assistantBubbleColor = Color(uiColor: .secondarySystemGroupedBackground)
-    private let assistantInnerCodeColor = Color(uiColor: .tertiarySystemFill)
-    private let assistantBorderColor = Color(uiColor: .separator).opacity(0.2)
-    private let assistantTableEvenRowColor = Color(uiColor: .systemBackground).opacity(0.35)
-    private let assistantTableOddRowColor = Color(uiColor: .tertiarySystemFill).opacity(0.75)
+    private let assistantBubbleColor = Color(uiColor: .systemBackground)
+    private let assistantInnerCodeColor = Color(uiColor: .secondarySystemBackground)
+    private let assistantBorderColor = Color(uiColor: .separator).opacity(0.32)
+    private let assistantShadowColor = Color.black.opacity(0.05)
+    private let assistantTableEvenRowColor = Color(uiColor: .systemBackground).opacity(0.6)
+    private let assistantTableOddRowColor = Color(uiColor: .secondarySystemFill).opacity(0.9)
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
@@ -241,9 +263,10 @@ private struct CodexMessageBubble: View {
                         .background(assistantBubbleColor)
                         .overlay(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(assistantBorderColor, lineWidth: 0.5)
+                                .stroke(assistantBorderColor, lineWidth: 0.8)
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .shadow(color: assistantShadowColor, radius: 1.5, x: 0, y: 1)
 
                     if let hint = rendered.compatibilityHint {
                         Text(hint)
