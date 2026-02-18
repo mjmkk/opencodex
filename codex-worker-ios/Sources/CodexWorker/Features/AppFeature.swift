@@ -179,6 +179,9 @@ public struct AppFeature {
             case .settings(.saveFinished):
                 return .send(.healthCheckNow)
 
+            case .settings(.delegate(.didRestoreArchivedThread)):
+                return .send(.threads(.refresh))
+
             case .threads, .chat, .approval, .settings:
                 return .none
             }

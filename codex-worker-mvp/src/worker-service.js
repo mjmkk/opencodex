@@ -338,20 +338,26 @@ export class WorkerService {
    * 调用 app-server 的 thread/list 方法获取线程列表。
    * 同时更新本地缓存。
    *
+   * @param {Object} [options={}] - 查询选项
+   * @param {boolean} [options.archived=false] - 是否查询归档线程
    * @returns {Promise<Object>} { data: ThreadDTO[], nextCursor: string|null }
    */
-  async listThreads() {
+  async listThreads(options = {}) {
+    const archived = options.archived === true;
     const result = await this.rpc.request("thread/list", {
       cursor: null,
       limit: 100,
       sortKey: "updated_at",
-      archived: false,
+      archived,
     });
 
     const threads = Array.isArray(result.data) ? result.data : [];
     for (const thread of threads) {
-      this.#upsertThread(thread);
-      this.store?.upsertThread?.(this.#toThreadDto(thread));
+      // 归档线程仅用于设置页管理，不写入活跃线程缓存，避免污染运行态。
+      if (!archived) {
+        this.#upsertThread(thread);
+        this.store?.upsertThread?.(this.#toThreadDto(thread));
+      }
     }
 
     return {
@@ -448,6 +454,45 @@ export class WorkerService {
     return {
       threadId,
       status: "archived",
+    };
+  }
+
+  /**
+   * 恢复归档线程
+   *
+   * @param {string} threadId - 线程 ID
+   * @returns {Promise<Object>} { threadId, status }
+   */
+  async unarchiveThread(threadId) {
+    this.#validateThreadId(threadId);
+
+    const attempts = [
+      { method: "thread/unarchive", params: { threadId } },
+      { method: "thread/unarchive", params: { id: threadId } },
+      { method: "thread/update", params: { threadId, archived: false } },
+      { method: "thread/update", params: { id: threadId, archived: false } },
+    ];
+    let lastError = null;
+    for (const attempt of attempts) {
+      try {
+        await this.rpc.request(attempt.method, attempt.params);
+        lastError = null;
+        break;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    if (lastError) {
+      const message = lastError instanceof Error ? lastError.message : String(lastError);
+      throw new HttpError(502, "THREAD_UNARCHIVE_FAILED", `恢复线程失败：${message}`);
+    }
+
+    this.#invalidateThreadEventsCache(threadId);
+
+    return {
+      threadId,
+      status: "active",
     };
   }
 

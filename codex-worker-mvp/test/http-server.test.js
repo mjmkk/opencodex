@@ -29,7 +29,30 @@ async function setup() {
       modelProvider: "openai",
     },
   }));
-  rpc.onRequest("thread/list", () => ({ data: [], nextCursor: null }));
+  rpc.onRequest("thread/list", ({ archived }) => ({
+    data: archived
+      ? [
+          {
+            id: "thr_archived",
+            preview: "已归档会话",
+            cwd: "/repo-archived",
+            createdAt: 1,
+            updatedAt: 2,
+            modelProvider: "openai",
+          },
+        ]
+      : [
+          {
+            id: "thr_http",
+            preview: "活跃会话",
+            cwd: "/repo",
+            createdAt: 1,
+            updatedAt: 2,
+            modelProvider: "openai",
+          },
+        ],
+    nextCursor: null,
+  }));
   rpc.onRequest("models/list", () => ({
     models: [
       { id: "gpt-5", name: "GPT-5", provider: "openai" },
@@ -74,6 +97,7 @@ async function setup() {
     },
   }));
   rpc.onRequest("thread/archive", () => ({ ok: true }));
+  rpc.onRequest("thread/unarchive", () => ({ ok: true }));
 
   const service = new WorkerService({
     rpc,
@@ -224,4 +248,25 @@ test("HTTP 最小流程：创建线程 -> 发起任务 -> 查询事件", async (
   const archivePayload = await archiveRes.json();
   assert.equal(archivePayload.threadId, "thr_http");
   assert.equal(archivePayload.status, "archived");
+
+  const archivedThreadsRes = await fetch(`${base}/v1/threads?archived=true`, {
+    headers: {
+      Authorization: "Bearer token123",
+      Accept: "application/json",
+    },
+  });
+  assert.equal(archivedThreadsRes.status, 200);
+  const archivedThreadsPayload = await archivedThreadsRes.json();
+  assert.ok(Array.isArray(archivedThreadsPayload.data));
+  assert.equal(archivedThreadsPayload.data.length, 1);
+  assert.equal(archivedThreadsPayload.data[0].threadId, "thr_archived");
+
+  const unarchiveRes = await fetch(`${base}/v1/threads/thr_archived/unarchive`, {
+    method: "POST",
+    headers,
+  });
+  assert.equal(unarchiveRes.status, 200);
+  const unarchivePayload = await unarchiveRes.json();
+  assert.equal(unarchivePayload.threadId, "thr_archived");
+  assert.equal(unarchivePayload.status, "active");
 });

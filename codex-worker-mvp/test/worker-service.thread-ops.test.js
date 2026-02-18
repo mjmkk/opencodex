@@ -110,3 +110,79 @@ test("archiveThread 成功后会清理本地缓存并允许重新 resume", async
   await service.startTurn(thread.threadId, { text: "after archive" });
   assert.equal(resumeCount, 1);
 });
+
+test("listThreads 在 archived=true 时不写入活跃线程缓存", async () => {
+  const rpc = new FakeRpcClient();
+  rpc.onRequest("initialize", () => ({}));
+  rpc.onRequest("thread/list", ({ archived }) => ({
+    data: archived
+      ? [
+          {
+            id: "thr_archived",
+            preview: "archived",
+            cwd: "/repo",
+            createdAt: 1,
+            updatedAt: 1,
+            modelProvider: "openai",
+          },
+        ]
+      : [],
+    nextCursor: null,
+  }));
+
+  let upsertCount = 0;
+  const store = {
+    upsertThread: () => {
+      upsertCount += 1;
+    },
+  };
+
+  const service = new WorkerService({
+    rpc,
+    store,
+    projectPaths: ["/repo"],
+    defaultProjectPath: "/repo",
+    logger: {
+      warn: () => {},
+      error: () => {},
+    },
+  });
+
+  await service.init();
+  const archived = await service.listThreads({ archived: true });
+
+  assert.equal(archived.data.length, 1);
+  assert.equal(archived.data[0].threadId, "thr_archived");
+  assert.equal(upsertCount, 0);
+});
+
+test("unarchiveThread 支持回退到 thread/update", async () => {
+  const rpc = new FakeRpcClient();
+  rpc.onRequest("initialize", () => ({}));
+  rpc.onRequest("thread/unarchive", () => {
+    throw new Error("method not found");
+  });
+
+  let updateCallCount = 0;
+  rpc.onRequest("thread/update", ({ archived }) => {
+    updateCallCount += 1;
+    return { ok: archived === false };
+  });
+
+  const service = new WorkerService({
+    rpc,
+    projectPaths: ["/repo"],
+    defaultProjectPath: "/repo",
+    logger: {
+      warn: () => {},
+      error: () => {},
+    },
+  });
+
+  await service.init();
+  const result = await service.unarchiveThread("thr_unarchive");
+
+  assert.equal(result.threadId, "thr_unarchive");
+  assert.equal(result.status, "active");
+  assert.equal(updateCallCount, 1);
+});

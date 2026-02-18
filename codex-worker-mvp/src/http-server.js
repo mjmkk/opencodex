@@ -178,6 +178,28 @@ function parseLimit(searchParams) {
   return limit;
 }
 
+/**
+ * 解析 archived 参数
+ *
+ * @param {URLSearchParams} searchParams - URL 查询参数
+ * @returns {boolean|undefined} 是否查询归档线程，未传返回 undefined
+ * @throws {HttpError} 400 如果 archived 不是 true/false/1/0
+ */
+function parseArchived(searchParams) {
+  const raw = searchParams.get("archived");
+  if (raw === null) {
+    return undefined;
+  }
+  const normalized = raw.trim().toLowerCase();
+  if (normalized === "true" || normalized === "1") {
+    return true;
+  }
+  if (normalized === "false" || normalized === "0") {
+    return false;
+  }
+  throw new HttpError(400, "INVALID_ARCHIVED", "archived 必须是 true/false");
+}
+
 // ==================== SSE 辅助函数 ====================
 
 /**
@@ -236,9 +258,10 @@ function match(pathname, pattern) {
  * | GET | /v1/projects | 列出项目 | 是 |
  * | GET | /v1/models | 列出模型 | 是 |
  * | POST | /v1/threads | 创建线程 | 是 |
- * | GET | /v1/threads | 列出线程 | 是 |
+ * | GET | /v1/threads | 列出线程（支持 archived 查询） | 是 |
  * | POST | /v1/threads/{id}/activate | 激活线程 | 是 |
  * | POST | /v1/threads/{id}/archive | 归档线程 | 是 |
+ * | POST | /v1/threads/{id}/unarchive | 恢复归档线程 | 是 |
  * | GET | /v1/threads/{id}/events | 获取线程历史事件 | 是 |
  * | POST | /v1/threads/{id}/turns | 发送消息 | 是 |
  * | GET | /v1/jobs/{id} | 获取任务 | 是 |
@@ -312,7 +335,8 @@ export function createHttpServer(options) {
 
       // GET /v1/threads - 列出线程
       if (method === "GET" && pathname === "/v1/threads") {
-        const result = await service.listThreads();
+        const archived = parseArchived(requestUrl.searchParams);
+        const result = await service.listThreads({ archived });
         sendJson(res, 200, result);
         return;
       }
@@ -331,6 +355,15 @@ export function createHttpServer(options) {
       if (method === "POST" && archiveMatch) {
         const threadId = decodeURIComponent(archiveMatch[0]);
         const result = await service.archiveThread(threadId);
+        sendJson(res, 200, result);
+        return;
+      }
+
+      // POST /v1/threads/{threadId}/unarchive - 恢复归档线程
+      const unarchiveMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/unarchive$/);
+      if (method === "POST" && unarchiveMatch) {
+        const threadId = decodeURIComponent(unarchiveMatch[0]);
+        const result = await service.unarchiveThread(threadId);
         sendJson(res, 200, result);
         return;
       }

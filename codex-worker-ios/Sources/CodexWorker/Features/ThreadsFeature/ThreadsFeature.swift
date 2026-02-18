@@ -152,7 +152,7 @@ public struct ThreadsFeature {
                     await send(
                         .loadResponse(
                             Result {
-                                try await apiClient.listThreads()
+                                try await apiClient.listThreads(nil)
                             }.mapError { CodexError.from($0) }
                         )
                     )

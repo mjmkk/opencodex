@@ -26,10 +26,13 @@ public struct APIClient: DependencyKey, Sendable {
     public var createThread: @Sendable (_ request: CreateThreadRequest) async throws -> Thread
 
     /// 列出线程
-    public var listThreads: @Sendable () async throws -> ThreadsListResponse
+    public var listThreads: @Sendable (_ archived: Bool?) async throws -> ThreadsListResponse
 
     /// 归档线程
     public var archiveThread: @Sendable (_ threadId: String) async throws -> ArchiveThreadResponse
+
+    /// 恢复归档线程
+    public var unarchiveThread: @Sendable (_ threadId: String) async throws -> ArchiveThreadResponse
 
     /// 激活线程
     public var activateThread: @Sendable (_ threadId: String) async throws -> Thread
@@ -89,8 +92,9 @@ extension APIClient {
             listProjects: { try await impl.listProjects() },
             listModels: { try await impl.listModels() },
             createThread: { try await impl.createThread(request: $0) },
-            listThreads: { try await impl.listThreads() },
+            listThreads: { try await impl.listThreads(archived: $0) },
             archiveThread: { try await impl.archiveThread(threadId: $0) },
+            unarchiveThread: { try await impl.unarchiveThread(threadId: $0) },
             activateThread: { try await impl.activateThread(threadId: $0) },
             listThreadEvents: { try await impl.listThreadEvents(threadId: $0, cursor: $1, limit: $2) },
             startTurn: { try await impl.startTurn(threadId: $0, request: $1) },
@@ -228,8 +232,12 @@ actor LiveAPIClient {
         return response.thread
     }
 
-    func listThreads() async throws -> ThreadsListResponse {
-        let url = try buildURL(path: "/v1/threads")
+    func listThreads(archived: Bool?) async throws -> ThreadsListResponse {
+        var queryItems: [URLQueryItem] = []
+        if let archived {
+            queryItems.append(URLQueryItem(name: "archived", value: archived ? "true" : "false"))
+        }
+        let url = try buildURL(path: "/v1/threads", queryItems: queryItems.isEmpty ? nil : queryItems)
         let request = try buildRequest(url: url)
         let response: ThreadsListResponse = try await performRequest(request)
 #if DEBUG
@@ -240,6 +248,12 @@ actor LiveAPIClient {
 
     func archiveThread(threadId: String) async throws -> ArchiveThreadResponse {
         let url = try buildURL(path: "/v1/threads/\(threadId)/archive")
+        let request = try buildRequest(url: url, method: "POST")
+        return try await performRequest(request)
+    }
+
+    func unarchiveThread(threadId: String) async throws -> ArchiveThreadResponse {
+        let url = try buildURL(path: "/v1/threads/\(threadId)/unarchive")
         let request = try buildRequest(url: url, method: "POST")
         return try await performRequest(request)
     }
@@ -351,7 +365,7 @@ extension APIClient {
                     modelProvider: "openai"
                 )
             },
-            listThreads: {
+            listThreads: { _ in
                 ThreadsListResponse(
                     data: [
                         Thread(
@@ -368,6 +382,9 @@ extension APIClient {
             },
             archiveThread: { threadId in
                 ArchiveThreadResponse(threadId: threadId, status: "archived")
+            },
+            unarchiveThread: { threadId in
+                ArchiveThreadResponse(threadId: threadId, status: "active")
             },
             activateThread: { threadId in
                 Thread(
