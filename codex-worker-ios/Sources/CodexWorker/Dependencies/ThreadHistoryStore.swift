@@ -19,12 +19,12 @@ public struct ThreadHistoryStore: DependencyKey, Sendable {
     public var loadCachedEvents: @Sendable (_ threadId: String) async throws -> [EventEnvelope]
     /// 读取线程同步游标
     public var loadCursor: @Sendable (_ threadId: String) async throws -> Int
-    /// 合并远端分页到本地缓存，返回合并后全量事件
+    /// 合并远端分页到本地缓存
     public var mergeRemotePage: @Sendable (
         _ threadId: String,
         _ requestCursor: Int,
         _ page: ThreadEventsResponse
-    ) async throws -> [EventEnvelope]
+    ) async throws -> Void
     /// 追加实时流式事件到本地缓存（用于崩溃恢复/离线回看）
     public var appendLiveEvent: @Sendable (
         _ threadId: String,
@@ -51,8 +51,8 @@ public struct ThreadHistoryStore: DependencyKey, Sendable {
                 return try await store.loadCursor(threadId: threadId)
             },
             mergeRemotePage: { threadId, requestCursor, page in
-                guard let store else { return page.data }
-                return try await store.mergeRemotePage(
+                guard let store else { return }
+                try await store.mergeRemotePage(
                     threadId: threadId,
                     requestCursor: requestCursor,
                     page: page
@@ -75,7 +75,7 @@ public struct ThreadHistoryStore: DependencyKey, Sendable {
     private static let noop = ThreadHistoryStore(
         loadCachedEvents: { _ in [] },
         loadCursor: { _ in -1 },
-        mergeRemotePage: { _, _, page in page.data },
+        mergeRemotePage: { _, _, _ in },
         appendLiveEvent: { _, _ in },
         resetThread: { _ in }
     )
@@ -150,7 +150,7 @@ actor LiveThreadHistoryStore {
         threadId: String,
         requestCursor: Int,
         page: ThreadEventsResponse
-    ) throws -> [EventEnvelope] {
+    ) throws {
         try dbQueue.write { db in
             var threadCursor = requestCursor
             for event in page.data {
@@ -180,7 +180,6 @@ actor LiveThreadHistoryStore {
                 arguments: [threadId, mergedCursor, ISO8601DateFormatter().string(from: Date())]
             )
         }
-        return try loadCachedEvents(threadId: threadId)
     }
 
     func appendLiveEvent(threadId: String, event: EventEnvelope) throws {

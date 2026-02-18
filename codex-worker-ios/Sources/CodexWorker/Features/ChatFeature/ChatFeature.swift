@@ -15,6 +15,12 @@ public struct ChatFeature {
         case sseStream
         case threadHistoryLoad
     }
+    private static let threadHistoryPageLimit = 1000
+
+    private struct ThreadHistorySyncOutcome: Sendable {
+        let events: [EventEnvelope]
+        let shouldApply: Bool
+    }
 
     @ObservableState
     public struct State: Equatable {
@@ -50,6 +56,7 @@ public struct ChatFeature {
         case setActiveThread(Thread?)
         case threadHistoryCacheResponse(threadId: String, Result<[EventEnvelope], CodexError>)
         case threadHistorySyncResponse(threadId: String, Result<[EventEnvelope], CodexError>)
+        case threadHistorySyncNoChange(threadId: String)
         case didSendDraft(DraftMessage)
         case startTurnResponse(localMessageId: String, Result<StartTurnResponse, CodexError>)
         case startStreaming(jobId: String, cursor: Int)
@@ -144,18 +151,25 @@ public struct ChatFeature {
                         )
 
                         // 第二步：远端按 cursor 增量同步并落库，再刷新 UI。
-                        await send(
-                            .threadHistorySyncResponse(
+                        do {
+                            let syncResult = try await Self.syncThreadHistory(
                                 threadId: thread.threadId,
-                                Result {
-                                    try await Self.syncThreadHistory(
-                                        threadId: thread.threadId,
-                                        apiClient: apiClient,
-                                        threadHistoryStore: threadHistoryStore
-                                    )
-                                }.mapError { CodexError.from($0) }
+                                apiClient: apiClient,
+                                threadHistoryStore: threadHistoryStore
                             )
-                        )
+                            if syncResult.shouldApply {
+                                await send(.threadHistorySyncResponse(threadId: thread.threadId, .success(syncResult.events)))
+                            } else {
+                                await send(.threadHistorySyncNoChange(threadId: thread.threadId))
+                            }
+                        } catch {
+                            await send(
+                                .threadHistorySyncResponse(
+                                    threadId: thread.threadId,
+                                    .failure(CodexError.from(error))
+                                )
+                            )
+                        }
                     }
                 )
                 .cancellable(id: CancelID.threadHistoryLoad, cancelInFlight: true)
@@ -176,6 +190,10 @@ public struct ChatFeature {
             case .threadHistorySyncResponse(let threadId, .failure(let error)):
                 guard state.activeThread?.threadId == threadId else { return .none }
                 state.errorMessage = error.localizedDescription
+                return .none
+
+            case .threadHistorySyncNoChange(let threadId):
+                guard state.activeThread?.threadId == threadId else { return .none }
                 return .none
 
             case .didSendDraft(let draft):
@@ -482,21 +500,25 @@ public struct ChatFeature {
         threadId: String,
         apiClient: APIClient,
         threadHistoryStore: ThreadHistoryStore
-    ) async throws -> [EventEnvelope] {
+    ) async throws -> ThreadHistorySyncOutcome {
         var cursor = try await threadHistoryStore.loadCursor(threadId)
-        var syncedEvents = try await threadHistoryStore.loadCachedEvents(threadId)
+        let originalCursor = cursor
         var hasResetOnce = false
+        var didMutateCache = false
 
         while true {
             do {
-                let page = try await apiClient.listThreadEvents(threadId, cursor, 200)
+                let page = try await apiClient.listThreadEvents(threadId, cursor, Self.threadHistoryPageLimit)
                 if page.hasMore, page.nextCursor <= cursor {
                     throw CodexError.invalidState
                 }
-                syncedEvents = try await threadHistoryStore.mergeRemotePage(threadId, cursor, page)
+                try await threadHistoryStore.mergeRemotePage(threadId, cursor, page)
+                if !page.data.isEmpty || page.nextCursor > cursor {
+                    didMutateCache = true
+                }
                 cursor = page.nextCursor
                 if !page.hasMore {
-                    return syncedEvents
+                    break
                 }
             } catch let error as CodexError where error == .cursorExpired {
                 if hasResetOnce {
@@ -505,9 +527,15 @@ public struct ChatFeature {
                 hasResetOnce = true
                 try await threadHistoryStore.resetThread(threadId)
                 cursor = -1
-                syncedEvents = []
+                didMutateCache = true
             }
         }
+
+        if hasResetOnce || didMutateCache || cursor != originalCursor {
+            let syncedEvents = try await threadHistoryStore.loadCachedEvents(threadId)
+            return ThreadHistorySyncOutcome(events: syncedEvents, shouldApply: true)
+        }
+        return ThreadHistorySyncOutcome(events: [], shouldApply: false)
     }
 
     /// 将线程历史事件回放为聊天状态

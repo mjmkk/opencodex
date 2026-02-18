@@ -46,6 +46,7 @@ const PUSH_RELEVANT_EVENT_TYPES = new Set([
   "approval.resolved",
   "job.finished",
 ]);
+const THREAD_EVENTS_CACHE_TTL_MS_DEFAULT = 5000;
 
 // ==================== WorkerService 类 ====================
 
@@ -81,6 +82,7 @@ export class WorkerService {
    * @param {string[]} [options.projectPaths] - 项目路径白名单
    * @param {string} [options.defaultProjectPath] - 默认项目路径
    * @param {number} [options.eventRetention=2000] - 单任务保留事件数
+   * @param {number} [options.threadEventsCacheTtlMs=5000] - 线程历史快照缓存 TTL（毫秒）
    * @param {Object} [options.pushNotifier] - 推送通知器（可选）
    * @param {Object} [options.logger] - 日志器
    */
@@ -91,6 +93,9 @@ export class WorkerService {
     this.logger = options.logger ?? console;
     this.eventRetention = options.eventRetention ?? 2000;
     this.pushNotifier = options.pushNotifier ?? null;
+    this.threadEventsCacheTtlMs = Number.isFinite(options.threadEventsCacheTtlMs)
+      ? Math.max(0, Number(options.threadEventsCacheTtlMs))
+      : THREAD_EVENTS_CACHE_TTL_MS_DEFAULT;
 
     // 处理项目路径配置
     const providedProjects = Array.isArray(options.projectPaths)
@@ -109,6 +114,7 @@ export class WorkerService {
     this.pendingJobByThread = new Map(); // threadId -> jobId（刚创建还没 turnId 的 job）
     this.approvals = new Map();         // approvalId -> approval 对象
     this.pushDevices = new Map();       // deviceToken -> push device
+    this.threadEventsCache = new Map(); // threadId -> { events, builtAtMs }
 
     // 初始化状态
     this.initialized = false;
@@ -252,6 +258,7 @@ export class WorkerService {
     // 更新内存缓存
     this.#upsertThread(thread);
     this.loadedThreads.add(thread.id);
+    this.#invalidateThreadEventsCache(thread.id);
 
     // 持久化
     const dto = this.#toThreadDto(thread);
@@ -328,6 +335,7 @@ export class WorkerService {
     // 更新状态
     this.#upsertThread(thread);
     this.loadedThreads.add(threadId);
+    this.#invalidateThreadEventsCache(threadId);
 
     const dto = this.#toThreadDto(thread);
     this.store?.upsertThread?.(dto);
@@ -517,62 +525,22 @@ export class WorkerService {
    * @param {number|null} [options.cursor=null] - 线程级游标，返回游标之后的事件
    * @param {number} [options.limit=200] - 分页大小，最大 1000
    * @returns {Promise<Object>} { data: Event[], nextCursor: number, hasMore: boolean }
+   *
+   * 性能策略：
+   * - 同一线程短时间内分页请求复用线程事件快照，避免重复 thread/read。
+   * - 线程有新事件写入时立即失效缓存，保证活跃会话实时性。
    */
   async listThreadEvents(threadId, options = {}) {
     this.#validateThreadId(threadId);
     const normalizedCursor = normalizeThreadCursor(options.cursor);
     const limit = normalizeThreadEventsLimit(options.limit);
+    let events = await this.#getThreadEventsSnapshot(threadId);
 
-    // 优先从 codex app-server 读取完整线程上下文（含 turns/items）。
-    // 这是主数据源；SQLite 仅作为回退缓存。
-    let events = [];
-    try {
-      await this.#ensureThreadLoaded(threadId);
-
-      const result = await this.rpc.request("thread/read", {
-        threadId,
-        includeTurns: true,
-      });
-      const turns = Array.isArray(result?.thread?.turns) ? result.thread.turns : [];
-      const replayEvents = buildThreadReplayEvents({
-        threadId,
-        turns,
-        turnToJob: this.turnToJob,
-        turnKey: (currentThreadId, turnId) => this.#turnKey(currentThreadId, turnId),
-      });
-      const activeJob = this.#findActiveJobByThread(threadId);
-      if (activeJob && Array.isArray(activeJob.events) && activeJob.events.length > 0) {
-        // 活跃任务的运行期事件（含 approval.required / approval.resolved）只在内存里，
-        // 需要拼入线程回放，避免 iOS 重进线程后丢审批弹窗。
-        const merged = [...replayEvents, ...activeJob.events];
-        const deduped = [];
-        const seen = new Set();
-        for (const event of merged) {
-          if (!event || !isNonEmptyString(event.type) || !isNonEmptyString(event.jobId)) {
-            continue;
-          }
-          const seq = Number.isInteger(event.seq) ? event.seq : -1;
-          const key = `${event.jobId}:${seq}:${event.type}`;
-          if (seen.has(key)) {
-            continue;
-          }
-          seen.add(key);
-          deduped.push(event);
-        }
-        events = deduped;
-      } else {
-        events = replayEvents;
-      }
-    } catch (error) {
-      if (typeof this.logger?.warn === "function") {
-        const message = error instanceof Error ? error.message : String(error);
-        this.logger.warn(`[thread-events] thread/read 失败，回退 SQLite 缓存: threadId=${threadId}, error=${message}`);
-      }
+    // 缓存快照可能在极端场景下过旧，游标看起来“越界”时强制刷新一次再判定是否过期。
+    if (normalizedCursor >= events.length) {
+      events = await this.#getThreadEventsSnapshot(threadId, { forceRefresh: true });
     }
 
-    if (events.length === 0 && this.store?.listEventsByThread) {
-      events = this.store.listEventsByThread(threadId);
-    }
     return sliceThreadEventsByCursor(events, normalizedCursor, limit);
   }
 
@@ -989,6 +957,119 @@ export class WorkerService {
 
   // ==================== 私有辅助方法 ====================
 
+  async #getThreadEventsSnapshot(threadId, options = {}) {
+    const forceRefresh = options.forceRefresh === true;
+    if (!forceRefresh) {
+      const cachedEvents = this.#readThreadEventsCache(threadId);
+      if (cachedEvents) {
+        return cachedEvents;
+      }
+    }
+
+    // 优先从 codex app-server 读取完整线程上下文（含 turns/items）。
+    // 这是主数据源；SQLite 仅作为降级回退。
+    let events = [];
+    let loadedFromSourceOfTruth = false;
+    try {
+      await this.#ensureThreadLoaded(threadId);
+
+      const result = await this.rpc.request("thread/read", {
+        threadId,
+        includeTurns: true,
+      });
+      const turns = Array.isArray(result?.thread?.turns) ? result.thread.turns : [];
+      const replayEvents = buildThreadReplayEvents({
+        threadId,
+        turns,
+        turnToJob: this.turnToJob,
+        turnKey: (currentThreadId, turnId) => this.#turnKey(currentThreadId, turnId),
+      });
+      const activeJob = this.#findActiveJobByThread(threadId);
+      events = this.#mergeThreadReplayWithActiveJobEvents(replayEvents, activeJob?.events ?? []);
+      loadedFromSourceOfTruth = true;
+    } catch (error) {
+      if (typeof this.logger?.warn === "function") {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn(`[thread-events] thread/read 失败，回退 SQLite 缓存: threadId=${threadId}, error=${message}`);
+      }
+    }
+
+    if (!loadedFromSourceOfTruth && this.store?.listEventsByThread) {
+      const fallbackEvents = this.store.listEventsByThread(threadId);
+      if (Array.isArray(fallbackEvents)) {
+        events = fallbackEvents;
+      }
+    }
+
+    const sanitizedEvents = Array.isArray(events)
+      ? events.filter((event) => (
+        event &&
+        isNonEmptyString(event.type) &&
+        isNonEmptyString(event.jobId) &&
+        Number.isInteger(event.seq)
+      ))
+      : [];
+    this.#writeThreadEventsCache(threadId, sanitizedEvents);
+    return sanitizedEvents;
+  }
+
+  #mergeThreadReplayWithActiveJobEvents(replayEvents, activeJobEvents) {
+    const merged = [...(Array.isArray(replayEvents) ? replayEvents : [])];
+    if (Array.isArray(activeJobEvents) && activeJobEvents.length > 0) {
+      merged.push(...activeJobEvents);
+    }
+
+    const deduped = [];
+    const seen = new Set();
+    for (const event of merged) {
+      if (!event || !isNonEmptyString(event.type) || !isNonEmptyString(event.jobId)) {
+        continue;
+      }
+      const seq = Number.isInteger(event.seq) ? event.seq : -1;
+      const key = `${event.jobId}:${seq}:${event.type}`;
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      deduped.push(event);
+    }
+    return deduped;
+  }
+
+  #readThreadEventsCache(threadId) {
+    const entry = this.threadEventsCache.get(threadId);
+    if (!entry) {
+      return null;
+    }
+    if (this.threadEventsCacheTtlMs <= 0) {
+      this.threadEventsCache.delete(threadId);
+      return null;
+    }
+    if (Date.now() - entry.builtAtMs > this.threadEventsCacheTtlMs) {
+      this.threadEventsCache.delete(threadId);
+      return null;
+    }
+    return entry.events;
+  }
+
+  #writeThreadEventsCache(threadId, events) {
+    if (this.threadEventsCacheTtlMs <= 0) {
+      return;
+    }
+    this.threadEventsCache.set(threadId, {
+      events,
+      builtAtMs: Date.now(),
+    });
+  }
+
+  #invalidateThreadEventsCache(threadId = null) {
+    if (isNonEmptyString(threadId)) {
+      this.threadEventsCache.delete(threadId);
+      return;
+    }
+    this.threadEventsCache.clear();
+  }
+
   #normalizeDeviceToken(rawDeviceToken) {
     if (!isNonEmptyString(rawDeviceToken)) {
       return null;
@@ -1250,6 +1331,7 @@ export class WorkerService {
 
     job.nextSeq += 1;
     job.events.push(envelope);
+    this.#invalidateThreadEventsCache(job.threadId);
 
     // 事件保留策略：超过限制时删除旧事件
     if (job.events.length > this.eventRetention) {

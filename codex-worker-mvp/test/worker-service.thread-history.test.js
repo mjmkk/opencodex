@@ -152,23 +152,27 @@ test("listThreadEvents 在 thread/read 失败时回退 SQLite 缓存", async () 
 });
 
 test("listThreadEvents 支持 cursor 增量分页", async () => {
+  let threadReadCallCount = 0;
   const { service } = createService({
-    threadReadHandler: () => ({
-      thread: {
-        id: "thr_1",
-        turns: [
-          {
-            id: "turn_a",
-            status: "completed",
-            error: null,
-            items: [
-              { type: "userMessage", id: "u1", content: [{ type: "text", text: "A" }] },
-              { type: "agentMessage", id: "a1", text: "B" },
-            ],
-          },
-        ],
-      },
-    }),
+    threadReadHandler: () => {
+      threadReadCallCount += 1;
+      return {
+        thread: {
+          id: "thr_1",
+          turns: [
+            {
+              id: "turn_a",
+              status: "completed",
+              error: null,
+              items: [
+                { type: "userMessage", id: "u1", content: [{ type: "text", text: "A" }] },
+                { type: "agentMessage", id: "a1", text: "B" },
+              ],
+            },
+          ],
+        },
+      };
+    },
   });
   await service.init();
 
@@ -184,4 +188,5 @@ test("listThreadEvents 支持 cursor 增量分页", async () => {
   assert.ok(secondPage.data.length >= 1);
   assert.equal(secondPage.hasMore, false);
   assert.ok(secondPage.nextCursor >= firstPage.nextCursor);
+  assert.equal(threadReadCallCount, 1, "同一线程连续分页应复用快照，避免重复 thread/read");
 });
