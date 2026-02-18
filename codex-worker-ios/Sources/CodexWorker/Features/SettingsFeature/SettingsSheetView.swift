@@ -27,7 +27,7 @@ public struct SettingsSheetView: View {
 
     public var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
-            let archivedCollapsedLimit = 20
+            let archivedCollapsedLimit = 3
             let totalArchivedCount = viewStore.archivedThreads.count
             let displayedArchivedThreads = showAllArchivedThreads
                 ? viewStore.archivedThreads
@@ -54,6 +54,24 @@ public struct SettingsSheetView: View {
                         Text("请输入可访问的 Worker 地址（包含端口）")
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                    }
+
+                    Section {
+                        Button("保存并检测连通性") {
+                            viewStore.send(.saveTapped)
+                            onClose?()
+                        }
+                        .disabled(
+                            viewStore.baseURL
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                                .isEmpty
+                        )
+
+                        if viewStore.saveSucceeded {
+                            Label("配置已保存", systemImage: "checkmark.circle.fill")
+                                .font(.footnote)
+                                .foregroundStyle(.green)
+                        }
                     }
 
                     Section("鉴权 Token（可选）") {
@@ -150,23 +168,6 @@ public struct SettingsSheetView: View {
                         }
                     }
 
-                    Section {
-                        Button("保存并检测连通性") {
-                            viewStore.send(.saveTapped)
-                            onClose?()
-                        }
-                        .disabled(
-                            viewStore.baseURL
-                                .trimmingCharacters(in: .whitespacesAndNewlines)
-                                .isEmpty
-                        )
-
-                        if viewStore.saveSucceeded {
-                            Label("配置已保存", systemImage: "checkmark.circle.fill")
-                                .font(.footnote)
-                                .foregroundStyle(.green)
-                        }
-                    }
                 }
                 .navigationTitle("连接设置")
                 .toolbar {
