@@ -6,9 +6,18 @@
 //
 
 import ComposableArchitecture
+import Foundation
 
 @Reducer
 public struct ThreadsFeature {
+    private enum CancelID {
+        case prewarmHistory
+    }
+
+    private static let prewarmThreadCount = 3
+    private static let prewarmPageLimit = 500
+    private static let prewarmMaxPages = 2
+
     public enum GroupingMode: String, CaseIterable, Equatable, Hashable, Sendable {
         case byCwd
         case byTime
@@ -30,20 +39,20 @@ public struct ThreadsFeature {
             public let title: String
             public let fullPath: String?
             public let threads: [Thread]
+            public let latestActivityAt: Date
         }
 
         public var items: [Thread] = []
         public var isLoading = false
         public var isCreating = false
+        public var hasPrewarmedHistory = false
         public var selectedThreadId: String?
         public var errorMessage: String?
         public var groupingMode: GroupingMode = .byCwd
 
         /// 按更新时间倒序展示线程，保证最近活跃优先
         public var sortedItems: [Thread] {
-            items.sorted { lhs, rhs in
-                (lhs.lastActiveAt ?? .distantPast) > (rhs.lastActiveAt ?? .distantPast)
-            }
+            items.sorted(by: State.compareThreadsByRecency)
         }
 
         /// 按工作目录分组，组内仍按时间倒序
@@ -64,7 +73,8 @@ public struct ThreadsFeature {
                             id: path,
                             title: "未设置目录",
                             fullPath: nil,
-                            threads: threads.sorted(by: State.compareThreadsByRecency)
+                            threads: threads.sorted(by: State.compareThreadsByRecency),
+                            latestActivityAt: threads.map(State.threadRecencyDate).max() ?? .distantPast
                         )
                     }
                     let title = path.split(separator: "/").last.map(String.init) ?? path
@@ -72,19 +82,23 @@ public struct ThreadsFeature {
                         id: path,
                         title: title,
                         fullPath: path,
-                        threads: threads.sorted(by: State.compareThreadsByRecency)
+                        threads: threads.sorted(by: State.compareThreadsByRecency),
+                        latestActivityAt: threads.map(State.threadRecencyDate).max() ?? .distantPast
                     )
                 }
                 .sorted { lhs, rhs in
+                    if lhs.latestActivityAt != rhs.latestActivityAt {
+                        return lhs.latestActivityAt > rhs.latestActivityAt
+                    }
                     switch (lhs.fullPath, rhs.fullPath) {
-                    case (nil, nil):
-                        return lhs.title < rhs.title
-                    case (nil, _):
-                        return false
-                    case (_, nil):
-                        return true
                     case (.some(let l), .some(let r)):
                         return l.localizedStandardCompare(r) == .orderedAscending
+                    case (.some, nil):
+                        return true
+                    case (nil, .some):
+                        return false
+                    case (nil, nil):
+                        return lhs.title.localizedStandardCompare(rhs.title) == .orderedAscending
                     }
                 }
         }
@@ -92,7 +106,16 @@ public struct ThreadsFeature {
         public init() {}
 
         private static func compareThreadsByRecency(_ lhs: Thread, _ rhs: Thread) -> Bool {
-            (lhs.lastActiveAt ?? .distantPast) > (rhs.lastActiveAt ?? .distantPast)
+            let lhsDate = threadRecencyDate(lhs)
+            let rhsDate = threadRecencyDate(rhs)
+            if lhsDate == rhsDate {
+                return lhs.threadId < rhs.threadId
+            }
+            return lhsDate > rhsDate
+        }
+
+        private static func threadRecencyDate(_ thread: Thread) -> Date {
+            thread.lastActiveAt ?? thread.createdDate ?? .distantPast
         }
     }
 
@@ -160,7 +183,49 @@ public struct ThreadsFeature {
             case .loadResponse(.success(let response)):
                 state.isLoading = false
                 state.items = response.data
-                return .none
+                if let selectedThreadId = state.selectedThreadId,
+                   !state.items.contains(where: { $0.threadId == selectedThreadId })
+                {
+                    state.selectedThreadId = nil
+                }
+
+                let sortedByRecency = state.sortedItems
+                let prewarmCandidates = Array(sortedByRecency.prefix(Self.prewarmThreadCount))
+                let shouldPrewarm = !state.hasPrewarmedHistory
+                if shouldPrewarm {
+                    state.hasPrewarmedHistory = true
+                }
+                let shouldAutoActivate = state.selectedThreadId == nil
+                let autoActivateTarget = shouldAutoActivate ? sortedByRecency.first : nil
+                if let autoActivateTarget {
+                    state.selectedThreadId = autoActivateTarget.threadId
+                }
+
+                return .merge(
+                    shouldPrewarm
+                        ? .run { _ in
+                            @Dependency(\.apiClient) var apiClient
+                            @Dependency(\.threadHistoryStore) var threadHistoryStore
+
+                            for thread in prewarmCandidates {
+                                if Task.isCancelled {
+                                    return
+                                }
+                                do {
+                                    try await Self.prewarmThreadHistory(
+                                        threadId: thread.threadId,
+                                        apiClient: apiClient,
+                                        threadHistoryStore: threadHistoryStore
+                                    )
+                                } catch {
+                                    // 预热失败不影响主流程，避免干扰线程列表可用性。
+                                }
+                            }
+                        }
+                        .cancellable(id: CancelID.prewarmHistory, cancelInFlight: true)
+                        : .none,
+                    autoActivateTarget.map { .send(.delegate(.didActivateThread($0))) } ?? .none
+                )
 
             case .loadResponse(.failure(let error)):
                 state.isLoading = false
@@ -199,6 +264,38 @@ public struct ThreadsFeature {
 
             case .delegate:
                 return .none
+            }
+        }
+    }
+
+    private static func prewarmThreadHistory(
+        threadId: String,
+        apiClient: APIClient,
+        threadHistoryStore: ThreadHistoryStore
+    ) async throws {
+        var cursor = try await threadHistoryStore.loadCursor(threadId)
+        var hasResetOnce = false
+        var fetchedPages = 0
+
+        while fetchedPages < prewarmMaxPages {
+            do {
+                let page = try await apiClient.listThreadEvents(threadId, cursor, prewarmPageLimit)
+                if page.hasMore, page.nextCursor <= cursor {
+                    return
+                }
+                try await threadHistoryStore.mergeRemotePage(threadId, cursor, page)
+                cursor = page.nextCursor
+                fetchedPages += 1
+                if !page.hasMore || page.data.isEmpty {
+                    return
+                }
+            } catch let error as CodexError where error == .cursorExpired {
+                if hasResetOnce {
+                    return
+                }
+                hasResetOnce = true
+                try await threadHistoryStore.resetThread(threadId)
+                cursor = -1
             }
         }
     }
