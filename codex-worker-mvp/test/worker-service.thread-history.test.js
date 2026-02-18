@@ -190,3 +190,74 @@ test("listThreadEvents 支持 cursor 增量分页", async () => {
   assert.ok(secondPage.nextCursor >= firstPage.nextCursor);
   assert.equal(threadReadCallCount, 1, "同一线程连续分页应复用快照，避免重复 thread/read");
 });
+
+test("listThreadEvents 优先读取线程事件投影读模型", async () => {
+  let threadReadCallCount = 0;
+  let projectionReplaceCount = 0;
+  const projectionStore = {
+    projectionByThread: new Map(),
+    upsertThread: () => {},
+    replaceThreadEventsProjection(threadId, events) {
+      projectionReplaceCount += 1;
+      this.projectionByThread.set(threadId, [...events]);
+    },
+    listThreadEventsProjectionPage(threadId, cursor, limit) {
+      const all = this.projectionByThread.get(threadId) ?? [];
+      const normalizedCursor = Number.isInteger(cursor) ? cursor : -1;
+      const start = normalizedCursor + 1;
+      const data = all.slice(start, start + limit);
+      const nextCursor = data.length > 0 ? start + data.length - 1 : normalizedCursor;
+      return {
+        data,
+        nextCursor,
+        hasMore: nextCursor + 1 < all.length,
+        total: all.length,
+      };
+    },
+  };
+
+  const { service } = createService({
+    store: projectionStore,
+    threadReadHandler: () => {
+      threadReadCallCount += 1;
+      return {
+        thread: {
+          id: "thr_1",
+          turns: [
+            {
+              id: "turn_projection",
+              status: "completed",
+              error: null,
+              items: [
+                { type: "userMessage", id: "u_projection", content: [{ type: "text", text: "A" }] },
+                { type: "agentMessage", id: "a_projection", text: "B" },
+              ],
+            },
+          ],
+        },
+      };
+    },
+  });
+  await service.init();
+
+  const firstPage = await service.listThreadEvents("thr_1", { cursor: -1, limit: 1 });
+  assert.equal(firstPage.data.length, 1);
+  assert.equal(firstPage.hasMore, true);
+
+  const secondPage = await service.listThreadEvents("thr_1", {
+    cursor: firstPage.nextCursor,
+    limit: 10,
+  });
+  assert.ok(secondPage.data.length >= 1);
+  assert.equal(secondPage.hasMore, false);
+  assert.equal(
+    threadReadCallCount,
+    1,
+    "连续分页应复用已刷新的线程事件投影，不应重复调用 thread/read"
+  );
+  assert.equal(
+    projectionReplaceCount,
+    1,
+    "同一线程分页期间只需刷新一次线程事件投影"
+  );
+});

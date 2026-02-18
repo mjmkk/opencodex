@@ -61,6 +61,8 @@ export class SqliteStore {
     this.db = null;
     /** @type {Object|null} 预编译语句集合 */
     this.stmt = null;
+    /** @type {Object|null} 事务集合 */
+    this.tx = null;
   }
 
   /**
@@ -168,6 +170,20 @@ export class SqliteStore {
         updatedAt TEXT NOT NULL,
         lastSeenAt TEXT NOT NULL
       );
+
+      -- 线程历史事件读模型（物化）
+      CREATE TABLE IF NOT EXISTS thread_event_projection (
+        threadId TEXT NOT NULL,
+        threadCursor INTEGER NOT NULL,
+        jobId TEXT NOT NULL,
+        seq INTEGER NOT NULL,
+        type TEXT NOT NULL,
+        ts TEXT NOT NULL,
+        payload_json TEXT NOT NULL,
+        PRIMARY KEY(threadId, threadCursor)
+      );
+      CREATE INDEX IF NOT EXISTS idx_thread_event_projection_lookup
+      ON thread_event_projection(threadId, threadCursor);
     `);
 
     // 准备预编译语句（提高性能，防止 SQL 注入）
@@ -246,6 +262,29 @@ export class SqliteStore {
         WHERE j.threadId = ?
         ORDER BY j.createdAt ASC, e.seq ASC
       `),
+      deleteThreadEventProjection: db.prepare(`
+        DELETE FROM thread_event_projection WHERE threadId = ?
+      `),
+      insertThreadEventProjection: db.prepare(`
+        INSERT INTO thread_event_projection(
+          threadId, threadCursor, jobId, seq, type, ts, payload_json
+        )
+        VALUES(
+          @threadId, @threadCursor, @jobId, @seq, @type, @ts, @payload_json
+        )
+      `),
+      countThreadEventProjection: db.prepare(`
+        SELECT COUNT(*) AS total
+        FROM thread_event_projection
+        WHERE threadId = ?
+      `),
+      listThreadEventProjectionPage: db.prepare(`
+        SELECT threadCursor, jobId, seq, type, ts, payload_json
+        FROM thread_event_projection
+        WHERE threadId = ? AND threadCursor > ?
+        ORDER BY threadCursor ASC
+        LIMIT ?
+      `),
 
       // 推送设备操作
       upsertPushDevice: db.prepare(`
@@ -273,6 +312,27 @@ export class SqliteStore {
       `),
     };
 
+    this.tx = {
+      replaceThreadEventProjection: db.transaction((threadId, events) => {
+        this.stmt.deleteThreadEventProjection.run(threadId);
+        if (!Array.isArray(events) || events.length === 0) {
+          return;
+        }
+        for (let index = 0; index < events.length; index += 1) {
+          const event = events[index];
+          this.stmt.insertThreadEventProjection.run({
+            threadId,
+            threadCursor: index,
+            jobId: event.jobId,
+            seq: event.seq,
+            type: event.type,
+            ts: event.ts,
+            payload_json: JSON.stringify(event.payload ?? null),
+          });
+        }
+      }),
+    };
+
     this.db = db;
   }
 
@@ -284,6 +344,7 @@ export class SqliteStore {
       this.db.close();
       this.db = null;
       this.stmt = null;
+      this.tx = null;
     }
   }
 
@@ -481,23 +542,7 @@ export class SqliteStore {
     // 查询事件
     const rows = this.stmt.listEvents.all(jobId, normalizedCursor, this.eventPageLimit);
 
-    // 解析 JSON 负载
-    const data = rows.map((r) => {
-      let payload = null;
-      try {
-        payload = JSON.parse(r.payload_json);
-      } catch {
-        // JSON 解析失败，保留 null
-        payload = null;
-      }
-      return {
-        type: r.type,
-        ts: r.ts,
-        jobId: r.jobId,
-        seq: r.seq,
-        payload,
-      };
-    });
+    const data = rows.map((row) => this.#toEventEnvelope(row));
 
     // 计算下一个游标
     const nextCursor = data.length > 0 ? data[data.length - 1].seq : normalizedCursor;
@@ -515,22 +560,65 @@ export class SqliteStore {
     if (!this.db) this.init();
 
     const rows = this.stmt.listEventsByThread.all(threadId);
+    return rows.map((row) => this.#toEventEnvelope(row));
+  }
 
-    return rows.map((r) => {
-      let payload = null;
-      try {
-        payload = JSON.parse(r.payload_json);
-      } catch {
-        // JSON 解析失败，保留 null
-      }
+  /**
+   * 用线程事件读模型整体替换一个线程的历史事件
+   *
+   * 说明：
+   * - 这是 P1 读模型写入路径，使用事务保证原子性。
+   * - 传入 events 需按线程游标顺序排序（0..N-1）。
+   *
+   * @param {string} threadId - 线程 ID
+   * @param {Array<Object>} events - 事件数组
+   */
+  replaceThreadEventsProjection(threadId, events) {
+    if (!this.db) this.init();
+    this.tx.replaceThreadEventProjection(threadId, Array.isArray(events) ? events : []);
+  }
+
+  /**
+   * 读取线程事件读模型分页
+   *
+   * @param {string} threadId - 线程 ID
+   * @param {number} cursor - 线程游标
+   * @param {number} limit - 分页大小
+   * @returns {{ data: Array<Object>, nextCursor: number, hasMore: boolean, total: number }}
+   */
+  listThreadEventsProjectionPage(threadId, cursor, limit) {
+    if (!this.db) this.init();
+    const normalizedCursor = Number.isInteger(cursor) ? cursor : -1;
+    const normalizedLimit = Number.isInteger(limit) && limit > 0
+      ? Math.min(limit, this.eventPageLimit)
+      : this.eventPageLimit;
+    const total = Number(
+      this.stmt.countThreadEventProjection.get(threadId)?.total ?? 0
+    );
+    if (total === 0) {
       return {
-        jobId: r.jobId,
-        seq: r.seq,
-        type: r.type,
-        ts: r.ts,
-        payload,
+        data: [],
+        nextCursor: -1,
+        hasMore: false,
+        total,
       };
-    });
+    }
+    const rows = this.stmt.listThreadEventProjectionPage.all(
+      threadId,
+      normalizedCursor,
+      normalizedLimit
+    );
+    const data = rows.map((row) => this.#toEventEnvelope(row));
+    const nextCursor = data.length > 0
+      ? rows[rows.length - 1].threadCursor
+      : normalizedCursor;
+    const hasMore = nextCursor + 1 < total;
+    return {
+      data,
+      nextCursor,
+      hasMore,
+      total,
+    };
   }
 
   // ==================== 推送设备操作 ====================
@@ -581,5 +669,21 @@ export class SqliteStore {
       updatedAt: row.updatedAt,
       lastSeenAt: row.lastSeenAt,
     }));
+  }
+
+  #toEventEnvelope(row) {
+    let payload = null;
+    try {
+      payload = JSON.parse(row.payload_json);
+    } catch {
+      payload = null;
+    }
+    return {
+      type: row.type,
+      ts: row.ts,
+      jobId: row.jobId,
+      seq: row.seq,
+      payload,
+    };
   }
 }

@@ -115,6 +115,7 @@ export class WorkerService {
     this.approvals = new Map();         // approvalId -> approval 对象
     this.pushDevices = new Map();       // deviceToken -> push device
     this.threadEventsCache = new Map(); // threadId -> { events, builtAtMs }
+    this.threadProjectionCache = new Map(); // threadId -> projection refresh timestamp(ms)
 
     // 初始化状态
     this.initialized = false;
@@ -527,13 +528,46 @@ export class WorkerService {
    * @returns {Promise<Object>} { data: Event[], nextCursor: number, hasMore: boolean }
    *
    * 性能策略：
-   * - 同一线程短时间内分页请求复用线程事件快照，避免重复 thread/read。
+   * - P1 读模型：同一线程先刷新 SQLite 线程事件投影，再走 O(pageSize) 分页查询。
+   * - 同一线程短时间分页请求复用投影刷新结果，避免每页重复 thread/read。
    * - 线程有新事件写入时立即失效缓存，保证活跃会话实时性。
    */
   async listThreadEvents(threadId, options = {}) {
     this.#validateThreadId(threadId);
     const normalizedCursor = normalizeThreadCursor(options.cursor);
     const limit = normalizeThreadEventsLimit(options.limit);
+    const canUseProjection = this.#supportsThreadEventsProjectionStore();
+
+    if (canUseProjection) {
+      const projectionReady = await this.#refreshThreadEventsProjection(threadId);
+      let page = this.store.listThreadEventsProjectionPage(threadId, normalizedCursor, limit);
+      if (this.#shouldRetryProjectionRead(page, normalizedCursor)) {
+        await this.#refreshThreadEventsProjection(threadId, { forceRefresh: true });
+        page = this.store.listThreadEventsProjectionPage(threadId, normalizedCursor, limit);
+      }
+      if (page && Number.isInteger(page.total)) {
+        if (!(!projectionReady && page.total === 0)) {
+          if (page.total > 0 && normalizedCursor >= page.total) {
+            throw new HttpError(
+              409,
+              "THREAD_CURSOR_EXPIRED",
+              `cursor=${normalizedCursor} 超出当前线程历史范围（total=${page.total}）`
+            );
+          }
+          return {
+            data: page.data,
+            nextCursor: page.nextCursor,
+            hasMore: page.hasMore,
+          };
+        }
+      }
+
+      // 读模型路径异常时，回退旧路径（不影响可用性）。
+      if (projectionReady && typeof this.logger?.warn === "function") {
+        this.logger.warn(`[thread-events] projection page unavailable, fallback snapshot: threadId=${threadId}`);
+      }
+    }
+
     let events = await this.#getThreadEventsSnapshot(threadId);
 
     // 缓存快照可能在极端场景下过旧，游标看起来“越界”时强制刷新一次再判定是否过期。
@@ -957,6 +991,62 @@ export class WorkerService {
 
   // ==================== 私有辅助方法 ====================
 
+  #supportsThreadEventsProjectionStore() {
+    return Boolean(
+      this.store?.replaceThreadEventsProjection &&
+      this.store?.listThreadEventsProjectionPage
+    );
+  }
+
+  async #refreshThreadEventsProjection(threadId, options = {}) {
+    if (!this.#supportsThreadEventsProjectionStore()) {
+      return false;
+    }
+    const forceRefresh = options.forceRefresh === true;
+    if (!forceRefresh && this.#isThreadProjectionFresh(threadId)) {
+      return true;
+    }
+    try {
+      const events = await this.#loadThreadEventsFromSourceOfTruth(threadId);
+      this.store.replaceThreadEventsProjection(threadId, events);
+      this.#markThreadProjectionFresh(threadId);
+      this.#writeThreadEventsCache(threadId, events);
+      return true;
+    } catch (error) {
+      if (typeof this.logger?.warn === "function") {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn(`[thread-events] projection refresh failed: threadId=${threadId}, error=${message}`);
+      }
+      return false;
+    }
+  }
+
+  #shouldRetryProjectionRead(page, cursor) {
+    if (!page || !Number.isInteger(page.total)) {
+      return true;
+    }
+    return page.total > 0 && cursor >= page.total;
+  }
+
+  async #loadThreadEventsFromSourceOfTruth(threadId) {
+    await this.#ensureThreadLoaded(threadId);
+    const result = await this.rpc.request("thread/read", {
+      threadId,
+      includeTurns: true,
+    });
+    const turns = Array.isArray(result?.thread?.turns) ? result.thread.turns : [];
+    const replayEvents = buildThreadReplayEvents({
+      threadId,
+      turns,
+      turnToJob: this.turnToJob,
+      turnKey: (currentThreadId, turnId) => this.#turnKey(currentThreadId, turnId),
+    });
+    const activeJob = this.#findActiveJobByThread(threadId);
+    return this.#sanitizeThreadEvents(
+      this.#mergeThreadReplayWithActiveJobEvents(replayEvents, activeJob?.events ?? [])
+    );
+  }
+
   async #getThreadEventsSnapshot(threadId, options = {}) {
     const forceRefresh = options.forceRefresh === true;
     if (!forceRefresh) {
@@ -966,51 +1056,58 @@ export class WorkerService {
       }
     }
 
-    // 优先从 codex app-server 读取完整线程上下文（含 turns/items）。
-    // 这是主数据源；SQLite 仅作为降级回退。
     let events = [];
-    let loadedFromSourceOfTruth = false;
     try {
-      await this.#ensureThreadLoaded(threadId);
-
-      const result = await this.rpc.request("thread/read", {
-        threadId,
-        includeTurns: true,
-      });
-      const turns = Array.isArray(result?.thread?.turns) ? result.thread.turns : [];
-      const replayEvents = buildThreadReplayEvents({
-        threadId,
-        turns,
-        turnToJob: this.turnToJob,
-        turnKey: (currentThreadId, turnId) => this.#turnKey(currentThreadId, turnId),
-      });
-      const activeJob = this.#findActiveJobByThread(threadId);
-      events = this.#mergeThreadReplayWithActiveJobEvents(replayEvents, activeJob?.events ?? []);
-      loadedFromSourceOfTruth = true;
+      events = await this.#loadThreadEventsFromSourceOfTruth(threadId);
     } catch (error) {
       if (typeof this.logger?.warn === "function") {
         const message = error instanceof Error ? error.message : String(error);
         this.logger.warn(`[thread-events] thread/read 失败，回退 SQLite 缓存: threadId=${threadId}, error=${message}`);
       }
-    }
-
-    if (!loadedFromSourceOfTruth && this.store?.listEventsByThread) {
-      const fallbackEvents = this.store.listEventsByThread(threadId);
-      if (Array.isArray(fallbackEvents)) {
-        events = fallbackEvents;
+      if (this.store?.listEventsByThread) {
+        const fallbackEvents = this.store.listEventsByThread(threadId);
+        if (Array.isArray(fallbackEvents)) {
+          events = this.#sanitizeThreadEvents(fallbackEvents);
+        }
       }
     }
+    this.#writeThreadEventsCache(threadId, events);
+    return events;
+  }
 
-    const sanitizedEvents = Array.isArray(events)
-      ? events.filter((event) => (
-        event &&
-        isNonEmptyString(event.type) &&
-        isNonEmptyString(event.jobId) &&
-        Number.isInteger(event.seq)
-      ))
-      : [];
-    this.#writeThreadEventsCache(threadId, sanitizedEvents);
-    return sanitizedEvents;
+  #sanitizeThreadEvents(events) {
+    if (!Array.isArray(events)) {
+      return [];
+    }
+    return events.filter((event) => (
+      event &&
+      isNonEmptyString(event.type) &&
+      isNonEmptyString(event.jobId) &&
+      Number.isInteger(event.seq)
+    ));
+  }
+
+  #isThreadProjectionFresh(threadId) {
+    const builtAtMs = this.threadProjectionCache.get(threadId);
+    if (!Number.isFinite(builtAtMs)) {
+      return false;
+    }
+    if (this.threadEventsCacheTtlMs <= 0) {
+      this.threadProjectionCache.delete(threadId);
+      return false;
+    }
+    if (Date.now() - builtAtMs > this.threadEventsCacheTtlMs) {
+      this.threadProjectionCache.delete(threadId);
+      return false;
+    }
+    return true;
+  }
+
+  #markThreadProjectionFresh(threadId) {
+    if (this.threadEventsCacheTtlMs <= 0) {
+      return;
+    }
+    this.threadProjectionCache.set(threadId, Date.now());
   }
 
   #mergeThreadReplayWithActiveJobEvents(replayEvents, activeJobEvents) {
@@ -1065,9 +1162,11 @@ export class WorkerService {
   #invalidateThreadEventsCache(threadId = null) {
     if (isNonEmptyString(threadId)) {
       this.threadEventsCache.delete(threadId);
+      this.threadProjectionCache.delete(threadId);
       return;
     }
     this.threadEventsCache.clear();
+    this.threadProjectionCache.clear();
   }
 
   #normalizeDeviceToken(rawDeviceToken) {
