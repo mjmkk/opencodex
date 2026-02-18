@@ -4,10 +4,10 @@ import assert from "node:assert/strict";
 import { WorkerService } from "../src/worker-service.js";
 import { FakeRpcClient } from "./helpers/fake-rpc.js";
 
-test("listModels 返回规范化后的模型列表", async () => {
+test("listModels 优先使用 model/list 并返回规范化后的模型列表", async () => {
   const rpc = new FakeRpcClient();
   rpc.onRequest("initialize", () => ({}));
-  rpc.onRequest("models/list", () => ({
+  rpc.onRequest("model/list", () => ({
     models: [
       { id: "gpt-5", name: "GPT-5", provider: "openai" },
       { model: "claude-sonnet-4-5", provider: "anthropic" },
@@ -31,6 +31,31 @@ test("listModels 返回规范化后的模型列表", async () => {
   assert.equal(models.data.length, 2);
   assert.equal(models.data[0].displayName, "openai/gpt-5");
   assert.equal(models.data[1].displayName, "anthropic/claude-sonnet-4-5");
+});
+
+test("listModels 在 model/list 不可用时回退 models/list", async () => {
+  const rpc = new FakeRpcClient();
+  rpc.onRequest("initialize", () => ({}));
+  rpc.onRequest("models/list", () => ({
+    models: [
+      { id: "gpt-5", name: "GPT-5", provider: "openai" },
+    ],
+  }));
+
+  const service = new WorkerService({
+    rpc,
+    projectPaths: ["/repo"],
+    defaultProjectPath: "/repo",
+    logger: {
+      warn: () => {},
+      error: () => {},
+    },
+  });
+
+  await service.init();
+  const models = await service.listModels();
+  assert.equal(models.data.length, 1);
+  assert.equal(models.data[0].displayName, "openai/gpt-5");
 });
 
 test("archiveThread 成功后会清理本地缓存并允许重新 resume", async () => {

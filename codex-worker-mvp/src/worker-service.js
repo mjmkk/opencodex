@@ -253,19 +253,31 @@ export class WorkerService {
    * @returns {Promise<Object>} { data: Model[] }
    */
   async listModels() {
-    try {
-      const result = await this.rpc.request("models/list", {});
-      return {
-        data: normalizeModelList(result),
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      // 兼容旧 app-server 尚未暴露 models/list 的场景。
-      if (/method/i.test(message) && /not found|unknown|no fake handler/i.test(message)) {
-        return { data: [] };
+    const methods = ["model/list", "models/list"];
+    let unsupportedCount = 0;
+
+    for (const method of methods) {
+      try {
+        const result = await this.rpc.request(method, {});
+        return {
+          data: normalizeModelList(result),
+        };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        // 兼容不同 app-server 版本的方法名差异。
+        if (/not found|unknown|unknown variant|no fake handler/i.test(message)) {
+          unsupportedCount += 1;
+          continue;
+        }
+        throw error;
       }
-      throw error;
     }
+
+    // 两个方法都不支持时，返回空数组，前端走默认模型。
+    if (unsupportedCount === methods.length) {
+      return { data: [] };
+    }
+    return { data: [] };
   }
 
   // ==================== 线程管理 ====================
