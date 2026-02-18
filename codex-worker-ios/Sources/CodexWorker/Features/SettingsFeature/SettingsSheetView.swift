@@ -99,7 +99,7 @@ public struct SettingsSheetView: View {
                         .disabled(viewStore.isLoadingModels)
 
                         if !viewStore.isLoadingModels && viewStore.availableModels.isEmpty {
-                            Text("未获取到可选模型，将使用后端默认模型")
+                            Text("未获取到可用模型（可能是 app-server 不支持 models/list），将使用后端默认模型")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
