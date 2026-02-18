@@ -155,27 +155,11 @@ actor LiveThreadHistoryStore {
             var threadCursor = requestCursor
             for event in page.data {
                 threadCursor += 1
-                try db.execute(
-                    sql: """
-                    INSERT INTO thread_events(
-                        threadId, threadCursor, jobId, seq, type, ts, payloadJson
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                    ON CONFLICT(threadId, threadCursor) DO UPDATE SET
-                        jobId = excluded.jobId,
-                        seq = excluded.seq,
-                        type = excluded.type,
-                        ts = excluded.ts,
-                        payloadJson = excluded.payloadJson
-                    """,
-                    arguments: [
-                        threadId,
-                        threadCursor,
-                        event.jobId,
-                        event.seq,
-                        event.type,
-                        event.ts,
-                        try encodePayload(event.payload),
-                    ]
+                _ = try upsertEvent(
+                    db: db,
+                    threadId: threadId,
+                    threadCursor: threadCursor,
+                    event: event
                 )
             }
 
@@ -201,24 +185,26 @@ actor LiveThreadHistoryStore {
 
     func appendLiveEvent(threadId: String, event: EventEnvelope) throws {
         try dbQueue.write { db in
-            // 同一线程内，使用 (jobId, seq, type) 作为去重键，避免重复写入同一事件。
+            // 同一线程内，优先以 (jobId, seq) 去重。
+            // 兼容旧版本库里可能存在的 UNIQUE(threadId, jobId, seq) 约束，避免 SQLite 19。
             if let existingCursor = try Int.fetchOne(
                 db,
                 sql: """
                 SELECT threadCursor
                 FROM thread_events
-                WHERE threadId = ? AND jobId = ? AND seq = ? AND type = ?
+                WHERE threadId = ? AND jobId = ? AND seq = ?
                 LIMIT 1
                 """,
-                arguments: [threadId, event.jobId, event.seq, event.type]
+                arguments: [threadId, event.jobId, event.seq]
             ) {
                 try db.execute(
                     sql: """
                     UPDATE thread_events
-                    SET ts = ?, payloadJson = ?
+                    SET type = ?, ts = ?, payloadJson = ?
                     WHERE threadId = ? AND threadCursor = ?
                     """,
                     arguments: [
+                        event.type,
                         event.ts,
                         try encodePayload(event.payload),
                         threadId,
@@ -236,23 +222,13 @@ actor LiveThreadHistoryStore {
             )) ?? -1
             let nextCursor = maxCursor + 1
 
-            try db.execute(
-                sql: """
-                INSERT INTO thread_events(
-                    threadId, threadCursor, jobId, seq, type, ts, payloadJson
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                """,
-                arguments: [
-                    threadId,
-                    nextCursor,
-                    event.jobId,
-                    event.seq,
-                    event.type,
-                    event.ts,
-                    try encodePayload(event.payload),
-                ]
+            let appliedCursor = try upsertEvent(
+                db: db,
+                threadId: threadId,
+                threadCursor: nextCursor,
+                event: event
             )
-            try upsertCursor(db: db, threadId: threadId, cursor: nextCursor)
+            try upsertCursor(db: db, threadId: threadId, cursor: appliedCursor)
         }
     }
 
@@ -298,6 +274,86 @@ actor LiveThreadHistoryStore {
             """,
             arguments: [threadId, mergedCursor, ISO8601DateFormatter().string(from: Date())]
         )
+    }
+
+    /// 按事件键与线程游标双重策略写入：
+    /// 1. 先按 (threadId, jobId, seq) 查重并更新，兼容旧 UNIQUE 约束。
+    /// 2. 再按 (threadId, threadCursor) 覆盖或插入。
+    private func upsertEvent(
+        db: Database,
+        threadId: String,
+        threadCursor: Int,
+        event: EventEnvelope
+    ) throws -> Int {
+        let payloadJson = try encodePayload(event.payload)
+
+        if let existingCursor = try Int.fetchOne(
+            db,
+            sql: """
+            SELECT threadCursor
+            FROM thread_events
+            WHERE threadId = ? AND jobId = ? AND seq = ?
+            LIMIT 1
+            """,
+            arguments: [threadId, event.jobId, event.seq]
+        ) {
+            try db.execute(
+                sql: """
+                UPDATE thread_events
+                SET type = ?, ts = ?, payloadJson = ?
+                WHERE threadId = ? AND threadCursor = ?
+                """,
+                arguments: [event.type, event.ts, payloadJson, threadId, existingCursor]
+            )
+            return existingCursor
+        }
+
+        if let cursorExists = try Int.fetchOne(
+            db,
+            sql: """
+            SELECT 1
+            FROM thread_events
+            WHERE threadId = ? AND threadCursor = ?
+            LIMIT 1
+            """,
+            arguments: [threadId, threadCursor]
+        ), cursorExists == 1 {
+            try db.execute(
+                sql: """
+                UPDATE thread_events
+                SET jobId = ?, seq = ?, type = ?, ts = ?, payloadJson = ?
+                WHERE threadId = ? AND threadCursor = ?
+                """,
+                arguments: [
+                    event.jobId,
+                    event.seq,
+                    event.type,
+                    event.ts,
+                    payloadJson,
+                    threadId,
+                    threadCursor,
+                ]
+            )
+            return threadCursor
+        }
+
+        try db.execute(
+            sql: """
+            INSERT INTO thread_events(
+                threadId, threadCursor, jobId, seq, type, ts, payloadJson
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            arguments: [
+                threadId,
+                threadCursor,
+                event.jobId,
+                event.seq,
+                event.type,
+                event.ts,
+                payloadJson,
+            ]
+        )
+        return threadCursor
     }
 }
 
