@@ -15,6 +15,21 @@ npm start
 
 默认端口：`8787`
 
+推荐使用配置文件启动（避免环境变量过多）：
+
+```bash
+cd /Users/Apple/Dev/OpenCodex/codex-worker-mvp
+cp worker.config.example.json worker.config.json
+npm start -- --config ./worker.config.json
+```
+
+也支持用环境变量指定配置文件：
+
+```bash
+cd /Users/Apple/Dev/OpenCodex/codex-worker-mvp
+WORKER_CONFIG=./worker.config.json npm start
+```
+
 ## 代码结构（可扩展）
 
 - `src/index.js`：进程启动与依赖装配（配置、RPC、存储、HTTP）。
@@ -25,9 +40,36 @@ npm start
 - `src/worker-service/thread-events.js`：线程历史分页与回放事件构建。
 - `src/sqlite-store.js`：SQLite 持久化适配层（缓存与断线恢复）。
 
-## 2. 环境变量
+## 2. 配置（推荐）
+
+后端配置优先级（高 -> 低）：
+
+1. 启动参数：`--config` / `-c`
+2. 环境变量
+3. 配置文件（JSON）
+4. 内置默认值
+
+配置文件示例：`worker.config.example.json`
+
+可用字段（JSON）：
+
+- `port`：HTTP 端口（默认 `8787`）
+- `authToken`：可选，Bearer 鉴权令牌
+- `projectPaths`：可选，项目白名单数组
+- `defaultProjectPath`：可选，默认项目路径
+- `eventRetention`：可选，单任务事件保留条数（最小 `100`）
+- `dbPath`：可选，SQLite 路径
+- `rpc.command`：可选，Codex 可执行文件（默认 `codex`）
+- `rpc.args`：可选，app-server 参数数组（默认 `["app-server"]`）
+- `rpc.cwd`：可选，Codex 子进程工作目录
+- `apns.*`：可选，APNs 推送配置
+
+说明：配置文件中的相对路径会按“配置文件所在目录”解析。
+
+## 3. 环境变量
 
 - `PORT`：HTTP 端口，默认 `8787`
+- `WORKER_CONFIG`：可选，JSON 配置文件路径（也可用 `--config`）
 - `WORKER_TOKEN`：可选，开启 Bearer 鉴权（下面有解释）
 - `WORKER_PROJECT_PATHS`：可选，项目白名单，逗号分隔
 - `WORKER_DEFAULT_PROJECT`：可选，默认项目路径
@@ -35,6 +77,13 @@ npm start
 - `CODEX_APP_SERVER_ARGS`：可选，app-server 启动参数，逗号分隔；默认 `app-server`
 - `WORKER_EVENT_RETENTION`：可选，单任务保留事件条数，默认 `2000`
 - `WORKER_DB_PATH`：可选，SQLite 数据库路径；默认 `./data/worker.db`
+- `APNS_ENABLED`：可选，是否启用 APNs 推送（`true/false`）
+- `APNS_TEAM_ID`：可选，Apple Team ID（启用 APNs 时必填）
+- `APNS_KEY_ID`：可选，APNs Key ID（启用 APNs 时必填）
+- `APNS_BUNDLE_ID`：可选，App Bundle ID（启用 APNs 时必填）
+- `APNS_KEY_PATH`：可选，`.p8` 私钥文件路径（与 `APNS_PRIVATE_KEY` 二选一）
+- `APNS_PRIVATE_KEY`：可选，`.p8` 私钥内容（支持 `\n`，与 `APNS_KEY_PATH` 二选一）
+- `APNS_DEFAULT_ENV`：可选，默认推送环境（`sandbox`/`production`，默认 `sandbox`）
 
 ### WORKER_TOKEN 是什么？
 
@@ -47,7 +96,7 @@ npm start
   - 客户端请求时带上 HTTP Header：`Authorization: Bearer devtoken123`
 - 只在本机测试：不要设置 `WORKER_TOKEN`（或设为空），就不需要填。
 
-## 3. 最小 API
+## 4. 最小 API
 
 - `GET /health`
 - `GET /v1/projects`
@@ -59,8 +108,10 @@ npm start
 - `GET /v1/jobs/{jid}/events?cursor=N`（支持 JSON 与 SSE）
 - `POST /v1/jobs/{jid}/approve`
 - `POST /v1/jobs/{jid}/cancel`
+- `POST /v1/push/devices/register`
+- `POST /v1/push/devices/unregister`
 
-## 4. 审批决策值
+## 5. 审批决策值
 
 `POST /v1/jobs/{jid}/approve` 请求体：
 
@@ -76,7 +127,7 @@ npm start
 - `accept_with_execpolicy_amendment` 仅用于命令审批。
 - 该决策下必须提供非空 `execPolicyAmendment`。
 
-## 5. 测试
+## 6. 测试
 
 ```bash
 cd /Users/Apple/Dev/OpenCodex/codex-worker-mvp

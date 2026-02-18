@@ -171,4 +171,30 @@ test("HTTP 最小流程：创建线程 -> 发起任务 -> 查询事件", async (
     },
   });
   assert.equal(unauthorized.status, 401);
+
+  const pushRegister = await fetch(`${base}/v1/push/devices/register`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      platform: "ios",
+      deviceToken: "a".repeat(64),
+      bundleId: "li.CodexWorkerApp",
+      environment: "sandbox",
+    }),
+  });
+  assert.equal(pushRegister.status, 200);
+  const pushRegisterPayload = await pushRegister.json();
+  assert.equal(pushRegisterPayload.status, "registered");
+  assert.equal(pushRegisterPayload.device.deviceToken, "a".repeat(64));
+
+  const pushUnregister = await fetch(`${base}/v1/push/devices/unregister`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      deviceToken: "a".repeat(64),
+    }),
+  });
+  assert.equal(pushUnregister.status, 200);
+  const pushUnregisterPayload = await pushUnregister.json();
+  assert.equal(pushUnregisterPayload.status, "unregistered");
 });

@@ -65,6 +65,7 @@ public struct ChatFeature {
         case approvalRequired(Approval)
         case approvalResolved(approvalId: String, decision: String?)
         case streamConnectionChanged(StreamConnectionState)
+        case jobFinished(state: JobState, jobId: String)
     }
 
     public enum StreamConnectionState: Equatable, Sendable {
@@ -389,6 +390,12 @@ public struct ChatFeature {
             effect = .merge(
                 effect,
                 .send(.delegate(.approvalResolved(approvalId: resolved.approvalId, decision: resolved.decision)))
+            )
+        }
+        if let finishedState = output.finishedJobState {
+            effect = .merge(
+                effect,
+                .send(.delegate(.jobFinished(state: finishedState, jobId: envelope.jobId)))
             )
         }
         if output.shouldStopStreaming {
@@ -763,6 +770,7 @@ public struct ChatFeature {
                 pendingAssistantDeltas: &pendingAssistantDeltas
             )
             if mode == .live {
+                output.finishedJobState = jobState ?? .done
                 output.shouldStopStreaming = true
             }
 
@@ -784,6 +792,7 @@ public struct ChatFeature {
     private struct EventApplyOutput: Sendable {
         var approvalRequired: Approval?
         var approvalResolved: ApprovalResolvedPayload?
+        var finishedJobState: JobState?
         var shouldStopStreaming = false
     }
 

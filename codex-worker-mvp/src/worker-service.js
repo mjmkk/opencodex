@@ -41,6 +41,12 @@ import {
   sliceThreadEventsByCursor,
 } from "./worker-service/thread-events.js";
 
+const PUSH_RELEVANT_EVENT_TYPES = new Set([
+  "approval.required",
+  "approval.resolved",
+  "job.finished",
+]);
+
 // ==================== WorkerService 类 ====================
 
 /**
@@ -75,6 +81,7 @@ export class WorkerService {
    * @param {string[]} [options.projectPaths] - 项目路径白名单
    * @param {string} [options.defaultProjectPath] - 默认项目路径
    * @param {number} [options.eventRetention=2000] - 单任务保留事件数
+   * @param {Object} [options.pushNotifier] - 推送通知器（可选）
    * @param {Object} [options.logger] - 日志器
    */
   constructor(options) {
@@ -83,6 +90,7 @@ export class WorkerService {
     this.store = options.store ?? null;
     this.logger = options.logger ?? console;
     this.eventRetention = options.eventRetention ?? 2000;
+    this.pushNotifier = options.pushNotifier ?? null;
 
     // 处理项目路径配置
     const providedProjects = Array.isArray(options.projectPaths)
@@ -100,6 +108,7 @@ export class WorkerService {
     this.turnToJob = new Map();         // "threadId::turnId" -> jobId
     this.pendingJobByThread = new Map(); // threadId -> jobId（刚创建还没 turnId 的 job）
     this.approvals = new Map();         // approvalId -> approval 对象
+    this.pushDevices = new Map();       // deviceToken -> push device
 
     // 初始化状态
     this.initialized = false;
@@ -143,6 +152,16 @@ export class WorkerService {
     });
 
     this.rpc.notify("initialized");
+
+    if (this.store?.listPushDevices) {
+      const cachedDevices = this.store.listPushDevices();
+      for (const device of cachedDevices) {
+        if (isNonEmptyString(device?.deviceToken)) {
+          this.pushDevices.set(device.deviceToken, device);
+        }
+      }
+    }
+
     this.initialized = true;
   }
 
@@ -704,6 +723,71 @@ export class WorkerService {
     return this.#toJobSnapshot(job);
   }
 
+  // ==================== 推送设备管理 ====================
+
+  /**
+   * 注册（或刷新）推送设备
+   *
+   * @param {Object} payload
+   * @returns {Object}
+   */
+  registerPushDevice(payload = {}) {
+    const deviceToken = this.#normalizeDeviceToken(payload.deviceToken ?? payload.device_token);
+    if (!deviceToken) {
+      throw new HttpError(400, "INVALID_DEVICE_TOKEN", "deviceToken 无效");
+    }
+
+    const platform = this.#normalizePushPlatform(payload.platform);
+    const environment = this.#normalizePushEnvironment(payload.environment);
+    const bundleId = isNonEmptyString(payload.bundleId ?? payload.bundle_id)
+      ? (payload.bundleId ?? payload.bundle_id).trim()
+      : null;
+    const deviceName = isNonEmptyString(payload.deviceName ?? payload.device_name)
+      ? (payload.deviceName ?? payload.device_name).trim()
+      : null;
+
+    const now = nowIso();
+    const existing = this.pushDevices.get(deviceToken);
+    const device = {
+      deviceToken,
+      platform,
+      bundleId,
+      environment,
+      deviceName,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+      lastSeenAt: now,
+    };
+
+    this.pushDevices.set(deviceToken, device);
+    this.store?.upsertPushDevice?.(device);
+
+    return {
+      status: "registered",
+      device,
+    };
+  }
+
+  /**
+   * 注销推送设备
+   *
+   * @param {Object} payload
+   * @returns {Object}
+   */
+  unregisterPushDevice(payload = {}) {
+    const deviceToken = this.#normalizeDeviceToken(payload.deviceToken ?? payload.device_token);
+    if (!deviceToken) {
+      throw new HttpError(400, "INVALID_DEVICE_TOKEN", "deviceToken 无效");
+    }
+    const existed = this.pushDevices.delete(deviceToken);
+    this.store?.removePushDevice?.(deviceToken);
+
+    return {
+      status: existed ? "unregistered" : "not_found",
+      deviceToken,
+    };
+  }
+
   // ==================== RPC 事件处理 ====================
 
   /**
@@ -904,6 +988,82 @@ export class WorkerService {
   }
 
   // ==================== 私有辅助方法 ====================
+
+  #normalizeDeviceToken(rawDeviceToken) {
+    if (!isNonEmptyString(rawDeviceToken)) {
+      return null;
+    }
+    const normalized = rawDeviceToken.trim().toLowerCase();
+    if (!/^[0-9a-f]{64,512}$/.test(normalized)) {
+      return null;
+    }
+    return normalized;
+  }
+
+  #normalizePushPlatform(rawPlatform) {
+    if (!isNonEmptyString(rawPlatform)) {
+      return "ios";
+    }
+    const platform = rawPlatform.trim().toLowerCase();
+    if (platform !== "ios") {
+      throw new HttpError(400, "INVALID_PUSH_PLATFORM", "platform 仅支持 ios");
+    }
+    return "ios";
+  }
+
+  #normalizePushEnvironment(rawEnvironment) {
+    if (!isNonEmptyString(rawEnvironment)) {
+      return "sandbox";
+    }
+    const normalized = rawEnvironment.trim().toLowerCase();
+    if (normalized === "sandbox" || normalized === "development" || normalized === "dev") {
+      return "sandbox";
+    }
+    if (normalized === "production" || normalized === "prod") {
+      return "production";
+    }
+    throw new HttpError(400, "INVALID_PUSH_ENVIRONMENT", "environment 仅支持 sandbox/production");
+  }
+
+  #dispatchPushNotification(job, envelope) {
+    if (!this.pushNotifier) {
+      return;
+    }
+    if (!PUSH_RELEVANT_EVENT_TYPES.has(envelope.type)) {
+      return;
+    }
+    if (this.pushDevices.size === 0) {
+      return;
+    }
+
+    const devices = [...this.pushDevices.values()].filter((device) => device.platform === "ios");
+    if (devices.length === 0) {
+      return;
+    }
+
+    const thread = this.threads.get(job.threadId) ?? null;
+    Promise.resolve(
+      this.pushNotifier.notify({
+        envelope,
+        job: this.#toJobSnapshot(job),
+        thread,
+        devices,
+      })
+    )
+      .then((result) => {
+        const invalidDeviceTokens = Array.isArray(result?.invalidDeviceTokens)
+          ? result.invalidDeviceTokens
+          : [];
+        for (const deviceToken of invalidDeviceTokens) {
+          this.pushDevices.delete(deviceToken);
+          this.store?.removePushDevice?.(deviceToken);
+        }
+      })
+      .catch((error) => {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn?.(`[push] 推送失败: ${message}`);
+      });
+  }
 
   /**
    * 解析项目路径
@@ -1106,6 +1266,9 @@ export class WorkerService {
 
     // 持久化
     this.store?.appendEvent?.(envelope);
+
+    // 触发远程推送（异步，不阻塞主流程）
+    this.#dispatchPushNotification(job, envelope);
   }
 
   /**

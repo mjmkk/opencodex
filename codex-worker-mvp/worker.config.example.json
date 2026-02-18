@@ -1,0 +1,22 @@
+{
+  "port": 8787,
+  "authToken": "",
+  "projectPaths": ["/Users/Apple/Dev/OpenCodex"],
+  "defaultProjectPath": "/Users/Apple/Dev/OpenCodex",
+  "eventRetention": 2000,
+  "dbPath": "./data/worker.db",
+  "rpc": {
+    "command": "codex",
+    "args": ["app-server"],
+    "cwd": "/Users/Apple/Dev/OpenCodex"
+  },
+  "apns": {
+    "enabled": false,
+    "defaultEnvironment": "sandbox",
+    "teamId": "",
+    "keyId": "",
+    "bundleId": "",
+    "keyPath": "",
+    "privateKey": ""
+  }
+}

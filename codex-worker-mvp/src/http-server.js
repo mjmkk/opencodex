@@ -243,6 +243,8 @@ function match(pathname, pattern) {
  * | GET | /v1/jobs/{id}/events | 获取事件（支持 SSE） | 是 |
  * | POST | /v1/jobs/{id}/approve | 提交审批 | 是 |
  * | POST | /v1/jobs/{id}/cancel | 取消任务 | 是 |
+ * | POST | /v1/push/devices/register | 注册 APNs 设备 token | 是 |
+ * | POST | /v1/push/devices/unregister | 注销 APNs 设备 token | 是 |
  *
  * @example
  * const server = createHttpServer({ service, authToken: 'secret' });
@@ -429,6 +431,22 @@ export function createHttpServer(options) {
       if (method === "POST" && cancelMatch) {
         const jobId = decodeURIComponent(cancelMatch[0]);
         const result = await service.cancel(jobId);
+        sendJson(res, 200, result);
+        return;
+      }
+
+      // POST /v1/push/devices/register - 注册推送设备
+      if (method === "POST" && pathname === "/v1/push/devices/register") {
+        const body = await readJsonBody(req);
+        const result = service.registerPushDevice(body);
+        sendJson(res, 200, result);
+        return;
+      }
+
+      // POST /v1/push/devices/unregister - 注销推送设备
+      if (method === "POST" && pathname === "/v1/push/devices/unregister") {
+        const body = await readJsonBody(req);
+        const result = service.unregisterPushDevice(body);
         sendJson(res, 200, result);
         return;
       }

@@ -156,6 +156,18 @@ export class SqliteStore {
         actor TEXT NOT NULL,
         extra_json TEXT
       );
+
+      -- 推送设备表
+      CREATE TABLE IF NOT EXISTS push_devices (
+        deviceToken TEXT PRIMARY KEY,
+        platform TEXT NOT NULL,
+        bundleId TEXT,
+        environment TEXT NOT NULL,
+        deviceName TEXT,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL,
+        lastSeenAt TEXT NOT NULL
+      );
     `);
 
     // 准备预编译语句（提高性能，防止 SQL 注入）
@@ -233,6 +245,31 @@ export class SqliteStore {
         JOIN jobs j ON e.jobId = j.jobId
         WHERE j.threadId = ?
         ORDER BY j.createdAt ASC, e.seq ASC
+      `),
+
+      // 推送设备操作
+      upsertPushDevice: db.prepare(`
+        INSERT INTO push_devices(
+          deviceToken, platform, bundleId, environment, deviceName, createdAt, updatedAt, lastSeenAt
+        )
+        VALUES(
+          @deviceToken, @platform, @bundleId, @environment, @deviceName, @createdAt, @updatedAt, @lastSeenAt
+        )
+        ON CONFLICT(deviceToken) DO UPDATE SET
+          platform=excluded.platform,
+          bundleId=excluded.bundleId,
+          environment=excluded.environment,
+          deviceName=excluded.deviceName,
+          updatedAt=excluded.updatedAt,
+          lastSeenAt=excluded.lastSeenAt
+      `),
+      removePushDevice: db.prepare(`
+        DELETE FROM push_devices WHERE deviceToken = ?
+      `),
+      listPushDevices: db.prepare(`
+        SELECT deviceToken, platform, bundleId, environment, deviceName, createdAt, updatedAt, lastSeenAt
+        FROM push_devices
+        ORDER BY updatedAt DESC
       `),
     };
 
@@ -494,5 +531,55 @@ export class SqliteStore {
         payload,
       };
     });
+  }
+
+  // ==================== 推送设备操作 ====================
+
+  /**
+   * 注册或更新推送设备
+   *
+   * @param {Object} device - 推送设备记录
+   */
+  upsertPushDevice(device) {
+    if (!this.db) this.init();
+    this.stmt.upsertPushDevice.run({
+      deviceToken: device.deviceToken,
+      platform: device.platform,
+      bundleId: device.bundleId ?? null,
+      environment: device.environment,
+      deviceName: device.deviceName ?? null,
+      createdAt: device.createdAt,
+      updatedAt: device.updatedAt,
+      lastSeenAt: device.lastSeenAt,
+    });
+  }
+
+  /**
+   * 删除推送设备
+   *
+   * @param {string} deviceToken - 设备 token
+   */
+  removePushDevice(deviceToken) {
+    if (!this.db) this.init();
+    this.stmt.removePushDevice.run(deviceToken);
+  }
+
+  /**
+   * 列出推送设备
+   *
+   * @returns {Array<Object>}
+   */
+  listPushDevices() {
+    if (!this.db) this.init();
+    return this.stmt.listPushDevices.all().map((row) => ({
+      deviceToken: row.deviceToken,
+      platform: row.platform,
+      bundleId: row.bundleId,
+      environment: row.environment,
+      deviceName: row.deviceName,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      lastSeenAt: row.lastSeenAt,
+    }));
   }
 }

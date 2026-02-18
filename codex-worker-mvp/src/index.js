@@ -15,6 +15,7 @@ import { createHttpServer } from "./http-server.js";
 import { JsonRpcClient } from "./json-rpc-client.js";
 import { SqliteStore } from "./sqlite-store.js";
 import { WorkerService } from "./worker-service.js";
+import { ApnsNotifier } from "./apns-notifier.js";
 
 /**
  * 结构化日志输出
@@ -41,7 +42,7 @@ function log(level, message, extra = undefined) {
  * 主函数：初始化并启动 Worker
  *
  * 启动顺序：
- * 1. 加载配置（环境变量）
+ * 1. 加载配置（启动参数 / 环境变量 / 配置文件）
  * 2. 创建 JSON-RPC 客户端（与 codex app-server 通信）
  * 3. 初始化 SQLite 存储（持久化）
  * 4. 创建 Worker 服务（核心业务逻辑）
@@ -73,6 +74,21 @@ async function main() {
   });
   store.init();
 
+  let apnsNotifier = null;
+  if (config.apns?.enabled) {
+    apnsNotifier = new ApnsNotifier({
+      teamId: config.apns.teamId,
+      keyId: config.apns.keyId,
+      bundleId: config.apns.bundleId,
+      keyPath: config.apns.keyPath,
+      privateKey: config.apns.privateKey,
+      defaultEnvironment: config.apns.defaultEnvironment,
+      logger: {
+        warn: (msg) => log("warn", msg),
+      },
+    });
+  }
+
   // 4. 创建 Worker 服务
   // 负责：线程管理、任务执行、审批处理、事件分发
   const service = new WorkerService({
@@ -81,6 +97,7 @@ async function main() {
     projectPaths: config.projectPaths,
     defaultProjectPath: config.defaultProjectPath,
     eventRetention: config.eventRetention,
+    pushNotifier: apnsNotifier,
     logger: {
       warn: (msg) => log("warn", msg),
       error: (msg, extra) => log("error", msg, extra),
@@ -107,6 +124,7 @@ async function main() {
     port: config.port,
     authEnabled: Boolean(config.authToken),
     defaultProjectPath: config.defaultProjectPath,
+    configFilePath: config.configFilePath,
   });
 
   /**
@@ -124,6 +142,7 @@ async function main() {
     try {
       await server.close();
       await service.shutdown();
+      apnsNotifier?.close?.();
       store.close();
       process.exit(0);
     } catch (error) {

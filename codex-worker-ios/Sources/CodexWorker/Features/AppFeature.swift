@@ -6,6 +6,7 @@
 //
 
 import ComposableArchitecture
+import Foundation
 
 @Reducer
 public struct AppFeature {
@@ -146,7 +147,7 @@ public struct AppFeature {
                     .send(.threads(.refresh))
                 )
 
-            case .chat(.delegate(.approvalResolved)):
+            case .chat(.delegate(.approvalResolved(_, _))):
                 if let threadId = state.approval.currentApproval?.threadId,
                    let idx = state.threads.items.firstIndex(where: { $0.threadId == threadId })
                 {
@@ -161,6 +162,9 @@ public struct AppFeature {
             case .chat(.delegate(.streamConnectionChanged(let streamConnectionState))):
                 state.streamConnectionState = streamConnectionState
                 recalculateConnectionState(state: &state)
+                return .none
+
+            case .chat(.delegate(.jobFinished(_, _))):
                 return .none
 
             case .settings(.saveFinished):
@@ -203,4 +207,5 @@ public struct AppFeature {
             }
         }
     }
+
 }
