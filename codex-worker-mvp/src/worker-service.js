@@ -48,6 +48,47 @@ const PUSH_RELEVANT_EVENT_TYPES = new Set([
 ]);
 const THREAD_EVENTS_CACHE_TTL_MS_DEFAULT = 5000;
 
+function normalizeModelRef(rawModel) {
+  if (!isNonEmptyString(rawModel)) {
+    return null;
+  }
+  const normalized = rawModel.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
+function normalizeModelList(result) {
+  const source = Array.isArray(result?.models)
+    ? result.models
+    : Array.isArray(result?.data)
+      ? result.data
+      : [];
+  const normalized = [];
+  for (const item of source) {
+    if (!item || typeof item !== "object") {
+      continue;
+    }
+    const id = normalizeModelRef(item.id ?? item.model ?? item.name);
+    if (!id) {
+      continue;
+    }
+    const provider = normalizeModelRef(item.provider ?? item.modelProvider);
+    const name = normalizeModelRef(item.name) ?? id;
+    normalized.push({
+      id,
+      name,
+      provider,
+      displayName: provider ? `${provider}/${id}` : id,
+      contextWindow: Number.isFinite(item.contextWindow)
+        ? Number(item.contextWindow)
+        : Number.isFinite(item.context_window)
+          ? Number(item.context_window)
+          : null,
+      reasoning: typeof item.reasoning === "boolean" ? item.reasoning : null,
+    });
+  }
+  return normalized;
+}
+
 // ==================== WorkerService 类 ====================
 
 /**
@@ -206,6 +247,27 @@ export class WorkerService {
     }));
   }
 
+  /**
+   * 列出可选模型（用于前端设置页）
+   *
+   * @returns {Promise<Object>} { data: Model[] }
+   */
+  async listModels() {
+    try {
+      const result = await this.rpc.request("models/list", {});
+      return {
+        data: normalizeModelList(result),
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      // 兼容旧 app-server 尚未暴露 models/list 的场景。
+      if (/method/i.test(message) && /not found|unknown|no fake handler/i.test(message)) {
+        return { data: [] };
+      }
+      throw error;
+    }
+  }
+
   // ==================== 线程管理 ====================
 
   /**
@@ -220,6 +282,7 @@ export class WorkerService {
    * @param {string} [payload.threadName] - 线程名称（可选）
    * @param {string} [payload.approvalPolicy] - 审批策略（默认 on-request）
    * @param {string} [payload.sandbox] - 沙箱模式（默认 workspace-write）
+   * @param {string} [payload.model] - 模型 ID（可选）
    * @returns {Promise<Object>} 线程 DTO
    * @throws {HttpError} 如果参数无效或创建失败
    *
@@ -234,12 +297,14 @@ export class WorkerService {
     const cwd = this.#resolveProjectPath(payload);
     const approvalPolicy = normalizeApprovalPolicy(payload.approvalPolicy) ?? "on-request";
     const sandbox = normalizeSandboxMode(payload.sandbox) ?? "workspace-write";
+    const model = normalizeModelRef(payload.model);
 
     // 调用 app-server 创建线程
     const result = await this.rpc.request("thread/start", {
       cwd,
       approvalPolicy,
       sandbox,
+      ...(model ? { model } : {}),
       experimentalRawEvents: false,
     });
 
@@ -343,6 +408,49 @@ export class WorkerService {
     return dto;
   }
 
+  /**
+   * 归档线程
+   *
+   * @param {string} threadId - 线程 ID
+   * @returns {Promise<Object>} { threadId, status }
+   */
+  async archiveThread(threadId) {
+    this.#validateThreadId(threadId);
+
+    const attempts = [
+      { method: "thread/archive", params: { threadId } },
+      { method: "thread/archive", params: { id: threadId } },
+      { method: "thread/update", params: { threadId, archived: true } },
+      { method: "thread/update", params: { id: threadId, archived: true } },
+    ];
+    let lastError = null;
+    for (const attempt of attempts) {
+      try {
+        await this.rpc.request(attempt.method, attempt.params);
+        lastError = null;
+        break;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    if (lastError) {
+      const message = lastError instanceof Error ? lastError.message : String(lastError);
+      throw new HttpError(502, "THREAD_ARCHIVE_FAILED", `归档线程失败：${message}`);
+    }
+
+    this.threads.delete(threadId);
+    this.loadedThreads.delete(threadId);
+    this.#invalidateThreadEventsCache(threadId);
+    this.store?.deleteThread?.(threadId);
+    this.store?.replaceThreadEventsProjection?.(threadId, []);
+
+    return {
+      threadId,
+      status: "archived",
+    };
+  }
+
   // ==================== 任务管理 ====================
 
   /**
@@ -361,6 +469,7 @@ export class WorkerService {
    * @param {Array} [payload.input] - 结构化输入（与 text 二选一）
    * @param {string} [payload.approvalPolicy] - 覆盖审批策略
    * @param {string} [payload.sandbox] - 覆盖沙箱模式
+   * @param {string} [payload.model] - 覆盖模型 ID（可选）
    * @returns {Promise<Object>} Job 快照
    * @throws {HttpError} 409 如果线程已有活跃任务
    */
@@ -369,6 +478,7 @@ export class WorkerService {
     const input = this.#normalizeTurnInput(payload);
     const approvalPolicy = normalizeApprovalPolicy(payload.approvalPolicy);
     const sandbox = normalizeSandboxMode(payload.sandbox);
+    const model = normalizeModelRef(payload.model);
 
     // 检查是否有活跃任务（防止同一线程并发执行）
     const activeJob = this.#findActiveJobByThread(threadId);
@@ -398,6 +508,7 @@ export class WorkerService {
         input,
         ...(approvalPolicy ? { approvalPolicy } : {}),
         ...(sandbox ? { sandbox } : {}),
+        ...(model ? { model } : {}),
       });
 
       // 记录 turnId

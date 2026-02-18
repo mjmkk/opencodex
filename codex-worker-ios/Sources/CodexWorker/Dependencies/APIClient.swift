@@ -19,11 +19,17 @@ public struct APIClient: DependencyKey, Sendable {
     /// 列出可用项目
     public var listProjects: @Sendable () async throws -> [Project]
 
+    /// 列出可选模型
+    public var listModels: @Sendable () async throws -> [WorkerModel]
+
     /// 创建线程
     public var createThread: @Sendable (_ request: CreateThreadRequest) async throws -> Thread
 
     /// 列出线程
     public var listThreads: @Sendable () async throws -> ThreadsListResponse
+
+    /// 归档线程
+    public var archiveThread: @Sendable (_ threadId: String) async throws -> ArchiveThreadResponse
 
     /// 激活线程
     public var activateThread: @Sendable (_ threadId: String) async throws -> Thread
@@ -81,8 +87,10 @@ extension APIClient {
         let impl = LiveAPIClient()
         return APIClient(
             listProjects: { try await impl.listProjects() },
+            listModels: { try await impl.listModels() },
             createThread: { try await impl.createThread(request: $0) },
             listThreads: { try await impl.listThreads() },
+            archiveThread: { try await impl.archiveThread(threadId: $0) },
             activateThread: { try await impl.activateThread(threadId: $0) },
             listThreadEvents: { try await impl.listThreadEvents(threadId: $0, cursor: $1, limit: $2) },
             startTurn: { try await impl.startTurn(threadId: $0, request: $1) },
@@ -200,6 +208,13 @@ actor LiveAPIClient {
         return response.data
     }
 
+    func listModels() async throws -> [WorkerModel] {
+        let url = try buildURL(path: "/v1/models")
+        let request = try buildRequest(url: url)
+        let response: WorkerModelsResponse = try await performRequest(request)
+        return response.data
+    }
+
     func createThread(request: CreateThreadRequest) async throws -> Thread {
         let url = try buildURL(path: "/v1/threads")
         let body = try encoder.encode(request)
@@ -221,6 +236,12 @@ actor LiveAPIClient {
         print("[APIClient] listThreads ok, count=\(response.data.count)")
 #endif
         return response
+    }
+
+    func archiveThread(threadId: String) async throws -> ArchiveThreadResponse {
+        let url = try buildURL(path: "/v1/threads/\(threadId)/archive")
+        let request = try buildRequest(url: url, method: "POST")
+        return try await performRequest(request)
     }
 
     func activateThread(threadId: String) async throws -> Thread {
@@ -304,6 +325,22 @@ extension APIClient {
                     Project(projectId: "proj_1", projectPath: "/Users/test/project", displayName: "project"),
                 ]
             },
+            listModels: {
+                [
+                    WorkerModel(
+                        id: "gpt-5",
+                        name: "GPT-5",
+                        provider: "openai",
+                        displayName: "openai/gpt-5"
+                    ),
+                    WorkerModel(
+                        id: "claude-sonnet-4-5",
+                        name: "Claude Sonnet 4.5",
+                        provider: "anthropic",
+                        displayName: "anthropic/claude-sonnet-4-5"
+                    ),
+                ]
+            },
             createThread: { _ in
                 Thread(
                     threadId: "thread_mock",
@@ -328,6 +365,9 @@ extension APIClient {
                     ],
                     nextCursor: nil
                 )
+            },
+            archiveThread: { threadId in
+                ArchiveThreadResponse(threadId: threadId, status: "archived")
             },
             activateThread: { threadId in
                 Thread(

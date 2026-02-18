@@ -306,18 +306,23 @@ public struct CreateThreadRequest: Codable, Sendable {
     /// 沙箱模式（默认 workspace-write）
     public var sandbox: String?
 
+    /// 模型 ID（可选，留空表示使用后端默认）
+    public var model: String?
+
     public init(
         projectId: String? = nil,
         projectPath: String? = nil,
         threadName: String? = nil,
         approvalPolicy: String? = nil,
-        sandbox: String? = nil
+        sandbox: String? = nil,
+        model: String? = nil
     ) {
         self.projectId = projectId
         self.projectPath = projectPath
         self.threadName = threadName
         self.approvalPolicy = approvalPolicy
         self.sandbox = sandbox
+        self.model = model
     }
 }
 

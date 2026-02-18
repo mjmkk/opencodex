@@ -60,6 +60,47 @@ public struct SettingsSheetView: View {
                         .disableAutocorrection(true)
                     }
 
+                    Section("模型（可选）") {
+                        TextField(
+                            "例如 openai/gpt-5（留空跟随后端默认）",
+                            text: Binding(
+                                get: { viewStore.model },
+                                set: { viewStore.send(.modelChanged($0)) }
+                            )
+                        )
+                        .textInputAutocapitalization(.never)
+                        .disableAutocorrection(true)
+
+                        if viewStore.isLoadingModels {
+                            HStack(spacing: 8) {
+                                ProgressView()
+                                Text("正在加载模型列表...")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
+                        } else if !viewStore.availableModels.isEmpty {
+                            Picker(
+                                "快速选择",
+                                selection: Binding(
+                                    get: { viewStore.model },
+                                    set: { viewStore.send(.modelChanged($0)) }
+                                )
+                            ) {
+                                Text("跟随后端默认模型").tag("")
+                                ForEach(viewStore.availableModels, id: \.id) { model in
+                                    Text(model.listTitle).tag(model.id)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                        }
+
+                        if let modelLoadError = viewStore.modelLoadError, !modelLoadError.isEmpty {
+                            Text("模型列表加载失败：\(modelLoadError)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
                     Section {
                         Button("保存并检测连通性") {
                             viewStore.send(.saveTapped)

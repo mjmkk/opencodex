@@ -45,6 +45,7 @@ public struct ThreadsFeature {
         public var items: [Thread] = []
         public var isLoading = false
         public var isCreating = false
+        public var archivingThreadIds: Set<String> = []
         public var hasPrewarmedHistory = false
         public var selectedThreadId: String?
         public var errorMessage: String?
@@ -123,9 +124,11 @@ public struct ThreadsFeature {
         case onAppear
         case refresh
         case createTapped
+        case archiveTapped(String)
         case groupingModeChanged(GroupingMode)
         case loadResponse(Result<ThreadsListResponse, CodexError>)
         case createResponse(Result<Thread, CodexError>)
+        case archiveResponse(String, Result<ArchiveThreadResponse, CodexError>)
         case threadTapped(String)
         case clearError
         case delegate(Delegate)
@@ -133,6 +136,7 @@ public struct ThreadsFeature {
 
     public enum Delegate {
         case didActivateThread(Thread)
+        case didClearActiveThread
     }
 
     public init() {}
@@ -164,15 +168,18 @@ public struct ThreadsFeature {
                 return .run { send in
                     @Dependency(\.apiClient) var apiClient
                     @Dependency(\.executionAccessStore) var executionAccessStore
+                    @Dependency(\.workerConfigurationStore) var workerConfigurationStore
                     let mode = executionAccessStore.load()
                     let settings = mode.threadRequestSettings
+                    let preferredModel = workerConfigurationStore.load()?.model
                     await send(
                         .createResponse(
                             Result {
                                 try await apiClient.createThread(
                                     .init(
                                         approvalPolicy: settings.approvalPolicy,
-                                        sandbox: settings.sandbox
+                                        sandbox: settings.sandbox,
+                                        model: preferredModel
                                     )
                                 )
                             }.mapError { CodexError.from($0) }
@@ -180,9 +187,30 @@ public struct ThreadsFeature {
                     )
                 }
 
+            case .archiveTapped(let threadId):
+                guard !state.archivingThreadIds.contains(threadId) else {
+                    return .none
+                }
+                state.archivingThreadIds.insert(threadId)
+                state.errorMessage = nil
+                return .run { send in
+                    @Dependency(\.apiClient) var apiClient
+                    @Dependency(\.threadHistoryStore) var threadHistoryStore
+                    do {
+                        let response = try await apiClient.archiveThread(threadId)
+                        // 归档成功后本地也清理该线程缓存，避免误回放旧历史。
+                        try? await threadHistoryStore.resetThread(threadId)
+                        await send(.archiveResponse(threadId, .success(response)))
+                    } catch {
+                        await send(.archiveResponse(threadId, .failure(CodexError.from(error))))
+                    }
+                }
+
             case .loadResponse(.success(let response)):
                 state.isLoading = false
                 state.items = response.data
+                let validThreadIds = Set(state.items.map(\.threadId))
+                state.archivingThreadIds = state.archivingThreadIds.intersection(validThreadIds)
                 if let selectedThreadId = state.selectedThreadId,
                    !state.items.contains(where: { $0.threadId == selectedThreadId })
                 {
@@ -247,7 +275,29 @@ public struct ThreadsFeature {
                 state.errorMessage = error.localizedDescription
                 return .none
 
+            case .archiveResponse(let threadId, .success):
+                state.archivingThreadIds.remove(threadId)
+                let wasSelected = state.selectedThreadId == threadId
+                state.items.removeAll { $0.threadId == threadId }
+                if !wasSelected {
+                    return .none
+                }
+                let nextThread = state.sortedItems.first
+                state.selectedThreadId = nextThread?.threadId
+                if let nextThread {
+                    return .send(.delegate(.didActivateThread(nextThread)))
+                }
+                return .send(.delegate(.didClearActiveThread))
+
+            case .archiveResponse(let threadId, .failure(let error)):
+                state.archivingThreadIds.remove(threadId)
+                state.errorMessage = error.localizedDescription
+                return .none
+
             case .threadTapped(let threadId):
+                guard !state.archivingThreadIds.contains(threadId) else {
+                    return .none
+                }
                 guard let thread = state.items.first(where: { $0.threadId == threadId }) else {
                     state.errorMessage = "线程不存在：\(threadId)"
                     return .none

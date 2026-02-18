@@ -30,6 +30,12 @@ async function setup() {
     },
   }));
   rpc.onRequest("thread/list", () => ({ data: [], nextCursor: null }));
+  rpc.onRequest("models/list", () => ({
+    models: [
+      { id: "gpt-5", name: "GPT-5", provider: "openai" },
+      { id: "claude-sonnet-4-5", name: "Claude Sonnet 4.5", provider: "anthropic" },
+    ],
+  }));
   rpc.onRequest("thread/read", ({ threadId }) => ({
     thread: {
       id: threadId,
@@ -67,6 +73,7 @@ async function setup() {
       error: null,
     },
   }));
+  rpc.onRequest("thread/archive", () => ({ ok: true }));
 
   const service = new WorkerService({
     rpc,
@@ -113,6 +120,17 @@ test("HTTP 最小流程：创建线程 -> 发起任务 -> 查询事件", async (
   assert.equal(threadRes.status, 201);
   const threadPayload = await threadRes.json();
   assert.equal(threadPayload.thread.threadId, "thr_http");
+
+  const modelsRes = await fetch(`${base}/v1/models`, {
+    headers: {
+      Authorization: "Bearer token123",
+      Accept: "application/json",
+    },
+  });
+  assert.equal(modelsRes.status, 200);
+  const modelsPayload = await modelsRes.json();
+  assert.ok(Array.isArray(modelsPayload.data));
+  assert.equal(modelsPayload.data.length, 2);
 
   const turnRes = await fetch(`${base}/v1/threads/thr_http/turns`, {
     method: "POST",
@@ -197,4 +215,13 @@ test("HTTP 最小流程：创建线程 -> 发起任务 -> 查询事件", async (
   assert.equal(pushUnregister.status, 200);
   const pushUnregisterPayload = await pushUnregister.json();
   assert.equal(pushUnregisterPayload.status, "unregistered");
+
+  const archiveRes = await fetch(`${base}/v1/threads/thr_http/archive`, {
+    method: "POST",
+    headers,
+  });
+  assert.equal(archiveRes.status, 200);
+  const archivePayload = await archiveRes.json();
+  assert.equal(archivePayload.threadId, "thr_http");
+  assert.equal(archivePayload.status, "archived");
 });

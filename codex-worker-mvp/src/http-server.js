@@ -234,9 +234,11 @@ function match(pathname, pattern) {
  * |------|------|------|------|
  * | GET | /health | 健康检查 | 否 |
  * | GET | /v1/projects | 列出项目 | 是 |
+ * | GET | /v1/models | 列出模型 | 是 |
  * | POST | /v1/threads | 创建线程 | 是 |
  * | GET | /v1/threads | 列出线程 | 是 |
  * | POST | /v1/threads/{id}/activate | 激活线程 | 是 |
+ * | POST | /v1/threads/{id}/archive | 归档线程 | 是 |
  * | GET | /v1/threads/{id}/events | 获取线程历史事件 | 是 |
  * | POST | /v1/threads/{id}/turns | 发送消息 | 是 |
  * | GET | /v1/jobs/{id} | 获取任务 | 是 |
@@ -293,6 +295,13 @@ export function createHttpServer(options) {
         return;
       }
 
+      // GET /v1/models - 列出模型
+      if (method === "GET" && pathname === "/v1/models") {
+        const result = await service.listModels();
+        sendJson(res, 200, result);
+        return;
+      }
+
       // POST /v1/threads - 创建线程
       if (method === "POST" && pathname === "/v1/threads") {
         const body = await readJsonBody(req);
@@ -314,6 +323,15 @@ export function createHttpServer(options) {
         const threadId = decodeURIComponent(activateMatch[0]);
         const thread = await service.activateThread(threadId);
         sendJson(res, 200, { thread });
+        return;
+      }
+
+      // POST /v1/threads/{threadId}/archive - 归档线程
+      const archiveMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/archive$/);
+      if (method === "POST" && archiveMatch) {
+        const threadId = decodeURIComponent(archiveMatch[0]);
+        const result = await service.archiveThread(threadId);
+        sendJson(res, 200, result);
         return;
       }
 

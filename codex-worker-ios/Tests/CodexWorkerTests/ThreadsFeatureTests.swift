@@ -86,4 +86,52 @@ struct ThreadsFeatureTests {
         #expect(groups[1].id == "__no_cwd__")
         #expect(groups[2].id == "/repo/A")
     }
+
+    @Test
+    func archiveSelectedThreadFallsBackToNextThread() async {
+        let recent = Thread(
+            threadId: "thread_recent",
+            preview: "recent",
+            cwd: "/repo/recent",
+            createdAt: "2026-02-18T09:00:00.000Z",
+            updatedAt: "2026-02-18T11:00:00.000Z",
+            modelProvider: "openai"
+        )
+        let older = Thread(
+            threadId: "thread_old",
+            preview: "old",
+            cwd: "/repo/old",
+            createdAt: "2026-02-18T07:00:00.000Z",
+            updatedAt: "2026-02-18T08:00:00.000Z",
+            modelProvider: "openai"
+        )
+
+        var state = ThreadsFeature.State()
+        state.items = [recent, older]
+        state.selectedThreadId = "thread_recent"
+
+        let store = TestStore(initialState: state) {
+            ThreadsFeature()
+        } withDependencies: { dependencies in
+            var apiClient = APIClient.mock
+            apiClient.archiveThread = { threadId in
+                ArchiveThreadResponse(threadId: threadId, status: "archived")
+            }
+            dependencies.apiClient = apiClient
+            dependencies.threadHistoryStore = .testValue
+        }
+
+        await store.send(.archiveTapped("thread_recent")) {
+            $0.archivingThreadIds.insert("thread_recent")
+            $0.errorMessage = nil
+        }
+
+        await store.receive(.archiveResponse("thread_recent", .success(.init(threadId: "thread_recent", status: "archived")))) {
+            $0.archivingThreadIds.remove("thread_recent")
+            $0.items = [older]
+            $0.selectedThreadId = "thread_old"
+        }
+
+        await store.receive(.delegate(.didActivateThread(older)))
+    }
 }

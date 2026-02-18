@@ -134,6 +134,15 @@ public struct AppFeature {
                     .send(.chat(.setActiveThread(thread)))
                 )
 
+            case .threads(.delegate(.didClearActiveThread)):
+                state.activeThread = nil
+                state.isDrawerPresented = true
+                return .merge(
+                    .send(.approval(.dismiss)),
+                    .send(.chat(.setApprovalLocked(false))),
+                    .send(.chat(.setActiveThread(nil)))
+                )
+
             case .chat(.delegate(.approvalRequired(let approval))):
                 if let idx = state.threads.items.firstIndex(where: { $0.threadId == approval.threadId }) {
                     state.threads.items[idx].pendingApprovalCount = max(

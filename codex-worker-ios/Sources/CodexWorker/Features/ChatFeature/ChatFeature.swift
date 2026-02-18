@@ -218,13 +218,16 @@ public struct ChatFeature {
                 return .run { send in
                     @Dependency(\.apiClient) var apiClient
                     @Dependency(\.executionAccessStore) var executionAccessStore
+                    @Dependency(\.workerConfigurationStore) var workerConfigurationStore
                     let mode = executionAccessStore.load()
                     let settings = mode.turnRequestSettings
+                    let preferredModel = workerConfigurationStore.load()?.model
                     let request = StartTurnRequest(
                         text: text,
                         input: nil,
                         approvalPolicy: settings.approvalPolicy,
-                        sandbox: settings.sandbox
+                        sandbox: settings.sandbox,
+                        model: preferredModel
                     )
                     await send(
                         .startTurnResponse(

@@ -41,11 +41,13 @@ test("createThread 会把 sandbox/approvalPolicy 标准化为 kebab-case", async
     projectPath: "/repo",
     sandbox: "readOnly",
     approvalPolicy: "unlessTrusted",
+    model: "openai/gpt-5",
   });
 
   assert.ok(captured);
   assert.equal(captured.sandbox, "workspace-write");
   assert.equal(captured.approvalPolicy, "on-request");
+  assert.equal(captured.model, "openai/gpt-5");
 
   // Test kebab-case input (legacy format, should be converted)
   captured = null;
@@ -124,11 +126,13 @@ test("startTurn 支持覆盖 approvalPolicy/sandbox，并标准化输入", async
     text: "hello",
     approvalPolicy: "never",
     sandbox: "danger-full-access",
+    model: "openai/gpt-5",
   });
 
   assert.ok(capturedTurnStart);
   assert.equal(capturedTurnStart.approvalPolicy, "never");
   assert.equal(capturedTurnStart.sandbox, "danger-full-access");
+  assert.equal(capturedTurnStart.model, "openai/gpt-5");
 
   // 将第一次 turn 收敛为终态，避免并发保护拦截第二次 startTurn。
   rpc.emit("notification", {

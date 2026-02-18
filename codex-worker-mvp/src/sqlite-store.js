@@ -198,6 +198,9 @@ export class SqliteStore {
           updatedAt=excluded.updatedAt,
           modelProvider=excluded.modelProvider
       `),
+      deleteThread: db.prepare(`
+        DELETE FROM threads WHERE threadId = ?
+      `),
 
       // 任务操作
       insertJob: db.prepare(`
@@ -371,6 +374,16 @@ export class SqliteStore {
       updatedAt: threadDto.updatedAt ?? null,
       modelProvider: threadDto.modelProvider ?? null,
     });
+  }
+
+  /**
+   * 删除线程缓存
+   *
+   * @param {string} threadId - 线程 ID
+   */
+  deleteThread(threadId) {
+    if (!this.db) this.init();
+    this.stmt.deleteThread.run(threadId);
   }
 
   // ==================== 任务操作 ====================

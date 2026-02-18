@@ -168,16 +168,21 @@ public struct StartTurnRequest: Codable, Sendable {
     /// 覆盖沙箱模式（可选）
     public var sandbox: String?
 
+    /// 覆盖模型 ID（可选，留空表示后端默认）
+    public var model: String?
+
     public init(
         text: String?,
         input: [TurnInput]?,
         approvalPolicy: String?,
-        sandbox: String? = nil
+        sandbox: String? = nil,
+        model: String? = nil
     ) {
         self.text = text
         self.input = input
         self.approvalPolicy = approvalPolicy
         self.sandbox = sandbox
+        self.model = model
     }
 }
 

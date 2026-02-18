@@ -49,10 +49,13 @@ extension WorkerConfigurationStore {
             .trimmingTrailingSlash()
         let trimmedToken = configuration.token?
             .trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedModel = configuration.model?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
 
         return WorkerConfiguration(
             baseURL: trimmedBaseURL,
-            token: (trimmedToken?.isEmpty == true) ? nil : trimmedToken
+            token: (trimmedToken?.isEmpty == true) ? nil : trimmedToken,
+            model: (trimmedModel?.isEmpty == true) ? nil : trimmedModel
         )
     }
 }

@@ -248,6 +248,8 @@ public struct ThreadsView: View {
         thread: Thread,
         showCwd: Bool
     ) -> some View {
+        let isArchiving = viewStore.archivingThreadIds.contains(thread.threadId)
+
         Button {
             dismissKeyboard()
             viewStore.send(.threadTapped(thread.threadId))
@@ -255,11 +257,25 @@ public struct ThreadsView: View {
             ThreadRow(
                 thread: thread,
                 isSelected: viewStore.selectedThreadId == thread.threadId,
-                showCwd: showCwd
+                showCwd: showCwd,
+                isArchiving: isArchiving
             )
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .disabled(isArchiving)
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive) {
+                viewStore.send(.archiveTapped(thread.threadId))
+            } label: {
+                if isArchiving {
+                    Label("归档中", systemImage: "hourglass")
+                } else {
+                    Label("归档", systemImage: "archivebox.fill")
+                }
+            }
+            .disabled(isArchiving)
+        }
     }
 }
 
@@ -278,6 +294,7 @@ private struct ThreadRow: View {
     let thread: Thread
     let isSelected: Bool
     let showCwd: Bool
+    let isArchiving: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -313,6 +330,11 @@ private struct ThreadRow: View {
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundStyle(.green)
+                }
+
+                if isArchiving {
+                    ProgressView()
+                        .controlSize(.small)
                 }
             }
 

@@ -100,9 +100,11 @@ WORKER_CONFIG=./worker.config.json npm start
 
 - `GET /health`
 - `GET /v1/projects`
+- `GET /v1/models`
 - `POST /v1/threads`
 - `GET /v1/threads`
 - `POST /v1/threads/{tid}/activate`
+- `POST /v1/threads/{tid}/archive`
 - `POST /v1/threads/{tid}/turns`
 - `GET /v1/jobs/{jid}`
 - `GET /v1/jobs/{jid}/events?cursor=N`（支持 JSON 与 SSE）

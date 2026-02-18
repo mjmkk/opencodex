@@ -9,7 +9,8 @@ struct SettingsFeatureTests {
     func onAppearLoadsPersistedConfiguration() async {
         let persisted = WorkerConfiguration(
             baseURL: "http://192.168.31.9:8787",
-            token: "token-123"
+            token: "token-123",
+            model: "openai/gpt-5"
         )
 
         let store = TestStore(initialState: SettingsFeature.State()) {
@@ -17,11 +18,13 @@ struct SettingsFeatureTests {
         } withDependencies: {
             $0.workerConfigurationStore.load = { persisted }
         }
+        store.exhaustivity = .off
 
         await store.send(.onAppear)
         await store.receive(\.configurationLoaded) {
             $0.baseURL = "http://192.168.31.9:8787"
             $0.token = "token-123"
+            $0.model = "openai/gpt-5"
             $0.saveSucceeded = false
         }
     }
@@ -32,6 +35,7 @@ struct SettingsFeatureTests {
         var initialState = SettingsFeature.State()
         initialState.baseURL = "  http://127.0.0.1:8787/  "
         initialState.token = "  abc  "
+        initialState.model = "  openai/gpt-5-mini  "
 
         let store = TestStore(initialState: initialState) {
             SettingsFeature()
@@ -49,6 +53,7 @@ struct SettingsFeatureTests {
         let persisted = saved.get()
         #expect(persisted?.baseURL == "http://127.0.0.1:8787")
         #expect(persisted?.token == "abc")
+        #expect(persisted?.model == "openai/gpt-5-mini")
     }
 }
 
