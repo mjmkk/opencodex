@@ -9,6 +9,8 @@ import ComposableArchitecture
 import SwiftUI
 
 public struct SettingsSheetView: View {
+    @State private var showAllArchivedThreads = false
+
     let store: StoreOf<SettingsFeature>
     let connectionState: ConnectionState
     let onClose: (() -> Void)?
@@ -25,6 +27,12 @@ public struct SettingsSheetView: View {
 
     public var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
+            let archivedCollapsedLimit = 20
+            let totalArchivedCount = viewStore.archivedThreads.count
+            let displayedArchivedThreads = showAllArchivedThreads
+                ? viewStore.archivedThreads
+                : Array(viewStore.archivedThreads.prefix(archivedCollapsedLimit))
+
             NavigationStack {
                 Form {
                     Section("后端地址") {
@@ -115,8 +123,21 @@ public struct SettingsSheetView: View {
                             Text("暂无已归档线程")
                                 .foregroundStyle(.secondary)
                         } else {
-                            ForEach(viewStore.archivedThreads, id: \.threadId) { thread in
+                            ForEach(displayedArchivedThreads, id: \.threadId) { thread in
                                 archivedThreadRow(viewStore: viewStore, thread: thread)
+                            }
+
+                            if totalArchivedCount > archivedCollapsedLimit {
+                                Button {
+                                    showAllArchivedThreads.toggle()
+                                } label: {
+                                    if showAllArchivedThreads {
+                                        Text("收起归档线程")
+                                    } else {
+                                        Text("显示更多（剩余 \(totalArchivedCount - archivedCollapsedLimit) 条）")
+                                    }
+                                }
+                                .font(.footnote)
                             }
                         }
 
@@ -157,6 +178,7 @@ public struct SettingsSheetView: View {
                 }
             }
             .onAppear {
+                showAllArchivedThreads = false
                 viewStore.send(.onAppear)
             }
         }
