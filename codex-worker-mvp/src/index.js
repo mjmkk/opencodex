@@ -16,6 +16,7 @@ import { JsonRpcClient } from "./json-rpc-client.js";
 import { SqliteStore } from "./sqlite-store.js";
 import { WorkerService } from "./worker-service.js";
 import { ApnsNotifier } from "./apns-notifier.js";
+import { ensureTailscaleServe } from "./tailscale-serve.js";
 
 /**
  * 结构化日志输出
@@ -119,6 +120,30 @@ async function main() {
 
   // 启动监听
   await server.listen(config.port);
+
+  if (config.tailscaleServe?.enabled) {
+    const routeResult = await ensureTailscaleServe({
+      service: config.tailscaleServe.service,
+      path: config.tailscaleServe.path,
+      port: config.port,
+    });
+
+    if (!routeResult.applied) {
+      log("warn", "tailscale serve apply failed", {
+        service: routeResult.service,
+        path: routeResult.path,
+        target: routeResult.target,
+        cli: routeResult.cli,
+        error: routeResult.error,
+      });
+    } else {
+      log("info", "tailscale serve applied", {
+        service: routeResult.service,
+        path: routeResult.path,
+        target: routeResult.target,
+      });
+    }
+  }
 
   log("info", "codex-worker-mvp started", {
     port: config.port,

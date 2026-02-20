@@ -295,6 +295,7 @@ export function loadConfig(env = process.env, options = {}) {
 
   const fileRpc = asPlainObject(fileConfig.rpc);
   const fileApns = asPlainObject(fileConfig.apns);
+  const fileTailscaleServe = asPlainObject(fileConfig.tailscaleServe);
 
   // 解析项目路径白名单
   const projectPaths =
@@ -371,6 +372,16 @@ export function loadConfig(env = process.env, options = {}) {
     );
   }
 
+  const tailscaleServeEnabled = parseBoolean(fileTailscaleServe.enabled) ?? false;
+  const tailscaleServeServiceRaw = asNonEmptyString(fileTailscaleServe.service) || null;
+  const tailscaleServePathRaw = asNonEmptyString(fileTailscaleServe.path) || "/";
+  const tailscaleServePathWithSlash =
+    tailscaleServePathRaw.startsWith("/") ? tailscaleServePathRaw : `/${tailscaleServePathRaw}`;
+  const tailscaleServePath =
+    tailscaleServePathWithSlash === "/"
+      ? "/"
+      : tailscaleServePathWithSlash.replace(/\/+$/, "");
+
   return {
     port: /** @type {number} */ (port),
     authToken: asNonEmptyString(env.WORKER_TOKEN) || asNonEmptyString(fileConfig.authToken) || null,
@@ -383,6 +394,11 @@ export function loadConfig(env = process.env, options = {}) {
       command,
       args,
       cwd: asNonEmptyString(env.WORKER_CWD) || resolvePathFromFile(fileRpc.cwd, configFileBaseDir) || cwd,
+    },
+    tailscaleServe: {
+      enabled: tailscaleServeEnabled,
+      service: tailscaleServeServiceRaw,
+      path: tailscaleServePath,
     },
     apns: {
       enabled: apnsEnabled,

@@ -5,6 +5,11 @@
   "defaultProjectPath": "/Users/Apple/Dev/OpenCodex",
   "eventRetention": 2000,
   "dbPath": "./data/worker.db",
+  "tailscaleServe": {
+    "enabled": false,
+    "service": null,
+    "path": "/"
+  },
   "rpc": {
     "command": "codex",
     "args": ["app-server"],

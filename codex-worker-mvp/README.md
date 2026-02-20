@@ -30,6 +30,63 @@ cd /Users/Apple/Dev/OpenCodex/codex-worker-mvp
 WORKER_CONFIG=./worker.config.json npm start
 ```
 
+## 1.1 Tailscale HTTPS 访问（iOS 跨网络常用）
+
+当 iOS 端使用 `https://<device>.tail3c834b.ts.net` 访问 Worker 时，需要在该 Mac 上启用 Tailscale Serve，把 443 反代到本地 Worker 端口（默认 `8787`）。
+
+推荐通过配置文件自动启用（启动时幂等收敛）：
+
+```json
+{
+  "tailscaleServe": {
+    "enabled": true,
+    "service": null,
+    "path": "/"
+  }
+}
+```
+
+含义：
+- `enabled`：是否启用
+- `service`：可选，Tailscale service 作用域（只改这个 service，避免影响其他服务）
+- `path`：挂载路径（`/`、`/codex` 等）
+
+说明：
+- `service = null`：走节点级 Serve（对个人节点最通用）。
+- `service = "svc:xxx"`：走 service 作用域；该模式要求节点满足 Tailscale 的 service host 条件（通常为 tagged node）。
+
+启动命令仍然不变：
+
+```bash
+cd /Users/Apple/Dev/OpenCodex/codex-worker-mvp
+npm start -- --config ./worker.config.json
+```
+
+查看状态：
+
+```bash
+/Applications/Tailscale.app/Contents/MacOS/Tailscale serve status
+```
+
+期望看到类似（service 作用域）：
+
+```text
+https://mac-mini.tail3c834b.ts.net (tailnet only)
+|-- / proxy http://127.0.0.1:8787
+```
+
+### 关闭映射
+
+```bash
+/Applications/Tailscale.app/Contents/MacOS/Tailscale serve --https=443 off
+```
+
+### 持久化说明
+
+- Tailscale Serve 配置持久化在 Tailscale 的服务状态里，不在本仓库项目文件中。
+- 使用 `tailscale serve --bg` 创建后，正常情况下重启后仍会保留。
+- 本项目通过 `worker.config.json` 声明目标路由，并在启动时自动对齐。
+
 ## 代码结构（可扩展）
 
 - `src/index.js`：进程启动与依赖装配（配置、RPC、存储、HTTP）。
@@ -59,6 +116,9 @@ WORKER_CONFIG=./worker.config.json npm start
 - `defaultProjectPath`：可选，默认项目路径
 - `eventRetention`：可选，单任务事件保留条数（最小 `100`）
 - `dbPath`：可选，SQLite 路径
+- `tailscaleServe.enabled`：可选，是否启用 Tailscale Serve 自动收敛（默认 `false`）
+- `tailscaleServe.service`：可选，Serve service 名称（默认 `null`，即节点级 Serve）
+- `tailscaleServe.path`：可选，挂载路径（默认 `/`）
 - `rpc.command`：可选，Codex 可执行文件（默认 `codex`）
 - `rpc.args`：可选，app-server 参数数组（默认 `["app-server"]`）
 - `rpc.cwd`：可选，Codex 子进程工作目录

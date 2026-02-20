@@ -30,6 +30,11 @@ test("loadConfig 支持通过 --config 加载配置文件，并解析相对路�
         args: ["app-server", "--stdio"],
         cwd: "./workspace",
       },
+      tailscaleServe: {
+        enabled: true,
+        service: "svc:opencodex",
+        path: "codex",
+      },
       apns: {
         enabled: false,
         defaultEnvironment: "production",
@@ -50,6 +55,9 @@ test("loadConfig 支持通过 --config 加载配置文件，并解析相对路�
       assert.equal(config.rpc.command, "codex-custom");
       assert.deepEqual(config.rpc.args, ["app-server", "--stdio"]);
       assert.equal(config.rpc.cwd, path.join(tempDir, "workspace"));
+      assert.equal(config.tailscaleServe.enabled, true);
+      assert.equal(config.tailscaleServe.service, "svc:opencodex");
+      assert.equal(config.tailscaleServe.path, "/codex");
       assert.equal(config.apns.defaultEnvironment, "production");
     }
   );
@@ -95,4 +103,11 @@ test("配置文件不存在时给出明确报错", () => {
 
 test("--config 缺少值时报错", () => {
   assert.throws(() => loadConfig({}, { argv: ["--config"] }), /missing value/);
+});
+
+test("tailscaleServe 缺省值正确", () => {
+  const config = loadConfig({}, { argv: [], cwd: "/tmp/workspace" });
+  assert.equal(config.tailscaleServe.enabled, false);
+  assert.equal(config.tailscaleServe.service, null);
+  assert.equal(config.tailscaleServe.path, "/");
 });
