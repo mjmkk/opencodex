@@ -35,6 +35,8 @@ public struct ChatFeature {
         public var isStreaming = false
         public var streamConnectionState: StreamConnectionState = .idle
         public var isApprovalLocked = false
+        public var pendingApprovalsById: [String: Approval] = [:]
+        public var approvalOrder: [String] = []
         public var errorMessage: String?
         public var jobState: JobState?
 
@@ -118,6 +120,8 @@ public struct ChatFeature {
                 state.isSending = false
                 state.isStreaming = false
                 state.isApprovalLocked = false
+                state.pendingApprovalsById.removeAll()
+                state.approvalOrder.removeAll()
                 state.errorMessage = nil
                 state.jobState = nil
                 let streamStateEffect = updateStreamConnectionState(
@@ -403,11 +407,37 @@ public struct ChatFeature {
         state.isApprovalLocked = isApprovalLocked
         state.errorMessage = errorMessage
 
-        var effect: Effect<Action> = .none
         if let approval = output.approvalRequired {
-            effect = .merge(effect, .send(.delegate(.approvalRequired(approval))))
+            state.pendingApprovalsById[approval.approvalId] = approval
+            state.approvalOrder.removeAll { $0 == approval.approvalId }
+            state.approvalOrder.append(approval.approvalId)
         }
         if let resolved = output.approvalResolved {
+            if resolved.approvalId.isEmpty {
+                state.pendingApprovalsById.removeAll()
+                state.approvalOrder.removeAll()
+            } else {
+                state.pendingApprovalsById.removeValue(forKey: resolved.approvalId)
+                state.approvalOrder.removeAll { $0 == resolved.approvalId }
+            }
+        }
+
+        let latestPendingApproval = latestPendingApproval(
+            pendingApprovalsById: state.pendingApprovalsById,
+            approvalOrder: state.approvalOrder,
+            preferredJobId: state.currentJobId
+        )
+        if latestPendingApproval != nil {
+            state.isApprovalLocked = true
+        } else if state.jobState != .waitingApproval {
+            state.isApprovalLocked = false
+        }
+
+        var effect: Effect<Action> = .none
+        if let latestPendingApproval {
+            effect = .merge(effect, .send(.delegate(.approvalRequired(latestPendingApproval))))
+        }
+        if latestPendingApproval == nil, let resolved = output.approvalResolved {
             effect = .merge(
                 effect,
                 .send(.delegate(.approvalResolved(approvalId: resolved.approvalId, decision: resolved.decision)))
@@ -462,6 +492,8 @@ public struct ChatFeature {
         state.cursor = replay.cursor
         state.jobState = replay.jobState
         state.isApprovalLocked = replay.isApprovalLocked
+        state.pendingApprovalsById = replay.pendingApprovalsById
+        state.approvalOrder = replay.approvalOrder
         state.errorMessage = replay.errorMessage
 
         var effect: Effect<Action> = .none
@@ -579,6 +611,7 @@ public struct ChatFeature {
                     approvalOrder.removeAll()
                 } else {
                     pendingApprovalsById.removeValue(forKey: resolved.approvalId)
+                    approvalOrder.removeAll { $0 == resolved.approvalId }
                 }
             }
 
@@ -593,6 +626,8 @@ public struct ChatFeature {
             replay.isApprovalLocked = false
         }
         replay.cursor = replay.currentJobId.flatMap { lastSeqByJob[$0] } ?? -1
+        replay.pendingApprovalsById = pendingApprovalsById
+        replay.approvalOrder = approvalOrder
         replay.pendingApproval = latestPendingApproval(
             pendingApprovalsById: pendingApprovalsById,
             approvalOrder: approvalOrder,
@@ -851,6 +886,8 @@ private struct ThreadHistoryReplay: Sendable {
     var cursor: Int = -1
     var messages: [Message] = []
     var pendingAssistantDeltas: [String: MessageDelta] = [:]
+    var pendingApprovalsById: [String: Approval] = [:]
+    var approvalOrder: [String] = []
     var jobState: JobState?
     var isApprovalLocked = false
     var errorMessage: String?

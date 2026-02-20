@@ -154,6 +154,8 @@ export class WorkerService {
     this.turnToJob = new Map();         // "threadId::turnId" -> jobId
     this.pendingJobByThread = new Map(); // threadId -> jobId（刚创建还没 turnId 的 job）
     this.approvals = new Map();         // approvalId -> approval 对象
+    this.approvalRequestToId = new Map(); // requestKey(method:id) -> approvalId
+    this.approvalFingerprintToId = new Map(); // fingerprint(thread/turn/item/kind) -> approvalId
     this.pushDevices = new Map();       // deviceToken -> push device
     this.threadEventsCache = new Map(); // threadId -> { events, builtAtMs }
     this.threadProjectionCache = new Map(); // threadId -> projection refresh timestamp(ms)
@@ -1110,6 +1112,38 @@ export class WorkerService {
       return;
     }
 
+    const requestKey = `${method}:${String(requestId)}`;
+    const requestMappedApprovalId = this.approvalRequestToId.get(requestKey);
+    if (requestMappedApprovalId) {
+      const existingApproval = this.approvals.get(requestMappedApprovalId);
+      if (existingApproval?.decisionResult) {
+        this.rpc.respond(requestId, {
+          decision: existingApproval.decisionResult,
+        });
+      }
+      return;
+    }
+
+    const fingerprint = this.#approvalFingerprint(job, kind, params);
+    if (fingerprint) {
+      const fingerprintApprovalId = this.approvalFingerprintToId.get(fingerprint);
+      if (fingerprintApprovalId) {
+        const existingApproval = this.approvals.get(fingerprintApprovalId);
+        if (existingApproval) {
+          this.approvalRequestToId.set(requestKey, existingApproval.approvalId);
+          if (existingApproval.decisionResult) {
+            this.rpc.respond(requestId, {
+              decision: existingApproval.decisionResult,
+            });
+            return;
+          }
+          // 同一审批被重复请求时，绑定到最新 requestId，避免用户审批后写回到旧请求。
+          existingApproval.requestId = requestId;
+          return;
+        }
+      }
+    }
+
     // 创建审批记录
     const approvalId = createId("appr");
     const approval = {
@@ -1126,10 +1160,15 @@ export class WorkerService {
       decisionText: null,
       decisionResult: null,
       decidedAt: null,
+      fingerprint,
     };
 
     // 更新状态
     this.approvals.set(approvalId, approval);
+    this.approvalRequestToId.set(requestKey, approvalId);
+    if (fingerprint) {
+      this.approvalFingerprintToId.set(fingerprint, approvalId);
+    }
     job.pendingApprovalIds.add(approvalId);
 
     // 更新 Job 状态为等待审批
@@ -1158,6 +1197,15 @@ export class WorkerService {
   }
 
   // ==================== 私有辅助方法 ====================
+
+  #approvalFingerprint(job, kind, params) {
+    const turnId = isNonEmptyString(params?.turnId) ? params.turnId.trim() : "";
+    const itemId = isNonEmptyString(params?.itemId) ? params.itemId.trim() : "";
+    if (!turnId && !itemId) {
+      return null;
+    }
+    return `${job.jobId}::${kind}::${turnId}::${itemId}`;
+  }
 
   #supportsThreadEventsProjectionStore() {
     return Boolean(

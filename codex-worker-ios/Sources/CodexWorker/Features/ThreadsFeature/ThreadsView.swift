@@ -90,7 +90,15 @@ public struct ThreadsView: View {
                                         )
                                     }
                                 } header: {
-                                    CwdGroupHeader(group: group)
+                                    CwdGroupHeader(
+                                        group: group,
+                                        isCreating: viewStore.isCreating,
+                                        onCreateTapped: group.fullPath == nil
+                                            ? nil
+                                            : {
+                                                viewStore.send(.createTapped(cwd: group.fullPath))
+                                            }
+                                    )
                                 }
                             }
 
@@ -118,6 +126,9 @@ public struct ThreadsView: View {
     @ViewBuilder
     private func header(viewStore: ViewStoreOf<ThreadsFeature>) -> some View {
         let selectedModeTint = executionAccessMode == .fullAccess ? Color.red : Color.blue
+        let selectedThreadCwd = viewStore.items
+            .first(where: { $0.threadId == viewStore.selectedThreadId })?
+            .cwd
 
         VStack(spacing: 8) {
             HStack(spacing: 12) {
@@ -153,7 +164,7 @@ public struct ThreadsView: View {
                     ProgressView()
                 } else {
                     Button {
-                        viewStore.send(.createTapped)
+                        viewStore.send(.createTapped(cwd: selectedThreadCwd))
                     } label: {
                         Image(systemName: "plus")
                             .font(.headline)
@@ -351,6 +362,8 @@ private struct ThreadRow: View {
 
 private struct CwdGroupHeader: View {
     let group: ThreadsFeature.State.CwdGroup
+    let isCreating: Bool
+    let onCreateTapped: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -360,6 +373,16 @@ private struct CwdGroupHeader: View {
                 Text(group.title)
                     .font(.subheadline.weight(.semibold))
                 Spacer()
+                if let onCreateTapped {
+                    Button {
+                        onCreateTapped()
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.subheadline)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isCreating)
+                }
                 Text("\(group.threads.count)")
                     .font(.caption2)
                     .foregroundStyle(.secondary)

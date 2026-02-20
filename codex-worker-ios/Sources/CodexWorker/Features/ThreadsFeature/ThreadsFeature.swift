@@ -123,7 +123,7 @@ public struct ThreadsFeature {
     public enum Action {
         case onAppear
         case refresh
-        case createTapped
+        case createTapped(cwd: String?)
         case archiveTapped(String)
         case groupingModeChanged(GroupingMode)
         case loadResponse(Result<ThreadsListResponse, CodexError>)
@@ -162,7 +162,7 @@ public struct ThreadsFeature {
                 state.groupingMode = mode
                 return .none
 
-            case .createTapped:
+            case .createTapped(let cwd):
                 state.isCreating = true
                 state.errorMessage = nil
                 return .run { send in
@@ -172,11 +172,15 @@ public struct ThreadsFeature {
                     let mode = executionAccessStore.load()
                     let settings = mode.threadRequestSettings
                     let preferredModel = workerConfigurationStore.load()?.model
+                    let normalizedProjectPath = cwd?
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                    let projectPath = (normalizedProjectPath?.isEmpty == false) ? normalizedProjectPath : nil
                     await send(
                         .createResponse(
                             Result {
                                 try await apiClient.createThread(
                                     .init(
+                                        projectPath: projectPath,
                                         approvalPolicy: settings.approvalPolicy,
                                         sandbox: settings.sandbox,
                                         model: preferredModel
