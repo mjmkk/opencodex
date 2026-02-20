@@ -7,7 +7,7 @@
   "dbPath": "./data/worker.db",
   "tailscaleServe": {
     "enabled": false,
-    "service": null,
+    "service": "svc:opencodex",
     "path": "/"
   },
   "rpc": {

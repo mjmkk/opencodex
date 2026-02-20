@@ -373,7 +373,11 @@ export function loadConfig(env = process.env, options = {}) {
   }
 
   const tailscaleServeEnabled = parseBoolean(fileTailscaleServe.enabled) ?? false;
-  const tailscaleServeServiceRaw = asNonEmptyString(fileTailscaleServe.service) || null;
+  const fileTailscaleServeService = fileTailscaleServe.service;
+  const tailscaleServeServiceRaw =
+    fileTailscaleServeService === null
+      ? null
+      : asNonEmptyString(fileTailscaleServeService) || "svc:opencodex";
   const tailscaleServePathRaw = asNonEmptyString(fileTailscaleServe.path) || "/";
   const tailscaleServePathWithSlash =
     tailscaleServePathRaw.startsWith("/") ? tailscaleServePathRaw : `/${tailscaleServePathRaw}`;

@@ -108,6 +108,24 @@ test("--config 缺少值时报错", () => {
 test("tailscaleServe 缺省值正确", () => {
   const config = loadConfig({}, { argv: [], cwd: "/tmp/workspace" });
   assert.equal(config.tailscaleServe.enabled, false);
-  assert.equal(config.tailscaleServe.service, null);
+  assert.equal(config.tailscaleServe.service, "svc:opencodex");
   assert.equal(config.tailscaleServe.path, "/");
+});
+
+test("tailscaleServe.service 显式为 null 时走节点级路由", () => {
+  withTempConfig(
+    {
+      tailscaleServe: {
+        enabled: true,
+        service: null,
+        path: "/",
+      },
+    },
+    ({ filePath }) => {
+      const config = loadConfig({}, { argv: ["--config", filePath] });
+      assert.equal(config.tailscaleServe.enabled, true);
+      assert.equal(config.tailscaleServe.service, null);
+      assert.equal(config.tailscaleServe.path, "/");
+    }
+  );
 });

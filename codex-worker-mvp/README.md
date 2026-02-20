@@ -41,7 +41,7 @@ cp worker.config.example.json worker.config.json
   },
   "tailscaleServe": {
     "enabled": true,
-    "service": null,
+    "service": "svc:opencodex",
     "path": "/"
   }
 }
@@ -75,7 +75,7 @@ curl http://127.0.0.1:8787/health
 {
   "tailscaleServe": {
     "enabled": true,
-    "service": null,
+    "service": "svc:opencodex",
     "path": "/"
   }
 }
@@ -84,14 +84,14 @@ curl http://127.0.0.1:8787/health
 字段说明：
 
 - `enabled`：`true` 时启动 Worker 会自动对齐 Serve 配置
-- `service`：`null` 表示节点级 Serve；填 `svc:xxx` 表示只改该 service
+- `service`：默认 `svc:opencodex`；填 `svc:xxx` 表示只改该 service；显式填 `null` 表示节点级 Serve
 - `path`：挂载路径，`/` 表示根路径，也可用 `/codex` 等子路径
 
 常见编排示例：
 
-- 根路径直挂 Worker：`service = null`、`path = "/"` -> `https://<device>.ts.net/` 到 Worker
-- 子路径挂 Worker：`service = null`、`path = "/codex"` -> `https://<device>.ts.net/codex` 到 Worker
-- service 作用域挂载：`service = "svc:worker"`、`path = "/"` -> 只修改该 service 路由
+- 默认 service 根路径：`service = "svc:opencodex"`、`path = "/"` -> 只改 `svc:opencodex` 的根路径
+- 默认 service 子路径：`service = "svc:opencodex"`、`path = "/codex"` -> 只改 `svc:opencodex` 的 `/codex`
+- 节点级挂载：`service = null`、`path = "/"` -> `https://<device>.ts.net/` 到 Worker
 
 查看当前 Serve 状态：
 
@@ -149,7 +149,7 @@ https://mac-mini.tail3c834b.ts.net (tailnet only)
 - `eventRetention`：可选，单任务事件保留条数（最小 `100`）
 - `dbPath`：可选，SQLite 路径
 - `tailscaleServe.enabled`：可选，是否启用 Tailscale Serve 自动收敛（默认 `false`）
-- `tailscaleServe.service`：可选，Serve service 名称（默认 `null`，即节点级 Serve）
+- `tailscaleServe.service`：可选，Serve service 名称（默认 `svc:opencodex`；显式 `null` 表示节点级 Serve）
 - `tailscaleServe.path`：可选，挂载路径（默认 `/`）
 - `rpc.command`：可选，Codex 可执行文件（默认 `codex`）
 - `rpc.args`：可选，app-server 参数数组（默认 `["app-server"]`）
