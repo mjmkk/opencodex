@@ -6,35 +6,70 @@
 - 提供 `SSE`（Server-Sent Events，服务端推送事件）
 - 支持审批请求回传与 `cursor`（游标）续流
 
-## 1. 运行
+## 1. 快速开始（无门槛）
+
+下面按「第一次在新机器启动」来写，只需 3 步。
+
+### 第 1 步：进入项目
 
 ```bash
-cd /Users/Apple/Dev/OpenCodex/codex-worker-mvp
-npm start
+cd /Users/chenken/Documents/opencodex/codex-worker-mvp
 ```
 
-默认端口：`8787`
-
-推荐使用配置文件启动（避免环境变量过多）：
+### 第 2 步：准备配置文件
 
 ```bash
-cd /Users/Apple/Dev/OpenCodex/codex-worker-mvp
 cp worker.config.example.json worker.config.json
+```
+
+`worker.config.json` 至少确认这几个字段：
+
+- `port`：Worker 监听端口，默认 `8787`
+- `rpc.command`：通常是 `codex`
+- `rpc.args`：通常是 `["app-server"]`
+- `rpc.cwd`：Codex 工作目录（建议填你的 OpenCodex 根目录）
+
+最小可用示例：
+
+```json
+{
+  "port": 8787,
+  "rpc": {
+    "command": "codex",
+    "args": ["app-server"],
+    "cwd": "/Users/chenken/Documents/opencodex"
+  },
+  "tailscaleServe": {
+    "enabled": true,
+    "service": null,
+    "path": "/"
+  }
+}
+```
+
+### 第 3 步：启动 Worker
+
+```bash
 npm start -- --config ./worker.config.json
 ```
 
-也支持用环境变量指定配置文件：
+也支持环境变量方式：
 
 ```bash
-cd /Users/Apple/Dev/OpenCodex/codex-worker-mvp
 WORKER_CONFIG=./worker.config.json npm start
 ```
 
-## 1.1 Tailscale HTTPS 访问（iOS 跨网络常用）
+默认健康检查：
 
-当 iOS 端使用 `https://<device>.tail3c834b.ts.net` 访问 Worker 时，需要在该 Mac 上启用 Tailscale Serve，把 443 反代到本地 Worker 端口（默认 `8787`）。
+```bash
+curl http://127.0.0.1:8787/health
+```
 
-推荐通过配置文件自动启用（启动时幂等收敛）：
+## 1.1 Tailscale HTTPS 访问（iOS 常用）
+
+如果 iOS 端要访问 `https://<device>.tail3c834b.ts.net`，需要在该 Mac 上启用 Tailscale Serve，把 443 映射到本地 Worker（默认 `127.0.0.1:8787`）。
+
+本项目已支持在启动时按配置自动收敛 Serve（幂等）：
 
 ```json
 {
@@ -46,46 +81,43 @@ WORKER_CONFIG=./worker.config.json npm start
 }
 ```
 
-含义：
-- `enabled`：是否启用
-- `service`：可选，Tailscale service 作用域（只改这个 service，避免影响其他服务）
-- `path`：挂载路径（`/`、`/codex` 等）
+字段说明：
 
-说明：
-- `service = null`：走节点级 Serve（对个人节点最通用）。
-- `service = "svc:xxx"`：走 service 作用域；该模式要求节点满足 Tailscale 的 service host 条件（通常为 tagged node）。
+- `enabled`：`true` 时启动 Worker 会自动对齐 Serve 配置
+- `service`：`null` 表示节点级 Serve；填 `svc:xxx` 表示只改该 service
+- `path`：挂载路径，`/` 表示根路径，也可用 `/codex` 等子路径
 
-启动命令仍然不变：
+常见编排示例：
 
-```bash
-cd /Users/Apple/Dev/OpenCodex/codex-worker-mvp
-npm start -- --config ./worker.config.json
-```
+- 根路径直挂 Worker：`service = null`、`path = "/"` -> `https://<device>.ts.net/` 到 Worker
+- 子路径挂 Worker：`service = null`、`path = "/codex"` -> `https://<device>.ts.net/codex` 到 Worker
+- service 作用域挂载：`service = "svc:worker"`、`path = "/"` -> 只修改该 service 路由
 
-查看状态：
+查看当前 Serve 状态：
 
 ```bash
 /Applications/Tailscale.app/Contents/MacOS/Tailscale serve status
 ```
 
-期望看到类似（service 作用域）：
+期望看到类似：
 
 ```text
 https://mac-mini.tail3c834b.ts.net (tailnet only)
 |-- / proxy http://127.0.0.1:8787
 ```
 
-### 关闭映射
+### 关闭映射（手动）
 
 ```bash
 /Applications/Tailscale.app/Contents/MacOS/Tailscale serve --https=443 off
 ```
 
-### 持久化说明
+### 持久化与幂等
 
-- Tailscale Serve 配置持久化在 Tailscale 的服务状态里，不在本仓库项目文件中。
-- 使用 `tailscale serve --bg` 创建后，正常情况下重启后仍会保留。
-- 本项目通过 `worker.config.json` 声明目标路由，并在启动时自动对齐。
+- Serve 的真实状态保存在 Tailscale 自身，不在仓库文件里。
+- 本项目只负责“把目标状态声明在 `worker.config.json`，并在启动时反复收敛到该状态”。
+- 同样配置重复启动不会产生重复规则。
+- 改了 `service/path/port` 后，下次启动会更新到新目标。
 
 ## 代码结构（可扩展）
 
@@ -192,13 +224,13 @@ https://mac-mini.tail3c834b.ts.net (tailnet only)
 ## 6. 测试
 
 ```bash
-cd /Users/Apple/Dev/OpenCodex/codex-worker-mvp
+cd /Users/chenken/Documents/opencodex/codex-worker-mvp
 npm test
 ```
 
 完整测试（当前等同于 `npm test`）：
 
 ```bash
-cd /Users/Apple/Dev/OpenCodex/codex-worker-mvp
+cd /Users/chenken/Documents/opencodex/codex-worker-mvp
 npm run test:all
 ```
