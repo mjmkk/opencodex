@@ -49,55 +49,57 @@ export async function runVerify(rawOptions = {}) {
   let result;
   let cleanup = null;
 
-  const stat = await fs.stat(input).catch(() => null);
-  if (!stat) {
-    throw new Error(`路径不存在: ${input}`);
-  }
+  try {
+    const stat = await fs.stat(input).catch(() => null);
+    if (!stat) {
+      throw new Error(`路径不存在: ${input}`);
+    }
 
-  if (stat.isFile()) {
-    const packageRef = await locatePackageRoot(input);
-    cleanup = packageRef.cleanup;
-    result = await verifyPackageRoot(packageRef.packageRoot, {
-      mode,
-      sampleSize,
-      failOnWarn,
-    });
-  } else {
-    const packageDir = await looksLikePackageDirectory(input);
-    if (packageDir) {
-      result = await verifyPackageRoot(input, {
+    if (stat.isFile()) {
+      const packageRef = await locatePackageRoot(input);
+      cleanup = packageRef.cleanup;
+      result = await verifyPackageRoot(packageRef.packageRoot, {
         mode,
         sampleSize,
         failOnWarn,
       });
     } else {
-      const issues = await ensureRequiredLayout(input);
-      if (issues.length > 0) {
-        result = {
-          kind: "unknown",
-          status: STATUS.FAIL,
-          summary: {
-            failures: [
-              {
-                message: "输入目录既不是导出包也不是 Codex 数据目录",
-                detail: issues,
-              },
-            ],
-            warnings: [],
-          },
-        };
-      } else {
-        result = await verifyCodexHomeLayout(input, {
+      const packageDir = await looksLikePackageDirectory(input);
+      if (packageDir) {
+        result = await verifyPackageRoot(input, {
           mode,
           sampleSize,
           failOnWarn,
         });
+      } else {
+        const issues = await ensureRequiredLayout(input);
+        if (issues.length > 0) {
+          result = {
+            kind: "unknown",
+            status: STATUS.FAIL,
+            summary: {
+              failures: [
+                {
+                  message: "输入目录既不是导出包也不是 Codex 数据目录",
+                  detail: issues,
+                },
+              ],
+              warnings: [],
+            },
+          };
+        } else {
+          result = await verifyCodexHomeLayout(input, {
+            mode,
+            sampleSize,
+            failOnWarn,
+          });
+        }
       }
     }
-  }
-
-  if (cleanup) {
-    await cleanup();
+  } finally {
+    if (cleanup) {
+      await cleanup();
+    }
   }
 
   const status = normalizeStatus({

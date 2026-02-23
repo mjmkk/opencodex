@@ -4,6 +4,7 @@ import path from "node:path";
 
 import { locatePackageRoot } from "../package-io.js";
 import {
+  collectPayloadFiles,
   defaultCodexHome,
   ensureDir,
   extractSessionIdFromFilename,
@@ -27,17 +28,27 @@ function buildReportPath(options, timestamp) {
   return path.join(reportDir, `restore-report-${timestamp}.json`);
 }
 
-function sanitizeRelativePath(relativePath) {
-  const normalized = path.normalize(relativePath);
-  if (normalized.startsWith("..") || path.isAbsolute(normalized)) {
+function normalizePackageRelativePath(relativePath) {
+  const normalized = path.posix.normalize(String(relativePath).replace(/\\/g, "/"));
+  if (
+    normalized === ".." ||
+    normalized.startsWith("../") ||
+    normalized.startsWith("/") ||
+    normalized.startsWith("//") ||
+    /^[a-z]:\//i.test(normalized)
+  ) {
     throw new Error(`非法路径: ${relativePath}`);
   }
   return normalized;
 }
 
 function isSessionJsonlRelative(relativePath) {
-  if (!relativePath.endsWith(".jsonl")) return false;
+  if (!relativePath.toLowerCase().endsWith(".jsonl")) return false;
   return relativePath.startsWith("sessions/") || relativePath.startsWith("archived_sessions/");
+}
+
+function resolveWithinCodexHome(codexHome, relativePath) {
+  return path.join(codexHome, ...relativePath.split("/"));
 }
 
 async function findUniqueRenamePath(destination, suffix) {
@@ -60,31 +71,6 @@ async function findUniqueSessionRenamePath(destination, suffix) {
     counter += 1;
   }
   return candidate;
-}
-
-async function listPayloadFiles(payloadRoot) {
-  const files = [];
-
-  async function walk(current, rel) {
-    const entries = await fs.readdir(current, { withFileTypes: true });
-    for (const entry of entries) {
-      if (entry.name === ".DS_Store") continue;
-      const abs = path.join(current, entry.name);
-      const nextRel = rel ? path.join(rel, entry.name) : entry.name;
-      if (entry.isDirectory()) {
-        await walk(abs, nextRel);
-      } else if (entry.isFile()) {
-        files.push({
-          absolutePath: abs,
-          relativePath: nextRel,
-        });
-      }
-    }
-  }
-
-  await walk(payloadRoot, "");
-  files.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
-  return files;
 }
 
 async function backupExistingTargets(targetCodexHome, backupPath, dryRun) {
@@ -181,16 +167,18 @@ function createUniqueThreadId(existingIds) {
 }
 
 function replaceThreadIdInRelativePath(relativePath, sourceId, targetId) {
-  const base = path.basename(relativePath);
+  const base = path.posix.basename(relativePath);
+  const dir = path.posix.dirname(relativePath);
+  const lowerBase = base.toLowerCase();
   const sourceSuffix = `-${sourceId}.jsonl`;
-  if (base.endsWith(sourceSuffix)) {
+  if (lowerBase.endsWith(sourceSuffix)) {
     const renamedBase = `${base.slice(0, -sourceSuffix.length)}-${targetId}.jsonl`;
-    return path.join(path.dirname(relativePath), renamedBase);
+    return dir === "." ? renamedBase : path.posix.join(dir, renamedBase);
   }
 
-  if (base.endsWith(".jsonl")) {
+  if (lowerBase.endsWith(".jsonl")) {
     const renamedBase = `${base.slice(0, -".jsonl".length)}-${targetId}.jsonl`;
-    return path.join(path.dirname(relativePath), renamedBase);
+    return dir === "." ? renamedBase : path.posix.join(dir, renamedBase);
   }
 
   return relativePath;
@@ -198,7 +186,7 @@ function replaceThreadIdInRelativePath(relativePath, sourceId, targetId) {
 
 function deepReplaceStringValue(value, source, target) {
   if (typeof value === "string") {
-    return value === source ? target : value;
+    return value.toLowerCase() === source ? target : value;
   }
 
   if (Array.isArray(value)) {
@@ -217,6 +205,7 @@ function deepReplaceStringValue(value, source, target) {
 }
 
 async function rewriteSessionJsonlThreadId(sourcePath, sourceId, targetId) {
+  const sourceNeedle = sourceId.toLowerCase();
   const raw = await fs.readFile(sourcePath, "utf8");
   const lines = raw.split(/\r?\n/);
   const output = [];
@@ -233,7 +222,7 @@ async function rewriteSessionJsonlThreadId(sourcePath, sourceId, targetId) {
       throw new Error(`重写会话 ID 时 JSON 解析失败: ${sourcePath} line=${index + 1} error=${detail}`);
     }
 
-    const rewritten = deepReplaceStringValue(parsed, sourceId, targetId);
+    const rewritten = deepReplaceStringValue(parsed, sourceNeedle, targetId);
     output.push(JSON.stringify(rewritten));
   }
 
@@ -468,7 +457,10 @@ export async function runRestore(rawOptions = {}) {
       throw new Error(`导出包缺少 payload 目录: ${payloadRoot}`);
     }
 
-    const payloadFiles = await listPayloadFiles(payloadRoot);
+    const payloadFiles = (await collectPayloadFiles(payloadRoot)).map((file) => ({
+      ...file,
+      relativePath: normalizePackageRelativePath(file.relativePath),
+    }));
     const sourceIndexMap = await loadSourceIndexMap(payloadRoot, summary);
 
     const actions = {
@@ -496,7 +488,7 @@ export async function runRestore(rawOptions = {}) {
     const existingThreadIds = await collectExistingThreadIds(targetCodexHome);
 
     for (const file of payloadFiles) {
-      const safeRelative = sanitizeRelativePath(file.relativePath);
+      const safeRelative = normalizePackageRelativePath(file.relativePath);
 
       if (safeRelative === "session_index.jsonl") {
         continue;
@@ -518,7 +510,7 @@ export async function runRestore(rawOptions = {}) {
           existingThreadIds.add(targetId.toLowerCase());
         }
 
-        let destination = path.join(targetCodexHome, targetRelative);
+        let destination = resolveWithinCodexHome(targetCodexHome, targetRelative);
         while (await pathExists(destination)) {
           const [sourceHash, destinationHash] = await Promise.all([sha256File(file.absolutePath), sha256File(destination)]);
           if (sourceHash === destinationHash) {
@@ -549,7 +541,7 @@ export async function runRestore(rawOptions = {}) {
           if (sourceId) {
             targetId = createUniqueThreadId(existingThreadIds);
             targetRelative = replaceThreadIdInRelativePath(safeRelative, sourceId, targetId);
-            destination = path.join(targetCodexHome, targetRelative);
+            destination = resolveWithinCodexHome(targetCodexHome, targetRelative);
             if (!remapped) {
               remapped = true;
               actions.remapped_threads += 1;
@@ -559,7 +551,7 @@ export async function runRestore(rawOptions = {}) {
           }
 
           const renamedPath = await findUniqueSessionRenamePath(destination, `imported-${timestamp}`);
-          targetRelative = path.relative(targetCodexHome, renamedPath);
+          targetRelative = path.relative(targetCodexHome, renamedPath).replace(/\\/g, "/");
           destination = renamedPath;
           actions.renamed += 1;
           break;
@@ -595,7 +587,7 @@ export async function runRestore(rawOptions = {}) {
         continue;
       }
 
-      const destination = path.join(targetCodexHome, safeRelative);
+      const destination = resolveWithinCodexHome(targetCodexHome, safeRelative);
       await copyNonSessionFile({
         source: file.absolutePath,
         destination,

@@ -19,7 +19,7 @@
 ## 安装与运行
 
 ```bash
-cd /Users/Apple/Dev/OpenCodex/codex-sessions-tool
+cd codex-sessions-tool
 npm test
 node ./bin/codex-sessions.js help
 ```
@@ -139,6 +139,6 @@ node ./bin/codex-sessions.js restore \
 ## 开发自测
 
 ```bash
-cd /Users/Apple/Dev/OpenCodex/codex-sessions-tool
+cd codex-sessions-tool
 npm test
 ```

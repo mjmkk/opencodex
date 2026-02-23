@@ -37,10 +37,17 @@ export async function locatePackageRoot(inputPath) {
     cleanup = async () => removeDirSafe(tempDir);
 
     await ensureDir(tempDir);
-    const extension = path.extname(resolved).toLowerCase();
-    const isGzip = resolved.endsWith(".tar.gz") || resolved.endsWith(".tgz") || extension === ".gz";
+    const lowerResolved = resolved.toLowerCase();
+    const extension = path.extname(lowerResolved);
+    const isGzip = lowerResolved.endsWith(".tar.gz") || lowerResolved.endsWith(".tgz") || extension === ".gz";
+    const isZstd = lowerResolved.endsWith(".tar.zst") || lowerResolved.endsWith(".tzst") || extension === ".zst";
 
-    const tarArgs = isGzip ? ["-xzf", resolved, "-C", tempDir] : ["-xf", resolved, "-C", tempDir];
+    let tarArgs = ["-xf", resolved, "-C", tempDir];
+    if (isGzip) {
+      tarArgs = ["-xzf", resolved, "-C", tempDir];
+    } else if (isZstd) {
+      tarArgs = ["--zstd", "-xf", resolved, "-C", tempDir];
+    }
     runTar(tarArgs);
 
     rootCandidate = tempDir;

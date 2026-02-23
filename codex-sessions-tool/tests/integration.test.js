@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -107,6 +108,62 @@ async function createFixtureCodexHome(baseDir) {
     archivedId,
     activeFile,
   };
+}
+
+async function sha256File(filePath) {
+  const content = await fs.readFile(filePath);
+  return crypto.createHash("sha256").update(content).digest("hex");
+}
+
+async function readChecksums(packageRoot) {
+  const checksumsPath = path.join(packageRoot, "checksums.sha256");
+  const lines = (await fs.readFile(checksumsPath, "utf8")).split(/\r?\n/).filter(Boolean);
+  return lines.map((line) => {
+    const match = line.match(/^([a-f0-9]{64})\s{2}(.+)$/i);
+    if (!match) {
+      throw new Error(`checksums 格式错误: ${line}`);
+    }
+    return {
+      sha256: match[1].toLowerCase(),
+      relativePath: match[2],
+    };
+  });
+}
+
+async function writeChecksums(packageRoot, entries) {
+  const checksumsPath = path.join(packageRoot, "checksums.sha256");
+  const rows = entries.map((item) => `${item.sha256}  ${item.relativePath}`);
+  await fs.writeFile(checksumsPath, `${rows.join("\n")}\n`, "utf8");
+}
+
+async function replaceChecksumRelativePath(packageRoot, fromRelativePath, toRelativePath) {
+  const entries = await readChecksums(packageRoot);
+  let found = false;
+  for (const entry of entries) {
+    if (entry.relativePath === fromRelativePath) {
+      entry.relativePath = toRelativePath;
+      found = true;
+      break;
+    }
+  }
+  assert.equal(found, true, `未找到 checksums 条目: ${fromRelativePath}`);
+  await writeChecksums(packageRoot, entries);
+}
+
+async function refreshChecksumForPath(packageRoot, relativePath) {
+  const entries = await readChecksums(packageRoot);
+  let found = false;
+  const absolutePath = path.join(packageRoot, ...relativePath.split("/"));
+  const digest = await sha256File(absolutePath);
+  for (const entry of entries) {
+    if (entry.relativePath === relativePath) {
+      entry.sha256 = digest;
+      found = true;
+      break;
+    }
+  }
+  assert.equal(found, true, `未找到 checksums 条目: ${relativePath}`);
+  await writeChecksums(packageRoot, entries);
 }
 
 test("backup -> verify -> restore should pass", async () => {
@@ -394,4 +451,125 @@ test("backup default output suffix should match compress type", async () => {
   assert.match(noneResult.output_path, /\.tar$/);
   assert.match(zstResult.output_path, /\.tar\.zst$/);
   assert.match(gzResult.output_path, /\.tar\.gz$/);
+});
+
+test("restore should remap and append index when payload uses backslash session path", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-sessions-test-"));
+  const fixture = await createFixtureCodexHome(tempRoot);
+  const exportDir = path.join(tempRoot, "exported");
+  const reportsDir = path.join(tempRoot, "reports");
+
+  const backup = await runBackup({
+    codexHome: fixture.codexHome,
+    threads: "active",
+    manifestOnly: true,
+    out: exportDir,
+    reportDir: reportsDir,
+  });
+  assert.equal(backup.status, "PASS");
+
+  const fileName = `rollout-2026-02-20T12-33-45-${fixture.activeId}.jsonl`;
+  const oldPayloadRelative = `payload/sessions/2026/02/20/${fileName}`;
+  const newPayloadRelative = `payload/sessions\\2026\\02\\20/${fileName}`;
+  const oldPath = path.join(exportDir, "payload", "sessions", "2026", "02", "20", fileName);
+  const newPath = path.join(exportDir, "payload", "sessions\\2026\\02\\20", fileName);
+  await fs.mkdir(path.dirname(newPath), { recursive: true });
+  await fs.rename(oldPath, newPath);
+
+  const manifestPath = path.join(exportDir, "manifest.json");
+  const manifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));
+  let replaced = false;
+  for (const item of manifest.files) {
+    if (item.relative_path === oldPayloadRelative) {
+      item.relative_path = newPayloadRelative;
+      replaced = true;
+    }
+  }
+  assert.equal(replaced, true);
+  await fs.writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+  await replaceChecksumRelativePath(exportDir, oldPayloadRelative, newPayloadRelative);
+
+  const restore = await runRestore({
+    package: exportDir,
+    targetCodexHome: fixture.codexHome,
+    conflict: "skip",
+    addOnly: true,
+    postVerify: false,
+    reportDir: reportsDir,
+  });
+
+  assert.equal(restore.status, "PASS");
+  assert.ok(restore.actions.remapped_threads >= 1);
+  assert.ok(restore.actions.index_appended >= 1);
+});
+
+test("restore should rewrite mixed-case session id in jsonl body", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-sessions-test-"));
+  const fixture = await createFixtureCodexHome(tempRoot);
+  const exportDir = path.join(tempRoot, "exported");
+  const reportsDir = path.join(tempRoot, "reports");
+
+  const backup = await runBackup({
+    codexHome: fixture.codexHome,
+    threads: "active",
+    manifestOnly: true,
+    out: exportDir,
+    reportDir: reportsDir,
+  });
+  assert.equal(backup.status, "PASS");
+
+  const fileName = `rollout-2026-02-20T12-33-45-${fixture.activeId}.jsonl`;
+  const sessionRelative = `payload/sessions/2026/02/20/${fileName}`;
+  const sessionPath = path.join(exportDir, "payload", "sessions", "2026", "02", "20", fileName);
+  const sourceUpper = fixture.activeId.toUpperCase();
+  const raw = await fs.readFile(sessionPath, "utf8");
+  await fs.writeFile(sessionPath, raw.replaceAll(fixture.activeId, sourceUpper), "utf8");
+  await refreshChecksumForPath(exportDir, sessionRelative);
+
+  const restore = await runRestore({
+    package: exportDir,
+    targetCodexHome: fixture.codexHome,
+    conflict: "skip",
+    addOnly: true,
+    postVerify: false,
+    reportDir: reportsDir,
+  });
+
+  assert.equal(restore.status, "PASS");
+  assert.ok(restore.actions.remapped_threads >= 1);
+  const imported = restore.imported_threads.find((item) => item.sourceId === fixture.activeId);
+  assert.ok(imported?.targetRelative);
+  assert.ok(imported?.targetId);
+  const importedPath = path.join(fixture.codexHome, ...imported.targetRelative.split("/"));
+  const importedRaw = await fs.readFile(importedPath, "utf8");
+  assert.match(importedRaw, new RegExp(imported.targetId, "i"));
+  assert.doesNotMatch(importedRaw, new RegExp(sourceUpper));
+});
+
+test("zst backup package should be verifiable when tar supports zstd", async (t) => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-sessions-test-"));
+  const fixture = await createFixtureCodexHome(tempRoot);
+  const reportsDir = path.join(tempRoot, "reports");
+  const outPath = path.join(tempRoot, "archive.tar.zst");
+
+  const backup = await runBackup({
+    codexHome: fixture.codexHome,
+    manifestOnly: false,
+    compress: "zst",
+    out: outPath,
+    reportDir: reportsDir,
+  });
+
+  if (backup.status !== "PASS") {
+    t.skip("当前环境 tar 不支持 zstd，跳过该用例");
+    return;
+  }
+
+  const verify = await runVerify({
+    input: outPath,
+    mode: "full",
+    reportDir: reportsDir,
+  });
+
+  assert.equal(verify.status, "PASS");
 });
