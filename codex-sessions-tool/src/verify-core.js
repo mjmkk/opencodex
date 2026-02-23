@@ -243,7 +243,7 @@ export async function verifyPackageRoot(packageRoot, options = {}) {
   try {
     const checksums = await readChecksumsFile(packageRoot);
     for (const entry of checksums) {
-      const absolutePath = path.join(packageRoot, entry.relativePath);
+      const absolutePath = path.join(packageRoot, ...entry.relativePath.split("/"));
       const exists = await pathExists(absolutePath);
       if (!exists) {
         integrity.missingFiles.push(entry.relativePath);

@@ -10,6 +10,20 @@ import {
   resolvePath,
 } from "./utils.js";
 
+function normalizeArchiveRelativePath(inputPath) {
+  const normalized = path.posix.normalize(String(inputPath).replace(/\\/g, "/"));
+  if (
+    !normalized ||
+    normalized === "." ||
+    normalized === ".." ||
+    normalized.startsWith("../") ||
+    normalized.startsWith("/")
+  ) {
+    throw new Error(`checksums 路径非法: ${inputPath}`);
+  }
+  return normalized;
+}
+
 function packageLooksValid(root) {
   return Promise.all([
     pathExists(path.join(root, "manifest.json")),
@@ -89,7 +103,7 @@ export async function readChecksumsFile(packageRoot) {
 
     entries.push({
       sha256: match[1].toLowerCase(),
-      relativePath: match[2],
+      relativePath: normalizeArchiveRelativePath(match[2]),
     });
   }
 

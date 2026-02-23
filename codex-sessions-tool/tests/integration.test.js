@@ -453,7 +453,36 @@ test("backup default output suffix should match compress type", async () => {
   assert.match(gzResult.output_path, /\.tar\.gz$/);
 });
 
-test("restore should remap and append index when payload uses backslash session path", async () => {
+test("verify should accept checksums paths with windows separators", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-sessions-test-"));
+  const fixture = await createFixtureCodexHome(tempRoot);
+  const exportDir = path.join(tempRoot, "exported");
+  const reportsDir = path.join(tempRoot, "reports");
+
+  const backup = await runBackup({
+    codexHome: fixture.codexHome,
+    manifestOnly: true,
+    out: exportDir,
+    reportDir: reportsDir,
+  });
+  assert.equal(backup.status, "PASS");
+
+  const entries = await readChecksums(exportDir);
+  const windowsStyleEntries = entries.map((item) => ({
+    ...item,
+    relativePath: item.relativePath.replaceAll("/", "\\"),
+  }));
+  await writeChecksums(exportDir, windowsStyleEntries);
+
+  const verifyResult = await runVerify({
+    input: exportDir,
+    mode: "full",
+    reportDir: reportsDir,
+  });
+  assert.equal(verifyResult.status, "PASS");
+});
+
+test("restore should remap and append index when package metadata uses backslash session path", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-sessions-test-"));
   const fixture = await createFixtureCodexHome(tempRoot);
   const exportDir = path.join(tempRoot, "exported");
@@ -470,11 +499,7 @@ test("restore should remap and append index when payload uses backslash session 
 
   const fileName = `rollout-2026-02-20T12-33-45-${fixture.activeId}.jsonl`;
   const oldPayloadRelative = `payload/sessions/2026/02/20/${fileName}`;
-  const newPayloadRelative = `payload/sessions\\2026\\02\\20/${fileName}`;
-  const oldPath = path.join(exportDir, "payload", "sessions", "2026", "02", "20", fileName);
-  const newPath = path.join(exportDir, "payload", "sessions\\2026\\02\\20", fileName);
-  await fs.mkdir(path.dirname(newPath), { recursive: true });
-  await fs.rename(oldPath, newPath);
+  const newPayloadRelative = `payload\\sessions\\2026\\02\\20\\${fileName}`;
 
   const manifestPath = path.join(exportDir, "manifest.json");
   const manifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));

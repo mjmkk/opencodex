@@ -117,7 +117,8 @@ async function writeManifestAndChecksums(packageRoot, payloadRoot, metadata, sum
   const checksums = [];
 
   for (const file of payloadFiles) {
-    const relativeInPackage = path.join("payload", file.relativePath);
+    const normalizedPayloadRelative = path.posix.normalize(file.relativePath.replace(/\\/g, "/"));
+    const relativeInPackage = path.posix.join("payload", normalizedPayloadRelative);
     const stat = await fs.stat(file.absolutePath);
     const digest = await sha256File(file.absolutePath);
 
