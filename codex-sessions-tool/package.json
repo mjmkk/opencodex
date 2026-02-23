@@ -1,0 +1,16 @@
+{
+  "name": "codex-sessions-tool",
+  "version": "0.1.0",
+  "description": "Backup, restore, verify and doctor for Codex sessions",
+  "type": "module",
+  "bin": {
+    "codex-sessions": "./bin/codex-sessions.js"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}
