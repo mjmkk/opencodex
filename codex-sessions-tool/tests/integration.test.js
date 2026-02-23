@@ -253,6 +253,62 @@ test("verify should fail if payload is tampered", async () => {
   assert.ok(verifyResult.result.summary.failures.length > 0);
 });
 
+test("verify should fail if payload contains undeclared file", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-sessions-test-"));
+  const fixture = await createFixtureCodexHome(tempRoot);
+  const exportDir = path.join(tempRoot, "exported");
+  const reportsDir = path.join(tempRoot, "reports");
+
+  const backup = await runBackup({
+    codexHome: fixture.codexHome,
+    manifestOnly: true,
+    out: exportDir,
+    reportDir: reportsDir,
+  });
+  assert.equal(backup.status, "PASS");
+
+  const injectedId = "c77a2d34-7838-41aa-af8a-f36ddf950111";
+  const injectedPath = path.join(
+    exportDir,
+    "payload",
+    "sessions",
+    "2026",
+    "02",
+    "20",
+    `rollout-2026-02-20T12-59-59-${injectedId}.jsonl`,
+  );
+  const injectedLines = [
+    JSON.stringify({
+      timestamp: "2026-02-20T04:59:59.000Z",
+      type: "session_meta",
+      payload: { id: injectedId, cwd: "/tmp/injected" },
+    }),
+    JSON.stringify({
+      timestamp: "2026-02-20T05:00:00.000Z",
+      type: "response_item",
+      payload: {
+        type: "message",
+        role: "user",
+        content: [{ type: "input_text", text: "injected file" }],
+      },
+    }),
+  ];
+  await fs.mkdir(path.dirname(injectedPath), { recursive: true });
+  await fs.writeFile(injectedPath, `${injectedLines.join("\n")}\n`, "utf8");
+
+  const verifyResult = await runVerify({
+    input: exportDir,
+    mode: "full",
+    reportDir: reportsDir,
+  });
+
+  assert.equal(verifyResult.status, "FAIL");
+  assert.ok(
+    verifyResult.result.summary.failures.some((item) =>
+      item?.message === "payload 存在未在 checksums 声明的文件"),
+  );
+});
+
 test("restore add-only on same codex home should create new thread ids without overwrite", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-sessions-test-"));
   const fixture = await createFixtureCodexHome(tempRoot);

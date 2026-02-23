@@ -227,7 +227,9 @@ export async function verifyPackageRoot(packageRoot, options = {}) {
     filesChecked: 0,
     missingFiles: [],
     mismatches: [],
+    undeclaredPayloadFiles: [],
   };
+  let payloadFiles = null;
 
   let manifest = null;
   try {
@@ -242,6 +244,7 @@ export async function verifyPackageRoot(packageRoot, options = {}) {
 
   try {
     const checksums = await readChecksumsFile(packageRoot);
+    const declaredPayloadFiles = new Set();
     for (const entry of checksums) {
       const absolutePath = path.join(packageRoot, ...entry.relativePath.split("/"));
       const exists = await pathExists(absolutePath);
@@ -249,6 +252,10 @@ export async function verifyPackageRoot(packageRoot, options = {}) {
         integrity.missingFiles.push(entry.relativePath);
         pushFailure(summary, "校验文件缺失", { file: entry.relativePath });
         continue;
+      }
+
+      if (entry.relativePath.startsWith("payload/")) {
+        declaredPayloadFiles.add(entry.relativePath);
       }
 
       integrity.filesChecked += 1;
@@ -264,6 +271,17 @@ export async function verifyPackageRoot(packageRoot, options = {}) {
         });
       }
     }
+
+    payloadFiles = await detectPayloadFiles(packageRoot);
+    for (const item of payloadFiles) {
+      const relativeInPackage = path.posix.join("payload", item.relativePath);
+      if (!declaredPayloadFiles.has(relativeInPackage)) {
+        integrity.undeclaredPayloadFiles.push(relativeInPackage);
+        pushFailure(summary, "payload 存在未在 checksums 声明的文件", {
+          file: relativeInPackage,
+        });
+      }
+    }
   } catch (error) {
     pushFailure(summary, "checksums.sha256 读取失败", {
       file: checksumsPath,
@@ -271,7 +289,9 @@ export async function verifyPackageRoot(packageRoot, options = {}) {
     });
   }
 
-  const payloadFiles = await detectPayloadFiles(packageRoot);
+  if (!payloadFiles) {
+    payloadFiles = await detectPayloadFiles(packageRoot);
+  }
   const jsonlFiles = payloadFiles.filter((item) => item.relativePath.endsWith(".jsonl"));
   const sampledJsonlFiles = pickFilesByMode(jsonlFiles, mode, sampleSize);
 

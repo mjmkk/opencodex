@@ -122,9 +122,10 @@ export async function detectPayloadFiles(packageRoot) {
       if (entry.isDirectory()) {
         await walk(abs);
       } else if (entry.isFile()) {
+        const relative = path.posix.normalize(path.relative(payloadRoot, abs).replace(/\\/g, "/"));
         files.push({
           absolutePath: abs,
-          relativePath: path.relative(payloadRoot, abs),
+          relativePath: relative,
         });
       }
     }
