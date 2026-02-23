@@ -69,6 +69,14 @@ test("createThread 会把 sandbox/approvalPolicy 标准化为 kebab-case", async
   });
   assert.ok(captured);
   assert.equal(captured.sandbox, "workspace-write");
+
+  // 非候选目录也允许创建（不做 projectPath 白名单拦截）。
+  captured = null;
+  await service.createThread({
+    projectPath: "/Users/Apple",
+  });
+  assert.ok(captured);
+  assert.equal(captured.cwd, "/Users/Apple");
 });
 
 test("startTurn 支持覆盖 approvalPolicy/sandbox，并标准化输入", async () => {

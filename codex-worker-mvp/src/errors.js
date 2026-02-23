@@ -43,7 +43,6 @@ export class HttpError extends Error {
    *   - INVALID_APPROVAL_ID：审批 ID 无效
    *   - THREAD_HAS_ACTIVE_JOB：线程已有进行中的任务
    *   - PROJECT_NOT_FOUND：项目不存在
-   *   - PROJECT_NOT_ALLOWED：项目不在白名单内
    *   - JOB_NOT_FOUND：任务不存在
    *   - APPROVAL_NOT_FOUND：审批不存在
    *   - CURSOR_EXPIRED：游标已过期

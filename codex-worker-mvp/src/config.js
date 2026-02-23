@@ -248,8 +248,8 @@ function loadJsonConfigFile(configPath, cwd) {
  * | PORT | HTTP 服务端口 | 8787 |
  * | WORKER_CONFIG | JSON 配置文件路径 | 无 |
  * | WORKER_TOKEN | Bearer 鉴权令牌（可选） | 无 |
- * | WORKER_PROJECT_PATHS | 项目路径白名单（逗号分隔） | 当前目录 |
- * | WORKER_DEFAULT_PROJECT | 默认项目路径 | 白名单第一个 |
+ * | WORKER_PROJECT_PATHS | 项目路径候选列表（逗号分隔） | 当前目录 |
+ * | WORKER_DEFAULT_PROJECT | 默认项目路径 | 候选列表第一个 |
  * | CODEX_COMMAND | codex 可执行文件 | codex |
  * | CODEX_APP_SERVER_ARGS | app-server 启动参数 | app-server |
  * | WORKER_EVENT_RETENTION | 单任务保留事件数 | 2000 |
@@ -263,7 +263,7 @@ function loadJsonConfigFile(configPath, cwd) {
  * @returns {Object} 配置对象
  * @returns {number} returns.port - HTTP 端口
  * @returns {string|null} returns.authToken - 鉴权令牌
- * @returns {string[]} returns.projectPaths - 项目路径白名单
+ * @returns {string[]} returns.projectPaths - 项目路径候选列表
  * @returns {string} returns.defaultProjectPath - 默认项目路径
  * @returns {number} returns.eventRetention - 事件保留条数
  * @returns {string} returns.dbPath - 数据库路径
@@ -297,7 +297,7 @@ export function loadConfig(env = process.env, options = {}) {
   const fileApns = asPlainObject(fileConfig.apns);
   const fileTailscaleServe = asPlainObject(fileConfig.tailscaleServe);
 
-  // 解析项目路径白名单
+  // 解析项目路径候选列表
   const projectPaths =
     asNonEmptyString(env.WORKER_PROJECT_PATHS) !== undefined
       ? parseCsv(env.WORKER_PROJECT_PATHS)

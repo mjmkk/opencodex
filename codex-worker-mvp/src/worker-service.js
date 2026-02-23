@@ -120,7 +120,7 @@ export class WorkerService {
    * @param {Object} options - 配置选项
    * @param {JsonRpcClient} options.rpc - JSON-RPC 客户端
    * @param {SqliteStore} [options.store] - 本地缓存存储（可选，不作为真相源）
-   * @param {string[]} [options.projectPaths] - 项目路径白名单
+   * @param {string[]} [options.projectPaths] - 项目路径候选列表（用于 /v1/projects 展示）
    * @param {string} [options.defaultProjectPath] - 默认项目路径
    * @param {number} [options.eventRetention=2000] - 单任务保留事件数
    * @param {number} [options.threadEventsCacheTtlMs=5000] - 线程历史快照缓存 TTL（毫秒）
@@ -232,7 +232,7 @@ export class WorkerService {
   /**
    * 列出可用项目
    *
-   * 返回 Worker 配置的项目路径白名单。
+   * 返回 Worker 配置的项目路径候选列表。
    * 每个项目包含：projectId、projectPath、displayName。
    *
    * @returns {Object[]} 项目列表
@@ -1470,7 +1470,7 @@ export class WorkerService {
    * @private
    * @param {Object} payload - 请求参数
    * @returns {string} 项目路径
-   * @throws {HttpError} 如果参数无效或项目不在白名单
+   * @throws {HttpError} 如果参数无效
    */
   #resolveProjectPath(payload) {
     const hasProjectId = isNonEmptyString(payload.projectId);
@@ -1489,9 +1489,6 @@ export class WorkerService {
     }
 
     if (hasProjectPath) {
-      if (!this.projectPaths.includes(payload.projectPath)) {
-        throw new HttpError(400, "PROJECT_NOT_ALLOWED", "projectPath 不在白名单内");
-      }
       return payload.projectPath;
     }
 

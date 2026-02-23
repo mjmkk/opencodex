@@ -144,7 +144,7 @@ https://mac-mini.tail3c834b.ts.net (tailnet only)
 
 - `port`：HTTP 端口（默认 `8787`）
 - `authToken`：可选，Bearer 鉴权令牌
-- `projectPaths`：可选，项目白名单数组
+- `projectPaths`：可选，项目候选目录数组（用于 `/v1/projects` 展示）
 - `defaultProjectPath`：可选，默认项目路径
 - `eventRetention`：可选，单任务事件保留条数（最小 `100`）
 - `dbPath`：可选，SQLite 路径
@@ -163,7 +163,7 @@ https://mac-mini.tail3c834b.ts.net (tailnet only)
 - `PORT`：HTTP 端口，默认 `8787`
 - `WORKER_CONFIG`：可选，JSON 配置文件路径（也可用 `--config`）
 - `WORKER_TOKEN`：可选，开启 Bearer 鉴权（下面有解释）
-- `WORKER_PROJECT_PATHS`：可选，项目白名单，逗号分隔
+- `WORKER_PROJECT_PATHS`：可选，项目候选目录，逗号分隔（用于 `/v1/projects` 展示）
 - `WORKER_DEFAULT_PROJECT`：可选，默认项目路径
 - `CODEX_COMMAND`：可选，Codex 可执行文件，默认 `codex`
 - `CODEX_APP_SERVER_ARGS`：可选，app-server 启动参数，逗号分隔；默认 `app-server`
