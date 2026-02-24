@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { WebSocket } from "ws";
 
 import { createHttpServer } from "../src/http-server.js";
 import { WorkerService } from "../src/worker-service.js";
@@ -345,4 +346,222 @@ test("HTTP 线程导出/导入接口", async (t) => {
   assert.equal(importPayload.import.targetThreadId, "thr_target");
   assert.equal(importPayload.thread.threadId, "thr_target");
   assert.equal(calls.import.packagePath, "/tmp/codex-thread-exports/texp_123.json");
+});
+
+test("HTTP 终端接口", async (t) => {
+  const calls = {
+    getThreadTerminal: null,
+    openThreadTerminal: null,
+    resizeTerminal: null,
+    closeTerminal: null,
+  };
+
+  const service = {
+    getThreadTerminal: (threadId) => {
+      calls.getThreadTerminal = threadId;
+      return {
+        session: null,
+      };
+    },
+    openThreadTerminal: async (threadId, payload) => {
+      calls.openThreadTerminal = { threadId, payload };
+      return {
+        reused: false,
+        session: {
+          sessionId: "term_123",
+          threadId,
+          cwd: "/repo",
+          status: "running",
+          nextSeq: 0,
+        },
+      };
+    },
+    resizeTerminal: (sessionId, payload) => {
+      calls.resizeTerminal = { sessionId, payload };
+      return {
+        session: {
+          sessionId,
+          cols: payload.cols,
+          rows: payload.rows,
+        },
+      };
+    },
+    closeTerminal: (sessionId, payload) => {
+      calls.closeTerminal = { sessionId, payload };
+      return {
+        session: {
+          sessionId,
+          status: "exited",
+        },
+      };
+    },
+  };
+
+  const server = createHttpServer({
+    service,
+    authToken: "token123",
+    logger: {
+      error: () => {},
+    },
+  });
+
+  const address = await server.listen(0, "127.0.0.1");
+  const base = `http://127.0.0.1:${address.port}`;
+  t.after(async () => {
+    await server.close();
+  });
+
+  const headers = {
+    Authorization: "Bearer token123",
+    "Content-Type": "application/json",
+  };
+
+  const statusRes = await fetch(`${base}/v1/threads/thr_terminal/terminal`, {
+    headers,
+  });
+  assert.equal(statusRes.status, 200);
+  const statusPayload = await statusRes.json();
+  assert.equal(statusPayload.session, null);
+  assert.equal(calls.getThreadTerminal, "thr_terminal");
+
+  const openRes = await fetch(`${base}/v1/threads/thr_terminal/terminal/open`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ cols: 120, rows: 40 }),
+  });
+  assert.equal(openRes.status, 200);
+  const openPayload = await openRes.json();
+  assert.equal(openPayload.session.sessionId, "term_123");
+  assert.equal(openPayload.wsPath, "/v1/terminals/term_123/stream");
+  assert.equal(calls.openThreadTerminal.threadId, "thr_terminal");
+  assert.equal(calls.openThreadTerminal.payload.cols, 120);
+
+  const resizeRes = await fetch(`${base}/v1/terminals/term_123/resize`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ cols: 80, rows: 24 }),
+  });
+  assert.equal(resizeRes.status, 200);
+  const resizePayload = await resizeRes.json();
+  assert.equal(resizePayload.session.cols, 80);
+  assert.equal(calls.resizeTerminal.sessionId, "term_123");
+
+  const closeRes = await fetch(`${base}/v1/terminals/term_123/close`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ reason: "manual_close" }),
+  });
+  assert.equal(closeRes.status, 200);
+  const closePayload = await closeRes.json();
+  assert.equal(closePayload.session.status, "exited");
+  assert.equal(calls.closeTerminal.sessionId, "term_123");
+});
+
+test("WebSocket 终端流：ready/ping/input/resize/detach", async (t) => {
+  const calls = {
+    attach: null,
+    input: [],
+    resize: [],
+    detach: [],
+  };
+  let pushEvent = null;
+
+  const service = {
+    attachTerminalClient: (sessionId, clientId, params) => {
+      calls.attach = { sessionId, clientId, fromSeq: params.fromSeq };
+      pushEvent = params.onEvent;
+      return {
+        session: {
+          sessionId,
+          threadId: "thr_ws",
+          cwd: "/repo",
+          nextSeq: 3,
+        },
+        replay: [{ type: "output", seq: 2, data: "history\n" }],
+      };
+    },
+    writeTerminalInput: (sessionId, data) => {
+      calls.input.push({ sessionId, data });
+    },
+    resizeTerminal: (sessionId, payload) => {
+      calls.resize.push({ sessionId, payload });
+      return {
+        session: {
+          sessionId,
+          cols: payload.cols,
+          rows: payload.rows,
+        },
+      };
+    },
+    detachTerminalClient: (sessionId, clientId) => {
+      calls.detach.push({ sessionId, clientId });
+    },
+  };
+
+  const server = createHttpServer({
+    service,
+    authToken: "token123",
+    logger: {
+      error: () => {},
+    },
+  });
+  const address = await server.listen(0, "127.0.0.1");
+  const wsUrl = `ws://127.0.0.1:${address.port}/v1/terminals/term_ws/stream?fromSeq=1`;
+
+  t.after(async () => {
+    await server.close();
+  });
+
+  const messages = [];
+  const ws = new WebSocket(wsUrl, {
+    headers: {
+      Authorization: "Bearer token123",
+    },
+  });
+  t.after(() => {
+    ws.terminate();
+  });
+
+  await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("websocket test timeout")), 2000);
+    ws.on("message", (raw) => {
+      const message = JSON.parse(raw.toString("utf8"));
+      messages.push(message);
+
+      if (message.type === "ready") {
+        ws.send(JSON.stringify({ type: "ping", clientTs: "ts_1" }));
+        ws.send(JSON.stringify({ type: "input", data: "echo hi\n" }));
+        ws.send(JSON.stringify({ type: "resize", cols: 120, rows: 40 }));
+        pushEvent?.({ type: "output", seq: 3, data: "live\n" });
+        ws.send(JSON.stringify({ type: "detach" }));
+      }
+      if (message.type === "pong") {
+        // no-op
+      }
+      if (message.type === "output" && message.seq === 3) {
+        // live event already received, wait for close
+      }
+    });
+    ws.on("close", () => {
+      clearTimeout(timer);
+      resolve();
+    });
+    ws.on("error", (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+  });
+
+  assert.equal(calls.attach.sessionId, "term_ws");
+  assert.equal(calls.attach.fromSeq, 1);
+  assert.equal(calls.input.length, 1);
+  assert.equal(calls.input[0].data, "echo hi\n");
+  assert.equal(calls.resize.length, 1);
+  assert.equal(calls.resize[0].payload.cols, 120);
+  assert.equal(calls.detach.length >= 1, true);
+
+  assert.ok(messages.some((message) => message.type === "ready"));
+  assert.ok(messages.some((message) => message.type === "output" && message.seq === 2));
+  assert.ok(messages.some((message) => message.type === "output" && message.seq === 3));
+  assert.ok(messages.some((message) => message.type === "pong" && message.clientTs === "ts_1"));
 });

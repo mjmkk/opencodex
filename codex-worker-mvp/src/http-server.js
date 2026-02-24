@@ -11,6 +11,7 @@
  */
 
 import { createServer } from "node:http";
+import { WebSocketServer } from "ws";
 import { HttpError } from "./errors.js";
 
 // ==================== 常量定义 ====================
@@ -179,6 +180,24 @@ function parseLimit(searchParams) {
 }
 
 /**
+ * 解析 fromSeq 参数（WebSocket 续传游标）
+ *
+ * @param {URLSearchParams} searchParams
+ * @returns {number|null}
+ */
+function parseFromSeq(searchParams) {
+  const fromSeqRaw = searchParams.get("fromSeq");
+  if (fromSeqRaw === null) {
+    return null;
+  }
+  const parsed = Number.parseInt(fromSeqRaw, 10);
+  if (!Number.isInteger(parsed) || parsed < -1) {
+    throw new HttpError(400, "TERMINAL_INVALID_INPUT", "fromSeq 必须是 >= -1 的整数");
+  }
+  return parsed;
+}
+
+/**
  * 解析 archived 参数
  *
  * @param {URLSearchParams} searchParams - URL 查询参数
@@ -198,6 +217,40 @@ function parseArchived(searchParams) {
     return false;
   }
   throw new HttpError(400, "INVALID_ARCHIVED", "archived 必须是 true/false");
+}
+
+/**
+ * WebSocket 升级失败时返回 HTTP 错误
+ *
+ * @param {import('node:net').Socket} socket
+ * @param {Error} error
+ */
+function rejectUpgrade(socket, error) {
+  const status = error instanceof HttpError ? error.status : 500;
+  const payload =
+    error instanceof HttpError
+      ? {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        }
+      : {
+          error: {
+            code: "INTERNAL_ERROR",
+            message: error instanceof Error ? error.message : "unknown error",
+          },
+        };
+  const body = JSON.stringify(payload);
+  socket.write(
+    `HTTP/1.1 ${status} Upgrade Rejected\r\n` +
+      "Content-Type: application/json; charset=utf-8\r\n" +
+      `Content-Length: ${Buffer.byteLength(body)}\r\n` +
+      "Connection: close\r\n" +
+      "\r\n" +
+      body
+  );
+  socket.destroy();
 }
 
 // ==================== SSE 辅助函数 ====================
@@ -264,6 +317,11 @@ function match(pathname, pattern) {
  * | POST | /v1/threads/{id}/unarchive | 恢复归档线程 | 是 |
  * | POST | /v1/threads/{id}/export | 导出指定线程 | 是 |
  * | POST | /v1/threads/import | 导入线程为新线程 | 是 |
+ * | GET | /v1/threads/{id}/terminal | 查询线程终端状态 | 是 |
+ * | POST | /v1/threads/{id}/terminal/open | 打开线程终端 | 是 |
+ * | POST | /v1/terminals/{id}/resize | 调整终端尺寸（PTY） | 是 |
+ * | POST | /v1/terminals/{id}/close | 关闭终端会话 | 是 |
+ * | WS | /v1/terminals/{id}/stream | 终端输入输出流 | 是 |
  * | GET | /v1/threads/{id}/events | 获取线程历史事件 | 是 |
  * | POST | /v1/threads/{id}/turns | 发送消息 | 是 |
  * | GET | /v1/jobs/{id} | 获取任务 | 是 |
@@ -282,6 +340,29 @@ export function createHttpServer(options) {
   const service = options.service;
   const logger = options.logger ?? console;
   const authToken = options.authToken ?? null;
+  const wss = new WebSocketServer({ noServer: true });
+
+  function sendWsJson(ws, payload) {
+    if (ws.readyState === ws.OPEN) {
+      ws.send(JSON.stringify(payload));
+    }
+  }
+
+  function sendWsError(ws, error) {
+    const payload =
+      error instanceof HttpError
+        ? {
+            type: "error",
+            code: error.code,
+            message: error.message,
+          }
+        : {
+            type: "error",
+            code: "INTERNAL_ERROR",
+            message: error instanceof Error ? error.message : "unknown error",
+          };
+    sendWsJson(ws, payload);
+  }
 
   const server = createServer(async (req, res) => {
     const method = req.method ?? "GET";
@@ -385,6 +466,49 @@ export function createHttpServer(options) {
         const body = await readJsonBody(req);
         const result = await service.importThreadAsNew(body);
         sendJson(res, 201, { import: result, thread: result.thread });
+        return;
+      }
+
+      // GET /v1/threads/{threadId}/terminal - 查询线程终端状态
+      const threadTerminalMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/terminal$/);
+      if (method === "GET" && threadTerminalMatch) {
+        const threadId = decodeURIComponent(threadTerminalMatch[0]);
+        const result = service.getThreadTerminal(threadId);
+        sendJson(res, 200, result);
+        return;
+      }
+
+      // POST /v1/threads/{threadId}/terminal/open - 打开线程终端
+      const threadTerminalOpenMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/terminal\/open$/);
+      if (method === "POST" && threadTerminalOpenMatch) {
+        const threadId = decodeURIComponent(threadTerminalOpenMatch[0]);
+        const body = await readJsonBody(req);
+        const result = await service.openThreadTerminal(threadId, body);
+        sendJson(res, 200, {
+          session: result.session,
+          reused: result.reused,
+          wsPath: `/v1/terminals/${encodeURIComponent(result.session.sessionId)}/stream`,
+        });
+        return;
+      }
+
+      // POST /v1/terminals/{sessionId}/resize - 调整终端尺寸（PTY）
+      const terminalResizeMatch = match(pathname, /^\/v1\/terminals\/([^/]+)\/resize$/);
+      if (method === "POST" && terminalResizeMatch) {
+        const sessionId = decodeURIComponent(terminalResizeMatch[0]);
+        const body = await readJsonBody(req);
+        const result = service.resizeTerminal(sessionId, body);
+        sendJson(res, 200, result);
+        return;
+      }
+
+      // POST /v1/terminals/{sessionId}/close - 关闭终端会话
+      const terminalCloseMatch = match(pathname, /^\/v1\/terminals\/([^/]+)\/close$/);
+      if (method === "POST" && terminalCloseMatch) {
+        const sessionId = decodeURIComponent(terminalCloseMatch[0]);
+        const body = await readJsonBody(req);
+        const result = service.closeTerminal(sessionId, body);
+        sendJson(res, 200, result);
         return;
       }
 
@@ -536,6 +660,117 @@ export function createHttpServer(options) {
     }
   });
 
+  server.on("upgrade", (req, socket, head) => {
+    try {
+      const requestUrl = new URL(req.url ?? "/", `http://${req.headers.host ?? "127.0.0.1"}`);
+      const pathname = requestUrl.pathname;
+      const terminalStreamMatch = match(pathname, /^\/v1\/terminals\/([^/]+)\/stream$/);
+      if (!terminalStreamMatch) {
+        rejectUpgrade(socket, new HttpError(404, "NOT_FOUND", "接口不存在"));
+        return;
+      }
+
+      requireAuth(req, authToken);
+      const fromSeq = parseFromSeq(requestUrl.searchParams);
+      const sessionId = decodeURIComponent(terminalStreamMatch[0]);
+
+      wss.handleUpgrade(req, socket, head, (ws) => {
+        ws.__terminalContext = {
+          sessionId,
+          fromSeq,
+          clientId: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        };
+        wss.emit("connection", ws, req);
+      });
+    } catch (error) {
+      rejectUpgrade(socket, /** @type {Error} */ (error));
+    }
+  });
+
+  wss.on("connection", (ws) => {
+    const context = ws.__terminalContext;
+    const sessionId = context?.sessionId;
+    const fromSeq = context?.fromSeq;
+    const clientId = context?.clientId;
+    if (!sessionId || !clientId) {
+      sendWsError(ws, new HttpError(400, "TERMINAL_INVALID_INPUT", "缺少终端上下文"));
+      ws.close(1008, "invalid context");
+      return;
+    }
+
+    let attached = false;
+    try {
+      const attachedResult = service.attachTerminalClient(sessionId, clientId, {
+        fromSeq,
+        onEvent: (event) => {
+          sendWsJson(ws, event);
+        },
+      });
+      attached = true;
+      const session = attachedResult.session;
+      sendWsJson(ws, {
+        type: "ready",
+        sessionId: session.sessionId,
+        threadId: session.threadId,
+        cwd: session.cwd,
+        seq: session.nextSeq > 0 ? session.nextSeq - 1 : -1,
+      });
+      for (const replayEvent of attachedResult.replay) {
+        sendWsJson(ws, replayEvent);
+      }
+    } catch (error) {
+      sendWsError(ws, /** @type {Error} */ (error));
+      ws.close(1011, "attach failed");
+      return;
+    }
+
+    ws.on("message", (raw) => {
+      try {
+        const text = typeof raw === "string" ? raw : raw.toString("utf8");
+        const message = JSON.parse(text);
+        const type = typeof message?.type === "string" ? message.type : "";
+        switch (type) {
+          case "input":
+            service.writeTerminalInput(sessionId, message.data);
+            break;
+          case "resize":
+            service.resizeTerminal(sessionId, {
+              cols: message.cols,
+              rows: message.rows,
+            });
+            break;
+          case "ping":
+            sendWsJson(ws, { type: "pong", clientTs: message.clientTs ?? null });
+            break;
+          case "detach":
+            ws.close(1000, "client detached");
+            break;
+          default:
+            throw new HttpError(400, "TERMINAL_INVALID_INPUT", `未知消息类型: ${type || "unknown"}`);
+        }
+      } catch (error) {
+        sendWsError(ws, /** @type {Error} */ (error));
+      }
+    });
+
+    ws.on("close", () => {
+      if (attached) {
+        service.detachTerminalClient(sessionId, clientId);
+      }
+    });
+
+    ws.on("error", (error) => {
+      logger.error("terminal websocket error", {
+        sessionId,
+        clientId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      if (attached) {
+        service.detachTerminalClient(sessionId, clientId);
+      }
+    });
+  });
+
   // 返回服务器控制接口
   return {
     /**
@@ -560,12 +795,14 @@ export function createHttpServer(options) {
      */
     close() {
       return new Promise((resolve, reject) => {
-        server.close((error) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-          resolve();
+        wss.close(() => {
+          server.close((error) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+            resolve();
+          });
         });
       });
     },

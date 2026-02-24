@@ -132,6 +132,9 @@ export class WorkerService {
    * @param {number} [options.threadEventsCacheTtlMs=5000] - 线程历史快照缓存 TTL（毫秒）
    * @param {string} [options.codexHome] - Codex 数据目录（默认 ~/.codex）
    * @param {string} [options.threadExportDir] - 线程导出包目录（默认系统临时目录）
+   * @param {Object} [options.terminal] - 终端能力配置
+   * @param {boolean} [options.terminal.enabled=false] - 是否启用终端能力
+   * @param {Object} [options.terminalManager] - 终端会话管理器
    * @param {Object} [options.pushNotifier] - 推送通知器（可选）
    * @param {Object} [options.logger] - 日志器
    */
@@ -149,6 +152,10 @@ export class WorkerService {
     this.threadExportDir = isNonEmptyString(options.threadExportDir)
       ? options.threadExportDir.trim()
       : defaultThreadExportDir();
+    this.terminal = {
+      enabled: Boolean(options.terminal?.enabled),
+    };
+    this.terminalManager = options.terminalManager ?? null;
 
     // 处理项目路径配置
     const providedProjects = Array.isArray(options.projectPaths)
@@ -233,6 +240,9 @@ export class WorkerService {
    * @returns {Promise<void>}
    */
   async shutdown() {
+    if (this.terminalManager?.shutdown) {
+      this.terminalManager.shutdown();
+    }
     if (typeof this.rpc.stop === "function") {
       await this.rpc.stop();
     }
@@ -570,6 +580,170 @@ export class WorkerService {
       ...result,
       thread,
     };
+  }
+
+  // ==================== 终端管理 ====================
+
+  /**
+   * 打开线程终端（按 thread 维度复用）
+   *
+   * @param {string} threadId
+   * @param {Object} [payload={}]
+   * @param {number} [payload.cols]
+   * @param {number} [payload.rows]
+   * @returns {Promise<{session: Object, reused: boolean}>}
+   */
+  async openThreadTerminal(threadId, payload = {}) {
+    this.#validateThreadId(threadId);
+    this.#ensureTerminalAvailable();
+
+    const thread = await this.#resolveThreadForTerminal(threadId);
+    const cwd = isNonEmptyString(thread.cwd) ? thread.cwd : this.defaultProjectPath;
+    const cols = this.#normalizeTerminalDimension(payload.cols, 80, 10, 500);
+    const rows = this.#normalizeTerminalDimension(payload.rows, 24, 5, 300);
+
+    try {
+      return this.terminalManager.openSession({
+        threadId,
+        cwd,
+        cols,
+        rows,
+      });
+    } catch (error) {
+      throw this.#mapTerminalError(error);
+    }
+  }
+
+  /**
+   * 查询线程终端状态
+   *
+   * @param {string} threadId
+   * @returns {{session: Object|null}}
+   */
+  getThreadTerminal(threadId) {
+    this.#validateThreadId(threadId);
+    this.#ensureTerminalAvailable();
+    return {
+      session: this.terminalManager.getSessionByThreadId(threadId),
+    };
+  }
+
+  /**
+   * 调整终端窗口大小（PTY 逻辑尺寸）
+   *
+   * @param {string} sessionId
+   * @param {Object} payload
+   * @param {number} payload.cols
+   * @param {number} payload.rows
+   * @returns {{session: Object}}
+   */
+  resizeTerminal(sessionId, payload = {}) {
+    this.#ensureTerminalAvailable();
+    const normalizedSessionId = isNonEmptyString(sessionId) ? sessionId.trim() : "";
+    if (!normalizedSessionId) {
+      throw new HttpError(400, "TERMINAL_INVALID_INPUT", "sessionId 不能为空");
+    }
+    const cols = this.#normalizeTerminalDimension(payload.cols, Number.NaN, 10, 500);
+    const rows = this.#normalizeTerminalDimension(payload.rows, Number.NaN, 5, 300);
+    if (!Number.isInteger(cols) || !Number.isInteger(rows)) {
+      throw new HttpError(400, "TERMINAL_INVALID_INPUT", "cols/rows 必须是整数");
+    }
+
+    try {
+      const session = this.terminalManager.resizeSession(normalizedSessionId, cols, rows);
+      return { session };
+    } catch (error) {
+      throw this.#mapTerminalError(error);
+    }
+  }
+
+  /**
+   * 关闭终端会话
+   *
+   * @param {string} sessionId
+   * @param {Object} [payload={}]
+   * @param {string} [payload.reason]
+   * @returns {{session: Object}}
+   */
+  closeTerminal(sessionId, payload = {}) {
+    this.#ensureTerminalAvailable();
+    const normalizedSessionId = isNonEmptyString(sessionId) ? sessionId.trim() : "";
+    if (!normalizedSessionId) {
+      throw new HttpError(400, "TERMINAL_INVALID_INPUT", "sessionId 不能为空");
+    }
+    const reason = isNonEmptyString(payload.reason) ? payload.reason.trim() : "manual_close";
+    try {
+      const session = this.terminalManager.closeSession(normalizedSessionId, { reason });
+      return { session };
+    } catch (error) {
+      throw this.#mapTerminalError(error);
+    }
+  }
+
+  /**
+   * WebSocket 客户端附着终端会话
+   *
+   * @param {string} sessionId
+   * @param {string} clientId
+   * @param {Object} params
+   * @param {number|null|undefined} params.fromSeq
+   * @param {(event: Object) => void} params.onEvent
+   * @returns {{session: Object, replay: Object[]}}
+   */
+  attachTerminalClient(sessionId, clientId, params) {
+    this.#ensureTerminalAvailable();
+    const normalizedSessionId = isNonEmptyString(sessionId) ? sessionId.trim() : "";
+    const normalizedClientId = isNonEmptyString(clientId) ? clientId.trim() : "";
+    if (!normalizedSessionId || !normalizedClientId) {
+      throw new HttpError(400, "TERMINAL_INVALID_INPUT", "sessionId/clientId 不能为空");
+    }
+    try {
+      return this.terminalManager.attachClient({
+        sessionId: normalizedSessionId,
+        clientId: normalizedClientId,
+        onEvent: params?.onEvent,
+        fromSeq: params?.fromSeq,
+      });
+    } catch (error) {
+      throw this.#mapTerminalError(error);
+    }
+  }
+
+  /**
+   * WebSocket 客户端断开终端会话附着
+   *
+   * @param {string} sessionId
+   * @param {string} clientId
+   */
+  detachTerminalClient(sessionId, clientId) {
+    if (!this.terminal.enabled || !this.terminalManager) {
+      return;
+    }
+    const normalizedSessionId = isNonEmptyString(sessionId) ? sessionId.trim() : "";
+    const normalizedClientId = isNonEmptyString(clientId) ? clientId.trim() : "";
+    if (!normalizedSessionId || !normalizedClientId) {
+      return;
+    }
+    this.terminalManager.detachClient(normalizedSessionId, normalizedClientId);
+  }
+
+  /**
+   * 终端输入写入
+   *
+   * @param {string} sessionId
+   * @param {string} data
+   */
+  writeTerminalInput(sessionId, data) {
+    this.#ensureTerminalAvailable();
+    const normalizedSessionId = isNonEmptyString(sessionId) ? sessionId.trim() : "";
+    if (!normalizedSessionId) {
+      throw new HttpError(400, "TERMINAL_INVALID_INPUT", "sessionId 不能为空");
+    }
+    try {
+      this.terminalManager.writeInput(normalizedSessionId, data);
+    } catch (error) {
+      throw this.#mapTerminalError(error);
+    }
   }
 
   // ==================== 任务管理 ====================
@@ -1521,6 +1695,113 @@ export class WorkerService {
         const message = error instanceof Error ? error.message : String(error);
         this.logger.warn?.(`[push] 推送失败: ${message}`);
       });
+  }
+
+  #ensureTerminalAvailable() {
+    if (!this.terminal.enabled) {
+      throw new HttpError(403, "TERMINAL_DISABLED", "终端功能未启用");
+    }
+    if (!this.terminalManager) {
+      throw new HttpError(503, "TERMINAL_UNAVAILABLE", "终端服务不可用");
+    }
+  }
+
+  /**
+   * @param {unknown} value
+   * @param {number} fallback
+   * @param {number} min
+   * @param {number} max
+   * @returns {number}
+   */
+  #normalizeTerminalDimension(value, fallback, min, max) {
+    if (value === undefined || value === null || value === "") {
+      return fallback;
+    }
+    const parsed =
+      typeof value === "number" && Number.isFinite(value)
+        ? Math.trunc(value)
+        : Number.parseInt(String(value), 10);
+    if (!Number.isInteger(parsed)) {
+      return fallback;
+    }
+    if (parsed < min) {
+      return min;
+    }
+    if (parsed > max) {
+      return max;
+    }
+    return parsed;
+  }
+
+  /**
+   * @param {string} threadId
+   * @returns {Promise<Object>}
+   */
+  async #resolveThreadForTerminal(threadId) {
+    const cached = this.threads.get(threadId);
+    if (cached) {
+      return cached;
+    }
+
+    const activeResult = await this.rpc.request("thread/list", {
+      cursor: null,
+      limit: 200,
+      sortKey: "updated_at",
+      archived: false,
+    });
+    const activeThreads = Array.isArray(activeResult?.data) ? activeResult.data : [];
+    for (const thread of activeThreads) {
+      this.#upsertThread(thread);
+    }
+    const activeFound = activeThreads.find((thread) => thread?.id === threadId);
+    if (activeFound) {
+      return activeFound;
+    }
+
+    const archivedResult = await this.rpc.request("thread/list", {
+      cursor: null,
+      limit: 200,
+      sortKey: "updated_at",
+      archived: true,
+    });
+    const archivedThreads = Array.isArray(archivedResult?.data) ? archivedResult.data : [];
+    if (archivedThreads.some((thread) => thread?.id === threadId)) {
+      throw new HttpError(409, "THREAD_ARCHIVED", `线程 ${threadId} 已归档，无法打开终端`);
+    }
+
+    throw new HttpError(404, "THREAD_NOT_FOUND", `线程不存在: ${threadId}`);
+  }
+
+  /**
+   * @param {unknown} error
+   * @returns {HttpError}
+   */
+  #mapTerminalError(error) {
+    if (error instanceof HttpError) {
+      return error;
+    }
+
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? String(error.code)
+        : "TERMINAL_ERROR";
+    const message = error instanceof Error ? error.message : String(error);
+    switch (code) {
+      case "TERMINAL_SESSION_NOT_FOUND":
+        return new HttpError(404, "TERMINAL_SESSION_NOT_FOUND", message);
+      case "TERMINAL_CURSOR_EXPIRED":
+        return new HttpError(409, "TERMINAL_CURSOR_EXPIRED", message);
+      case "TERMINAL_LIMIT_REACHED":
+        return new HttpError(429, "TERMINAL_LIMIT_REACHED", message);
+      case "TERMINAL_INVALID_INPUT":
+        return new HttpError(400, "TERMINAL_INVALID_INPUT", message);
+      case "TERMINAL_SESSION_EXITED":
+        return new HttpError(409, "TERMINAL_SESSION_EXITED", message);
+      case "TERMINAL_OPEN_FAILED":
+        return new HttpError(502, "TERMINAL_OPEN_FAILED", message);
+      default:
+        return new HttpError(500, "TERMINAL_ERROR", message);
+    }
   }
 
   /**

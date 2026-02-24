@@ -257,6 +257,13 @@ function loadJsonConfigFile(configPath, cwd) {
  * | WORKER_DB_PATH | SQLite 数据库路径 | ./data/worker.db |
  * | WORKER_CODEX_HOME | Codex 数据目录（线程导入导出） | ~/.codex |
  * | WORKER_THREAD_EXPORT_DIR | 线程导出包目录 | 系统临时目录 |
+ * | WORKER_TERMINAL_ENABLED | 是否启用终端功能 | false |
+ * | WORKER_TERMINAL_SHELL | 终端 Shell 路径 | /bin/zsh |
+ * | WORKER_TERMINAL_IDLE_TTL_MS | 终端空闲回收毫秒 | 1200000 |
+ * | WORKER_TERMINAL_MAX_SESSIONS | 终端会话上限 | 64 |
+ * | WORKER_TERMINAL_MAX_INPUT_BYTES | 单次输入最大字节 | 32768 |
+ * | WORKER_TERMINAL_MAX_SCROLLBACK_BYTES | 输出缓存上限字节 | 2097152 |
+ * | WORKER_TERMINAL_HEARTBEAT_MS | 终端心跳间隔毫秒 | 15000 |
  * | WORKER_CWD | 子进程工作目录 | 当前目录 |
  *
  * @param {Object} [env=process.env] - 环境变量对象（便于测试）
@@ -272,6 +279,7 @@ function loadJsonConfigFile(configPath, cwd) {
  * @returns {string} returns.dbPath - 数据库路径
  * @returns {string} returns.codexHome - Codex 数据目录
  * @returns {string} returns.threadExportDir - 线程导出目录
+ * @returns {Object} returns.terminal - 终端配置
  * @returns {Object} returns.rpc - JSON-RPC 配置
  * @returns {string|null} returns.configFilePath - 实际生效的配置文件路径
  * @throws {Error} 如果配置无效（如端口不是正整数）
@@ -301,6 +309,7 @@ export function loadConfig(env = process.env, options = {}) {
   const fileRpc = asPlainObject(fileConfig.rpc);
   const fileApns = asPlainObject(fileConfig.apns);
   const fileTailscaleServe = asPlainObject(fileConfig.tailscaleServe);
+  const fileTerminal = asPlainObject(fileConfig.terminal);
 
   // 解析项目路径候选列表
   const projectPaths =
@@ -349,6 +358,40 @@ export function loadConfig(env = process.env, options = {}) {
     asNonEmptyString(env.WORKER_THREAD_EXPORT_DIR) ||
     threadExportDirFromFile ||
     path.join(os.tmpdir(), "codex-thread-exports");
+
+  const terminalEnabled =
+    parseBoolean(env.WORKER_TERMINAL_ENABLED) ??
+    parseBoolean(fileTerminal.enabled) ??
+    false;
+  const terminalShell =
+    asNonEmptyString(env.WORKER_TERMINAL_SHELL) ||
+    asNonEmptyString(fileTerminal.shell) ||
+    "/bin/zsh";
+  const terminalIdleTtlMs = parseInteger(
+    "WORKER_TERMINAL_IDLE_TTL_MS",
+    env.WORKER_TERMINAL_IDLE_TTL_MS ?? fileTerminal.idleTtlMs ?? "1200000",
+    0
+  );
+  const terminalMaxSessions = parseInteger(
+    "WORKER_TERMINAL_MAX_SESSIONS",
+    env.WORKER_TERMINAL_MAX_SESSIONS ?? fileTerminal.maxSessions ?? "64",
+    1
+  );
+  const terminalMaxInputBytes = parseInteger(
+    "WORKER_TERMINAL_MAX_INPUT_BYTES",
+    env.WORKER_TERMINAL_MAX_INPUT_BYTES ?? fileTerminal.maxInputBytes ?? "32768",
+    1
+  );
+  const terminalMaxScrollbackBytes = parseInteger(
+    "WORKER_TERMINAL_MAX_SCROLLBACK_BYTES",
+    env.WORKER_TERMINAL_MAX_SCROLLBACK_BYTES ?? fileTerminal.maxScrollbackBytes ?? "2097152",
+    1024
+  );
+  const terminalHeartbeatMs = parseInteger(
+    "WORKER_TERMINAL_HEARTBEAT_MS",
+    env.WORKER_TERMINAL_HEARTBEAT_MS ?? fileTerminal.heartbeatMs ?? "15000",
+    1000
+  );
 
   // APNs（Apple Push Notification service）配置
   const apnsTeamId = asNonEmptyString(env.APNS_TEAM_ID) || asNonEmptyString(fileApns.teamId) || null;
@@ -409,6 +452,15 @@ export function loadConfig(env = process.env, options = {}) {
     dbPath,
     codexHome,
     threadExportDir,
+    terminal: {
+      enabled: terminalEnabled,
+      shell: terminalShell,
+      idleTtlMs: /** @type {number} */ (terminalIdleTtlMs),
+      maxSessions: /** @type {number} */ (terminalMaxSessions),
+      maxInputBytes: /** @type {number} */ (terminalMaxInputBytes),
+      maxScrollbackBytes: /** @type {number} */ (terminalMaxScrollbackBytes),
+      heartbeatMs: /** @type {number} */ (terminalHeartbeatMs),
+    },
     rpc: {
       command,
       args,

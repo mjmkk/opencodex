@@ -48,6 +48,8 @@ public struct CodexChatView: View {
     let onSettingsTap: (() -> Void)?
     let executionAccessMode: ExecutionAccessMode
     let onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)?
+    let isTerminalPresented: Bool
+    let onTerminalToggle: (() -> Void)?
     private let renderPipeline: MessageRenderPipeline
     private let codeSyntaxHighlighter: CodeSyntaxHighlighter
 
@@ -58,6 +60,8 @@ public struct CodexChatView: View {
         onSettingsTap: (() -> Void)? = nil,
         executionAccessMode: ExecutionAccessMode = .defaultPermissions,
         onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)? = nil,
+        isTerminalPresented: Bool = false,
+        onTerminalToggle: (() -> Void)? = nil,
         renderPipeline: MessageRenderPipeline = .live,
         codeSyntaxHighlighter: CodeSyntaxHighlighter = CodexCodeSyntaxHighlighter()
     ) {
@@ -67,6 +71,8 @@ public struct CodexChatView: View {
         self.onSettingsTap = onSettingsTap
         self.executionAccessMode = executionAccessMode
         self.onExecutionAccessModeChanged = onExecutionAccessModeChanged
+        self.isTerminalPresented = isTerminalPresented
+        self.onTerminalToggle = onTerminalToggle
         self.renderPipeline = renderPipeline
         self.codeSyntaxHighlighter = codeSyntaxHighlighter
     }
@@ -259,6 +265,21 @@ public struct CodexChatView: View {
                 }
                 .layoutPriority(0)
                 .disabled(viewStore.isSending || viewStore.isStreaming)
+
+                Button {
+                    onTerminalToggle?()
+                } label: {
+                    Image(systemName: isTerminalPresented ? "terminal.fill" : "terminal")
+                        .font(.headline)
+                        .foregroundStyle(
+                            viewStore.activeThreadId == nil
+                                ? Color.secondary
+                                : (isTerminalPresented ? Color.green : chatPrimaryTextColor)
+                        )
+                }
+                .buttonStyle(.plain)
+                .disabled(viewStore.activeThreadId == nil)
+                .accessibilityLabel("切换终端面板")
 
                 Button {
                     onSettingsTap?()

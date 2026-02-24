@@ -150,6 +150,13 @@ https://mac-mini.tail3c834b.ts.net (tailnet only)
 - `dbPath`：可选，SQLite 路径
 - `codexHome`：可选，Codex 数据目录（线程导入导出使用，默认 `~/.codex`）
 - `threadExportDir`：可选，线程导出包目录（默认系统临时目录）
+- `terminal.enabled`：可选，是否启用远端终端能力（默认 `false`）
+- `terminal.shell`：可选，终端 Shell 路径（默认 `/bin/zsh`）
+- `terminal.idleTtlMs`：可选，终端空闲回收毫秒；仅在“无客户端 + 无前台命令 + 无后台任务”时回收
+- `terminal.maxSessions`：可选，终端会话上限（默认 `64`）
+- `terminal.maxInputBytes`：可选，单次输入最大字节（默认 `32768`）
+- `terminal.maxScrollbackBytes`：可选，终端输出缓存上限字节（默认 `2097152`）
+- `terminal.heartbeatMs`：可选，终端心跳/巡检间隔毫秒（默认 `15000`）
 - `tailscaleServe.enabled`：可选，是否启用 Tailscale Serve 自动收敛（默认 `false`）
 - `tailscaleServe.service`：可选，Serve service 名称（默认 `svc:opencodex`；显式 `null` 表示节点级 Serve）
 - `tailscaleServe.path`：可选，挂载路径（默认 `/`）
@@ -173,6 +180,13 @@ https://mac-mini.tail3c834b.ts.net (tailnet only)
 - `WORKER_DB_PATH`：可选，SQLite 数据库路径；默认 `./data/worker.db`
 - `WORKER_CODEX_HOME`：可选，Codex 数据目录；默认 `~/.codex`
 - `WORKER_THREAD_EXPORT_DIR`：可选，线程导出包目录；默认系统临时目录
+- `WORKER_TERMINAL_ENABLED`：可选，是否启用终端能力（`true/false`）
+- `WORKER_TERMINAL_SHELL`：可选，终端 Shell 路径；默认 `/bin/zsh`
+- `WORKER_TERMINAL_IDLE_TTL_MS`：可选，终端空闲回收毫秒；默认 `1200000`
+- `WORKER_TERMINAL_MAX_SESSIONS`：可选，终端会话上限；默认 `64`
+- `WORKER_TERMINAL_MAX_INPUT_BYTES`：可选，单次输入最大字节；默认 `32768`
+- `WORKER_TERMINAL_MAX_SCROLLBACK_BYTES`：可选，终端输出缓存上限；默认 `2097152`
+- `WORKER_TERMINAL_HEARTBEAT_MS`：可选，终端心跳/巡检间隔毫秒；默认 `15000`
 - `APNS_ENABLED`：可选，是否启用 APNs 推送（`true/false`）
 - `APNS_TEAM_ID`：可选，Apple Team ID（启用 APNs 时必填）
 - `APNS_KEY_ID`：可选，APNs Key ID（启用 APNs 时必填）
@@ -203,6 +217,11 @@ https://mac-mini.tail3c834b.ts.net (tailnet only)
 - `POST /v1/threads/{tid}/archive`
 - `POST /v1/threads/{tid}/export`
 - `POST /v1/threads/import`
+- `GET /v1/threads/{tid}/terminal`
+- `POST /v1/threads/{tid}/terminal/open`
+- `POST /v1/terminals/{sid}/resize`
+- `POST /v1/terminals/{sid}/close`
+- `WS /v1/terminals/{sid}/stream?fromSeq=N`
 - `POST /v1/threads/{tid}/turns`
 - `GET /v1/jobs/{jid}`
 - `GET /v1/jobs/{jid}/events?cursor=N`（支持 JSON 与 SSE）

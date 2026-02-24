@@ -16,12 +16,16 @@ public struct ContentView: View {
         let executionAccessMode: ExecutionAccessMode
         let isDrawerPresented: Bool
         let isApprovalPresented: Bool
+        let isTerminalPresented: Bool
+        let terminalHeightRatio: Double
 
         init(_ state: AppFeature.State) {
             self.connectionState = state.connectionState
             self.executionAccessMode = state.executionAccessMode
             self.isDrawerPresented = state.isDrawerPresented
             self.isApprovalPresented = state.approval.isPresented
+            self.isTerminalPresented = state.terminal.isPresented
+            self.terminalHeightRatio = state.terminal.heightRatio
         }
     }
 
@@ -36,25 +40,66 @@ public struct ContentView: View {
         WithViewStore(store, observe: ViewState.init) { viewStore in
             GeometryReader { geometry in
                 let drawerWidth = min(geometry.size.width * 0.84, 360)
+                let rawTerminalHeight = geometry.size.height * viewStore.terminalHeightRatio
+                let terminalHeight = min(max(rawTerminalHeight, 220), geometry.size.height * 0.72)
 
                 ZStack(alignment: .leading) {
-                    CodexChatView(
-                        store: store.scope(
-                            state: \.chat,
-                            action: \.chat
-                        ),
-                        connectionState: viewStore.connectionState,
-                        onSidebarTap: {
-                            viewStore.send(.setDrawerPresented(true))
-                        },
-                        onSettingsTap: {
-                            isSettingsPresented = true
-                        },
-                        executionAccessMode: viewStore.executionAccessMode,
-                        onExecutionAccessModeChanged: { mode in
-                            viewStore.send(.setExecutionAccessMode(mode))
+                    VStack(spacing: 0) {
+                        CodexChatView(
+                            store: store.scope(
+                                state: \.chat,
+                                action: \.chat
+                            ),
+                            connectionState: viewStore.connectionState,
+                            onSidebarTap: {
+                                viewStore.send(.setDrawerPresented(true))
+                            },
+                            onSettingsTap: {
+                                isSettingsPresented = true
+                            },
+                            executionAccessMode: viewStore.executionAccessMode,
+                            onExecutionAccessModeChanged: { mode in
+                                viewStore.send(.setExecutionAccessMode(mode))
+                            },
+                            isTerminalPresented: viewStore.isTerminalPresented,
+                            onTerminalToggle: {
+                                viewStore.send(.terminal(.togglePresented))
+                            }
+                        )
+
+                        if viewStore.isTerminalPresented {
+                            VStack(spacing: 0) {
+                                Capsule()
+                                    .fill(Color.secondary.opacity(0.45))
+                                    .frame(width: 42, height: 5)
+                                    .padding(.top, 7)
+                                    .padding(.bottom, 7)
+                                    .contentShape(Rectangle())
+                                    .gesture(
+                                        DragGesture(minimumDistance: 8)
+                                            .onChanged { value in
+                                                let proposed = terminalHeight - value.translation.height
+                                                let ratio = proposed / max(geometry.size.height, 1)
+                                                let clamped = min(max(ratio, 0.35), 0.72)
+                                                viewStore.send(.terminal(.binding(.set(\.heightRatio, clamped))))
+                                            }
+                                    )
+
+                                TerminalView(
+                                    store: store.scope(
+                                        state: \.terminal,
+                                        action: \.terminal
+                                    )
+                                )
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .frame(height: terminalHeight)
+                            .transition(
+                                .move(edge: .bottom)
+                                .combined(with: .opacity)
+                            )
                         }
-                    )
+                    }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .allowsHitTesting(!viewStore.isDrawerPresented)
 

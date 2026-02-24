@@ -40,6 +40,18 @@ public struct APIClient: DependencyKey, Sendable {
     /// 获取线程历史事件分页（线程级游标）
     public var listThreadEvents: @Sendable (_ threadId: String, _ cursor: Int?, _ limit: Int?) async throws -> ThreadEventsResponse
 
+    /// 查询线程终端状态
+    public var getThreadTerminal: @Sendable (_ threadId: String) async throws -> ThreadTerminalStatusResponse
+
+    /// 打开线程终端
+    public var openThreadTerminal: @Sendable (_ threadId: String, _ request: ThreadTerminalOpenRequest) async throws -> ThreadTerminalOpenResponse
+
+    /// 调整终端窗口尺寸
+    public var resizeTerminal: @Sendable (_ sessionId: String, _ request: TerminalResizeRequest) async throws -> TerminalResizeResponse
+
+    /// 关闭终端会话
+    public var closeTerminal: @Sendable (_ sessionId: String, _ request: TerminalCloseRequest) async throws -> TerminalCloseResponse
+
     /// 发送消息（创建 Turn）
     public var startTurn: @Sendable (_ threadId: String, _ request: StartTurnRequest) async throws -> StartTurnResponse
 
@@ -97,6 +109,10 @@ extension APIClient {
             unarchiveThread: { try await impl.unarchiveThread(threadId: $0) },
             activateThread: { try await impl.activateThread(threadId: $0) },
             listThreadEvents: { try await impl.listThreadEvents(threadId: $0, cursor: $1, limit: $2) },
+            getThreadTerminal: { try await impl.getThreadTerminal(threadId: $0) },
+            openThreadTerminal: { try await impl.openThreadTerminal(threadId: $0, request: $1) },
+            resizeTerminal: { try await impl.resizeTerminal(sessionId: $0, request: $1) },
+            closeTerminal: { try await impl.closeTerminal(sessionId: $0, request: $1) },
             startTurn: { try await impl.startTurn(threadId: $0, request: $1) },
             getJob: { try await impl.getJob(jobId: $0) },
             listEvents: { try await impl.listEvents(jobId: $0, cursor: $1) },
@@ -285,6 +301,33 @@ actor LiveAPIClient {
         return response
     }
 
+    func getThreadTerminal(threadId: String) async throws -> ThreadTerminalStatusResponse {
+        let url = try buildURL(path: "/v1/threads/\(threadId)/terminal")
+        let request = try buildRequest(url: url)
+        return try await performRequest(request)
+    }
+
+    func openThreadTerminal(threadId: String, request: ThreadTerminalOpenRequest) async throws -> ThreadTerminalOpenResponse {
+        let url = try buildURL(path: "/v1/threads/\(threadId)/terminal/open")
+        let body = try encoder.encode(request)
+        let urlRequest = try buildRequest(url: url, method: "POST", body: body)
+        return try await performRequest(urlRequest)
+    }
+
+    func resizeTerminal(sessionId: String, request: TerminalResizeRequest) async throws -> TerminalResizeResponse {
+        let url = try buildURL(path: "/v1/terminals/\(sessionId)/resize")
+        let body = try encoder.encode(request)
+        let urlRequest = try buildRequest(url: url, method: "POST", body: body)
+        return try await performRequest(urlRequest)
+    }
+
+    func closeTerminal(sessionId: String, request: TerminalCloseRequest) async throws -> TerminalCloseResponse {
+        let url = try buildURL(path: "/v1/terminals/\(sessionId)/close")
+        let body = try encoder.encode(request)
+        let urlRequest = try buildRequest(url: url, method: "POST", body: body)
+        return try await performRequest(urlRequest)
+    }
+
     func startTurn(threadId: String, request: StartTurnRequest) async throws -> StartTurnResponse {
         let url = try buildURL(path: "/v1/threads/\(threadId)/turns")
         let body = try encoder.encode(request)
@@ -398,6 +441,71 @@ extension APIClient {
             },
             listThreadEvents: { _, _, _ in
                 ThreadEventsResponse(data: [], nextCursor: -1, hasMore: false)
+            },
+            getThreadTerminal: { _ in
+                ThreadTerminalStatusResponse(session: nil)
+            },
+            openThreadTerminal: { threadId, _ in
+                ThreadTerminalOpenResponse(
+                    session: TerminalSessionSnapshot(
+                        sessionId: "term_mock",
+                        threadId: threadId,
+                        cwd: "/Users/test/project",
+                        shell: "/bin/zsh",
+                        pid: 12345,
+                        status: "running",
+                        createdAt: ISO8601DateFormatter().string(from: Date()),
+                        lastActiveAt: ISO8601DateFormatter().string(from: Date()),
+                        cols: 120,
+                        rows: 24,
+                        exitCode: nil,
+                        signal: nil,
+                        nextSeq: 0,
+                        clientCount: 1
+                    ),
+                    reused: false,
+                    wsPath: "/v1/terminals/term_mock/stream"
+                )
+            },
+            resizeTerminal: { _, request in
+                TerminalResizeResponse(
+                    session: TerminalSessionSnapshot(
+                        sessionId: "term_mock",
+                        threadId: "thread_mock",
+                        cwd: "/Users/test/project",
+                        shell: "/bin/zsh",
+                        pid: 12345,
+                        status: "running",
+                        createdAt: ISO8601DateFormatter().string(from: Date()),
+                        lastActiveAt: ISO8601DateFormatter().string(from: Date()),
+                        cols: request.cols,
+                        rows: request.rows,
+                        exitCode: nil,
+                        signal: nil,
+                        nextSeq: 0,
+                        clientCount: 1
+                    )
+                )
+            },
+            closeTerminal: { _, _ in
+                TerminalCloseResponse(
+                    session: TerminalSessionSnapshot(
+                        sessionId: "term_mock",
+                        threadId: "thread_mock",
+                        cwd: "/Users/test/project",
+                        shell: "/bin/zsh",
+                        pid: 12345,
+                        status: "exited",
+                        createdAt: ISO8601DateFormatter().string(from: Date()),
+                        lastActiveAt: ISO8601DateFormatter().string(from: Date()),
+                        cols: 120,
+                        rows: 24,
+                        exitCode: 0,
+                        signal: "0",
+                        nextSeq: 0,
+                        clientCount: 0
+                    )
+                )
             },
             startTurn: { threadId, _ in
                 StartTurnResponse(

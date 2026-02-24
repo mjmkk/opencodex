@@ -29,6 +29,7 @@ public struct AppFeature {
         public var executionAccessMode: ExecutionAccessMode = .defaultPermissions
         public var threads = ThreadsFeature.State()
         public var chat = ChatFeature.State()
+        public var terminal = TerminalFeature.State()
         public var approval = ApprovalFeature.State()
         public var settings = SettingsFeature.State()
         public var activeThread: Thread?
@@ -42,6 +43,7 @@ public struct AppFeature {
         case onDisappear
         case threads(ThreadsFeature.Action)
         case chat(ChatFeature.Action)
+        case terminal(TerminalFeature.Action)
         case approval(ApprovalFeature.Action)
         case settings(SettingsFeature.Action)
         case setDrawerPresented(Bool)
@@ -55,6 +57,7 @@ public struct AppFeature {
     public var body: some ReducerOf<Self> {
         Scope(state: \.threads, action: \.threads) { ThreadsFeature() }
         Scope(state: \.chat, action: \.chat) { ChatFeature() }
+        Scope(state: \.terminal, action: \.terminal) { TerminalFeature() }
         Scope(state: \.approval, action: \.approval) { ApprovalFeature() }
         Scope(state: \.settings, action: \.settings) { SettingsFeature() }
 
@@ -131,7 +134,8 @@ public struct AppFeature {
                     // 切线程时先清理旧线程审批弹层，避免跨线程串窗。
                     .send(.approval(.dismiss)),
                     .send(.chat(.setApprovalLocked(false))),
-                    .send(.chat(.setActiveThread(thread)))
+                    .send(.chat(.setActiveThread(thread))),
+                    .send(.terminal(.setActiveThread(thread)))
                 )
 
             case .threads(.delegate(.didClearActiveThread)):
@@ -140,7 +144,8 @@ public struct AppFeature {
                 return .merge(
                     .send(.approval(.dismiss)),
                     .send(.chat(.setApprovalLocked(false))),
-                    .send(.chat(.setActiveThread(nil)))
+                    .send(.chat(.setActiveThread(nil))),
+                    .send(.terminal(.setActiveThread(nil)))
                 )
 
             case .chat(.delegate(.approvalRequired(let approval))):
@@ -182,7 +187,7 @@ public struct AppFeature {
             case .settings(.delegate(.didRestoreArchivedThread)):
                 return .send(.threads(.refresh))
 
-            case .threads, .chat, .approval, .settings:
+            case .threads, .chat, .terminal, .approval, .settings:
                 return .none
             }
         }

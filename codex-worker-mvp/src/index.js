@@ -90,6 +90,22 @@ async function main() {
     });
   }
 
+  let terminalManager = null;
+  if (config.terminal?.enabled) {
+    const { createTerminalManager } = await import("./terminal-manager.js");
+    terminalManager = createTerminalManager({
+      shell: config.terminal.shell,
+      idleTtlMs: config.terminal.idleTtlMs,
+      maxSessions: config.terminal.maxSessions,
+      maxInputBytes: config.terminal.maxInputBytes,
+      maxScrollbackBytes: config.terminal.maxScrollbackBytes,
+      sweepIntervalMs: config.terminal.heartbeatMs,
+      logger: {
+        warn: (msg) => log("warn", msg),
+      },
+    });
+  }
+
   // 4. 创建 Worker 服务
   // 负责：线程管理、任务执行、审批处理、事件分发
   const service = new WorkerService({
@@ -100,6 +116,8 @@ async function main() {
     eventRetention: config.eventRetention,
     codexHome: config.codexHome,
     threadExportDir: config.threadExportDir,
+    terminal: config.terminal,
+    terminalManager,
     pushNotifier: apnsNotifier,
     logger: {
       warn: (msg) => log("warn", msg),
