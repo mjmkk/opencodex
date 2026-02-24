@@ -9,6 +9,9 @@ import ComposableArchitecture
 import ExyteChat
 import MarkdownUI
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public struct CodexChatView: View {
     @Environment(\.colorScheme) private var colorScheme
@@ -106,6 +109,18 @@ public struct CodexChatView: View {
                 .keyboardDismissMode(.onDrag)
                 .setAvailableInputs(viewStore.canInput ? [.text] : [])
                 .id(viewStore.activeThreadId ?? "no-thread")
+                .overlay(alignment: .center) {
+                    if viewStore.activeThreadId == nil {
+                        emptyStateOverlay
+                    }
+                }
+                .overlay(alignment: .bottom) {
+                    if viewStore.activeThreadId != nil, viewStore.isApprovalLocked {
+                        approvalLockedOverlay
+                            .padding(.horizontal, 12)
+                            .padding(.bottom, 8)
+                    }
+                }
                 .chatTheme(
                     colors: ChatTheme.Colors(
                         mainBG: chatMainBackgroundColor,
@@ -153,6 +168,49 @@ public struct CodexChatView: View {
 
     private var chatSecondaryTextColor: Color {
         Color(uiColor: .secondaryLabel)
+    }
+
+    @ViewBuilder
+    private var emptyStateOverlay: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "bubble.left.and.bubble.right.fill")
+                .font(.system(size: 26, weight: .semibold))
+                .foregroundStyle(.secondary)
+            Text("选择线程后即可开始对话")
+                .font(.headline)
+            Text("你可以从左侧选择已有线程，或新建一个线程。")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+            Button("打开线程列表") {
+                onSidebarTap?()
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 18)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color(uiColor: .separator).opacity(0.28), lineWidth: 1)
+        )
+        .padding(.horizontal, 24)
+    }
+
+    private var approvalLockedOverlay: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "hand.raised.fill")
+                .foregroundStyle(.orange)
+            Text("当前线程等待审批，输入已暂时锁定")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.orange)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color.orange.opacity(colorScheme == .dark ? 0.20 : 0.13))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     @ViewBuilder
@@ -297,9 +355,18 @@ private struct CodexMessageBubble: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
-                        .background(Color.accentColor)
+                        .background(
+                            LinearGradient(
+                                colors: [
+                                    Color.accentColor.opacity(0.92),
+                                    Color.accentColor,
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                         .clipShape(RoundedRectangle(cornerRadius: 14))
-                        .frame(maxWidth: 280, alignment: .trailing)
+                        .frame(maxWidth: userBubbleMaxWidth, alignment: .trailing)
 
                     if let style = statusStyle(message.status) {
                         Image(systemName: style.icon)
@@ -373,6 +440,15 @@ private struct CodexMessageBubble: View {
         .padding(.vertical, 2)
     }
 
+    private var userBubbleMaxWidth: CGFloat {
+#if canImport(UIKit)
+        let width = UIScreen.main.bounds.width
+        return min(max(width * 0.74, 240), 460)
+#else
+        return 320
+#endif
+    }
+
     private var assistantBubbleColor: Color {
         colorScheme == .dark
             ? Color(uiColor: .secondarySystemBackground)
@@ -436,6 +512,17 @@ private struct ConnectionStateBadge: View {
         }
     }
 
+    private var iconName: String {
+        switch state {
+        case .connected:
+            return "checkmark.circle.fill"
+        case .connecting, .reconnecting:
+            return "arrow.triangle.2.circlepath.circle.fill"
+        case .failed, .disconnected:
+            return "xmark.circle.fill"
+        }
+    }
+
     private var tint: Color {
         switch state {
         case .connected:
@@ -449,9 +536,9 @@ private struct ConnectionStateBadge: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            Circle()
-                .fill(tint)
-                .frame(width: 6, height: 6)
+            Image(systemName: iconName)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(tint)
             Text(compactText)
                 .font(.caption2.weight(.medium))
                 .foregroundStyle(tint)
