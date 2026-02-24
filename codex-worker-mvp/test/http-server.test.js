@@ -565,3 +565,61 @@ test("WebSocket 终端流：ready/ping/input/resize/detach", async (t) => {
   assert.ok(messages.some((message) => message.type === "output" && message.seq === 3));
   assert.ok(messages.some((message) => message.type === "pong" && message.clientTs === "ts_1"));
 });
+
+test("WebSocket 终端流：心跳超时会自动断开连接", async (t) => {
+  const service = {
+    attachTerminalClient: (sessionId, clientId, params) => ({
+      session: {
+        sessionId,
+        threadId: "thr_ws_timeout",
+        cwd: "/repo",
+        nextSeq: 0,
+      },
+      replay: [],
+    }),
+    writeTerminalInput: () => {},
+    resizeTerminal: () => ({ session: {} }),
+    detachTerminalClient: () => {},
+  };
+
+  const server = createHttpServer({
+    service,
+    authToken: "token123",
+    terminalHeartbeatMs: 1000,
+    logger: {
+      error: () => {},
+    },
+  });
+  const address = await server.listen(0, "127.0.0.1");
+  const wsUrl = `ws://127.0.0.1:${address.port}/v1/terminals/term_ws_timeout/stream`;
+
+  t.after(async () => {
+    await server.close();
+  });
+
+  const closeEvent = await new Promise((resolve, reject) => {
+    const ws = new WebSocket(wsUrl, {
+      headers: {
+        Authorization: "Bearer token123",
+      },
+    });
+    const timer = setTimeout(() => {
+      ws.terminate();
+      reject(new Error("heartbeat timeout close not observed"));
+    }, 6_000);
+    ws.on("close", (code, reasonBuffer) => {
+      clearTimeout(timer);
+      resolve({
+        code,
+        reason: reasonBuffer.toString("utf8"),
+      });
+    });
+    ws.on("error", (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+  });
+
+  assert.equal(closeEvent.code, 1011);
+  assert.equal(closeEvent.reason, "heartbeat timeout");
+});

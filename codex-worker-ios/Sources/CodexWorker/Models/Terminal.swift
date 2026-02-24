@@ -120,6 +120,7 @@ public struct TerminalStreamFrame: Codable, Equatable, Sendable {
     public let code: String?
     public let message: String?
     public let clientTs: String?
+    public let serverTs: String?
 }
 
 public struct TerminalClientMessage: Codable, Equatable, Sendable {
@@ -139,6 +140,10 @@ public struct TerminalClientMessage: Codable, Equatable, Sendable {
 
     public static func ping(clientTs: String) -> TerminalClientMessage {
         TerminalClientMessage(type: "ping", data: nil, cols: nil, rows: nil, clientTs: clientTs)
+    }
+
+    public static func pong(clientTs: String?) -> TerminalClientMessage {
+        TerminalClientMessage(type: "pong", data: nil, cols: nil, rows: nil, clientTs: clientTs)
     }
 
     public static let detach = TerminalClientMessage(type: "detach", data: nil, cols: nil, rows: nil, clientTs: nil)

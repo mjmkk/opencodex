@@ -27,6 +27,8 @@ let package = Package(
         .package(url: "https://github.com/Recouse/EventSource.git", from: "0.1.5"),
         // GRDB（SQLite 封装）
         .package(url: "https://github.com/groue/GRDB.swift.git", from: "6.0.0"),
+        // SwiftTerm（终端渲染）
+        .package(url: "https://github.com/migueldeicaza/SwiftTerm.git", from: "1.2.6"),
     ],
     targets: [
         .target(
@@ -37,6 +39,7 @@ let package = Package(
                 .product(name: "MarkdownUI", package: "swift-markdown-ui"),
                 .product(name: "EventSource", package: "EventSource"),
                 .product(name: "GRDB", package: "GRDB.swift"),
+                .product(name: "SwiftTerm", package: "SwiftTerm"),
             ],
             path: "Sources/CodexWorker",
             swiftSettings: [

@@ -133,6 +133,7 @@ async function main() {
   const server = createHttpServer({
     service,
     authToken: config.authToken,
+    terminalHeartbeatMs: config.terminal?.heartbeatMs,
     logger: {
       error: (msg, extra) => log("error", msg, extra),
     },

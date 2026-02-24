@@ -7,6 +7,12 @@
 
 import ComposableArchitecture
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
+#if canImport(SwiftTerm)
+import SwiftTerm
+#endif
 
 public struct TerminalView: View {
     private struct ViewState: Equatable {
@@ -41,12 +47,12 @@ public struct TerminalView: View {
                 header(viewStore: viewStore)
 
                 Divider()
-                    .background(Color.white.opacity(0.2))
+                    .background(SwiftUI.Color.white.opacity(0.2))
 
                 terminalOutput(viewStore: viewStore)
 
                 Divider()
-                    .background(Color.white.opacity(0.2))
+                    .background(SwiftUI.Color.white.opacity(0.2))
 
                 inputBar(viewStore: viewStore)
             }
@@ -58,17 +64,38 @@ public struct TerminalView: View {
                         .foregroundStyle(.red)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(Color.black.opacity(0.45))
+                        .background(SwiftUI.Color.black.opacity(0.45))
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         .padding(.top, 8)
                         .padding(.leading, 8)
                 }
             }
+            .background(
+                GeometryReader { proxy in
+                    SwiftUI.Color.clear
+                        .onAppear {
+                            viewStore.send(
+                                .viewportChanged(
+                                    width: proxy.size.width,
+                                    height: proxy.size.height
+                                )
+                            )
+                        }
+                        .onChange(of: proxy.size) { _, newSize in
+                            viewStore.send(
+                                .viewportChanged(
+                                    width: newSize.width,
+                                    height: newSize.height
+                                )
+                            )
+                        }
+                }
+            )
         }
     }
 
-    private var terminalBackground: Color {
-        Color(red: 0.05, green: 0.06, blue: 0.08)
+    private var terminalBackground: SwiftUI.Color {
+        SwiftUI.Color(red: 0.05, green: 0.06, blue: 0.08)
     }
 
     @ViewBuilder
@@ -110,29 +137,12 @@ public struct TerminalView: View {
 
     @ViewBuilder
     private func terminalOutput(viewStore: ViewStore<ViewState, TerminalFeature.Action>) -> some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                Text(viewStore.terminalText.isEmpty ? "终端已连接，输入命令后回车执行。" : viewStore.terminalText)
-                    .font(.system(size: 13, weight: .regular, design: .monospaced))
-                    .foregroundStyle(viewStore.terminalText.isEmpty ? .white.opacity(0.55) : .white.opacity(0.95))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .textSelection(.enabled)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 10)
-
-                Color.clear
-                    .frame(height: 1)
-                    .id("terminal-bottom-anchor")
-            }
-            .onAppear {
-                proxy.scrollTo("terminal-bottom-anchor", anchor: .bottom)
-            }
-            .onChange(of: viewStore.terminalText) { _, _ in
-                withAnimation(.easeOut(duration: 0.12)) {
-                    proxy.scrollTo("terminal-bottom-anchor", anchor: .bottom)
-                }
-            }
-        }
+        TerminalOutputSurface(
+            text: viewStore.terminalText,
+            placeholder: "终端已连接，输入命令后回车执行。"
+        )
+        .padding(.horizontal, 8)
+        .padding(.vertical, 8)
     }
 
     @ViewBuilder
@@ -182,7 +192,7 @@ public struct TerminalView: View {
         }
     }
 
-    private func connectionColor(for state: TerminalFeature.State.ConnectionState) -> Color {
+    private func connectionColor(for state: TerminalFeature.State.ConnectionState) -> SwiftUI.Color {
         switch state {
         case .idle:
             return .gray
@@ -195,3 +205,89 @@ public struct TerminalView: View {
         }
     }
 }
+
+private struct TerminalOutputSurface: View {
+    let text: String
+    let placeholder: String
+
+    var body: some View {
+#if canImport(SwiftTerm) && canImport(UIKit)
+        TerminalSurfaceRepresentable(
+            text: text,
+            placeholder: placeholder
+        )
+#else
+        ScrollView {
+            Text(text.isEmpty ? placeholder : text)
+                .font(.system(size: 13, weight: .regular, design: .monospaced))
+                .foregroundStyle(text.isEmpty ? .white.opacity(0.55) : .white.opacity(0.95))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .textSelection(.enabled)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+        }
+#endif
+    }
+}
+
+#if canImport(SwiftTerm) && canImport(UIKit)
+private struct TerminalSurfaceRepresentable: UIViewRepresentable {
+    let text: String
+    let placeholder: String
+
+    func makeUIView(context: Context) -> SwiftTerm.TerminalView {
+        let view = SwiftTerm.TerminalView(frame: .zero)
+        view.terminalDelegate = context.coordinator
+        view.backgroundColor = UIColor(red: 0.05, green: 0.06, blue: 0.08, alpha: 1.0)
+        view.nativeBackgroundColor = UIColor(red: 0.05, green: 0.06, blue: 0.08, alpha: 1.0)
+        view.nativeForegroundColor = UIColor(white: 0.95, alpha: 1.0)
+        view.font = UIFont.monospacedSystemFont(ofSize: 13, weight: .regular)
+        view.optionAsMetaKey = true
+        view.allowMouseReporting = true
+        view.notifyUpdateChanges = false
+        return view
+    }
+
+    func updateUIView(_ uiView: SwiftTerm.TerminalView, context: Context) {
+        context.coordinator.apply(content: text, placeholder: placeholder, to: uiView)
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    final class Coordinator: NSObject, SwiftTerm.TerminalViewDelegate {
+        private var lastRendered = ""
+
+        func apply(content: String, placeholder: String, to view: SwiftTerm.TerminalView) {
+            let next = content.isEmpty ? "\(placeholder)\r\n" : content
+            guard next != lastRendered else {
+                return
+            }
+
+            if next.hasPrefix(lastRendered) {
+                let deltaStart = next.index(next.startIndex, offsetBy: lastRendered.count)
+                let delta = String(next[deltaStart...])
+                if !delta.isEmpty {
+                    view.feed(text: delta)
+                }
+            } else {
+                view.feed(text: "\u{001B}[2J\u{001B}[H")
+                view.feed(text: next)
+            }
+            lastRendered = next
+        }
+
+        func sizeChanged(source: SwiftTerm.TerminalView, newCols: Int, newRows: Int) {}
+        func setTerminalTitle(source: SwiftTerm.TerminalView, title: String) {}
+        func hostCurrentDirectoryUpdate(source: SwiftTerm.TerminalView, directory: String?) {}
+        func send(source: SwiftTerm.TerminalView, data: ArraySlice<UInt8>) {}
+        func scrolled(source: SwiftTerm.TerminalView, position: Double) {}
+        func requestOpenLink(source: SwiftTerm.TerminalView, link: String, params: [String: String]) {}
+        func bell(source: SwiftTerm.TerminalView) {}
+        func clipboardCopy(source: SwiftTerm.TerminalView, content: Data) {}
+        func iTermContent(source: SwiftTerm.TerminalView, content: ArraySlice<UInt8>) {}
+        func rangeChanged(source: SwiftTerm.TerminalView, startY: Int, endY: Int) {}
+    }
+}
+#endif

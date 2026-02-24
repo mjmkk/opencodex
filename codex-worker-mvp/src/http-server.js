@@ -301,6 +301,7 @@ function match(pathname, pattern) {
  * @param {WorkerService} options.service - Worker 服务实例
  * @param {string|null} [options.authToken] - 鉴权令牌
  * @param {Object} [options.logger] - 日志器
+ * @param {number} [options.terminalHeartbeatMs=15000] - 终端 WebSocket 心跳周期（毫秒）
  * @returns {Object} 服务器对象，包含 listen 和 close 方法
  *
  * API 端点：
@@ -340,6 +341,10 @@ export function createHttpServer(options) {
   const service = options.service;
   const logger = options.logger ?? console;
   const authToken = options.authToken ?? null;
+  const terminalHeartbeatMs =
+    Number.isFinite(options.terminalHeartbeatMs) && options.terminalHeartbeatMs >= 1_000
+      ? Math.trunc(options.terminalHeartbeatMs)
+      : 15_000;
   const wss = new WebSocketServer({ noServer: true });
 
   function sendWsJson(ws, payload) {
@@ -699,6 +704,8 @@ export function createHttpServer(options) {
     }
 
     let attached = false;
+    let lastHeartbeatAtMs = Date.now();
+    let heartbeatTimer = null;
     try {
       const attachedResult = service.attachTerminalClient(sessionId, clientId, {
         fromSeq,
@@ -718,6 +725,21 @@ export function createHttpServer(options) {
       for (const replayEvent of attachedResult.replay) {
         sendWsJson(ws, replayEvent);
       }
+      heartbeatTimer = setInterval(() => {
+        if (ws.readyState !== ws.OPEN) {
+          return;
+        }
+        const nowMs = Date.now();
+        if (nowMs - lastHeartbeatAtMs > terminalHeartbeatMs * 2) {
+          ws.close(1011, "heartbeat timeout");
+          return;
+        }
+        sendWsJson(ws, {
+          type: "ping",
+          serverTs: new Date(nowMs).toISOString(),
+        });
+      }, terminalHeartbeatMs);
+      heartbeatTimer.unref?.();
     } catch (error) {
       sendWsError(ws, /** @type {Error} */ (error));
       ws.close(1011, "attach failed");
@@ -729,6 +751,7 @@ export function createHttpServer(options) {
         const text = typeof raw === "string" ? raw : raw.toString("utf8");
         const message = JSON.parse(text);
         const type = typeof message?.type === "string" ? message.type : "";
+        lastHeartbeatAtMs = Date.now();
         switch (type) {
           case "input":
             service.writeTerminalInput(sessionId, message.data);
@@ -742,6 +765,8 @@ export function createHttpServer(options) {
           case "ping":
             sendWsJson(ws, { type: "pong", clientTs: message.clientTs ?? null });
             break;
+          case "pong":
+            break;
           case "detach":
             ws.close(1000, "client detached");
             break;
@@ -754,12 +779,20 @@ export function createHttpServer(options) {
     });
 
     ws.on("close", () => {
+      if (heartbeatTimer) {
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = null;
+      }
       if (attached) {
         service.detachTerminalClient(sessionId, clientId);
       }
     });
 
     ws.on("error", (error) => {
+      if (heartbeatTimer) {
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = null;
+      }
       logger.error("terminal websocket error", {
         sessionId,
         clientId,

@@ -60,7 +60,8 @@ extension TerminalSocketClient {
                             cwd: "/Users/test/project",
                             code: nil,
                             message: nil,
-                            clientTs: nil
+                            clientTs: nil,
+                            serverTs: nil
                         )
                     )
                 }
@@ -79,6 +80,9 @@ actor LiveTerminalSocketClient {
 
     private var socketTask: URLSessionWebSocketTask?
     private var receiveTask: Task<Void, Never>?
+    private var pingTask: Task<Void, Never>?
+
+    private static let pingIntervalNanoseconds: UInt64 = 10_000_000_000
 
     init() {
         self.session = URLSession(configuration: .default)
@@ -104,6 +108,10 @@ actor LiveTerminalSocketClient {
                     while !Task.isCancelled {
                         let message = try await task.receive()
                         if let frame = await self.decodeFrame(from: message) {
+                            if frame.type == "ping" {
+                                try? await self.send(.pong(clientTs: frame.clientTs))
+                                continue
+                            }
                             continuation.yield(frame)
                         }
                     }
@@ -116,6 +124,15 @@ actor LiveTerminalSocketClient {
             }
 
             receiveTask = receiver
+            pingTask = Task { [weak self] in
+                guard let self else { return }
+                while !Task.isCancelled {
+                    try? await Task.sleep(nanoseconds: Self.pingIntervalNanoseconds)
+                    guard !Task.isCancelled else { return }
+                    let ts = String(Int(Date().timeIntervalSince1970 * 1000))
+                    try? await self.send(.ping(clientTs: ts))
+                }
+            }
             continuation.onTermination = { [weak self] _ in
                 Task { await self?.disconnect() }
             }
@@ -137,6 +154,8 @@ actor LiveTerminalSocketClient {
     func disconnect() async {
         receiveTask?.cancel()
         receiveTask = nil
+        pingTask?.cancel()
+        pingTask = nil
 
         if let task = socketTask {
             if let detach = try? encodeDetachMessage() {
