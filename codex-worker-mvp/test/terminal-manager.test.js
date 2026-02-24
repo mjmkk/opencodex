@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { EventEmitter } from "node:events";
 
 import { TerminalManager } from "../src/terminal-manager.js";
 
@@ -36,6 +37,28 @@ class FakePtyProcess {
 
   emitData(data) {
     this.dataHandler(data);
+  }
+}
+
+class FakePipeChild extends EventEmitter {
+  constructor(pid = 5000) {
+    super();
+    this.pid = pid;
+    this.killed = false;
+    this.stdin = {
+      destroyed: false,
+      writes: [],
+      write: (data) => {
+        this.stdin.writes.push(data);
+      },
+    };
+    this.stdout = new EventEmitter();
+    this.stderr = new EventEmitter();
+  }
+
+  kill(signal) {
+    this.killed = true;
+    this.emit("exit", 0, signal ?? null);
   }
 }
 
@@ -188,4 +211,51 @@ test("TerminalManager 空闲回收遵循 shell 忙闲状态", async () => {
   assert.equal(manager.getSessionById(opened.session.sessionId), null, "空闲状态应可回收");
 
   manager.shutdown();
+});
+
+test("TerminalManager 在 node-pty spawn 失败时回退到 pipe 模式", () => {
+  const fakeChild = new FakePipeChild(7777);
+  const warnings = [];
+  const manager = new TerminalManager({
+    autoSweep: false,
+    ptyAdapter: {
+      spawn: () => {
+        throw new Error("posix_spawnp failed.");
+      },
+    },
+    childProcessSpawner: () => fakeChild,
+    logger: {
+      warn: (message) => warnings.push(message),
+      info: () => {},
+    },
+  });
+
+  const opened = manager.openSession({
+    threadId: "thr_pipe_fallback",
+    cwd: "/repo",
+  });
+
+  assert.equal(opened.session.pid, 7777);
+  assert.equal(opened.reused, false);
+  assert.ok(warnings.some((message) => String(message).includes("fallback to pipe mode")));
+
+  manager.writeInput(opened.session.sessionId, "pwd\n");
+  assert.ok(fakeChild.stdin.writes.some((item) => item === "pwd\n"));
+
+  const events = [];
+  manager.attachClient({
+    sessionId: opened.session.sessionId,
+    clientId: "client_pipe",
+    fromSeq: -1,
+    onEvent: (event) => events.push(event),
+  });
+
+  fakeChild.stdout.emit("data", Buffer.from("hello from stdout\n"));
+  fakeChild.stderr.emit("data", Buffer.from("hello from stderr\n"));
+  assert.ok(events.some((event) => event.type === "output" && event.data.includes("stdout")));
+  assert.ok(events.some((event) => event.type === "output" && event.data.includes("stderr")));
+
+  manager.closeSession(opened.session.sessionId, { reason: "test_pipe_close" });
+  manager.detachClient(opened.session.sessionId, "client_pipe");
+  assert.equal(manager.getSessionById(opened.session.sessionId), null);
 });

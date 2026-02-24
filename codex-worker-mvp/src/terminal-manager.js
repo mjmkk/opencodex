@@ -1,4 +1,4 @@
-import { execFile as execFileCallback } from "node:child_process";
+import { execFile as execFileCallback, spawn as spawnChildProcess } from "node:child_process";
 import { promisify } from "node:util";
 
 import pty from "node-pty";
@@ -20,6 +20,68 @@ const DEFAULTS = {
 };
 
 const SHELL_STATE_MARKER = "__CW_STATE__";
+
+function isPosixSpawnFailure(error) {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return message.toLowerCase().includes("posix_spawnp failed");
+}
+
+function createPipeTerminalProcess(child) {
+  const dataListeners = new Set();
+  const exitListeners = new Set();
+  const emitData = (chunk) => {
+    const text = typeof chunk === "string" ? chunk : Buffer.from(chunk ?? "").toString("utf8");
+    if (!text) {
+      return;
+    }
+    for (const listener of dataListeners) {
+      listener(text);
+    }
+  };
+  const emitExit = (exitCode, signal) => {
+    const payload = {
+      exitCode: Number.isInteger(exitCode) ? exitCode : null,
+      signal: signal ?? null,
+    };
+    for (const listener of exitListeners) {
+      listener(payload);
+    }
+  };
+
+  child.stdout?.on("data", emitData);
+  child.stderr?.on("data", emitData);
+  child.on("exit", emitExit);
+
+  return {
+    pid: Number.isInteger(child.pid) ? child.pid : -1,
+    supportsShellStateHooks: false,
+    onData(handler) {
+      dataListeners.add(handler);
+    },
+    onExit(handler) {
+      exitListeners.add(handler);
+    },
+    write(data) {
+      if (!child.stdin?.destroyed) {
+        child.stdin.write(data);
+      }
+    },
+    resize() {
+      // pipe 回退模式不支持 PTY resize
+    },
+    kill() {
+      if (!child.killed) {
+        child.kill("SIGTERM");
+        const timer = setTimeout(() => {
+          if (!child.killed) {
+            child.kill("SIGKILL");
+          }
+        }, 1500);
+        timer.unref?.();
+      }
+    },
+  };
+}
 
 function toFiniteInt(value, fallback, min, max = Number.MAX_SAFE_INTEGER) {
   const parsed =
@@ -64,6 +126,7 @@ export class TerminalManager {
    * @param {boolean} [options.autoSweep=true]
    * @param {() => number} [options.now]
    * @param {{spawn: Function}} [options.ptyAdapter]
+   * @param {Function} [options.childProcessSpawner]
    * @param {(pid: number) => Promise<boolean>} [options.hasChildProcessChecker]
    * @param {Object} [options.logger]
    */
@@ -80,6 +143,7 @@ export class TerminalManager {
     this.autoSweep = options.autoSweep !== false;
     this.now = typeof options.now === "function" ? options.now : () => Date.now();
     this.ptyAdapter = options.ptyAdapter ?? pty;
+    this.childProcessSpawner = options.childProcessSpawner ?? spawnChildProcess;
     this.hasChildProcessChecker = options.hasChildProcessChecker ?? ((pid) => this.#hasChildProcesses(pid));
     this.logger = options.logger ?? console;
 
@@ -175,9 +239,32 @@ export class TerminalManager {
           PROMPT_EOL_MARK: "",
         },
       });
+      ptyProcess.supportsShellStateHooks = true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      throw createTerminalError("TERMINAL_OPEN_FAILED", `启动终端失败: ${message}`);
+      if (isPosixSpawnFailure(error)) {
+        try {
+          const child = this.childProcessSpawner(this.shell, ["-i"], {
+            cwd,
+            env: {
+              ...process.env,
+              TERM: "xterm-256color",
+              COLORTERM: "truecolor",
+              PROMPT_EOL_MARK: "",
+            },
+            stdio: ["pipe", "pipe", "pipe"],
+          });
+          ptyProcess = createPipeTerminalProcess(child);
+          this.logger?.warn?.(
+            `[terminal] node-pty spawn failed, fallback to pipe mode: shell=${this.shell}, cwd=${cwd}`
+          );
+        } catch (fallbackError) {
+          const message = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+          throw createTerminalError("TERMINAL_OPEN_FAILED", `启动终端失败: ${message}`);
+        }
+      } else {
+        const message = error instanceof Error ? error.message : String(error);
+        throw createTerminalError("TERMINAL_OPEN_FAILED", `启动终端失败: ${message}`);
+      }
     }
 
     const createdAt = this.#nowIso();
@@ -200,6 +287,7 @@ export class TerminalManager {
       exitFrame: null,
       clients: new Set(),
       listeners: new Map(),
+      supportsShellStateHooks: ptyProcess.supportsShellStateHooks === true,
       foregroundBusy: false,
       backgroundJobs: 0,
       shellStateCarry: "",
@@ -424,7 +512,7 @@ export class TerminalManager {
 
     session.status = "exited";
     session.exitCode = Number.isInteger(result?.exitCode) ? result.exitCode : null;
-    session.signal = typeof result?.signal === "number" ? String(result.signal) : null;
+    session.signal = result?.signal == null ? null : String(result.signal);
     session.foregroundBusy = false;
     session.backgroundJobs = 0;
     session.exitFrame = {
@@ -550,7 +638,7 @@ export class TerminalManager {
   }
 
   #installShellStateHooks(session) {
-    if (!this.trackShellState || session.status !== "running") {
+    if (!this.trackShellState || session.status !== "running" || session.supportsShellStateHooks !== true) {
       return;
     }
 
