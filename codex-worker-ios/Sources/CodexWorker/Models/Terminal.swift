@@ -24,6 +24,8 @@ public struct TerminalSessionSnapshot: Codable, Equatable, Sendable {
     public var signal: String?
     public var nextSeq: Int
     public var clientCount: Int?
+    public var foregroundBusy: Bool?
+    public var backgroundJobs: Int?
 
     public init(
         sessionId: String,
@@ -39,7 +41,9 @@ public struct TerminalSessionSnapshot: Codable, Equatable, Sendable {
         exitCode: Int?,
         signal: String?,
         nextSeq: Int,
-        clientCount: Int?
+        clientCount: Int?,
+        foregroundBusy: Bool? = nil,
+        backgroundJobs: Int? = nil
     ) {
         self.sessionId = sessionId
         self.threadId = threadId
@@ -55,6 +59,8 @@ public struct TerminalSessionSnapshot: Codable, Equatable, Sendable {
         self.signal = signal
         self.nextSeq = nextSeq
         self.clientCount = clientCount
+        self.foregroundBusy = foregroundBusy
+        self.backgroundJobs = backgroundJobs
     }
 }
 

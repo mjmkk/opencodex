@@ -45,6 +45,7 @@ public struct TerminalFeature {
         public var isOpening = false
         public var isClosing = false
         public var errorMessage: String?
+        public var showRiskNotice = false
 
         // 线程内存缓冲（仅前端内存态，不落盘）
         public var threadBuffers: [String: ThreadBuffer] = [:]
@@ -72,6 +73,9 @@ public struct TerminalFeature {
         case setPresented(Bool)
         case openSession
         case openSessionResponse(Result<ThreadTerminalOpenResponse, CodexError>)
+        case loadRiskNotice
+        case riskNoticeLoaded(Bool)
+        case dismissRiskNotice
         case startStreaming(sessionId: String, fromSeq: Int?)
         case streamEventReceived(TerminalStreamFrame)
         case streamCompleted
@@ -81,6 +85,7 @@ public struct TerminalFeature {
         case sendResize
         case sendResizeFailed(CodexError)
         case sendInput
+        case sendRawInput(String)
         case sendInputFailed(CodexError)
         case closeSession
         case closeSessionResponse(Result<TerminalCloseResponse, CodexError>)
@@ -125,12 +130,16 @@ public struct TerminalFeature {
                     }
                     state.isPresented = true
                     restoreBufferIfNeeded(state: &state)
-                    return resetAndOpenForCurrentThread(state: &state)
+                    return .merge(
+                        resetAndOpenForCurrentThread(state: &state),
+                        .send(.loadRiskNotice)
+                    )
                 } else {
                     persistBuffer(state: &state, threadId: state.activeThread?.threadId)
                     state.isPresented = false
                     state.connectionState = .idle
                     state.errorMessage = nil
+                    state.showRiskNotice = false
                     state.inputText = ""
                     state.session = nil
                     state.isOpening = false
@@ -193,6 +202,25 @@ public struct TerminalFeature {
                 state.isOpening = false
                 state.connectionState = .failed(error.localizedDescription)
                 state.errorMessage = error.localizedDescription
+                return .none
+
+            case .loadRiskNotice:
+                return .run { send in
+                    @Dependency(\.terminalRiskNoticeStore) var terminalRiskNoticeStore
+                    let shouldShow = terminalRiskNoticeStore.shouldShowOnNextOpen()
+                    await send(.riskNoticeLoaded(shouldShow))
+                }
+
+            case .riskNoticeLoaded(let shouldShow):
+                state.showRiskNotice = shouldShow
+                guard shouldShow else { return .none }
+                return .run { _ in
+                    @Dependency(\.terminalRiskNoticeStore) var terminalRiskNoticeStore
+                    terminalRiskNoticeStore.markShown()
+                }
+
+            case .dismissRiskNotice:
+                state.showRiskNotice = false
                 return .none
 
             case .startStreaming(let sessionId, let fromSeq):
@@ -338,14 +366,16 @@ public struct TerminalFeature {
                 }
                 state.inputText = ""
                 let payload = raw.hasSuffix("\n") ? raw : raw + "\n"
-                return .run { send in
-                    @Dependency(\.terminalSocketClient) var terminalSocketClient
-                    do {
-                        try await terminalSocketClient.sendInput(payload)
-                    } catch {
-                        await send(.sendInputFailed(CodexError.from(error)))
-                    }
+                return sendSocketInput(payload)
+
+            case .sendRawInput(let payload):
+                guard state.canSendInput else {
+                    return .none
                 }
+                guard !payload.isEmpty else {
+                    return .none
+                }
+                return sendSocketInput(payload)
 
             case .sendInputFailed(let error):
                 state.errorMessage = "发送失败：\(error.localizedDescription)"
@@ -461,5 +491,16 @@ public struct TerminalFeature {
             offsetBy: -maxChars
         )
         state.terminalText = String(state.terminalText[startIndex...])
+    }
+
+    private func sendSocketInput(_ payload: String) -> Effect<Action> {
+        .run { send in
+            @Dependency(\.terminalSocketClient) var terminalSocketClient
+            do {
+                try await terminalSocketClient.sendInput(payload)
+            } catch {
+                await send(.sendInputFailed(CodexError.from(error)))
+            }
+        }
     }
 }

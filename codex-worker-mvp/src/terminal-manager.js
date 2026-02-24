@@ -16,7 +16,10 @@ const DEFAULTS = {
   sweepIntervalMs: 10 * 1000,
   defaultCols: 80,
   defaultRows: 24,
+  trackShellState: true,
 };
+
+const SHELL_STATE_MARKER = "__CW_STATE__";
 
 function toFiniteInt(value, fallback, min, max = Number.MAX_SAFE_INTEGER) {
   const parsed =
@@ -57,6 +60,7 @@ export class TerminalManager {
    * @param {number} [options.maxInputBytes]
    * @param {number} [options.maxScrollbackBytes]
    * @param {number} [options.sweepIntervalMs]
+   * @param {boolean} [options.trackShellState=true]
    * @param {boolean} [options.autoSweep=true]
    * @param {() => number} [options.now]
    * @param {{spawn: Function}} [options.ptyAdapter]
@@ -72,6 +76,7 @@ export class TerminalManager {
     this.maxInputBytes = toFiniteInt(options.maxInputBytes, DEFAULTS.maxInputBytes, 1);
     this.maxScrollbackBytes = toFiniteInt(options.maxScrollbackBytes, DEFAULTS.maxScrollbackBytes, 1024);
     this.sweepIntervalMs = toFiniteInt(options.sweepIntervalMs, DEFAULTS.sweepIntervalMs, 100);
+    this.trackShellState = options.trackShellState !== false;
     this.autoSweep = options.autoSweep !== false;
     this.now = typeof options.now === "function" ? options.now : () => Date.now();
     this.ptyAdapter = options.ptyAdapter ?? pty;
@@ -136,6 +141,7 @@ export class TerminalManager {
     if (existingSessionId) {
       const existing = this.sessionsById.get(existingSessionId);
       if (existing && existing.status === "running") {
+        this.#touchSession(existing);
         return {
           session: this.#toSessionSnapshot(existing),
           reused: true,
@@ -194,6 +200,9 @@ export class TerminalManager {
       exitFrame: null,
       clients: new Set(),
       listeners: new Map(),
+      foregroundBusy: false,
+      backgroundJobs: 0,
+      shellStateCarry: "",
       pty: ptyProcess,
     };
 
@@ -206,6 +215,10 @@ export class TerminalManager {
 
     this.sessionsById.set(session.sessionId, session);
     this.sessionIdByThreadId.set(threadId, session.sessionId);
+    this.#installShellStateHooks(session);
+    this.logger?.info?.(
+      `[terminal] session opened: sessionId=${session.sessionId}, threadId=${threadId}, cwd=${cwd}, pid=${session.pid}`
+    );
 
     return {
       session: this.#toSessionSnapshot(session),
@@ -329,6 +342,9 @@ export class TerminalManager {
     session.rows = rows;
     session.pty.resize(cols, rows);
     this.#touchSession(session);
+    this.logger?.info?.(
+      `[terminal] session resized: sessionId=${session.sessionId}, cols=${cols}, rows=${rows}`
+    );
     return this.#toSessionSnapshot(session);
   }
 
@@ -352,6 +368,9 @@ export class TerminalManager {
 
     if (session.status === "running") {
       session.status = "closing";
+      this.logger?.info?.(
+        `[terminal] session closing: sessionId=${session.sessionId}, threadId=${session.threadId}, reason=${reason}`
+      );
       session.pty.kill();
       if (!force) {
         return this.#toSessionSnapshot(session);
@@ -370,8 +389,10 @@ export class TerminalManager {
     if (session.status !== "running" && session.status !== "closing") {
       return;
     }
-    const text = typeof data === "string" ? data : String(data ?? "");
+    const rawText = typeof data === "string" ? data : String(data ?? "");
+    const text = this.#updateShellStateAndFilterOutput(session, rawText);
     if (!text) {
+      this.#touchSession(session);
       return;
     }
 
@@ -404,6 +425,8 @@ export class TerminalManager {
     session.status = "exited";
     session.exitCode = Number.isInteger(result?.exitCode) ? result.exitCode : null;
     session.signal = typeof result?.signal === "number" ? String(result.signal) : null;
+    session.foregroundBusy = false;
+    session.backgroundJobs = 0;
     session.exitFrame = {
       type: "exit",
       seq: session.nextSeq,
@@ -413,6 +436,9 @@ export class TerminalManager {
     this.#touchSession(session);
     this.#emitToListeners(session, session.exitFrame);
     this.sessionIdByThreadId.delete(session.threadId);
+    this.logger?.info?.(
+      `[terminal] session exited: sessionId=${session.sessionId}, threadId=${session.threadId}, exitCode=${session.exitCode}, signal=${session.signal ?? "null"}`
+    );
 
     if (session.clients.size === 0) {
       this.#cleanupSession(session, "process_exit");
@@ -475,6 +501,10 @@ export class TerminalManager {
           continue;
         }
 
+        if (session.foregroundBusy || session.backgroundJobs > 0) {
+          continue;
+        }
+
         const idleMs = now - Date.parse(session.lastActiveAt);
         if (idleMs < this.idleTtlMs) {
           continue;
@@ -519,6 +549,65 @@ export class TerminalManager {
     );
   }
 
+  #installShellStateHooks(session) {
+    if (!this.trackShellState || session.status !== "running") {
+      return;
+    }
+
+    const script =
+      `if [ -n "$ZSH_VERSION" ]; then
+autoload -Uz add-zsh-hook >/dev/null 2>&1
+__cw_emit_state() {
+  local mode="$1"
+  local jobs_count
+  jobs_count=$(jobs -p | wc -l | tr -d ' ')
+  print -r -- "${SHELL_STATE_MARKER}:$mode:$jobs_count"
+}
+__cw_preexec() { __cw_emit_state busy; }
+__cw_precmd() { __cw_emit_state idle; }
+add-zsh-hook preexec __cw_preexec >/dev/null 2>&1
+add-zsh-hook precmd __cw_precmd >/dev/null 2>&1
+__cw_emit_state idle
+fi
+`;
+    try {
+      session.pty.write(script);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger?.warn?.(
+        `[terminal] failed to install shell state hooks: sessionId=${session.sessionId}, error=${message}`
+      );
+    }
+  }
+
+  #updateShellStateAndFilterOutput(session, text) {
+    if (!this.trackShellState || !text) {
+      return text;
+    }
+
+    const combined = `${session.shellStateCarry}${text}`;
+    let processText = combined;
+    let carry = "";
+    const markerIndex = combined.lastIndexOf(`${SHELL_STATE_MARKER}:`);
+    if (markerIndex >= 0) {
+      const suffix = combined.slice(markerIndex);
+      if (!suffix.includes("\n") && !suffix.includes("\r")) {
+        processText = combined.slice(0, markerIndex);
+        carry = suffix;
+      }
+    }
+    session.shellStateCarry = carry;
+
+    const markerRegex = /(?:\r?\n)?__CW_STATE__:(busy|idle):(\d+)(?:\r?\n)?/g;
+    const filtered = processText.replace(markerRegex, (_line, mode, jobsRaw) => {
+      session.foregroundBusy = mode === "busy";
+      const jobs = Number.parseInt(String(jobsRaw), 10);
+      session.backgroundJobs = Number.isInteger(jobs) && jobs >= 0 ? jobs : 0;
+      return "";
+    });
+    return filtered;
+  }
+
   #toSessionSnapshot(session) {
     return {
       sessionId: session.sessionId,
@@ -535,6 +624,8 @@ export class TerminalManager {
       signal: session.signal,
       nextSeq: session.nextSeq,
       clientCount: session.clients.size,
+      foregroundBusy: session.foregroundBusy,
+      backgroundJobs: session.backgroundJobs,
     };
   }
 

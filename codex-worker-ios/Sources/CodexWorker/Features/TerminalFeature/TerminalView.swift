@@ -23,6 +23,7 @@ public struct TerminalView: View {
         let canSendInput: Bool
         let errorMessage: String?
         let isClosing: Bool
+        let showRiskNotice: Bool
 
         init(_ state: TerminalFeature.State) {
             self.cwd = state.session?.cwd ?? state.activeThread?.cwd ?? "未绑定目录"
@@ -32,6 +33,7 @@ public struct TerminalView: View {
             self.canSendInput = state.canSendInput
             self.errorMessage = state.errorMessage
             self.isClosing = state.isClosing
+            self.showRiskNotice = state.showRiskNotice
         }
     }
 
@@ -68,6 +70,31 @@ public struct TerminalView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         .padding(.top, 8)
                         .padding(.leading, 8)
+                }
+            }
+            .overlay(alignment: .topTrailing) {
+                if viewStore.showRiskNotice {
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                        Text("该终端直接执行 Mac 命令，不经过审批。")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.95))
+                            .fixedSize(horizontal: false, vertical: true)
+                        Button {
+                            viewStore.send(.dismissRiskNotice)
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(.white.opacity(0.75))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(SwiftUI.Color.orange.opacity(0.2))
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .padding(.top, 8)
+                    .padding(.trailing, 8)
                 }
             }
             .background(
@@ -139,7 +166,10 @@ public struct TerminalView: View {
     private func terminalOutput(viewStore: ViewStore<ViewState, TerminalFeature.Action>) -> some View {
         TerminalOutputSurface(
             text: viewStore.terminalText,
-            placeholder: "终端已连接，输入命令后回车执行。"
+            placeholder: "终端已连接，输入命令后回车执行。",
+            onInput: { payload in
+                viewStore.send(.sendRawInput(payload))
+            }
         )
         .padding(.horizontal, 8)
         .padding(.vertical, 8)
@@ -209,12 +239,14 @@ public struct TerminalView: View {
 private struct TerminalOutputSurface: View {
     let text: String
     let placeholder: String
+    let onInput: (String) -> Void
 
     var body: some View {
 #if canImport(SwiftTerm) && canImport(UIKit)
         TerminalSurfaceRepresentable(
             text: text,
-            placeholder: placeholder
+            placeholder: placeholder,
+            onInput: onInput
         )
 #else
         ScrollView {
@@ -234,6 +266,7 @@ private struct TerminalOutputSurface: View {
 private struct TerminalSurfaceRepresentable: UIViewRepresentable {
     let text: String
     let placeholder: String
+    let onInput: (String) -> Void
 
     func makeUIView(context: Context) -> SwiftTerm.TerminalView {
         let view = SwiftTerm.TerminalView(frame: .zero)
@@ -249,6 +282,7 @@ private struct TerminalSurfaceRepresentable: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: SwiftTerm.TerminalView, context: Context) {
+        context.coordinator.updateInputHandler(onInput)
         context.coordinator.apply(content: text, placeholder: placeholder, to: uiView)
     }
 
@@ -258,6 +292,11 @@ private struct TerminalSurfaceRepresentable: UIViewRepresentable {
 
     final class Coordinator: NSObject, SwiftTerm.TerminalViewDelegate {
         private var lastRendered = ""
+        private var onInput: ((String) -> Void)?
+
+        func updateInputHandler(_ handler: @escaping (String) -> Void) {
+            onInput = handler
+        }
 
         func apply(content: String, placeholder: String, to view: SwiftTerm.TerminalView) {
             let next = content.isEmpty ? "\(placeholder)\r\n" : content
@@ -281,7 +320,11 @@ private struct TerminalSurfaceRepresentable: UIViewRepresentable {
         func sizeChanged(source: SwiftTerm.TerminalView, newCols: Int, newRows: Int) {}
         func setTerminalTitle(source: SwiftTerm.TerminalView, title: String) {}
         func hostCurrentDirectoryUpdate(source: SwiftTerm.TerminalView, directory: String?) {}
-        func send(source: SwiftTerm.TerminalView, data: ArraySlice<UInt8>) {}
+        func send(source: SwiftTerm.TerminalView, data: ArraySlice<UInt8>) {
+            let payload = String(decoding: data, as: UTF8.self)
+            guard !payload.isEmpty else { return }
+            onInput?(payload)
+        }
         func scrolled(source: SwiftTerm.TerminalView, position: Double) {}
         func requestOpenLink(source: SwiftTerm.TerminalView, link: String, params: [String: String]) {}
         func bell(source: SwiftTerm.TerminalView) {}

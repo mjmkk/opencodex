@@ -286,4 +286,60 @@ struct TerminalFeatureTests {
             $0.connectionState = .connecting
         }
     }
+
+    @Test
+    func rawInputKeepsOriginalPayload() async {
+        let thread = makeThread(id: "thr_terminal_raw_input")
+        actor InputRecorder {
+            private var payloads: [String] = []
+
+            func append(_ payload: String) {
+                payloads.append(payload)
+            }
+
+            func snapshot() -> [String] {
+                payloads
+            }
+        }
+
+        let recorder = InputRecorder()
+        var initialState = TerminalFeature.State()
+        initialState.activeThread = thread
+        initialState.isPresented = true
+        initialState.connectionState = .connected
+        initialState.session = TerminalSessionSnapshot(
+            sessionId: "term_raw_input",
+            threadId: thread.threadId,
+            cwd: thread.cwd ?? "/repo",
+            shell: "/bin/zsh",
+            pid: 104,
+            status: "running",
+            createdAt: nil,
+            lastActiveAt: nil,
+            cols: 120,
+            rows: 24,
+            exitCode: nil,
+            signal: nil,
+            nextSeq: 2,
+            clientCount: 1
+        )
+
+        let store = TestStore(initialState: initialState) {
+            TerminalFeature()
+        } withDependencies: { dependencies in
+            dependencies.terminalSocketClient = TerminalSocketClient(
+                subscribe: { _, _ in throw CancellationError() },
+                sendInput: { payload in
+                    await recorder.append(payload)
+                },
+                sendResize: { _, _ in },
+                disconnect: {}
+            )
+        }
+        store.exhaustivity = .off
+
+        await store.send(.sendRawInput("\u{001B}[A"))
+        let payloads = await recorder.snapshot()
+        #expect(payloads == ["\u{001B}[A"])
+    }
 }

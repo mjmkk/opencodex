@@ -44,6 +44,7 @@ test("TerminalManager 基本流程：open/attach/replay/write/resize/close", () 
   const spawned = [];
   const manager = new TerminalManager({
     autoSweep: false,
+    trackShellState: false,
     ptyAdapter: {
       spawn: () => {
         const process = new FakePtyProcess(pidSeed++);
@@ -113,6 +114,7 @@ test("TerminalManager 空闲回收不会误杀有子进程会话", async () => {
   const manager = new TerminalManager({
     idleTtlMs: 25,
     autoSweep: false,
+    trackShellState: false,
     now: () => now,
     hasChildProcessChecker: async () => hasChildren,
     ptyAdapter: {
@@ -142,6 +144,48 @@ test("TerminalManager 空闲回收不会误杀有子进程会话", async () => {
   now += 30;
   await manager.sweepIdleSessionsOnce();
   assert.equal(manager.getSessionById(opened.session.sessionId), null, "无子进程后应被回收");
+
+  manager.shutdown();
+});
+
+test("TerminalManager 空闲回收遵循 shell 忙闲状态", async () => {
+  let now = Date.parse("2026-01-01T00:00:00.000Z");
+  const manager = new TerminalManager({
+    idleTtlMs: 25,
+    autoSweep: false,
+    now: () => now,
+    hasChildProcessChecker: async () => false,
+    ptyAdapter: {
+      spawn: () => new FakePtyProcess(3000),
+    },
+    logger: { warn: () => {} },
+  });
+
+  const opened = manager.openSession({
+    threadId: "thr_busy_state",
+    cwd: "/repo",
+  });
+
+  const session = manager.sessionsById.get(opened.session.sessionId);
+  assert.ok(session);
+
+  session.pty.emitData("__CW_STATE__:busy:0\r\n");
+  manager.attachClient({
+    sessionId: opened.session.sessionId,
+    clientId: "client_busy_state",
+    fromSeq: null,
+    onEvent: () => {},
+  });
+  manager.detachClient(opened.session.sessionId, "client_busy_state");
+
+  now += 30;
+  await manager.sweepIdleSessionsOnce();
+  assert.ok(manager.getSessionById(opened.session.sessionId), "前台忙时不应回收");
+
+  session.pty.emitData("__CW_STATE__:idle:0\r\n");
+  now += 30;
+  await manager.sweepIdleSessionsOnce();
+  assert.equal(manager.getSessionById(opened.session.sessionId), null, "空闲状态应可回收");
 
   manager.shutdown();
 });
