@@ -501,6 +501,7 @@ export async function runRestore(rawOptions = {}) {
         let targetId = sourceId;
         let targetRelative = safeRelative;
         let remapped = false;
+        let overwritten = false;
 
         if (sourceId && existingThreadIds.has(sourceId) && (addOnly || conflictPolicy === "rename")) {
           targetId = createUniqueThreadId(existingThreadIds);
@@ -535,6 +536,7 @@ export async function runRestore(rawOptions = {}) {
           }
 
           if (conflictPolicy === "overwrite") {
+            overwritten = true;
             break;
           }
 
@@ -571,7 +573,11 @@ export async function runRestore(rawOptions = {}) {
           }
         }
 
-        actions.copied += 1;
+        if (overwritten) {
+          actions.overwritten += 1;
+        } else {
+          actions.copied += 1;
+        }
 
         if (targetId) {
           existingThreadIds.add(targetId.toLowerCase());

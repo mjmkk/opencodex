@@ -419,6 +419,64 @@ test("restore conflict=rename should keep session file importable and append ind
   assert.match(indexRaw, new RegExp(importedId));
 });
 
+test("restore conflict=overwrite should record overwritten action for session files", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-sessions-test-"));
+  const fixture = await createFixtureCodexHome(tempRoot);
+
+  const exportDir = path.join(tempRoot, "exported");
+  const reportsDir = path.join(tempRoot, "reports");
+
+  const backup = await runBackup({
+    codexHome: fixture.codexHome,
+    threads: "active",
+    manifestOnly: true,
+    out: exportDir,
+    reportDir: reportsDir,
+  });
+  assert.equal(backup.status, "PASS");
+
+  const exportedSessionPath = path.join(
+    exportDir,
+    "payload",
+    "sessions",
+    "2026",
+    "02",
+    "20",
+    `rollout-2026-02-20T12-33-45-${fixture.activeId}.jsonl`,
+  );
+  await fs.appendFile(
+    exportedSessionPath,
+    `${JSON.stringify({
+      timestamp: "2026-02-20T05:01:00.000Z",
+      type: "response_item",
+      payload: {
+        type: "message",
+        role: "assistant",
+        content: [{ type: "output_text", text: "overwrite-action-test" }],
+      },
+    })}\n`,
+    "utf8",
+  );
+  await refreshChecksumForPath(
+    exportDir,
+    `payload/sessions/2026/02/20/rollout-2026-02-20T12-33-45-${fixture.activeId}.jsonl`,
+  );
+
+  const restore = await runRestore({
+    package: exportDir,
+    targetCodexHome: fixture.codexHome,
+    addOnly: false,
+    conflict: "overwrite",
+    postVerify: false,
+    reportDir: reportsDir,
+  });
+
+  assert.equal(restore.status, "PASS");
+  assert.ok(restore.actions.overwritten >= 1);
+  const restoredRaw = await fs.readFile(fixture.activeFile, "utf8");
+  assert.match(restoredRaw, /overwrite-action-test/);
+});
+
 test("restore dry-run should not fail on fresh target home", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "codex-sessions-test-"));
   const fixture = await createFixtureCodexHome(tempRoot);
@@ -633,15 +691,25 @@ test("zst backup package should be verifiable when tar supports zstd", async (t)
   const reportsDir = path.join(tempRoot, "reports");
   const outPath = path.join(tempRoot, "archive.tar.zst");
 
-  const backup = await runBackup({
-    codexHome: fixture.codexHome,
-    manifestOnly: false,
-    compress: "zst",
-    out: outPath,
-    reportDir: reportsDir,
-  });
+  let backup = null;
+  try {
+    backup = await runBackup({
+      codexHome: fixture.codexHome,
+      manifestOnly: false,
+      compress: "zst",
+      out: outPath,
+      reportDir: reportsDir,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (/zstd|unsupported|unrecognized option/i.test(message)) {
+      t.skip(`当前环境 tar 不支持 zstd，跳过该用例: ${message}`);
+      return;
+    }
+    throw error;
+  }
 
-  if (backup.status !== "PASS") {
+  if (!backup || backup.status !== "PASS") {
     t.skip("当前环境 tar 不支持 zstd，跳过该用例");
     return;
   }
