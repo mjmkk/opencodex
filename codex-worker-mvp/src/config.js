@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 /**
@@ -254,6 +255,8 @@ function loadJsonConfigFile(configPath, cwd) {
  * | CODEX_APP_SERVER_ARGS | app-server 启动参数 | app-server |
  * | WORKER_EVENT_RETENTION | 单任务保留事件数 | 2000 |
  * | WORKER_DB_PATH | SQLite 数据库路径 | ./data/worker.db |
+ * | WORKER_CODEX_HOME | Codex 数据目录（线程导入导出） | ~/.codex |
+ * | WORKER_THREAD_EXPORT_DIR | 线程导出包目录 | 系统临时目录 |
  * | WORKER_CWD | 子进程工作目录 | 当前目录 |
  *
  * @param {Object} [env=process.env] - 环境变量对象（便于测试）
@@ -267,6 +270,8 @@ function loadJsonConfigFile(configPath, cwd) {
  * @returns {string} returns.defaultProjectPath - 默认项目路径
  * @returns {number} returns.eventRetention - 事件保留条数
  * @returns {string} returns.dbPath - 数据库路径
+ * @returns {string} returns.codexHome - Codex 数据目录
+ * @returns {string} returns.threadExportDir - 线程导出目录
  * @returns {Object} returns.rpc - JSON-RPC 配置
  * @returns {string|null} returns.configFilePath - 实际生效的配置文件路径
  * @throws {Error} 如果配置无效（如端口不是正整数）
@@ -337,6 +342,14 @@ export function loadConfig(env = process.env, options = {}) {
     // 默认落盘到仓库内，方便单机 MVP 使用与排查
     `${cwd}/data/worker.db`;
 
+  const codexHomeFromFile = resolvePathFromFile(fileConfig.codexHome, configFileBaseDir);
+  const threadExportDirFromFile = resolvePathFromFile(fileConfig.threadExportDir, configFileBaseDir);
+  const codexHome = asNonEmptyString(env.WORKER_CODEX_HOME) || codexHomeFromFile || path.join(os.homedir(), ".codex");
+  const threadExportDir =
+    asNonEmptyString(env.WORKER_THREAD_EXPORT_DIR) ||
+    threadExportDirFromFile ||
+    path.join(os.tmpdir(), "codex-thread-exports");
+
   // APNs（Apple Push Notification service）配置
   const apnsTeamId = asNonEmptyString(env.APNS_TEAM_ID) || asNonEmptyString(fileApns.teamId) || null;
   const apnsKeyId = asNonEmptyString(env.APNS_KEY_ID) || asNonEmptyString(fileApns.keyId) || null;
@@ -394,6 +407,8 @@ export function loadConfig(env = process.env, options = {}) {
     defaultProjectPath,
     eventRetention: /** @type {number} */ (eventRetention),
     dbPath,
+    codexHome,
+    threadExportDir,
     rpc: {
       command,
       args,

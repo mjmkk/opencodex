@@ -129,3 +129,16 @@ test("tailscaleServe.service 显式为 null 时走节点级路由", () => {
     }
   );
 });
+
+test("线程导入导出目录支持环境变量覆盖", () => {
+  const config = loadConfig(
+    {
+      WORKER_CODEX_HOME: "/tmp/custom-codex-home",
+      WORKER_THREAD_EXPORT_DIR: "/tmp/custom-thread-exports",
+    },
+    { argv: [], cwd: "/tmp/workspace" },
+  );
+
+  assert.equal(config.codexHome, "/tmp/custom-codex-home");
+  assert.equal(config.threadExportDir, "/tmp/custom-thread-exports");
+});

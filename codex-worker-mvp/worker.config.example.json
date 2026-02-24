@@ -5,6 +5,8 @@
   "defaultProjectPath": "/Users/Apple/Dev/OpenCodex",
   "eventRetention": 2000,
   "dbPath": "./data/worker.db",
+  "codexHome": "/Users/Apple/.codex",
+  "threadExportDir": "/tmp/codex-thread-exports",
   "tailscaleServe": {
     "enabled": false,
     "service": "svc:opencodex",
