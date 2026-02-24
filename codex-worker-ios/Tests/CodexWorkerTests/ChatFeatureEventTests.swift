@@ -235,4 +235,86 @@ struct ChatFeatureEventTests {
         #expect(store.state.isApprovalLocked == true)
         #expect(store.state.currentJobId == "job_replay_approval_1")
     }
+
+    @Test
+    func batchedStreamEventsApplyInOrderAndDeduplicateByCursor() async {
+        var initialState = ChatFeature.State()
+        initialState.currentJobId = "job_batch_1"
+        let store = TestStore(initialState: initialState) {
+            ChatFeature()
+        }
+        store.exhaustivity = .off
+
+        let deltaEnvelope = EventEnvelope(
+            type: EventType.itemAgentMessageDelta.rawValue,
+            ts: "2026-02-17T00:10:00.000Z",
+            jobId: "job_batch_1",
+            seq: 1,
+            payload: [
+                "itemId": .string("assistant_batch_item"),
+                "delta": .string("hello"),
+            ]
+        )
+        let duplicatedDeltaEnvelope = EventEnvelope(
+            type: EventType.itemAgentMessageDelta.rawValue,
+            ts: "2026-02-17T00:10:00.100Z",
+            jobId: "job_batch_1",
+            seq: 1,
+            payload: [
+                "itemId": .string("assistant_batch_item"),
+                "delta": .string("ignored"),
+            ]
+        )
+        let completedEnvelope = EventEnvelope(
+            type: EventType.itemCompleted.rawValue,
+            ts: "2026-02-17T00:10:00.200Z",
+            jobId: "job_batch_1",
+            seq: 2,
+            payload: [
+                "item": .object([
+                    "id": .string("assistant_batch_item"),
+                    "type": .string("agentMessage"),
+                ]),
+            ]
+        )
+
+        await store.send(.streamEventsReceived([
+            deltaEnvelope,
+            duplicatedDeltaEnvelope,
+            completedEnvelope,
+        ]))
+
+        #expect(store.state.cursor == 2)
+        #expect(store.state.messages.count == 1)
+        #expect(store.state.messages.first?.id == "assistant_batch_item")
+        #expect(store.state.messages.first?.text == "hello")
+        #expect(store.state.pendingAssistantDeltas.isEmpty)
+    }
+
+    @Test
+    func batchedStreamEventsIgnoreDifferentJobId() async {
+        var initialState = ChatFeature.State()
+        initialState.currentJobId = "job_batch_target"
+        let store = TestStore(initialState: initialState) {
+            ChatFeature()
+        }
+        store.exhaustivity = .off
+
+        let otherJobEnvelope = EventEnvelope(
+            type: EventType.itemAgentMessageDelta.rawValue,
+            ts: "2026-02-17T00:12:00.000Z",
+            jobId: "job_batch_other",
+            seq: 1,
+            payload: [
+                "itemId": .string("assistant_other_item"),
+                "delta": .string("should be ignored"),
+            ]
+        )
+
+        await store.send(.streamEventsReceived([otherJobEnvelope]))
+
+        #expect(store.state.cursor == -1)
+        #expect(store.state.messages.isEmpty)
+        #expect(store.state.pendingAssistantDeltas.isEmpty)
+    }
 }

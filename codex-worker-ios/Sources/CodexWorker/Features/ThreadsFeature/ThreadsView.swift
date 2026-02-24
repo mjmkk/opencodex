@@ -116,10 +116,12 @@ public struct ThreadsView: View {
                     }
                 }
                 .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
+                .listRowSpacing(6)
                 .refreshable { viewStore.send(.refresh) }
             }
             .onAppear { viewStore.send(.onAppear) }
-            .background(Color(.systemBackground))
+            .background(Color(uiColor: .systemGroupedBackground))
         }
     }
 
@@ -140,6 +142,7 @@ public struct ThreadsView: View {
                             .font(.headline)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("收起线程列表")
                 }
 
                 Text("Threads")
@@ -158,6 +161,7 @@ public struct ThreadsView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(viewStore.isCreating)
+                    .accessibilityLabel("刷新线程列表")
                 }
 
                 if viewStore.isCreating {
@@ -171,6 +175,7 @@ public struct ThreadsView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(viewStore.isLoading)
+                    .accessibilityLabel("新建线程")
                 }
             }
 
@@ -275,6 +280,9 @@ public struct ThreadsView: View {
         }
         .buttonStyle(.plain)
         .disabled(isArchiving)
+        .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button(role: .destructive) {
                 viewStore.send(.archiveTapped(thread.threadId))
@@ -302,6 +310,8 @@ private func dismissKeyboard() {
 }
 
 private struct ThreadRow: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     let thread: Thread
     let isSelected: Bool
     let showCwd: Bool
@@ -356,7 +366,46 @@ private struct ThreadRow: View {
                     .lineLimit(2)
             }
         }
-        .padding(.vertical, 5)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(rowBackground)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(rowBorder, lineWidth: isSelected ? 1.2 : 0.8)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .shadow(color: rowShadow, radius: isSelected ? 6 : 2, x: 0, y: 1)
+    }
+
+    private var rowBackground: some View {
+        Group {
+            if isSelected {
+                LinearGradient(
+                    colors: [
+                        Color.accentColor.opacity(colorScheme == .dark ? 0.32 : 0.18),
+                        Color.accentColor.opacity(colorScheme == .dark ? 0.20 : 0.09),
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            } else {
+                Color(uiColor: colorScheme == .dark ? .secondarySystemBackground : .systemBackground)
+            }
+        }
+    }
+
+    private var rowBorder: Color {
+        if isSelected {
+            return Color.accentColor.opacity(colorScheme == .dark ? 0.75 : 0.6)
+        }
+        return Color(uiColor: .separator).opacity(colorScheme == .dark ? 0.5 : 0.24)
+    }
+
+    private var rowShadow: Color {
+        if isSelected {
+            return Color.accentColor.opacity(colorScheme == .dark ? 0.18 : 0.16)
+        }
+        return Color.black.opacity(colorScheme == .dark ? 0.18 : 0.05)
     }
 }
 
