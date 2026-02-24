@@ -140,6 +140,7 @@ public struct ThreadsView: View {
                             .font(.headline)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("收起线程列表")
                 }
 
                 Text("Threads")
@@ -158,6 +159,7 @@ public struct ThreadsView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(viewStore.isCreating)
+                    .accessibilityLabel("刷新线程列表")
                 }
 
                 if viewStore.isCreating {
@@ -171,6 +173,7 @@ public struct ThreadsView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(viewStore.isLoading)
+                    .accessibilityLabel("新建线程")
                 }
             }
 

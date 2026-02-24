@@ -16,6 +16,8 @@ public struct ChatFeature {
         case threadHistoryLoad
     }
     private static let threadHistoryPageLimit = 1000
+    private static let streamBatchSize = 24
+    private static let streamBatchMaxDelay: Duration = .milliseconds(80)
 
     private struct ThreadHistorySyncOutcome: Sendable {
         let events: [EventEnvelope]
@@ -64,6 +66,7 @@ public struct ChatFeature {
         case startStreaming(jobId: String, cursor: Int)
         case stopStreaming
         case streamEventReceived(EventEnvelope)
+        case streamEventsReceived([EventEnvelope])
         case streamFailed(CodexError)
         case clearError
         case setApprovalLocked(Bool)
@@ -294,17 +297,18 @@ public struct ChatFeature {
                                 bootstrapPage = try await apiClient.listEvents(jobId, nil)
                             }
 
-                            for envelope in bootstrapPage.data {
-                                await send(.streamEventReceived(envelope))
+                            if !bootstrapPage.data.isEmpty {
+                                await Self.sendEventsInBatches(
+                                    bootstrapPage.data,
+                                    send: send
+                                )
                             }
                             if Task.isCancelled {
                                 return
                             }
 
                             let stream = try await sseClient.subscribe(jobId, bootstrapPage.nextCursor)
-                            for await envelope in stream {
-                                await send(.streamEventReceived(envelope))
-                            }
+                            await Self.forwardStreamEvents(stream, send: send)
                         } catch is CancellationError {
                             return
                         } catch {
@@ -330,33 +334,10 @@ public struct ChatFeature {
                 )
 
             case .streamEventReceived(let envelope):
-                guard state.currentJobId == nil || envelope.jobId == state.currentJobId else {
-                    return .none
-                }
-                if envelope.seq <= state.cursor {
-                    return .none
-                }
-                state.cursor = max(state.cursor, envelope.seq)
-                let streamStateEffect = updateStreamConnectionState(
-                    state: &state,
-                    newValue: .connected
-                )
-                let uiEffect = self.handleLiveEvent(state: &state, envelope: envelope)
-                guard let threadId = state.activeThread?.threadId else {
-                    return .merge(streamStateEffect, uiEffect)
-                }
-                return .merge(
-                    streamStateEffect,
-                    uiEffect,
-                    .run { _ in
-                        @Dependency(\.threadHistoryStore) var threadHistoryStore
-                        do {
-                            try await threadHistoryStore.appendLiveEvent(threadId, envelope)
-                        } catch {
-                            // 本地缓存失败不应影响主链路（消息流展示优先）。
-                        }
-                    }
-                )
+                return handleStreamEnvelopes(state: &state, envelopes: [envelope])
+
+            case .streamEventsReceived(let envelopes):
+                return handleStreamEnvelopes(state: &state, envelopes: envelopes)
 
             case .streamFailed(let error):
                 state.isStreaming = false
@@ -380,6 +361,94 @@ public struct ChatFeature {
             case .binding:
                 return .none
             }
+        }
+    }
+
+    private func handleStreamEnvelopes(
+        state: inout State,
+        envelopes: [EventEnvelope]
+    ) -> Effect<Action> {
+        guard !envelopes.isEmpty else { return .none }
+
+        var acceptedEvents: [EventEnvelope] = []
+        var effects: [Effect<Action>] = []
+
+        for envelope in envelopes {
+            guard state.currentJobId == nil || envelope.jobId == state.currentJobId else {
+                continue
+            }
+            if envelope.seq <= state.cursor {
+                continue
+            }
+            state.cursor = max(state.cursor, envelope.seq)
+            acceptedEvents.append(envelope)
+            effects.append(handleLiveEvent(state: &state, envelope: envelope))
+        }
+
+        guard !acceptedEvents.isEmpty else {
+            return .none
+        }
+
+        let streamStateEffect = updateStreamConnectionState(
+            state: &state,
+            newValue: .connected
+        )
+        effects.insert(streamStateEffect, at: 0)
+
+        if let threadId = state.activeThread?.threadId {
+            let eventsToPersist = acceptedEvents
+            effects.append(
+                .run { _ in
+                    @Dependency(\.threadHistoryStore) var threadHistoryStore
+                    for envelope in eventsToPersist {
+                        do {
+                            try await threadHistoryStore.appendLiveEvent(threadId, envelope)
+                        } catch {
+                            // 本地缓存失败不应影响主链路（消息流展示优先）。
+                        }
+                    }
+                }
+            )
+        }
+
+        return .merge(effects)
+    }
+
+    private static func sendEventsInBatches(
+        _ events: [EventEnvelope],
+        send: Send<Action>
+    ) async {
+        guard !events.isEmpty else { return }
+        var index = 0
+        while index < events.count {
+            let end = min(index + streamBatchSize, events.count)
+            await send(.streamEventsReceived(Array(events[index ..< end])))
+            index = end
+        }
+    }
+
+    private static func forwardStreamEvents(
+        _ stream: AsyncStream<EventEnvelope>,
+        send: Send<Action>
+    ) async {
+        let clock = ContinuousClock()
+        var buffered: [EventEnvelope] = []
+        var lastFlushAt = clock.now
+
+        for await envelope in stream {
+            buffered.append(envelope)
+            let reachedBatchSize = buffered.count >= streamBatchSize
+            let reachedDelay = lastFlushAt.duration(to: clock.now) >= streamBatchMaxDelay
+            if reachedBatchSize || reachedDelay {
+                let payload = buffered
+                buffered.removeAll(keepingCapacity: true)
+                await send(.streamEventsReceived(payload))
+                lastFlushAt = clock.now
+            }
+        }
+
+        if !buffered.isEmpty {
+            await send(.streamEventsReceived(buffered))
         }
     }
 
@@ -584,18 +653,12 @@ public struct ChatFeature {
             replay.currentJobId = envelope.jobId
             lastSeqByJob[envelope.jobId] = max(lastSeqByJob[envelope.jobId] ?? -1, envelope.seq)
 
-            var messages = replay.messages
-            var pendingAssistantDeltas = replay.pendingAssistantDeltas
-            var jobState = replay.jobState
-            var isApprovalLocked = replay.isApprovalLocked
-            var errorMessage = replay.errorMessage
-
             let output = applyEventEnvelope(
-                messages: &messages,
-                pendingAssistantDeltas: &pendingAssistantDeltas,
-                jobState: &jobState,
-                isApprovalLocked: &isApprovalLocked,
-                errorMessage: &errorMessage,
+                messages: &replay.messages,
+                pendingAssistantDeltas: &replay.pendingAssistantDeltas,
+                jobState: &replay.jobState,
+                isApprovalLocked: &replay.isApprovalLocked,
+                errorMessage: &replay.errorMessage,
                 envelope: envelope,
                 mode: .replay
             )
@@ -614,12 +677,6 @@ public struct ChatFeature {
                     approvalOrder.removeAll { $0 == resolved.approvalId }
                 }
             }
-
-            replay.messages = messages
-            replay.pendingAssistantDeltas = pendingAssistantDeltas
-            replay.jobState = jobState
-            replay.isApprovalLocked = isApprovalLocked
-            replay.errorMessage = errorMessage
         }
 
         if replay.jobState?.isActive != true {

@@ -13,6 +13,32 @@ import SwiftUI
 public struct CodexChatView: View {
     @Environment(\.colorScheme) private var colorScheme
 
+    private struct ViewState: Equatable {
+        let activeThreadId: String?
+        let activeThreadTitle: String
+        let messages: [Message]
+        let shouldShowGeneratingIndicator: Bool
+        let isApprovalLocked: Bool
+        let jobState: JobState?
+        let errorMessage: String?
+        let isSending: Bool
+        let isStreaming: Bool
+        let canInput: Bool
+
+        init(_ state: ChatFeature.State) {
+            self.activeThreadId = state.activeThread?.threadId
+            self.activeThreadTitle = state.activeThread?.displayName ?? "未选择线程"
+            self.messages = state.messages
+            self.shouldShowGeneratingIndicator = state.shouldShowGeneratingIndicator
+            self.isApprovalLocked = state.isApprovalLocked
+            self.jobState = state.jobState
+            self.errorMessage = state.errorMessage
+            self.isSending = state.isSending
+            self.isStreaming = state.isStreaming
+            self.canInput = state.activeThread != nil && !state.isApprovalLocked
+        }
+    }
+
     let store: StoreOf<ChatFeature>
     let connectionState: ConnectionState
     let onSidebarTap: (() -> Void)?
@@ -43,7 +69,7 @@ public struct CodexChatView: View {
     }
 
     public var body: some View {
-        WithViewStore(store, observe: { $0 }) { viewStore in
+        WithViewStore(store, observe: ViewState.init) { viewStore in
             VStack(spacing: 0) {
                 header(viewStore: viewStore)
 
@@ -78,8 +104,8 @@ public struct CodexChatView: View {
                 .showDateHeaders(false)
                 .showMessageTimeView(false)
                 .keyboardDismissMode(.onDrag)
-                .setAvailableInputs((viewStore.isApprovalLocked || viewStore.activeThread == nil) ? [] : [.text])
-                .id(viewStore.activeThread?.threadId ?? "no-thread")
+                .setAvailableInputs(viewStore.canInput ? [.text] : [])
+                .id(viewStore.activeThreadId ?? "no-thread")
                 .chatTheme(
                     colors: ChatTheme.Colors(
                         mainBG: chatMainBackgroundColor,
@@ -130,7 +156,7 @@ public struct CodexChatView: View {
     }
 
     @ViewBuilder
-    private func header(viewStore: ViewStoreOf<ChatFeature>) -> some View {
+    private func header(viewStore: ViewStore<ViewState, ChatFeature.Action>) -> some View {
         let selectedModeTint = executionAccessMode == .fullAccess ? Color.red : Color.blue
 
         VStack(alignment: .leading, spacing: 6) {
@@ -142,8 +168,9 @@ public struct CodexChatView: View {
                         .font(.headline)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("打开线程列表")
 
-                Text(viewStore.activeThread?.displayName ?? "未选择线程")
+                Text(viewStore.activeThreadTitle)
                     .font(.headline)
                     .lineLimit(1)
                     .truncationMode(.tail)
@@ -182,6 +209,7 @@ public struct CodexChatView: View {
                         .font(.headline)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("打开设置")
             }
 
             if let state = viewStore.jobState {
