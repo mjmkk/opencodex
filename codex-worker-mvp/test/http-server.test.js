@@ -270,3 +270,79 @@ test("HTTP 最小流程：创建线程 -> 发起任务 -> 查询事件", async (
   assert.equal(unarchivePayload.threadId, "thr_archived");
   assert.equal(unarchivePayload.status, "active");
 });
+
+test("HTTP 线程导出/导入接口", async (t) => {
+  const calls = {
+    export: null,
+    import: null,
+  };
+
+  const service = {
+    exportThread: async (threadId, payload) => {
+      calls.export = { threadId, payload };
+      return {
+        exportId: "texp_123",
+        packagePath: "/tmp/codex-thread-exports/texp_123.json",
+      };
+    },
+    importThreadAsNew: async (payload) => {
+      calls.import = payload;
+      return {
+        sourceThreadId: "thr_source",
+        targetThreadId: "thr_target",
+        packagePath: payload.packagePath,
+        thread: {
+          threadId: "thr_target",
+          preview: "导入线程",
+          cwd: "/repo",
+          createdAt: 1,
+          updatedAt: 2,
+          modelProvider: "openai",
+          pendingApprovalCount: 0,
+        },
+      };
+    },
+  };
+
+  const server = createHttpServer({
+    service,
+    authToken: "token123",
+    logger: {
+      error: () => {},
+    },
+  });
+
+  const address = await server.listen(0, "127.0.0.1");
+  const base = `http://127.0.0.1:${address.port}`;
+
+  t.after(async () => {
+    await server.close();
+  });
+
+  const headers = {
+    Authorization: "Bearer token123",
+    "Content-Type": "application/json",
+  };
+
+  const exportRes = await fetch(`${base}/v1/threads/thr_source/export`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ exportDir: "/tmp/codex-thread-exports" }),
+  });
+  assert.equal(exportRes.status, 200);
+  const exportPayload = await exportRes.json();
+  assert.equal(exportPayload.export.exportId, "texp_123");
+  assert.equal(calls.export.threadId, "thr_source");
+  assert.equal(calls.export.payload.exportDir, "/tmp/codex-thread-exports");
+
+  const importRes = await fetch(`${base}/v1/threads/import`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ packagePath: "/tmp/codex-thread-exports/texp_123.json" }),
+  });
+  assert.equal(importRes.status, 201);
+  const importPayload = await importRes.json();
+  assert.equal(importPayload.import.targetThreadId, "thr_target");
+  assert.equal(importPayload.thread.threadId, "thr_target");
+  assert.equal(calls.import.packagePath, "/tmp/codex-thread-exports/texp_123.json");
+});
