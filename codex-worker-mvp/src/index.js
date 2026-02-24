@@ -98,6 +98,8 @@ async function main() {
     projectPaths: config.projectPaths,
     defaultProjectPath: config.defaultProjectPath,
     eventRetention: config.eventRetention,
+    codexHome: config.codexHome,
+    threadExportDir: config.threadExportDir,
     pushNotifier: apnsNotifier,
     logger: {
       warn: (msg) => log("warn", msg),

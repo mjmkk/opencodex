@@ -21,6 +21,12 @@
 
 import { HttpError } from "./errors.js";
 import { createId } from "./ids.js";
+import {
+  defaultCodexHome,
+  defaultThreadExportDir,
+  exportThreadToPackage,
+  importThreadFromPackageAsNew,
+} from "./thread-transfer.js";
 import { mapDecisionToRpc } from "./worker-service/approval.js";
 import {
   ACTIVE_STATES,
@@ -124,6 +130,8 @@ export class WorkerService {
    * @param {string} [options.defaultProjectPath] - 默认项目路径
    * @param {number} [options.eventRetention=2000] - 单任务保留事件数
    * @param {number} [options.threadEventsCacheTtlMs=5000] - 线程历史快照缓存 TTL（毫秒）
+   * @param {string} [options.codexHome] - Codex 数据目录（默认 ~/.codex）
+   * @param {string} [options.threadExportDir] - 线程导出包目录（默认系统临时目录）
    * @param {Object} [options.pushNotifier] - 推送通知器（可选）
    * @param {Object} [options.logger] - 日志器
    */
@@ -137,6 +145,10 @@ export class WorkerService {
     this.threadEventsCacheTtlMs = Number.isFinite(options.threadEventsCacheTtlMs)
       ? Math.max(0, Number(options.threadEventsCacheTtlMs))
       : THREAD_EVENTS_CACHE_TTL_MS_DEFAULT;
+    this.codexHome = isNonEmptyString(options.codexHome) ? options.codexHome.trim() : defaultCodexHome();
+    this.threadExportDir = isNonEmptyString(options.threadExportDir)
+      ? options.threadExportDir.trim()
+      : defaultThreadExportDir();
 
     // 处理项目路径配置
     const providedProjects = Array.isArray(options.projectPaths)
@@ -507,6 +519,56 @@ export class WorkerService {
     return {
       threadId,
       status: "active",
+    };
+  }
+
+  /**
+   * 导出指定线程为可导入包
+   *
+   * @param {string} threadId - 线程 ID
+   * @param {Object} [payload={}] - 导出参数
+   * @param {string} [payload.exportDir] - 导出目录（可选）
+   * @returns {Promise<Object>} 导出结果
+   */
+  async exportThread(threadId, payload = {}) {
+    this.#validateThreadId(threadId);
+    const exportDir = isNonEmptyString(payload.exportDir) ? payload.exportDir.trim() : this.threadExportDir;
+    return exportThreadToPackage({
+      codexHome: this.codexHome,
+      threadId,
+      exportDir,
+    });
+  }
+
+  /**
+   * 从导出包导入线程，并强制创建新线程 ID
+   *
+   * @param {Object} payload
+   * @param {string} payload.packagePath - 导出包路径
+   * @returns {Promise<Object>} 导入结果
+   */
+  async importThreadAsNew(payload = {}) {
+    const packagePath = isNonEmptyString(payload.packagePath) ? payload.packagePath.trim() : "";
+    if (!packagePath) {
+      throw new HttpError(400, "INVALID_PACKAGE_PATH", "packagePath 不能为空");
+    }
+
+    const result = await importThreadFromPackageAsNew({
+      codexHome: this.codexHome,
+      packagePath,
+    });
+
+    let thread = null;
+    try {
+      thread = await this.activateThread(result.targetThreadId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger?.warn?.(`[thread-import] activateThread failed: threadId=${result.targetThreadId}, error=${message}`);
+    }
+
+    return {
+      ...result,
+      thread,
     };
   }
 

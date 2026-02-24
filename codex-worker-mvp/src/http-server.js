@@ -262,6 +262,8 @@ function match(pathname, pattern) {
  * | POST | /v1/threads/{id}/activate | 激活线程 | 是 |
  * | POST | /v1/threads/{id}/archive | 归档线程 | 是 |
  * | POST | /v1/threads/{id}/unarchive | 恢复归档线程 | 是 |
+ * | POST | /v1/threads/{id}/export | 导出指定线程 | 是 |
+ * | POST | /v1/threads/import | 导入线程为新线程 | 是 |
  * | GET | /v1/threads/{id}/events | 获取线程历史事件 | 是 |
  * | POST | /v1/threads/{id}/turns | 发送消息 | 是 |
  * | GET | /v1/jobs/{id} | 获取任务 | 是 |
@@ -365,6 +367,24 @@ export function createHttpServer(options) {
         const threadId = decodeURIComponent(unarchiveMatch[0]);
         const result = await service.unarchiveThread(threadId);
         sendJson(res, 200, result);
+        return;
+      }
+
+      // POST /v1/threads/{threadId}/export - 导出指定线程
+      const exportMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/export$/);
+      if (method === "POST" && exportMatch) {
+        const threadId = decodeURIComponent(exportMatch[0]);
+        const body = await readJsonBody(req);
+        const result = await service.exportThread(threadId, body);
+        sendJson(res, 200, { export: result });
+        return;
+      }
+
+      // POST /v1/threads/import - 导入线程并生成新线程
+      if (method === "POST" && pathname === "/v1/threads/import") {
+        const body = await readJsonBody(req);
+        const result = await service.importThreadAsNew(body);
+        sendJson(res, 201, { import: result, thread: result.thread });
         return;
       }
 

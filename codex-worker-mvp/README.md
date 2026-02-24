@@ -148,6 +148,8 @@ https://mac-mini.tail3c834b.ts.net (tailnet only)
 - `defaultProjectPath`：可选，默认项目路径
 - `eventRetention`：可选，单任务事件保留条数（最小 `100`）
 - `dbPath`：可选，SQLite 路径
+- `codexHome`：可选，Codex 数据目录（线程导入导出使用，默认 `~/.codex`）
+- `threadExportDir`：可选，线程导出包目录（默认系统临时目录）
 - `tailscaleServe.enabled`：可选，是否启用 Tailscale Serve 自动收敛（默认 `false`）
 - `tailscaleServe.service`：可选，Serve service 名称（默认 `svc:opencodex`；显式 `null` 表示节点级 Serve）
 - `tailscaleServe.path`：可选，挂载路径（默认 `/`）
@@ -169,6 +171,8 @@ https://mac-mini.tail3c834b.ts.net (tailnet only)
 - `CODEX_APP_SERVER_ARGS`：可选，app-server 启动参数，逗号分隔；默认 `app-server`
 - `WORKER_EVENT_RETENTION`：可选，单任务保留事件条数，默认 `2000`
 - `WORKER_DB_PATH`：可选，SQLite 数据库路径；默认 `./data/worker.db`
+- `WORKER_CODEX_HOME`：可选，Codex 数据目录；默认 `~/.codex`
+- `WORKER_THREAD_EXPORT_DIR`：可选，线程导出包目录；默认系统临时目录
 - `APNS_ENABLED`：可选，是否启用 APNs 推送（`true/false`）
 - `APNS_TEAM_ID`：可选，Apple Team ID（启用 APNs 时必填）
 - `APNS_KEY_ID`：可选，APNs Key ID（启用 APNs 时必填）
@@ -197,6 +201,8 @@ https://mac-mini.tail3c834b.ts.net (tailnet only)
 - `GET /v1/threads`
 - `POST /v1/threads/{tid}/activate`
 - `POST /v1/threads/{tid}/archive`
+- `POST /v1/threads/{tid}/export`
+- `POST /v1/threads/import`
 - `POST /v1/threads/{tid}/turns`
 - `GET /v1/jobs/{jid}`
 - `GET /v1/jobs/{jid}/events?cursor=N`（支持 JSON 与 SSE）
@@ -221,7 +227,43 @@ https://mac-mini.tail3c834b.ts.net (tailnet only)
 - `accept_with_execpolicy_amendment` 仅用于命令审批。
 - 该决策下必须提供非空 `execPolicyAmendment`。
 
-## 6. 测试
+## 6. 线程导入导出
+
+`POST /v1/threads/{tid}/export` 请求体（可选）：
+
+```json
+{
+  "exportDir": "/tmp/codex-thread-exports"
+}
+```
+
+返回示例：
+
+```json
+{
+  "export": {
+    "exportId": "texp_20260223-120000_abcd1234",
+    "packagePath": "/tmp/codex-thread-exports/texp_20260223-120000_abcd1234.json",
+    "sourceThreadId": "019c....",
+    "sourceRelativePath": "sessions/2026/02/20/rollout-....jsonl",
+    "sizeBytes": 3920843
+  }
+}
+```
+
+`POST /v1/threads/import` 请求体：
+
+```json
+{
+  "packagePath": "/tmp/codex-thread-exports/texp_20260223-120000_abcd1234.json"
+}
+```
+
+说明：
+- 导入总是创建新线程 ID（不会覆盖原线程）。
+- 导入成功后会写入 `session_index.jsonl`，并尝试激活线程。
+
+## 7. 测试
 
 ```bash
 cd /Users/chenken/Documents/opencodex/codex-worker-mvp
