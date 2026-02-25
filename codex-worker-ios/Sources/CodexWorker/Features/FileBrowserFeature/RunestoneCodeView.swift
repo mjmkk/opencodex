@@ -126,24 +126,19 @@ public struct RunestoneCodeView: UIViewRepresentable {
 
     private func textLocation(forLine line: Int, in content: String) -> Int {
         guard line > 1 else { return 0 }
-        let nsText = content as NSString
+        // 单次线性扫描收集行首偏移，避免对每一行重复 range(of:) 导致 O(n²) 复杂度。
+        var offset = content.startIndex
         var currentLine = 1
-        var scanLocation = 0
-
-        while scanLocation < nsText.length {
+        while offset < content.endIndex {
             if currentLine >= line {
-                return scanLocation
+                return content.distance(from: content.startIndex, to: offset)
             }
-            let searchRange = NSRange(location: scanLocation, length: nsText.length - scanLocation)
-            let newlineRange = nsText.range(of: "\n", options: [], range: searchRange)
-            if newlineRange.location == NSNotFound {
-                return nsText.length
+            if content[offset] == "\n" {
+                currentLine += 1
             }
-            scanLocation = newlineRange.location + newlineRange.length
-            currentLine += 1
+            content.formIndex(after: &offset)
         }
-
-        return nsText.length
+        return content.count
     }
 
     private func backgroundColor(for colorScheme: ColorScheme) -> UIColor {

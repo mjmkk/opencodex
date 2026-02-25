@@ -101,6 +101,7 @@ public struct FileBrowserFeature {
                 state.viewer = nil
                 state.errorMessage = nil
                 state.entries = []
+                state.searchQuery = ""
                 state.searchResults = []
                 state.treeNextCursor = nil
                 state.treeHasMore = false
@@ -219,6 +220,11 @@ public struct FileBrowserFeature {
 
             case .searchQueryChanged(let query):
                 state.searchQuery = query
+                if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    state.searchResults = []
+                    state.searchHasMore = false
+                    state.searchNextCursor = nil
+                }
                 return .none
 
             case .runSearch:
@@ -230,7 +236,7 @@ public struct FileBrowserFeature {
                     return .none
                 }
                 state.isSearching = true
-                return .run { [path = state.currentPath] send in
+                return .run { [path = state.effectiveRootPath] send in
                     @Dependency(\.apiClient) var apiClient
                     await send(
                         .searchResponse(
@@ -270,7 +276,7 @@ public struct FileBrowserFeature {
                 guard !trimmed.isEmpty else { return .none }
 
                 state.isSearching = true
-                return .run { [path = state.currentPath] send in
+                return .run { [path = state.effectiveRootPath] send in
                     @Dependency(\.apiClient) var apiClient
                     await send(
                         .searchResponse(

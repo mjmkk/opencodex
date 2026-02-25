@@ -130,7 +130,8 @@ actor LiveFileSystemStore {
     }
 
     func loadTreeCache(rootPath: String, path: String) throws -> FileTreeResponse? {
-        try dbQueue.write { db in
+        // 用只读事务执行 SELECT，避免不必要的写锁争用。
+        let result: FileTreeResponse? = try dbQueue.read { db in
             let row = try Row.fetchOne(
                 db,
                 sql: """
@@ -147,18 +148,22 @@ actor LiveFileSystemStore {
             else {
                 return nil
             }
-
-            try db.execute(
-                sql: """
-                UPDATE fs_dir_cache
-                SET accessedAtMs = ?
-                WHERE rootPath = ? AND path = ?
-                """,
-                arguments: [Self.nowMs(), rootPath, path]
-            )
-
             return try decoder.decode(FileTreeResponse.self, from: payloadData)
         }
+        // 仅命中缓存时才异步更新访问时间（LRU），不需要与读操作原子化。
+        if result != nil {
+            try dbQueue.write { db in
+                try db.execute(
+                    sql: """
+                    UPDATE fs_dir_cache
+                    SET accessedAtMs = ?
+                    WHERE rootPath = ? AND path = ?
+                    """,
+                    arguments: [Self.nowMs(), rootPath, path]
+                )
+            }
+        }
+        return result
     }
 
     func saveTreeCache(rootPath: String, path: String, response: FileTreeResponse) throws {
@@ -252,7 +257,9 @@ actor LiveFileSystemStore {
     }
 
     func loadLatestFileChunkCache(rootPath: String, path: String) throws -> FileContentPayload? {
-        try dbQueue.write { db in
+        // 用只读事务执行 SELECT，避免不必要的写锁争用。
+        struct RowSnapshot { var etag: String; var fromLine: Int; var toLine: Int; var payload: FileContentPayload }
+        let snapshot: RowSnapshot? = try dbQueue.read { db in
             let row = try Row.fetchOne(
                 db,
                 sql: """
@@ -270,7 +277,12 @@ actor LiveFileSystemStore {
             else {
                 return nil
             }
-
+            let payload = try decoder.decode(FileContentPayload.self, from: payloadData)
+            return RowSnapshot(etag: row["etag"], fromLine: row["fromLine"], toLine: row["toLine"], payload: payload)
+        }
+        guard let snapshot else { return nil }
+        // 仅命中缓存时才异步更新访问时间（LRU），不需要与读操作原子化。
+        try dbQueue.write { db in
             try db.execute(
                 sql: """
                 UPDATE fs_file_chunk_cache
@@ -281,24 +293,27 @@ actor LiveFileSystemStore {
                     Self.nowMs(),
                     rootPath,
                     path,
-                    row["etag"],
-                    row["fromLine"],
-                    row["toLine"],
+                    snapshot.etag,
+                    snapshot.fromLine,
+                    snapshot.toLine,
                 ]
             )
-
-            return try decoder.decode(FileContentPayload.self, from: payloadData)
         }
+        return snapshot.payload
     }
 
     func saveRevision(path: String, etag: String, content: String) throws {
         try dbQueue.write { db in
+            // 同一 etag 已存在时跳过插入，避免重复打开同一文件产生重复修订记录。
             try db.execute(
                 sql: """
                 INSERT INTO fs_file_revision_cache(path, etag, content, fetchedAtMs)
-                VALUES (?, ?, ?, ?)
+                SELECT ?, ?, ?, ?
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM fs_file_revision_cache WHERE path = ? AND etag = ?
+                )
                 """,
-                arguments: [path, etag, content, Self.nowMs()]
+                arguments: [path, etag, content, Self.nowMs(), path, etag]
             )
             try trimRevisionsIfNeeded(db: db, path: path)
         }

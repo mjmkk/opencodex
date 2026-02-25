@@ -219,6 +219,8 @@ actor LiveTerminalSocketClient {
         do {
             return try decoder.decode(TerminalStreamFrame.self, from: data)
         } catch {
+            // 解码失败时打印日志，便于服务端协议变更时排查问题。
+            print("[TerminalSocketClient] failed to decode frame: \(error)")
             return nil
         }
     }

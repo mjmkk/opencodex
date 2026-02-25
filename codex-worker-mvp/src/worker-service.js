@@ -307,9 +307,6 @@ export class WorkerService {
     }
 
     // 两个方法都不支持时，返回空数组，前端走默认模型。
-    if (unsupportedCount === methods.length) {
-      return { data: [] };
-    }
     return { data: [] };
   }
 

@@ -485,6 +485,12 @@ export class TerminalManager {
       }
     }
 
+    // 已在 closing 状态时（PTY kill 已发出但尚未收到 exit 事件），非强制关闭直接返回快照，
+    // 避免在 exit 回调触发前提前清理会话导致 exit 帧无法投递。
+    if (session.status === "closing" && !force) {
+      return this.#toSessionSnapshot(session);
+    }
+
     this.#cleanupSession(session, reason);
     return this.#toSessionSnapshot(session);
   }
@@ -662,6 +668,13 @@ export class TerminalManager {
       return;
     }
 
+    const shellName = path.basename(session.shell ?? this.shell).toLowerCase();
+    if (!shellName.includes("zsh")) {
+      this.logger?.warn?.(
+        `[terminal] shell state hooks only support zsh; idle sweep will fall back to pgrep: shell=${session.shell ?? this.shell}, sessionId=${session.sessionId}`
+      );
+    }
+
     const script = `if [ -n "$ZSH_VERSION" ]; then autoload -Uz add-zsh-hook >/dev/null 2>&1; __cw_emit_state(){ local mode="$1"; local jobs_count; jobs_count=$(jobs -p | wc -l | tr -d ' '); print -r -- "${SHELL_STATE_MARKER}:$mode:$jobs_count"; }; __cw_preexec(){ __cw_emit_state busy; }; __cw_precmd(){ __cw_emit_state idle; }; add-zsh-hook preexec __cw_preexec >/dev/null 2>&1; add-zsh-hook precmd __cw_precmd >/dev/null 2>&1; __cw_emit_state idle; fi\n`;
     try {
       session.pty.write(script);
@@ -702,6 +715,8 @@ export class TerminalManager {
       return text;
     }
 
+    // 限制 carry 大小，防止 marker 分割后 carry 无限增长（如 shell crash 或永不换行的输出）。
+    const MAX_CARRY_BYTES = 512;
     const combined = `${session.shellStateCarry}${text}`;
     let processText = combined;
     let carry = "";
@@ -710,7 +725,7 @@ export class TerminalManager {
       const suffix = combined.slice(markerIndex);
       if (!suffix.includes("\n") && !suffix.includes("\r")) {
         processText = combined.slice(0, markerIndex);
-        carry = suffix;
+        carry = suffix.length <= MAX_CARRY_BYTES ? suffix : "";
       }
     }
     session.shellStateCarry = carry;

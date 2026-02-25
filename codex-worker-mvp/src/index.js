@@ -99,7 +99,7 @@ async function main() {
       maxSessions: config.terminal.maxSessions,
       maxInputBytes: config.terminal.maxInputBytes,
       maxScrollbackBytes: config.terminal.maxScrollbackBytes,
-      sweepIntervalMs: config.terminal.heartbeatMs,
+      sweepIntervalMs: config.terminal.sweepIntervalMs,
       logger: {
         warn: (msg) => log("warn", msg),
       },

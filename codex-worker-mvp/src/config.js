@@ -264,6 +264,7 @@ function loadJsonConfigFile(configPath, cwd) {
  * | WORKER_TERMINAL_MAX_INPUT_BYTES | 单次输入最大字节 | 32768 |
  * | WORKER_TERMINAL_MAX_SCROLLBACK_BYTES | 输出缓存上限字节 | 2097152 |
  * | WORKER_TERMINAL_HEARTBEAT_MS | 终端心跳间隔毫秒 | 15000 |
+ * | WORKER_TERMINAL_SWEEP_INTERVAL_MS | 终端空闲扫描间隔毫秒 | 10000 |
  * | WORKER_CWD | 子进程工作目录 | 当前目录 |
  *
  * @param {Object} [env=process.env] - 环境变量对象（便于测试）
@@ -392,6 +393,11 @@ export function loadConfig(env = process.env, options = {}) {
     env.WORKER_TERMINAL_HEARTBEAT_MS ?? fileTerminal.heartbeatMs ?? "15000",
     1000
   );
+  const terminalSweepIntervalMs = parseInteger(
+    "WORKER_TERMINAL_SWEEP_INTERVAL_MS",
+    env.WORKER_TERMINAL_SWEEP_INTERVAL_MS ?? fileTerminal.sweepIntervalMs ?? "10000",
+    1000
+  );
 
   // APNs（Apple Push Notification service）配置
   const apnsTeamId = asNonEmptyString(env.APNS_TEAM_ID) || asNonEmptyString(fileApns.teamId) || null;
@@ -460,6 +466,7 @@ export function loadConfig(env = process.env, options = {}) {
       maxInputBytes: /** @type {number} */ (terminalMaxInputBytes),
       maxScrollbackBytes: /** @type {number} */ (terminalMaxScrollbackBytes),
       heartbeatMs: /** @type {number} */ (terminalHeartbeatMs),
+      sweepIntervalMs: /** @type {number} */ (terminalSweepIntervalMs),
     },
     rpc: {
       command,

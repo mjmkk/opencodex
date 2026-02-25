@@ -259,6 +259,9 @@ public struct FileViewerFeature {
     }
 }
 
+/// 生成简单的逐行位置对比（非 LCS diff）。
+/// 注意：此实现按行号逐一对比，顶部插入一行会导致所有后续行显示为变更。
+/// 如需精确 diff，应替换为 Myers diff 或 LCS 算法。
 private func makeSimpleDiff(oldText: String, newText: String) -> String {
     let oldLines = oldText.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
     let newLines = newText.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)

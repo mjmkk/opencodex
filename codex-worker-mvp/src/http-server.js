@@ -11,6 +11,7 @@
  */
 
 import { createServer } from "node:http";
+import { randomUUID } from "node:crypto";
 import { WebSocketServer } from "ws";
 import { HttpError } from "./errors.js";
 
@@ -373,6 +374,8 @@ export function createHttpServer(options) {
       ? Math.trunc(options.terminalHeartbeatMs)
       : 15_000;
   const wss = new WebSocketServer({ noServer: true });
+  // 使用 WeakMap 存储每个 WebSocket 连接的终端上下文，避免污染 ws 对象的动态属性。
+  const wsTerminalContext = new WeakMap();
 
   function sendWsJson(ws, payload) {
     if (ws.readyState === ws.OPEN) {
@@ -796,11 +799,11 @@ export function createHttpServer(options) {
       const sessionId = decodeURIComponent(terminalStreamMatch[0]);
 
       wss.handleUpgrade(req, socket, head, (ws) => {
-        ws.__terminalContext = {
+        wsTerminalContext.set(ws, {
           sessionId,
           fromSeq,
-          clientId: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        };
+          clientId: randomUUID(),
+        });
         wss.emit("connection", ws, req);
       });
     } catch (error) {
@@ -809,7 +812,7 @@ export function createHttpServer(options) {
   });
 
   wss.on("connection", (ws) => {
-    const context = ws.__terminalContext;
+    const context = wsTerminalContext.get(ws);
     const sessionId = context?.sessionId;
     const fromSeq = context?.fromSeq;
     const clientId = context?.clientId;
