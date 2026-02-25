@@ -29,6 +29,10 @@ let package = Package(
         .package(url: "https://github.com/groue/GRDB.swift.git", from: "6.0.0"),
         // SwiftTerm（终端渲染）
         .package(url: "https://github.com/migueldeicaza/SwiftTerm.git", from: "1.2.6"),
+        // Runestone（代码编辑器视图）
+        .package(url: "https://github.com/simonbs/Runestone.git", from: "0.5.1"),
+        // TreeSitterLanguages（Runestone 语法语言包）
+        .package(url: "https://github.com/simonbs/TreeSitterLanguages.git", from: "0.1.10"),
     ],
     targets: [
         .target(
@@ -40,6 +44,19 @@ let package = Package(
                 .product(name: "EventSource", package: "EventSource"),
                 .product(name: "GRDB", package: "GRDB.swift"),
                 .product(name: "SwiftTerm", package: "SwiftTerm"),
+                .product(name: "Runestone", package: "Runestone"),
+                .product(name: "TreeSitterSwiftRunestone", package: "TreeSitterLanguages"),
+                .product(name: "TreeSitterJavaScriptRunestone", package: "TreeSitterLanguages"),
+                .product(name: "TreeSitterTypeScriptRunestone", package: "TreeSitterLanguages"),
+                .product(name: "TreeSitterTSXRunestone", package: "TreeSitterLanguages"),
+                .product(name: "TreeSitterJSONRunestone", package: "TreeSitterLanguages"),
+                .product(name: "TreeSitterYAMLRunestone", package: "TreeSitterLanguages"),
+                .product(name: "TreeSitterTOMLRunestone", package: "TreeSitterLanguages"),
+                .product(name: "TreeSitterMarkdownRunestone", package: "TreeSitterLanguages"),
+                .product(name: "TreeSitterBashRunestone", package: "TreeSitterLanguages"),
+                .product(name: "TreeSitterPythonRunestone", package: "TreeSitterLanguages"),
+                .product(name: "TreeSitterCSSRunestone", package: "TreeSitterLanguages"),
+                .product(name: "TreeSitterHTMLRunestone", package: "TreeSitterLanguages"),
             ],
             path: "Sources/CodexWorker",
             swiftSettings: [

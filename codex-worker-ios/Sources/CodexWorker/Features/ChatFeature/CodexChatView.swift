@@ -45,11 +45,13 @@ public struct CodexChatView: View {
     let store: StoreOf<ChatFeature>
     let connectionState: ConnectionState
     let onSidebarTap: (() -> Void)?
+    let onFileBrowserTap: (() -> Void)?
     let onSettingsTap: (() -> Void)?
     let executionAccessMode: ExecutionAccessMode
     let onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)?
     let isTerminalPresented: Bool
     let onTerminalToggle: (() -> Void)?
+    let onOpenFileReference: ((String) -> Void)?
     private let renderPipeline: MessageRenderPipeline
     private let codeSyntaxHighlighter: CodeSyntaxHighlighter
 
@@ -57,22 +59,26 @@ public struct CodexChatView: View {
         store: StoreOf<ChatFeature>,
         connectionState: ConnectionState = .disconnected,
         onSidebarTap: (() -> Void)? = nil,
+        onFileBrowserTap: (() -> Void)? = nil,
         onSettingsTap: (() -> Void)? = nil,
         executionAccessMode: ExecutionAccessMode = .defaultPermissions,
         onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)? = nil,
         isTerminalPresented: Bool = false,
         onTerminalToggle: (() -> Void)? = nil,
+        onOpenFileReference: ((String) -> Void)? = nil,
         renderPipeline: MessageRenderPipeline = .live,
         codeSyntaxHighlighter: CodeSyntaxHighlighter = CodexCodeSyntaxHighlighter()
     ) {
         self.store = store
         self.connectionState = connectionState
         self.onSidebarTap = onSidebarTap
+        self.onFileBrowserTap = onFileBrowserTap
         self.onSettingsTap = onSettingsTap
         self.executionAccessMode = executionAccessMode
         self.onExecutionAccessModeChanged = onExecutionAccessModeChanged
         self.isTerminalPresented = isTerminalPresented
         self.onTerminalToggle = onTerminalToggle
+        self.onOpenFileReference = onOpenFileReference
         self.renderPipeline = renderPipeline
         self.codeSyntaxHighlighter = codeSyntaxHighlighter
     }
@@ -106,12 +112,15 @@ public struct CodexChatView: View {
                             message: message,
                             renderPipeline: renderPipeline,
                             codeSyntaxHighlighter: codeSyntaxHighlighter,
-                            colorScheme: colorScheme
+                            colorScheme: colorScheme,
+                            onOpenFileReference: onOpenFileReference
                         )
                     }
                 )
                 .showDateHeaders(false)
                 .showMessageTimeView(false)
+                // 关闭 ExyteChat 的长按整段菜单，优先使用系统文本选择（支持按词/按段复制）。
+                .showMessageMenuOnLongPress(false)
                 .keyboardDismissMode(.onDrag)
                 .setAvailableInputs((viewStore.canInput && !isTerminalPresented) ? [.text] : [])
                 .id(viewStore.activeThreadId ?? "no-thread")
@@ -145,7 +154,10 @@ public struct CodexChatView: View {
                 )
             }
             .background(pageBackgroundColor)
-            .onAppear { viewStore.send(.onAppear) }
+            .onAppear {
+                renderPipeline.clearCache()
+                viewStore.send(.onAppear)
+            }
             .onDisappear { viewStore.send(.onDisappear) }
         }
     }
@@ -267,6 +279,19 @@ public struct CodexChatView: View {
                 .disabled(viewStore.isSending || viewStore.isStreaming)
 
                 Button {
+                    onFileBrowserTap?()
+                } label: {
+                    Image(systemName: "doc.text.magnifyingglass")
+                        .font(.headline)
+                        .foregroundStyle(
+                            viewStore.activeThreadId == nil ? Color.secondary : chatPrimaryTextColor
+                        )
+                }
+                .buttonStyle(.plain)
+                .disabled(viewStore.activeThreadId == nil)
+                .accessibilityLabel("打开文件浏览器")
+
+                Button {
                     onTerminalToggle?()
                 } label: {
                     Image(systemName: isTerminalPresented ? "terminal.fill" : "terminal")
@@ -365,6 +390,7 @@ private struct CodexMessageBubble: View {
     let renderPipeline: MessageRenderPipeline
     let codeSyntaxHighlighter: CodeSyntaxHighlighter
     let colorScheme: ColorScheme
+    let onOpenFileReference: ((String) -> Void)?
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
@@ -400,9 +426,14 @@ private struct CodexMessageBubble: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Markdown(rendered.markdownContent)
                         .markdownTheme(.gitHub)
+                        .tint(markdownLinkColor)
                         .markdownTextStyle(\.text) {
                             ForegroundColor(.primary)
                             BackgroundColor(nil)
+                        }
+                        .markdownTextStyle(\.link) {
+                            ForegroundColor(markdownLinkColor)
+                            UnderlineStyle(.single)
                         }
                         .markdownTextStyle(\.code) {
                             FontFamilyVariant(.monospaced)
@@ -434,6 +465,25 @@ private struct CodexMessageBubble: View {
                                 .markdownMargin(top: 0, bottom: 12)
                         }
                         .markdownCodeSyntaxHighlighter(codeSyntaxHighlighter)
+                        .environment(\.openURL, OpenURLAction { url in
+                            if let ref = parseCodexFileReference(from: url) {
+                                onOpenFileReference?(ref)
+                                return .handled
+                            }
+                            if url.scheme == nil {
+                                let rawReference = url.absoluteString.removingPercentEncoding ?? url.absoluteString
+                                if rawReference.contains("/") || rawReference.contains(":") {
+                                    onOpenFileReference?(rawReference)
+                                    return .handled
+                                }
+                            }
+                            switch url.scheme?.lowercased() {
+                            case "http", "https":
+                                return .systemAction(url)
+                            default:
+                                return .discarded
+                            }
+                        })
                         .textSelection(.enabled)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
@@ -486,6 +536,10 @@ private struct CodexMessageBubble: View {
         Color(uiColor: .separator).opacity(colorScheme == .dark ? 0.5 : 0.28)
     }
 
+    private var markdownLinkColor: Color {
+        Color(uiColor: .link)
+    }
+
     private var assistantShadowColor: Color {
         Color.black.opacity(colorScheme == .dark ? 0.24 : 0.05)
     }
@@ -516,6 +570,14 @@ private struct CodexMessageBubble: View {
         case .error:
             return ("exclamationmark.circle.fill", .red)
         }
+    }
+
+    private func parseCodexFileReference(from url: URL) -> String? {
+        guard url.scheme?.lowercased() == "codexfs" else { return nil }
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return nil
+        }
+        return components.queryItems?.first(where: { $0.name == "ref" })?.value
     }
 }
 

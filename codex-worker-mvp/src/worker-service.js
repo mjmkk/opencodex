@@ -21,6 +21,8 @@
 
 import { HttpError } from "./errors.js";
 import { createId } from "./ids.js";
+import { promises as fs } from "node:fs";
+import path from "node:path";
 import {
   defaultCodexHome,
   defaultThreadExportDir,
@@ -53,6 +55,13 @@ const PUSH_RELEVANT_EVENT_TYPES = new Set([
   "job.finished",
 ]);
 const THREAD_EVENTS_CACHE_TTL_MS_DEFAULT = 5000;
+const FILE_TREE_LIMIT_DEFAULT = 200;
+const FILE_TREE_LIMIT_MAX = 1000;
+const FILE_SEARCH_LIMIT_DEFAULT = 50;
+const FILE_SEARCH_LIMIT_MAX = 200;
+const FILE_SEARCH_MAX_FILES = 1500;
+const FILE_READ_MAX_BYTES = 2 * 1024 * 1024;
+const FILE_INLINE_MAX_BYTES = 4 * 1024 * 1024;
 
 function normalizeModelRef(rawModel) {
   if (!isNonEmptyString(rawModel)) {
@@ -529,6 +538,360 @@ export class WorkerService {
     return {
       threadId,
       status: "active",
+    };
+  }
+
+  // ==================== 文件系统能力 ====================
+
+  /**
+   * 列出线程可见文件根目录
+   *
+   * @param {string} threadId
+   * @returns {Promise<{data: Array<{rootId: string, rootPath: string, displayName: string}>}>}
+   */
+  async listThreadFsRoots(threadId) {
+    this.#validateThreadId(threadId);
+    const thread = await this.#resolveThreadForFs(threadId);
+    const roots = this.#buildFileAccessRoots(thread);
+    const threadRoot = roots[0] ?? path.resolve(thread?.cwd ?? this.defaultProjectPath);
+    const data = [
+      {
+        rootId: "thread",
+        rootPath: threadRoot,
+        displayName: path.basename(threadRoot) || threadRoot,
+      },
+    ];
+    return { data };
+  }
+
+  /**
+   * 解析聊天中的文件引用
+   *
+   * @param {string} threadId
+   * @param {Object} options
+   * @param {string} options.ref
+   * @returns {Promise<{data: {resolved: boolean, path: string|null, line: number|null, column: number|null, rootId: string|null, ref: string}}>}
+   */
+  async resolveThreadFsReference(threadId, options = {}) {
+    this.#validateThreadId(threadId);
+    const rawRef = isNonEmptyString(options.ref) ? options.ref.trim() : "";
+    if (!rawRef) {
+      throw new HttpError(400, "FS_INVALID_REFERENCE", "ref 不能为空");
+    }
+
+    const thread = await this.#resolveThreadForFs(threadId);
+    const parsed = this.#parseFileReference(rawRef);
+    const resolved = await this.#resolveFsPath(thread, parsed.path, {
+      requireExists: true,
+      allowDirectory: true,
+      fallbackSearch: true,
+    });
+    if (!resolved) {
+      return {
+        data: {
+          resolved: false,
+          ref: rawRef,
+          path: null,
+          line: parsed.line,
+          column: parsed.column,
+          rootId: null,
+        },
+      };
+    }
+
+    const rootId = this.#matchRootId(resolved.path, resolved.roots);
+    return {
+      data: {
+        resolved: true,
+        ref: rawRef,
+        path: resolved.path,
+        line: parsed.line,
+        column: parsed.column,
+        rootId,
+      },
+    };
+  }
+
+  /**
+   * 列出目录内容（分页）
+   *
+   * @param {string} threadId
+   * @param {Object} options
+   * @param {string} [options.path]
+   * @param {number|null} [options.cursor]
+   * @param {number|null} [options.limit]
+   * @returns {Promise<{data: Array<Object>, nextCursor: number|null, hasMore: boolean, total: number}>}
+   */
+  async listThreadFsTree(threadId, options = {}) {
+    this.#validateThreadId(threadId);
+    const thread = await this.#resolveThreadForFs(threadId);
+    const limit = this.#normalizeFsLimit(options.limit, FILE_TREE_LIMIT_DEFAULT, FILE_TREE_LIMIT_MAX);
+    const cursor = this.#normalizeFsCursor(options.cursor);
+    const requestedPath = isNonEmptyString(options.path) ? options.path.trim() : ".";
+
+    const resolved = await this.#resolveFsPath(thread, requestedPath, {
+      requireExists: true,
+      allowDirectory: true,
+      fallbackSearch: false,
+    });
+    if (!resolved) {
+      throw new HttpError(404, "FS_PATH_NOT_FOUND", `目录不存在: ${requestedPath}`);
+    }
+
+    const stat = await fs.stat(resolved.path);
+    if (!stat.isDirectory()) {
+      throw new HttpError(400, "FS_NOT_DIRECTORY", `目标不是目录: ${requestedPath}`);
+    }
+
+    const entries = await fs.readdir(resolved.path, { withFileTypes: true });
+    const normalizedEntries = [];
+    for (const entry of entries) {
+      const absolutePath = path.join(resolved.path, entry.name);
+      const metadata = await this.#buildFsEntryMetadata(absolutePath, entry, resolved.roots);
+      if (!metadata) {
+        continue;
+      }
+      normalizedEntries.push(metadata);
+    }
+
+    normalizedEntries.sort((left, right) => {
+      if (left.kind !== right.kind) {
+        if (left.kind === "directory") {
+          return -1;
+        }
+        if (right.kind === "directory") {
+          return 1;
+        }
+      }
+      return left.name.localeCompare(right.name, "zh-Hans-CN", { sensitivity: "base" });
+    });
+
+    const total = normalizedEntries.length;
+    if (cursor > total) {
+      throw new HttpError(409, "FS_CURSOR_EXPIRED", `cursor=${cursor} 超出目录范围（total=${total}）`);
+    }
+    const pageData = normalizedEntries.slice(cursor, cursor + limit);
+    const hasMore = cursor + pageData.length < total;
+    const nextCursor = hasMore ? cursor + pageData.length : null;
+    return {
+      data: pageData,
+      nextCursor,
+      hasMore,
+      total,
+    };
+  }
+
+  /**
+   * 读取文件内容（按行窗口）
+   *
+   * @param {string} threadId
+   * @param {Object} options
+   * @param {string} options.path
+   * @param {number|null} [options.fromLine]
+   * @param {number|null} [options.toLine]
+   * @returns {Promise<{data: Object}>}
+   */
+  async getThreadFsFile(threadId, options = {}) {
+    this.#validateThreadId(threadId);
+    const thread = await this.#resolveThreadForFs(threadId);
+    const requestedPath = isNonEmptyString(options.path) ? options.path.trim() : "";
+    if (!requestedPath) {
+      throw new HttpError(400, "FS_INVALID_PATH", "path 不能为空");
+    }
+
+    const resolved = await this.#resolveFsPath(thread, requestedPath, {
+      requireExists: true,
+      allowDirectory: false,
+      fallbackSearch: true,
+    });
+    if (!resolved) {
+      throw new HttpError(404, "FS_PATH_NOT_FOUND", `文件不存在: ${requestedPath}`);
+    }
+
+    const stat = await fs.stat(resolved.path);
+    if (!stat.isFile()) {
+      throw new HttpError(400, "FS_NOT_FILE", `目标不是文件: ${requestedPath}`);
+    }
+    if (stat.size > FILE_INLINE_MAX_BYTES) {
+      throw new HttpError(413, "FS_FILE_TOO_LARGE", `文件过大（>${FILE_INLINE_MAX_BYTES} bytes）`);
+    }
+
+    const buffer = await fs.readFile(resolved.path);
+    if (this.#isLikelyBinaryBuffer(buffer)) {
+      throw new HttpError(415, "FS_BINARY_FILE", "二进制文件不支持文本预览");
+    }
+
+    const text = buffer.toString("utf8");
+    const allLines = text.split(/\r?\n/);
+    const totalLines = allLines.length;
+    const fromLine = this.#normalizeLineNumber(options.fromLine, 1, totalLines || 1);
+    const requestedToLine = this.#normalizeLineNumber(
+      options.toLine,
+      Math.min(fromLine + 199, Math.max(1, totalLines)),
+      Math.max(1, totalLines)
+    );
+    const toLine = Math.max(fromLine, requestedToLine);
+    const selected = [];
+    for (let index = fromLine; index <= toLine; index += 1) {
+      selected.push({
+        line: index,
+        text: allLines[index - 1] ?? "",
+      });
+    }
+
+    return {
+      data: {
+        path: resolved.path,
+        language: this.#detectLanguageFromPath(resolved.path),
+        etag: this.#buildFileEtag(stat),
+        totalLines,
+        fromLine,
+        toLine,
+        truncated: false,
+        lines: selected,
+      },
+    };
+  }
+
+  /**
+   * 查询路径元信息
+   *
+   * @param {string} threadId
+   * @param {Object} options
+   * @param {string} options.path
+   * @returns {Promise<{data: Object}>}
+   */
+  async getThreadFsStat(threadId, options = {}) {
+    this.#validateThreadId(threadId);
+    const thread = await this.#resolveThreadForFs(threadId);
+    const requestedPath = isNonEmptyString(options.path) ? options.path.trim() : "";
+    if (!requestedPath) {
+      throw new HttpError(400, "FS_INVALID_PATH", "path 不能为空");
+    }
+
+    const resolved = await this.#resolveFsPath(thread, requestedPath, {
+      requireExists: true,
+      allowDirectory: true,
+      fallbackSearch: true,
+    });
+    if (!resolved) {
+      throw new HttpError(404, "FS_PATH_NOT_FOUND", `路径不存在: ${requestedPath}`);
+    }
+
+    const stat = await fs.stat(resolved.path);
+    return {
+      data: {
+        path: resolved.path,
+        kind: stat.isDirectory() ? "directory" : (stat.isFile() ? "file" : "other"),
+        size: stat.size,
+        isDirectory: stat.isDirectory(),
+        isFile: stat.isFile(),
+        modifiedAt: stat.mtime.toISOString(),
+        createdAt: stat.birthtime.toISOString(),
+        etag: this.#buildFileEtag(stat),
+      },
+    };
+  }
+
+  /**
+   * 文件内容搜索（简单递归实现）
+   *
+   * @param {string} threadId
+   * @param {Object} options
+   * @param {string} options.q
+   * @param {string} [options.path]
+   * @param {number|null} [options.cursor]
+   * @param {number|null} [options.limit]
+   * @returns {Promise<{data: Array<Object>, nextCursor: number|null, hasMore: boolean, total: number}>}
+   */
+  async searchThreadFs(threadId, options = {}) {
+    this.#validateThreadId(threadId);
+    const query = isNonEmptyString(options.q) ? options.q.trim() : "";
+    if (!query) {
+      throw new HttpError(400, "FS_INVALID_QUERY", "q 不能为空");
+    }
+    const thread = await this.#resolveThreadForFs(threadId);
+    const cursor = this.#normalizeFsCursor(options.cursor);
+    const limit = this.#normalizeFsLimit(options.limit, FILE_SEARCH_LIMIT_DEFAULT, FILE_SEARCH_LIMIT_MAX);
+    const requestedPath = isNonEmptyString(options.path) ? options.path.trim() : ".";
+    const resolved = await this.#resolveFsPath(thread, requestedPath, {
+      requireExists: true,
+      allowDirectory: true,
+      fallbackSearch: false,
+    });
+    if (!resolved) {
+      throw new HttpError(404, "FS_PATH_NOT_FOUND", `路径不存在: ${requestedPath}`);
+    }
+
+    const matches = await this.#searchFsMatches(resolved.path, query, resolved.roots);
+    const total = matches.length;
+    if (cursor > total) {
+      throw new HttpError(409, "FS_CURSOR_EXPIRED", `cursor=${cursor} 超出搜索结果范围（total=${total}）`);
+    }
+    const data = matches.slice(cursor, cursor + limit);
+    const hasMore = cursor + data.length < total;
+    return {
+      data,
+      nextCursor: hasMore ? cursor + data.length : null,
+      hasMore,
+      total,
+    };
+  }
+
+  /**
+   * 写入文件内容
+   *
+   * @param {string} threadId
+   * @param {Object} options
+   * @param {string} options.path
+   * @param {string} options.content
+   * @param {string} [options.expectedEtag]
+   * @returns {Promise<{data: Object}>}
+   */
+  async writeThreadFsFile(threadId, options = {}) {
+    this.#validateThreadId(threadId);
+    const thread = await this.#resolveThreadForFs(threadId);
+    const requestedPath = isNonEmptyString(options.path) ? options.path.trim() : "";
+    if (!requestedPath) {
+      throw new HttpError(400, "FS_INVALID_PATH", "path 不能为空");
+    }
+    if (typeof options.content !== "string") {
+      throw new HttpError(400, "FS_INVALID_CONTENT", "content 必须是字符串");
+    }
+
+    const resolved = await this.#resolveFsPath(thread, requestedPath, {
+      requireExists: false,
+      allowDirectory: false,
+      fallbackSearch: false,
+    });
+    if (!resolved) {
+      throw new HttpError(403, "FS_PATH_FORBIDDEN", `不允许写入该路径: ${requestedPath}`);
+    }
+
+    const parentDirectory = path.dirname(resolved.path);
+    await fs.mkdir(parentDirectory, { recursive: true });
+
+    const currentStat = await fs.stat(resolved.path).catch(() => null);
+    const expectedEtag = isNonEmptyString(options.expectedEtag) ? options.expectedEtag.trim() : null;
+    if (expectedEtag && currentStat) {
+      const currentEtag = this.#buildFileEtag(currentStat);
+      if (currentEtag !== expectedEtag) {
+        throw new HttpError(409, "FS_ETAG_MISMATCH", "文件已被修改，请先刷新");
+      }
+    }
+
+    const temporaryPath = `${resolved.path}.cwtmp-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    await fs.writeFile(temporaryPath, options.content, "utf8");
+    await fs.rename(temporaryPath, resolved.path);
+
+    const nextStat = await fs.stat(resolved.path);
+    return {
+      data: {
+        path: resolved.path,
+        size: nextStat.size,
+        modifiedAt: nextStat.mtime.toISOString(),
+        etag: this.#buildFileEtag(nextStat),
+      },
     };
   }
 
@@ -1619,6 +1982,380 @@ export class WorkerService {
     }
     this.threadEventsCache.clear();
     this.threadProjectionCache.clear();
+  }
+
+  #normalizeFsCursor(rawCursor) {
+    if (rawCursor === null || rawCursor === undefined || rawCursor === "") {
+      return 0;
+    }
+    const cursor = Number.parseInt(String(rawCursor), 10);
+    if (!Number.isInteger(cursor) || cursor < 0) {
+      throw new HttpError(400, "FS_INVALID_CURSOR", "cursor 必须是 >= 0 的整数");
+    }
+    return cursor;
+  }
+
+  #normalizeFsLimit(rawLimit, fallback, maxLimit) {
+    if (rawLimit === null || rawLimit === undefined || rawLimit === "") {
+      return fallback;
+    }
+    const limit = Number.parseInt(String(rawLimit), 10);
+    if (!Number.isInteger(limit) || limit <= 0) {
+      throw new HttpError(400, "FS_INVALID_LIMIT", "limit 必须是正整数");
+    }
+    return Math.min(limit, maxLimit);
+  }
+
+  #normalizeLineNumber(rawValue, fallback, maxValue) {
+    if (rawValue === null || rawValue === undefined || rawValue === "") {
+      return fallback;
+    }
+    const parsed = Number.parseInt(String(rawValue), 10);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      throw new HttpError(400, "FS_INVALID_LINE", "行号必须是 >= 1 的整数");
+    }
+    return Math.min(parsed, maxValue);
+  }
+
+  #buildFileAccessRoots(thread) {
+    const threadRoot = isNonEmptyString(thread?.cwd)
+      ? path.resolve(thread.cwd.trim())
+      : path.resolve(this.defaultProjectPath);
+    return [threadRoot];
+  }
+
+  #matchRootId(targetPath, roots) {
+    const normalizedTarget = path.resolve(targetPath);
+    if (roots.length >= 1 && this.#isPathWithinRoot(normalizedTarget, roots[0])) {
+      return "thread";
+    }
+    return "thread";
+  }
+
+  async #resolveThreadForFs(threadId) {
+    const cached = this.threads.get(threadId);
+    if (cached) {
+      return cached;
+    }
+
+    const activeResult = await this.rpc.request("thread/list", {
+      cursor: null,
+      limit: 200,
+      sortKey: "updated_at",
+      archived: false,
+    });
+    const activeThreads = Array.isArray(activeResult?.data) ? activeResult.data : [];
+    for (const thread of activeThreads) {
+      this.#upsertThread(thread);
+    }
+    const activeFound = activeThreads.find((thread) => thread?.id === threadId);
+    if (activeFound) {
+      return activeFound;
+    }
+
+    const archivedResult = await this.rpc.request("thread/list", {
+      cursor: null,
+      limit: 200,
+      sortKey: "updated_at",
+      archived: true,
+    });
+    const archivedThreads = Array.isArray(archivedResult?.data) ? archivedResult.data : [];
+    const archivedFound = archivedThreads.find((thread) => thread?.id === threadId);
+    if (archivedFound) {
+      return archivedFound;
+    }
+
+    throw new HttpError(404, "THREAD_NOT_FOUND", `线程不存在: ${threadId}`);
+  }
+
+  async #resolveFsPath(thread, rawPath, options = {}) {
+    const source = isNonEmptyString(rawPath) ? rawPath.trim() : ".";
+    const roots = this.#buildFileAccessRoots(thread);
+    const threadRoot = roots[0] ?? path.resolve(thread?.cwd ?? this.defaultProjectPath);
+    const normalizedSource = source.replace(/^file:\/\//, "");
+    const candidates = [];
+    const appendCandidate = (candidatePath) => {
+      if (!isNonEmptyString(candidatePath)) {
+        return;
+      }
+      const absolutePath = path.resolve(candidatePath.trim());
+      if (!candidates.includes(absolutePath)) {
+        candidates.push(absolutePath);
+      }
+    };
+
+    if (path.isAbsolute(normalizedSource)) {
+      appendCandidate(normalizedSource);
+    } else {
+      appendCandidate(path.resolve(threadRoot, normalizedSource));
+    }
+
+    const requireExists = options.requireExists === true;
+    for (const candidatePath of candidates) {
+      if (!this.#isPathWithinRoots(candidatePath, roots)) {
+        continue;
+      }
+
+      if (!requireExists) {
+        return { path: candidatePath, roots };
+      }
+
+      let stat;
+      try {
+        stat = await fs.stat(candidatePath);
+      } catch {
+        continue;
+      }
+
+      if (options.allowDirectory === false && !stat.isFile()) {
+        continue;
+      }
+      if (options.allowDirectory === true && !stat.isDirectory() && !stat.isFile()) {
+        continue;
+      }
+      return { path: candidatePath, roots };
+    }
+
+    if (requireExists && options.fallbackSearch === true) {
+      const fallbackPath = await this.#searchFsPathByName(normalizedSource, roots);
+      if (fallbackPath) {
+        return { path: fallbackPath, roots };
+      }
+    }
+    return null;
+  }
+
+  #isPathWithinRoots(targetPath, roots) {
+    for (const rootPath of roots) {
+      if (this.#isPathWithinRoot(targetPath, rootPath)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  #isPathWithinRoot(targetPath, rootPath) {
+    const normalizedTarget = path.resolve(targetPath);
+    const normalizedRoot = path.resolve(rootPath);
+    return (
+      normalizedTarget === normalizedRoot ||
+      normalizedTarget.startsWith(`${normalizedRoot}${path.sep}`)
+    );
+  }
+
+  async #searchFsPathByName(rawPath, roots) {
+    const basename = path.basename(rawPath);
+    if (!isNonEmptyString(basename)) {
+      return null;
+    }
+    const targets = [];
+    for (const rootPath of roots) {
+      targets.push(rootPath);
+    }
+    let scannedFiles = 0;
+    while (targets.length > 0 && scannedFiles < FILE_SEARCH_MAX_FILES) {
+      const currentPath = targets.pop();
+      if (!currentPath) {
+        continue;
+      }
+      let entries;
+      try {
+        entries = await fs.readdir(currentPath, { withFileTypes: true });
+      } catch {
+        continue;
+      }
+      for (const entry of entries) {
+        const absolutePath = path.join(currentPath, entry.name);
+        if (!this.#isPathWithinRoots(absolutePath, roots)) {
+          continue;
+        }
+        if (entry.name === basename) {
+          return absolutePath;
+        }
+        if (entry.isDirectory()) {
+          if (entry.name === ".git" || entry.name === "node_modules") {
+            continue;
+          }
+          targets.push(absolutePath);
+          continue;
+        }
+        scannedFiles += 1;
+      }
+    }
+    return null;
+  }
+
+  async #buildFsEntryMetadata(absolutePath, entry, roots) {
+    const normalizedPath = path.resolve(absolutePath);
+    if (!this.#isPathWithinRoots(normalizedPath, roots)) {
+      return null;
+    }
+
+    let stat;
+    try {
+      stat = await fs.lstat(normalizedPath);
+    } catch {
+      return null;
+    }
+
+    if (stat.isSymbolicLink()) {
+      const realPath = await fs.realpath(normalizedPath).catch(() => null);
+      if (!realPath || !this.#isPathWithinRoots(realPath, roots)) {
+        return null;
+      }
+      stat = await fs.stat(realPath).catch(() => stat);
+    }
+
+    const kind = stat.isDirectory() ? "directory" : (stat.isFile() ? "file" : "other");
+    return {
+      name: entry.name,
+      path: normalizedPath,
+      kind,
+      size: stat.isFile() ? stat.size : null,
+      modifiedAt: stat.mtime.toISOString(),
+    };
+  }
+
+  async #searchFsMatches(rootPath, query, roots) {
+    const lowerQuery = query.toLowerCase();
+    const matches = [];
+    const stack = [path.resolve(rootPath)];
+    let scannedFiles = 0;
+
+    while (stack.length > 0 && scannedFiles < FILE_SEARCH_MAX_FILES) {
+      const currentPath = stack.pop();
+      if (!currentPath) {
+        continue;
+      }
+      if (!this.#isPathWithinRoots(currentPath, roots)) {
+        continue;
+      }
+
+      let stat;
+      try {
+        stat = await fs.stat(currentPath);
+      } catch {
+        continue;
+      }
+
+      if (stat.isDirectory()) {
+        let entries = [];
+        try {
+          entries = await fs.readdir(currentPath, { withFileTypes: true });
+        } catch {
+          continue;
+        }
+        for (const entry of entries) {
+          if (entry.name === ".git" || entry.name === "node_modules" || entry.name === ".build") {
+            continue;
+          }
+          stack.push(path.join(currentPath, entry.name));
+        }
+        continue;
+      }
+
+      if (!stat.isFile() || stat.size > FILE_READ_MAX_BYTES) {
+        continue;
+      }
+      scannedFiles += 1;
+      const buffer = await fs.readFile(currentPath).catch(() => null);
+      if (!buffer || this.#isLikelyBinaryBuffer(buffer)) {
+        continue;
+      }
+
+      const lines = buffer.toString("utf8").split(/\r?\n/);
+      for (let index = 0; index < lines.length; index += 1) {
+        const lineText = lines[index];
+        if (!lineText.toLowerCase().includes(lowerQuery)) {
+          continue;
+        }
+        matches.push({
+          path: currentPath,
+          line: index + 1,
+          snippet: lineText.slice(0, 240),
+        });
+      }
+    }
+
+    return matches;
+  }
+
+  #isLikelyBinaryBuffer(buffer) {
+    const sampleLength = Math.min(buffer.length, 8192);
+    for (let index = 0; index < sampleLength; index += 1) {
+      if (buffer[index] === 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  #buildFileEtag(stat) {
+    return `W/"${stat.size}-${Math.trunc(stat.mtimeMs)}"`;
+  }
+
+  #detectLanguageFromPath(filePath) {
+    const extension = path.extname(filePath).toLowerCase();
+    const mapping = {
+      ".swift": "swift",
+      ".js": "javascript",
+      ".ts": "typescript",
+      ".tsx": "tsx",
+      ".jsx": "jsx",
+      ".json": "json",
+      ".md": "markdown",
+      ".yml": "yaml",
+      ".yaml": "yaml",
+      ".sh": "shell",
+      ".zsh": "shell",
+      ".py": "python",
+      ".rb": "ruby",
+      ".go": "go",
+      ".rs": "rust",
+      ".java": "java",
+      ".kt": "kotlin",
+      ".m": "objective-c",
+      ".mm": "objective-cpp",
+      ".c": "c",
+      ".cc": "cpp",
+      ".cpp": "cpp",
+      ".h": "c-header",
+      ".hpp": "cpp-header",
+      ".xml": "xml",
+      ".plist": "xml",
+      ".sql": "sql",
+      ".html": "html",
+      ".css": "css",
+      ".scss": "scss",
+    };
+    return mapping[extension] ?? "text";
+  }
+
+  #parseFileReference(rawRef) {
+    const normalized = rawRef.trim()
+      .replace(/^\[(.+)\]\((.+)\)$/u, "$2")
+      .replace(/^`(.+)`$/u, "$1");
+    const lineAnchorMatch = normalized.match(/^(.*)#L(\d+)(?:C(\d+))?$/u);
+    if (lineAnchorMatch) {
+      return {
+        path: lineAnchorMatch[1],
+        line: Number.parseInt(lineAnchorMatch[2], 10),
+        column: lineAnchorMatch[3] ? Number.parseInt(lineAnchorMatch[3], 10) : null,
+      };
+    }
+    const colonMatch = normalized.match(/^(.*?):(\d+)(?::(\d+))?$/u);
+    if (colonMatch) {
+      return {
+        path: colonMatch[1],
+        line: Number.parseInt(colonMatch[2], 10),
+        column: colonMatch[3] ? Number.parseInt(colonMatch[3], 10) : null,
+      };
+    }
+    return {
+      path: normalized,
+      line: null,
+      column: null,
+    };
   }
 
   #normalizeDeviceToken(rawDeviceToken) {

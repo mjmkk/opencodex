@@ -21,6 +21,7 @@ public struct ContentView: View {
         let isDrawerPresented: Bool
         let isApprovalPresented: Bool
         let isTerminalPresented: Bool
+        let isFileBrowserPresented: Bool
         let terminalHeightRatio: Double
 
         init(_ state: AppFeature.State) {
@@ -29,6 +30,7 @@ public struct ContentView: View {
             self.isDrawerPresented = state.isDrawerPresented
             self.isApprovalPresented = state.approval.isPresented
             self.isTerminalPresented = state.terminal.isPresented
+            self.isFileBrowserPresented = state.isFileBrowserPresented
             self.terminalHeightRatio = state.terminal.heightRatio
         }
     }
@@ -59,6 +61,9 @@ public struct ContentView: View {
                             onSidebarTap: {
                                 viewStore.send(.setDrawerPresented(true))
                             },
+                            onFileBrowserTap: {
+                                viewStore.send(.setFileBrowserPresented(true))
+                            },
                             onSettingsTap: {
                                 isSettingsPresented = true
                             },
@@ -69,6 +74,9 @@ public struct ContentView: View {
                             isTerminalPresented: viewStore.isTerminalPresented,
                             onTerminalToggle: {
                                 viewStore.send(.terminal(.togglePresented))
+                            },
+                            onOpenFileReference: { ref in
+                                viewStore.send(.openFileReference(ref))
                             }
                         )
 
@@ -185,6 +193,22 @@ public struct ContentView: View {
                     connectionState: viewStore.connectionState,
                     onClose: {
                         isSettingsPresented = false
+                    }
+                )
+            }
+            .sheet(
+                isPresented: Binding(
+                    get: { viewStore.isFileBrowserPresented },
+                    set: { viewStore.send(.setFileBrowserPresented($0)) }
+                )
+            ) {
+                FileBrowserView(
+                    store: store.scope(
+                        state: \.fileBrowser,
+                        action: \.fileBrowser
+                    ),
+                    onClose: {
+                        viewStore.send(.setFileBrowserPresented(false))
                     }
                 )
             }

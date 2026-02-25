@@ -48,6 +48,7 @@ public struct TerminalFeature {
         public var errorMessage: String?
         public var showRiskNotice = false
         public var needsInitialOutputCleanup = false
+        public var pendingInputQueue: [String] = []
 
         // 线程内存缓冲（仅前端内存态，不落盘）
         public var threadBuffers: [String: ThreadBuffer] = [:]
@@ -89,6 +90,7 @@ public struct TerminalFeature {
         case sendResizeFailed(CodexError)
         case sendInput
         case sendRawInput(String)
+        case enqueueInput(String)
         case clearOutput
         case sendInputFailed(CodexError)
         case closeSession
@@ -110,6 +112,7 @@ public struct TerminalFeature {
                 let nextThreadId = thread?.threadId
                 if previousThreadId != nextThreadId {
                     persistBuffer(state: &state, threadId: previousThreadId)
+                    state.pendingInputQueue.removeAll()
                 }
 
                 state.activeThread = thread
@@ -145,6 +148,7 @@ public struct TerminalFeature {
                     state.errorMessage = nil
                     state.showRiskNotice = false
                     state.needsInitialOutputCleanup = false
+                    state.pendingInputQueue.removeAll()
                     state.inputText = ""
                     state.session = nil
                     state.isOpening = false
@@ -270,8 +274,21 @@ public struct TerminalFeature {
                     if let transportMode = frame.transportMode, !transportMode.isEmpty {
                         state.session?.transportMode = transportMode
                     }
+                    var effects: [Effect<Action>] = []
                     if state.lastSentCols != state.viewportCols || state.lastSentRows != state.viewportRows {
-                        return .send(.sendResize)
+                        effects.append(.send(.sendResize))
+                    }
+                    if !state.pendingInputQueue.isEmpty {
+                        let queuedInputs = state.pendingInputQueue
+                        state.pendingInputQueue.removeAll()
+                        effects.append(
+                            .merge(queuedInputs.map { payload in
+                                .send(.sendRawInput(payload))
+                            })
+                        )
+                    }
+                    if !effects.isEmpty {
+                        return .merge(effects)
                     }
 
                 case "output":
@@ -406,6 +423,16 @@ public struct TerminalFeature {
                     return .none
                 }
                 return sendSocketInput(payload)
+
+            case .enqueueInput(let payload):
+                guard !payload.isEmpty else {
+                    return .none
+                }
+                if state.canSendInput {
+                    return .send(.sendRawInput(payload))
+                }
+                state.pendingInputQueue.append(payload)
+                return .none
 
             case .clearOutput:
                 state.terminalText = ""

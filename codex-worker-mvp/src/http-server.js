@@ -180,6 +180,26 @@ function parseLimit(searchParams) {
 }
 
 /**
+ * 解析可选整数参数
+ *
+ * @param {URLSearchParams} searchParams
+ * @param {string} name
+ * @returns {number|null}
+ * @throws {HttpError}
+ */
+function parseOptionalInt(searchParams, name) {
+  const raw = searchParams.get(name);
+  if (raw === null) {
+    return null;
+  }
+  const value = Number.parseInt(raw, 10);
+  if (!Number.isInteger(value)) {
+    throw new HttpError(400, "INVALID_QUERY", `${name} 必须是整数`);
+  }
+  return value;
+}
+
+/**
  * 解析 fromSeq 参数（WebSocket 续传游标）
  *
  * @param {URLSearchParams} searchParams
@@ -320,6 +340,13 @@ function match(pathname, pattern) {
  * | POST | /v1/threads/import | 导入线程为新线程 | 是 |
  * | GET | /v1/threads/{id}/terminal | 查询线程终端状态 | 是 |
  * | POST | /v1/threads/{id}/terminal/open | 打开线程终端 | 是 |
+ * | GET | /v1/threads/{id}/fs/roots | 列出文件根目录 | 是 |
+ * | GET | /v1/threads/{id}/fs/resolve | 解析文件引用 | 是 |
+ * | GET | /v1/threads/{id}/fs/tree | 列目录（分页） | 是 |
+ * | GET | /v1/threads/{id}/fs/file | 读取文件（按行） | 是 |
+ * | GET | /v1/threads/{id}/fs/stat | 获取文件元信息 | 是 |
+ * | GET | /v1/threads/{id}/fs/search | 全文搜索 | 是 |
+ * | POST | /v1/threads/{id}/fs/write | 写入文件 | 是 |
  * | POST | /v1/terminals/{id}/resize | 调整终端尺寸（PTY） | 是 |
  * | POST | /v1/terminals/{id}/close | 关闭终端会话 | 是 |
  * | WS | /v1/terminals/{id}/stream | 终端输入输出流 | 是 |
@@ -494,6 +521,95 @@ export function createHttpServer(options) {
           reused: result.reused,
           wsPath: `/v1/terminals/${encodeURIComponent(result.session.sessionId)}/stream`,
         });
+        return;
+      }
+
+      // GET /v1/threads/{threadId}/fs/roots - 列出文件根目录
+      const fsRootsMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/fs\/roots$/);
+      if (method === "GET" && fsRootsMatch) {
+        const threadId = decodeURIComponent(fsRootsMatch[0]);
+        const result = await service.listThreadFsRoots(threadId);
+        sendJson(res, 200, result);
+        return;
+      }
+
+      // GET /v1/threads/{threadId}/fs/resolve - 解析文件引用
+      const fsResolveMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/fs\/resolve$/);
+      if (method === "GET" && fsResolveMatch) {
+        const threadId = decodeURIComponent(fsResolveMatch[0]);
+        const ref = requestUrl.searchParams.get("ref");
+        const result = await service.resolveThreadFsReference(threadId, { ref });
+        sendJson(res, 200, result);
+        return;
+      }
+
+      // GET /v1/threads/{threadId}/fs/tree - 列目录
+      const fsTreeMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/fs\/tree$/);
+      if (method === "GET" && fsTreeMatch) {
+        const threadId = decodeURIComponent(fsTreeMatch[0]);
+        const fsPath = requestUrl.searchParams.get("path");
+        const cursor = parseOptionalInt(requestUrl.searchParams, "cursor");
+        const limit = parseOptionalInt(requestUrl.searchParams, "limit");
+        const result = await service.listThreadFsTree(threadId, {
+          path: fsPath,
+          cursor,
+          limit,
+        });
+        sendJson(res, 200, result);
+        return;
+      }
+
+      // GET /v1/threads/{threadId}/fs/file - 读取文件
+      const fsFileMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/fs\/file$/);
+      if (method === "GET" && fsFileMatch) {
+        const threadId = decodeURIComponent(fsFileMatch[0]);
+        const fsPath = requestUrl.searchParams.get("path");
+        const fromLine = parseOptionalInt(requestUrl.searchParams, "fromLine");
+        const toLine = parseOptionalInt(requestUrl.searchParams, "toLine");
+        const result = await service.getThreadFsFile(threadId, {
+          path: fsPath,
+          fromLine,
+          toLine,
+        });
+        sendJson(res, 200, result);
+        return;
+      }
+
+      // GET /v1/threads/{threadId}/fs/stat - 文件元信息
+      const fsStatMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/fs\/stat$/);
+      if (method === "GET" && fsStatMatch) {
+        const threadId = decodeURIComponent(fsStatMatch[0]);
+        const fsPath = requestUrl.searchParams.get("path");
+        const result = await service.getThreadFsStat(threadId, { path: fsPath });
+        sendJson(res, 200, result);
+        return;
+      }
+
+      // GET /v1/threads/{threadId}/fs/search - 文本搜索
+      const fsSearchMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/fs\/search$/);
+      if (method === "GET" && fsSearchMatch) {
+        const threadId = decodeURIComponent(fsSearchMatch[0]);
+        const q = requestUrl.searchParams.get("q");
+        const fsPath = requestUrl.searchParams.get("path");
+        const cursor = parseOptionalInt(requestUrl.searchParams, "cursor");
+        const limit = parseOptionalInt(requestUrl.searchParams, "limit");
+        const result = await service.searchThreadFs(threadId, {
+          q,
+          path: fsPath,
+          cursor,
+          limit,
+        });
+        sendJson(res, 200, result);
+        return;
+      }
+
+      // POST /v1/threads/{threadId}/fs/write - 写入文件
+      const fsWriteMatch = match(pathname, /^\/v1\/threads\/([^/]+)\/fs\/write$/);
+      if (method === "POST" && fsWriteMatch) {
+        const threadId = decodeURIComponent(fsWriteMatch[0]);
+        const body = await readJsonBody(req);
+        const result = await service.writeThreadFsFile(threadId, body);
+        sendJson(res, 200, result);
         return;
       }
 

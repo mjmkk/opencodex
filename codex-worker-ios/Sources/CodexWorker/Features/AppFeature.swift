@@ -36,10 +36,12 @@ public struct AppFeature {
         public var threads = ThreadsFeature.State()
         public var chat = ChatFeature.State()
         public var terminal = TerminalFeature.State()
+        public var fileBrowser = FileBrowserFeature.State()
         public var approval = ApprovalFeature.State()
         public var settings = SettingsFeature.State()
         public var activeThread: Thread?
         public var isDrawerPresented = true
+        public var isFileBrowserPresented = false
 
         public init() {}
     }
@@ -50,10 +52,13 @@ public struct AppFeature {
         case threads(ThreadsFeature.Action)
         case chat(ChatFeature.Action)
         case terminal(TerminalFeature.Action)
+        case fileBrowser(FileBrowserFeature.Action)
         case approval(ApprovalFeature.Action)
         case settings(SettingsFeature.Action)
         case lifecycleChanged(LifecycleState)
         case setDrawerPresented(Bool)
+        case setFileBrowserPresented(Bool)
+        case openFileReference(String)
         case setExecutionAccessMode(ExecutionAccessMode)
         case healthCheckNow
         case healthCheckResponse(Result<HealthCheckResponse, CodexError>)
@@ -65,6 +70,7 @@ public struct AppFeature {
         Scope(state: \.threads, action: \.threads) { ThreadsFeature() }
         Scope(state: \.chat, action: \.chat) { ChatFeature() }
         Scope(state: \.terminal, action: \.terminal) { TerminalFeature() }
+        Scope(state: \.fileBrowser, action: \.fileBrowser) { FileBrowserFeature() }
         Scope(state: \.approval, action: \.approval) { ApprovalFeature() }
         Scope(state: \.settings, action: \.settings) { SettingsFeature() }
 
@@ -140,6 +146,17 @@ public struct AppFeature {
                 state.isDrawerPresented = presented
                 return .none
 
+            case .setFileBrowserPresented(let presented):
+                state.isFileBrowserPresented = presented
+                return .none
+
+            case .openFileReference(let reference):
+                guard !reference.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                    return .none
+                }
+                state.isFileBrowserPresented = true
+                return .send(.fileBrowser(.openFromReference(reference)))
+
             case .setExecutionAccessMode(let mode):
                 state.executionAccessMode = mode
                 return .run { _ in
@@ -155,17 +172,20 @@ public struct AppFeature {
                     .send(.approval(.dismiss)),
                     .send(.chat(.setApprovalLocked(false))),
                     .send(.chat(.setActiveThread(thread))),
-                    .send(.terminal(.setActiveThread(thread)))
+                    .send(.terminal(.setActiveThread(thread))),
+                    .send(.fileBrowser(.setActiveThread(thread)))
                 )
 
             case .threads(.delegate(.didClearActiveThread)):
                 state.activeThread = nil
                 state.isDrawerPresented = true
+                state.isFileBrowserPresented = false
                 return .merge(
                     .send(.approval(.dismiss)),
                     .send(.chat(.setApprovalLocked(false))),
                     .send(.chat(.setActiveThread(nil))),
-                    .send(.terminal(.setActiveThread(nil)))
+                    .send(.terminal(.setActiveThread(nil))),
+                    .send(.fileBrowser(.setActiveThread(nil)))
                 )
 
             case .chat(.delegate(.approvalRequired(let approval))):
@@ -201,13 +221,20 @@ public struct AppFeature {
             case .chat(.delegate(.jobFinished(_, _))):
                 return .none
 
+            case .fileBrowser(.delegate(.openInTerminal(let path))):
+                state.isFileBrowserPresented = false
+                return .merge(
+                    .send(.terminal(.setPresented(true))),
+                    .send(.terminal(.enqueueInput("cd \(shellQuoted(path))\n")))
+                )
+
             case .settings(.saveFinished):
                 return .send(.healthCheckNow)
 
             case .settings(.delegate(.didRestoreArchivedThread)):
                 return .send(.threads(.refresh))
 
-            case .threads, .chat, .terminal, .approval, .settings:
+            case .threads, .chat, .terminal, .fileBrowser, .approval, .settings:
                 return .none
             }
         }
@@ -243,6 +270,13 @@ public struct AppFeature {
                 state.connectionState = .failed("实时流连接失败：\(message)")
             }
         }
+    }
+
+    private func shellQuoted(_ path: String) -> String {
+        if path.isEmpty {
+            return "''"
+        }
+        return "'" + path.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }
 
 }
