@@ -22,7 +22,7 @@ const DEFAULTS = {
 
 const SHELL_STATE_MARKER = "__CW_STATE__";
 const SHELL_BOOTSTRAP_DONE_MARKER = "__CW_BOOTSTRAP_DONE__";
-const BOOTSTRAP_SILENT_MAX_MS = 2000;
+const BOOTSTRAP_SILENT_MAX_MS = 15000;
 
 function isPosixSpawnFailure(error) {
   const message = error instanceof Error ? error.message : String(error ?? "");

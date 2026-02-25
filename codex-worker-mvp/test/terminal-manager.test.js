@@ -374,7 +374,7 @@ test("TerminalManager 启动静默在超时后自动解除，避免吞掉后续�
   assert.equal(events.length, 0);
 
   // 超过静默窗口后，未命中完成标记也应恢复透传。
-  now += 3000;
+  now += 16000;
   process.emitData("real output after timeout\r\n");
 
   assert.ok(events.some((event) => String(event.data ?? "").includes("real output after timeout")));
