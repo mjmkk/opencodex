@@ -20,6 +20,9 @@ DerivedData/
 !.env.example
 codex-worker-mvp/worker.config.json
 
+# Local AI tool state (machine-specific)
+.claude/settings.local.json
+
 # Common local outputs
 output/
 *.log

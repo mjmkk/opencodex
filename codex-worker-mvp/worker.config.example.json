@@ -7,6 +7,15 @@
   "dbPath": "./data/worker.db",
   "codexHome": "/Users/Apple/.codex",
   "threadExportDir": "/tmp/codex-thread-exports",
+  "terminal": {
+    "enabled": false,
+    "shell": "/bin/zsh",
+    "idleTtlMs": 1200000,
+    "maxSessions": 64,
+    "maxInputBytes": 32768,
+    "maxScrollbackBytes": 2097152,
+    "heartbeatMs": 15000
+  },
   "tailscaleServe": {
     "enabled": false,
     "service": "svc:opencodex",

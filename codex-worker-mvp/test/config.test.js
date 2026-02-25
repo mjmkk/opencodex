@@ -142,3 +142,26 @@ test("线程导入导出目录支持环境变量覆盖", () => {
   assert.equal(config.codexHome, "/tmp/custom-codex-home");
   assert.equal(config.threadExportDir, "/tmp/custom-thread-exports");
 });
+
+test("终端配置支持环境变量覆盖", () => {
+  const config = loadConfig(
+    {
+      WORKER_TERMINAL_ENABLED: "true",
+      WORKER_TERMINAL_SHELL: "/bin/bash",
+      WORKER_TERMINAL_IDLE_TTL_MS: "600000",
+      WORKER_TERMINAL_MAX_SESSIONS: "16",
+      WORKER_TERMINAL_MAX_INPUT_BYTES: "1024",
+      WORKER_TERMINAL_MAX_SCROLLBACK_BYTES: "4096",
+      WORKER_TERMINAL_HEARTBEAT_MS: "5000",
+    },
+    { argv: [], cwd: "/tmp/workspace" }
+  );
+
+  assert.equal(config.terminal.enabled, true);
+  assert.equal(config.terminal.shell, "/bin/bash");
+  assert.equal(config.terminal.idleTtlMs, 600000);
+  assert.equal(config.terminal.maxSessions, 16);
+  assert.equal(config.terminal.maxInputBytes, 1024);
+  assert.equal(config.terminal.maxScrollbackBytes, 4096);
+  assert.equal(config.terminal.heartbeatMs, 5000);
+});

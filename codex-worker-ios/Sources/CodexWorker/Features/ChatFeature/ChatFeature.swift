@@ -18,6 +18,8 @@ public struct ChatFeature {
     private static let threadHistoryPageLimit = 1000
     private static let streamBatchSize = 24
     private static let streamBatchMaxDelay: Duration = .milliseconds(80)
+    /// pendingAssistantDeltas 累计文本上限（5 MB），防止长流场景内存溢出
+    private static let maxPendingDeltaTotalBytes = 5 * 1024 * 1024
 
     private struct ThreadHistorySyncOutcome: Sendable {
         let events: [EventEnvelope]
@@ -57,6 +59,8 @@ public struct ChatFeature {
         case binding(BindingAction<State>)
         case onAppear
         case onDisappear
+        case appDidBecomeActive
+        case appDidEnterBackground
         case setActiveThread(Thread?)
         case threadHistoryCacheResponse(threadId: String, Result<[EventEnvelope], CodexError>)
         case threadHistorySyncResponse(threadId: String, Result<[EventEnvelope], CodexError>)
@@ -111,6 +115,22 @@ public struct ChatFeature {
                     },
                     .cancel(id: CancelID.sseStream)
                 )
+
+            case .appDidBecomeActive:
+                guard let threadId = state.activeThread?.threadId else { return .none }
+                let shouldPreemptStream = state.isStreaming || state.streamConnectionState != .idle
+                let refreshEffect = Self.refreshThreadHistoryFromRemote(threadId: threadId)
+                    .cancellable(id: CancelID.threadHistoryLoad, cancelInFlight: true)
+                if shouldPreemptStream {
+                    return .concatenate(.send(.stopStreaming), refreshEffect)
+                }
+                return refreshEffect
+
+            case .appDidEnterBackground:
+                if state.isStreaming || state.streamConnectionState != .idle {
+                    return .send(.stopStreaming)
+                }
+                return .none
 
             case .setActiveThread(let thread):
                 // 切线程时重置聊天上下文，避免串流状态污染
@@ -201,6 +221,11 @@ public struct ChatFeature {
 
             case .threadHistorySyncNoChange(let threadId):
                 guard state.activeThread?.threadId == threadId else { return .none }
+                if shouldResumeStreamingAfterSync(state: state),
+                   let activeJobId = state.currentJobId
+                {
+                    return .send(.startStreaming(jobId: activeJobId, cursor: state.cursor))
+                }
                 return .none
 
             case .didSendDraft(let draft):
@@ -642,6 +667,43 @@ public struct ChatFeature {
         return ThreadHistorySyncOutcome(events: [], shouldApply: false)
     }
 
+    private static func refreshThreadHistoryFromRemote(threadId: String) -> Effect<Action> {
+        .run { send in
+            @Dependency(\.apiClient) var apiClient
+            @Dependency(\.threadHistoryStore) var threadHistoryStore
+
+            do {
+                let syncResult = try await Self.syncThreadHistory(
+                    threadId: threadId,
+                    apiClient: apiClient,
+                    threadHistoryStore: threadHistoryStore
+                )
+                if syncResult.shouldApply {
+                    await send(.threadHistorySyncResponse(threadId: threadId, .success(syncResult.events)))
+                } else {
+                    await send(.threadHistorySyncNoChange(threadId: threadId))
+                }
+            } catch {
+                await send(
+                    .threadHistorySyncResponse(
+                        threadId: threadId,
+                        .failure(CodexError.from(error))
+                    )
+                )
+            }
+        }
+    }
+
+    private func shouldResumeStreamingAfterSync(state: State) -> Bool {
+        guard let activeState = state.jobState, activeState.isActive else { return false }
+        switch state.streamConnectionState {
+        case .idle, .failed:
+            return true
+        case .connecting, .connected:
+            return false
+        }
+    }
+
     /// 将线程历史事件回放为聊天状态
     private func replayThreadEvents(_ events: [EventEnvelope]) -> ThreadHistoryReplay {
         var replay = ThreadHistoryReplay()
@@ -788,7 +850,6 @@ public struct ChatFeature {
         pendingAssistantDeltas: inout [String: MessageDelta],
         envelope: EventEnvelope
     ) {
-        _ = messages
         guard let payload = envelope.payload else { return }
         let itemId = payload["itemId"]?.stringValue ?? "assistant-\(envelope.jobId)-\(envelope.seq)"
         let delta = payload["delta"]?.stringValue
@@ -804,6 +865,17 @@ public struct ChatFeature {
             var newDelta = MessageDelta(id: itemId, text: "", sender: .assistant)
             newDelta.append(delta)
             pendingAssistantDeltas[itemId] = newDelta
+        }
+
+        // OOM 保护：累计超过 5 MB 时强制收敛最旧的增量
+        let totalBytes = pendingAssistantDeltas.values.reduce(0) { $0 + $1.text.utf8.count }
+        if totalBytes > Self.maxPendingDeltaTotalBytes,
+           let oldestKey = pendingAssistantDeltas.keys.sorted().first,
+           var oldest = pendingAssistantDeltas[oldestKey]
+        {
+            oldest.markComplete()
+            pendingAssistantDeltas.removeValue(forKey: oldestKey)
+            upsertMessage(&messages, with: oldest.toMessage())
         }
     }
 

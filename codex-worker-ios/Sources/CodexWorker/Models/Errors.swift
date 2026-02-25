@@ -242,3 +242,19 @@ extension CodexError: RecoverableError {
         }
     }
 }
+
+// MARK: - 瞬态错误
+
+extension CodexError {
+    /// 是否为可自动重试的瞬态错误（网络超时、限流、服务暂时不可用）
+    var isTransient: Bool {
+        switch self {
+        case .timeout, .connectionFailed:
+            return true
+        case .apiError(let code, _):
+            return code == "HTTP_429" || code == "HTTP_502" || code == "HTTP_503" || code == "HTTP_504"
+        default:
+            return false
+        }
+    }
+}

@@ -33,27 +33,33 @@ public struct MessageRenderContent: Equatable {
 
 public struct MessageRenderPipeline: Sendable {
     public static let live = MessageRenderPipeline()
+    private static let cacheVersion = "v3"
 
     private let parser: MarkdownParserService
     private let semanticExtractor: MessageSemanticExtractor
+    private let linkNormalizer: MessageLinkNormalizer
     private let cache: MarkdownRenderCache
 
     init(
         parser: MarkdownParserService = .live,
         semanticExtractor: MessageSemanticExtractor = .live,
+        linkNormalizer: MessageLinkNormalizer = .live,
         cache: MarkdownRenderCache = .shared
     ) {
         self.parser = parser
         self.semanticExtractor = semanticExtractor
+        self.linkNormalizer = linkNormalizer
         self.cache = cache
     }
 
     public func render(_ raw: String) -> MessageRenderContent {
-        if let cached = cache.value(for: raw) {
+        let cacheKey = "\(Self.cacheVersion)::\(raw)"
+        if let cached = cache.value(for: cacheKey) {
             return cached
         }
 
-        let parseResult = parser.parse(raw)
+        let normalized = linkNormalizer.normalize(raw)
+        let parseResult = parser.parse(normalized)
         let semantics = semanticExtractor.extract(from: raw)
         let content = MessageRenderContent(
             markdownContent: parseResult.markdownContent,
@@ -61,7 +67,7 @@ public struct MessageRenderPipeline: Sendable {
             usedMarkdownFallback: parseResult.usedFallback,
             fallbackReason: parseResult.fallbackReason
         )
-        cache.insert(content, for: raw)
+        cache.insert(content, for: cacheKey)
         return content
     }
 

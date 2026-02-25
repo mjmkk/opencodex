@@ -7,6 +7,7 @@
 
 import ComposableArchitecture
 import Foundation
+import OSLog
 
 // MARK: - API 客户端协议
 
@@ -39,6 +40,39 @@ public struct APIClient: DependencyKey, Sendable {
 
     /// 获取线程历史事件分页（线程级游标）
     public var listThreadEvents: @Sendable (_ threadId: String, _ cursor: Int?, _ limit: Int?) async throws -> ThreadEventsResponse
+
+    /// 查询线程终端状态
+    public var getThreadTerminal: @Sendable (_ threadId: String) async throws -> ThreadTerminalStatusResponse
+
+    /// 打开线程终端
+    public var openThreadTerminal: @Sendable (_ threadId: String, _ request: ThreadTerminalOpenRequest) async throws -> ThreadTerminalOpenResponse
+
+    /// 调整终端窗口尺寸
+    public var resizeTerminal: @Sendable (_ sessionId: String, _ request: TerminalResizeRequest) async throws -> TerminalResizeResponse
+
+    /// 关闭终端会话
+    public var closeTerminal: @Sendable (_ sessionId: String, _ request: TerminalCloseRequest) async throws -> TerminalCloseResponse
+
+    /// 获取线程可见文件根目录
+    public var listThreadFsRoots: @Sendable (_ threadId: String) async throws -> FileSystemRootsResponse
+
+    /// 解析文件引用（path:line）
+    public var resolveThreadFsReference: @Sendable (_ threadId: String, _ ref: String) async throws -> FileResolveResponse
+
+    /// 列出目录（分页）
+    public var listThreadFsTree: @Sendable (_ threadId: String, _ fsPath: String?, _ cursor: Int?, _ limit: Int?) async throws -> FileTreeResponse
+
+    /// 读取文件内容（按行）
+    public var getThreadFsFile: @Sendable (_ threadId: String, _ fsPath: String, _ fromLine: Int?, _ toLine: Int?) async throws -> FileContentResponse
+
+    /// 获取文件元信息
+    public var getThreadFsStat: @Sendable (_ threadId: String, _ fsPath: String) async throws -> FileStatResponse
+
+    /// 文本搜索（分页）
+    public var searchThreadFs: @Sendable (_ threadId: String, _ query: String, _ fsPath: String?, _ cursor: Int?, _ limit: Int?) async throws -> FileSearchResponse
+
+    /// 写入文件
+    public var writeThreadFsFile: @Sendable (_ threadId: String, _ request: FileWriteRequest) async throws -> FileWriteResponse
 
     /// 发送消息（创建 Turn）
     public var startTurn: @Sendable (_ threadId: String, _ request: StartTurnRequest) async throws -> StartTurnResponse
@@ -97,6 +131,17 @@ extension APIClient {
             unarchiveThread: { try await impl.unarchiveThread(threadId: $0) },
             activateThread: { try await impl.activateThread(threadId: $0) },
             listThreadEvents: { try await impl.listThreadEvents(threadId: $0, cursor: $1, limit: $2) },
+            getThreadTerminal: { try await impl.getThreadTerminal(threadId: $0) },
+            openThreadTerminal: { try await impl.openThreadTerminal(threadId: $0, request: $1) },
+            resizeTerminal: { try await impl.resizeTerminal(sessionId: $0, request: $1) },
+            closeTerminal: { try await impl.closeTerminal(sessionId: $0, request: $1) },
+            listThreadFsRoots: { try await impl.listThreadFsRoots(threadId: $0) },
+            resolveThreadFsReference: { try await impl.resolveThreadFsReference(threadId: $0, ref: $1) },
+            listThreadFsTree: { try await impl.listThreadFsTree(threadId: $0, fsPath: $1, cursor: $2, limit: $3) },
+            getThreadFsFile: { try await impl.getThreadFsFile(threadId: $0, fsPath: $1, fromLine: $2, toLine: $3) },
+            getThreadFsStat: { try await impl.getThreadFsStat(threadId: $0, fsPath: $1) },
+            searchThreadFs: { try await impl.searchThreadFs(threadId: $0, query: $1, fsPath: $2, cursor: $3, limit: $4) },
+            writeThreadFsFile: { try await impl.writeThreadFsFile(threadId: $0, request: $1) },
             startTurn: { try await impl.startTurn(threadId: $0, request: $1) },
             getJob: { try await impl.getJob(jobId: $0) },
             listEvents: { try await impl.listEvents(jobId: $0, cursor: $1) },
@@ -114,6 +159,7 @@ actor LiveAPIClient {
     private let session: URLSession
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
+    private let logger = Logger(subsystem: "com.opencodex", category: "APIClient")
 
     init() {
         // 配置 URLSession
@@ -174,33 +220,49 @@ actor LiveAPIClient {
         return request
     }
 
-    /// 执行请求
+    /// 执行请求（带指数退避重试，针对瞬态错误最多重试 2 次）
     private func performRequest<T: Codable>(_ request: URLRequest) async throws -> T {
-        do {
-            let (data, response) = try await session.data(for: request)
+        let maxRetries = 2
+        var lastTransientError: CodexError?
 
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw CodexError.invalidState
+        for attempt in 0 ... maxRetries {
+            if attempt > 0 {
+                let delaySecs = min(pow(2.0, Double(attempt - 1)), 8.0)
+                logger.warning("[\(attempt)/\(maxRetries)] 瞬态错误，\(delaySecs)s 后重试: \(String(describing: lastTransientError))")
+                // Task.sleep 会在 Task 取消时抛出 CancellationError，无需额外处理
+                try await Task.sleep(for: .seconds(delaySecs))
             }
 
-            // 检查 HTTP 状态码
-            guard (200 ... 299).contains(httpResponse.statusCode) else {
-                throw CodexError.from(statusCode: httpResponse.statusCode, data: data)
-            }
-
-            // 解析响应
             do {
-                return try decoder.decode(T.self, from: data)
+                let (data, response) = try await session.data(for: request)
+
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    throw CodexError.invalidState
+                }
+
+                guard (200 ... 299).contains(httpResponse.statusCode) else {
+                    throw CodexError.from(statusCode: httpResponse.statusCode, data: data)
+                }
+
+                do {
+                    return try decoder.decode(T.self, from: data)
+                } catch {
+                    logger.error("解析错误: \(error)")
+                    logger.error("原始数据: \(String(data: data, encoding: .utf8) ?? "nil")")
+                    throw CodexError.decodingError
+                }
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch let error as CodexError where error.isTransient && attempt < maxRetries {
+                lastTransientError = error
+            } catch let error as CodexError {
+                throw error
             } catch {
-                print("[APIClient] 解析错误: \(error)")
-                print("[APIClient] 原始数据: \(String(data: data, encoding: .utf8) ?? "nil")")
-                throw CodexError.decodingError
+                throw CodexError.from(error)
             }
-        } catch let error as CodexError {
-            throw error
-        } catch {
-            throw CodexError.from(error)
         }
+
+        throw lastTransientError ?? CodexError.unknown("请求重试耗尽")
     }
 
     // MARK: - API 实现
@@ -240,9 +302,7 @@ actor LiveAPIClient {
         let url = try buildURL(path: "/v1/threads", queryItems: queryItems.isEmpty ? nil : queryItems)
         let request = try buildRequest(url: url)
         let response: ThreadsListResponse = try await performRequest(request)
-#if DEBUG
-        print("[APIClient] listThreads ok, count=\(response.data.count)")
-#endif
+        logger.debug("listThreads ok, count=\(response.data.count)")
         return response
     }
 
@@ -283,6 +343,125 @@ actor LiveAPIClient {
         let request = try buildRequest(url: url)
         let response: ThreadEventsResponse = try await performRequest(request)
         return response
+    }
+
+    func getThreadTerminal(threadId: String) async throws -> ThreadTerminalStatusResponse {
+        let url = try buildURL(path: "/v1/threads/\(threadId)/terminal")
+        let request = try buildRequest(url: url)
+        return try await performRequest(request)
+    }
+
+    func openThreadTerminal(threadId: String, request: ThreadTerminalOpenRequest) async throws -> ThreadTerminalOpenResponse {
+        let url = try buildURL(path: "/v1/threads/\(threadId)/terminal/open")
+        let body = try encoder.encode(request)
+        let urlRequest = try buildRequest(url: url, method: "POST", body: body)
+        return try await performRequest(urlRequest)
+    }
+
+    func resizeTerminal(sessionId: String, request: TerminalResizeRequest) async throws -> TerminalResizeResponse {
+        let url = try buildURL(path: "/v1/terminals/\(sessionId)/resize")
+        let body = try encoder.encode(request)
+        let urlRequest = try buildRequest(url: url, method: "POST", body: body)
+        return try await performRequest(urlRequest)
+    }
+
+    func closeTerminal(sessionId: String, request: TerminalCloseRequest) async throws -> TerminalCloseResponse {
+        let url = try buildURL(path: "/v1/terminals/\(sessionId)/close")
+        let body = try encoder.encode(request)
+        let urlRequest = try buildRequest(url: url, method: "POST", body: body)
+        return try await performRequest(urlRequest)
+    }
+
+    func listThreadFsRoots(threadId: String) async throws -> FileSystemRootsResponse {
+        let url = try buildURL(path: "/v1/threads/\(threadId)/fs/roots")
+        let request = try buildRequest(url: url)
+        return try await performRequest(request)
+    }
+
+    func resolveThreadFsReference(threadId: String, ref: String) async throws -> FileResolveResponse {
+        let queryItems = [
+            URLQueryItem(name: "ref", value: ref),
+        ]
+        let url = try buildURL(path: "/v1/threads/\(threadId)/fs/resolve", queryItems: queryItems)
+        let request = try buildRequest(url: url)
+        return try await performRequest(request)
+    }
+
+    func listThreadFsTree(
+        threadId: String,
+        fsPath: String?,
+        cursor: Int?,
+        limit: Int?
+    ) async throws -> FileTreeResponse {
+        var queryItems: [URLQueryItem] = []
+        if let fsPath, !fsPath.isEmpty {
+            queryItems.append(URLQueryItem(name: "path", value: fsPath))
+        }
+        if let cursor {
+            queryItems.append(URLQueryItem(name: "cursor", value: String(cursor)))
+        }
+        if let limit {
+            queryItems.append(URLQueryItem(name: "limit", value: String(limit)))
+        }
+        let url = try buildURL(path: "/v1/threads/\(threadId)/fs/tree", queryItems: queryItems.isEmpty ? nil : queryItems)
+        let request = try buildRequest(url: url)
+        return try await performRequest(request)
+    }
+
+    func getThreadFsFile(
+        threadId: String,
+        fsPath: String,
+        fromLine: Int?,
+        toLine: Int?
+    ) async throws -> FileContentResponse {
+        var queryItems = [URLQueryItem(name: "path", value: fsPath)]
+        if let fromLine {
+            queryItems.append(URLQueryItem(name: "fromLine", value: String(fromLine)))
+        }
+        if let toLine {
+            queryItems.append(URLQueryItem(name: "toLine", value: String(toLine)))
+        }
+        let url = try buildURL(path: "/v1/threads/\(threadId)/fs/file", queryItems: queryItems)
+        let request = try buildRequest(url: url)
+        return try await performRequest(request)
+    }
+
+    func getThreadFsStat(threadId: String, fsPath: String) async throws -> FileStatResponse {
+        let queryItems = [URLQueryItem(name: "path", value: fsPath)]
+        let url = try buildURL(path: "/v1/threads/\(threadId)/fs/stat", queryItems: queryItems)
+        let request = try buildRequest(url: url)
+        return try await performRequest(request)
+    }
+
+    func searchThreadFs(
+        threadId: String,
+        query: String,
+        fsPath: String?,
+        cursor: Int?,
+        limit: Int?
+    ) async throws -> FileSearchResponse {
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "q", value: query),
+        ]
+        if let fsPath, !fsPath.isEmpty {
+            queryItems.append(URLQueryItem(name: "path", value: fsPath))
+        }
+        if let cursor {
+            queryItems.append(URLQueryItem(name: "cursor", value: String(cursor)))
+        }
+        if let limit {
+            queryItems.append(URLQueryItem(name: "limit", value: String(limit)))
+        }
+        let url = try buildURL(path: "/v1/threads/\(threadId)/fs/search", queryItems: queryItems)
+        let request = try buildRequest(url: url)
+        return try await performRequest(request)
+    }
+
+    func writeThreadFsFile(threadId: String, request: FileWriteRequest) async throws -> FileWriteResponse {
+        let url = try buildURL(path: "/v1/threads/\(threadId)/fs/write")
+        let body = try encoder.encode(request)
+        let urlRequest = try buildRequest(url: url, method: "POST", body: body)
+        return try await performRequest(urlRequest)
     }
 
     func startTurn(threadId: String, request: StartTurnRequest) async throws -> StartTurnResponse {
@@ -398,6 +577,151 @@ extension APIClient {
             },
             listThreadEvents: { _, _, _ in
                 ThreadEventsResponse(data: [], nextCursor: -1, hasMore: false)
+            },
+            getThreadTerminal: { _ in
+                ThreadTerminalStatusResponse(session: nil)
+            },
+            openThreadTerminal: { threadId, _ in
+                ThreadTerminalOpenResponse(
+                    session: TerminalSessionSnapshot(
+                        sessionId: "term_mock",
+                        threadId: threadId,
+                        cwd: "/Users/test/project",
+                        shell: "/bin/zsh",
+                        pid: 12345,
+                        status: "running",
+                        createdAt: ISO8601DateFormatter().string(from: Date()),
+                        lastActiveAt: ISO8601DateFormatter().string(from: Date()),
+                        cols: 120,
+                        rows: 24,
+                        exitCode: nil,
+                        signal: nil,
+                        nextSeq: 0,
+                        clientCount: 1
+                    ),
+                    reused: false,
+                    wsPath: "/v1/terminals/term_mock/stream"
+                )
+            },
+            resizeTerminal: { _, request in
+                TerminalResizeResponse(
+                    session: TerminalSessionSnapshot(
+                        sessionId: "term_mock",
+                        threadId: "thread_mock",
+                        cwd: "/Users/test/project",
+                        shell: "/bin/zsh",
+                        pid: 12345,
+                        status: "running",
+                        createdAt: ISO8601DateFormatter().string(from: Date()),
+                        lastActiveAt: ISO8601DateFormatter().string(from: Date()),
+                        cols: request.cols,
+                        rows: request.rows,
+                        exitCode: nil,
+                        signal: nil,
+                        nextSeq: 0,
+                        clientCount: 1
+                    )
+                )
+            },
+            closeTerminal: { _, _ in
+                TerminalCloseResponse(
+                    session: TerminalSessionSnapshot(
+                        sessionId: "term_mock",
+                        threadId: "thread_mock",
+                        cwd: "/Users/test/project",
+                        shell: "/bin/zsh",
+                        pid: 12345,
+                        status: "exited",
+                        createdAt: ISO8601DateFormatter().string(from: Date()),
+                        lastActiveAt: ISO8601DateFormatter().string(from: Date()),
+                        cols: 120,
+                        rows: 24,
+                        exitCode: 0,
+                        signal: "0",
+                        nextSeq: 0,
+                        clientCount: 0
+                    )
+                )
+            },
+            listThreadFsRoots: { _ in
+                FileSystemRootsResponse(
+                    data: [
+                        FileSystemRoot(
+                            rootId: "workspace",
+                            rootPath: "/Users/test/project",
+                            displayName: "project"
+                        ),
+                    ]
+                )
+            },
+            resolveThreadFsReference: { _, ref in
+                FileResolveResponse(
+                    data: FileReferenceResolution(
+                        resolved: true,
+                        ref: ref,
+                        path: "/Users/test/project/README.md",
+                        line: 1,
+                        column: nil,
+                        rootId: "workspace"
+                    )
+                )
+            },
+            listThreadFsTree: { _, _, _, _ in
+                FileTreeResponse(
+                    data: [
+                        FileTreeEntry(
+                            name: "README.md",
+                            path: "/Users/test/project/README.md",
+                            kind: .file,
+                            size: 123,
+                            modifiedAt: ISO8601DateFormatter().string(from: Date())
+                        ),
+                    ],
+                    nextCursor: nil,
+                    hasMore: false,
+                    total: 1
+                )
+            },
+            getThreadFsFile: { _, fsPath, _, _ in
+                FileContentResponse(
+                    data: FileContentPayload(
+                        path: fsPath,
+                        language: "markdown",
+                        etag: "W/\"123-456\"",
+                        totalLines: 1,
+                        fromLine: 1,
+                        toLine: 1,
+                        truncated: false,
+                        lines: [FileContentLine(line: 1, text: "preview")]
+                    )
+                )
+            },
+            getThreadFsStat: { _, fsPath in
+                FileStatResponse(
+                    data: FileStatPayload(
+                        path: fsPath,
+                        kind: .file,
+                        size: 123,
+                        isDirectory: false,
+                        isFile: true,
+                        modifiedAt: ISO8601DateFormatter().string(from: Date()),
+                        createdAt: ISO8601DateFormatter().string(from: Date()),
+                        etag: "W/\"123-456\""
+                    )
+                )
+            },
+            searchThreadFs: { _, _, _, _, _ in
+                FileSearchResponse(data: [], nextCursor: nil, hasMore: false, total: 0)
+            },
+            writeThreadFsFile: { _, request in
+                FileWriteResponse(
+                    data: FileWritePayload(
+                        path: request.path,
+                        size: request.content.utf8.count,
+                        modifiedAt: ISO8601DateFormatter().string(from: Date()),
+                        etag: "W/\"updated\""
+                    )
+                )
             },
             startTurn: { threadId, _ in
                 StartTurnResponse(
