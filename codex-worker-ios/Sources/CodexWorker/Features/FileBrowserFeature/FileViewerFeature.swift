@@ -28,6 +28,7 @@ public struct FileViewerFeature {
         public var revisions: [CachedFileRevision] = []
         public var showDiff = false
         public var isEditing = false
+        public var exitEditingAfterSave = false
         public var errorMessage: String?
 
         public init(
@@ -59,7 +60,9 @@ public struct FileViewerFeature {
         case revisionsResponse(Result<[CachedFileRevision], CodexError>)
         case contentChanged(String)
         case saveTapped
+        case saveAndExitTapped
         case saveResponse(Result<FileWriteResponse, CodexError>)
+        case cancelEditingTapped
         case setEditing(Bool)
         case toggleDiff(Bool)
         case restoreRevision(CachedFileRevision)
@@ -187,6 +190,29 @@ public struct FileViewerFeature {
             case .saveTapped:
                 guard !state.isSaving else { return .none }
                 state.isSaving = true
+                state.exitEditingAfterSave = false
+                state.errorMessage = nil
+                let request = FileWriteRequest(path: state.filePath, content: state.content, expectedEtag: state.etag)
+                let threadId = state.threadId
+                return .run { send in
+                    @Dependency(\.apiClient) var apiClient
+                    await send(
+                        .saveResponse(
+                            Result {
+                                try await apiClient.writeThreadFsFile(threadId, request)
+                            }.mapError { CodexError.from($0) }
+                        )
+                    )
+                }
+
+            case .saveAndExitTapped:
+                guard !state.isSaving else { return .none }
+                guard state.isDirty else {
+                    state.isEditing = false
+                    return .none
+                }
+                state.isSaving = true
+                state.exitEditingAfterSave = true
                 state.errorMessage = nil
                 let request = FileWriteRequest(path: state.filePath, content: state.content, expectedEtag: state.etag)
                 let threadId = state.threadId
@@ -205,6 +231,11 @@ public struct FileViewerFeature {
                 state.isSaving = false
                 state.etag = response.data.etag
                 state.originalContent = state.content
+                if state.exitEditingAfterSave {
+                    state.isEditing = false
+                    state.showDiff = false
+                }
+                state.exitEditingAfterSave = false
                 state.errorMessage = nil
                 let path = state.filePath
                 let etag = state.etag
@@ -222,7 +253,15 @@ public struct FileViewerFeature {
 
             case .saveResponse(.failure(let error)):
                 state.isSaving = false
+                state.exitEditingAfterSave = false
                 state.errorMessage = error.localizedDescription
+                return .none
+
+            case .cancelEditingTapped:
+                state.content = state.originalContent
+                state.isEditing = false
+                state.showDiff = false
+                state.exitEditingAfterSave = false
                 return .none
 
             case .setEditing(let isEditing):
