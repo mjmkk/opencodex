@@ -54,12 +54,22 @@ struct ChatFeatureEventTests {
         store.exhaustivity = .off
 
         await store.send(.appDidBecomeActive)
-        await store.receive(.stopStreaming) {
+        await store.receive(\.stopStreaming) {
             $0.isStreaming = false
             $0.streamConnectionState = .idle
         }
-        await store.receive(.threadHistorySyncNoChange(threadId: "thread_resume_1"))
-        await store.receive(.startStreaming(jobId: "job_resume_1", cursor: 12)) {
+        await store.receive({ action in
+            if case .threadHistorySyncNoChange(let threadId) = action {
+                return threadId == "thread_resume_1"
+            }
+            return false
+        })
+        await store.receive({ action in
+            if case .startStreaming(let jobId, let cursor) = action {
+                return jobId == "job_resume_1" && cursor == 12
+            }
+            return false
+        }) {
             $0.isStreaming = true
             $0.streamConnectionState = .connecting
         }
@@ -84,7 +94,7 @@ struct ChatFeatureEventTests {
         store.exhaustivity = .off
 
         await store.send(.appDidEnterBackground)
-        await store.receive(.stopStreaming) {
+        await store.receive(\.stopStreaming) {
             $0.isStreaming = false
             $0.streamConnectionState = .idle
         }
@@ -315,7 +325,12 @@ struct ChatFeatureEventTests {
         )
 
         if let expectedApproval {
-            await store.receive(.delegate(.approvalRequired(expectedApproval)))
+            await store.receive({ action in
+                if case .delegate(.approvalRequired(let approval)) = action {
+                    return approval == expectedApproval
+                }
+                return false
+            })
         }
         #expect(store.state.isApprovalLocked == true)
         #expect(store.state.currentJobId == "job_replay_approval_1")
@@ -401,5 +416,80 @@ struct ChatFeatureEventTests {
         #expect(store.state.cursor == -1)
         #expect(store.state.messages.isEmpty)
         #expect(store.state.pendingAssistantDeltas.isEmpty)
+    }
+
+    @Test
+    func replayActiveJobStartsStreamingFromLatestCursor() async {
+        var initialState = ChatFeature.State()
+        initialState.activeThread = Thread(
+            threadId: "thread_replay_active",
+            preview: nil,
+            cwd: "/Users/Apple/Dev/OpenCodex",
+            createdAt: nil,
+            updatedAt: nil,
+            modelProvider: nil
+        )
+
+        let store = TestStore(initialState: initialState) {
+            ChatFeature()
+        } withDependencies: { dependencies in
+            var apiClient = APIClient.mock
+            apiClient.listEvents = { _, _ in
+                EventsListResponse(data: [], nextCursor: 4, firstSeq: 4, job: nil)
+            }
+            dependencies.apiClient = apiClient
+            dependencies.sseClient = SSEClient(
+                subscribe: { _, _ in
+                    AsyncStream { continuation in
+                        continuation.finish()
+                    }
+                },
+                cancel: {}
+            )
+        }
+        store.exhaustivity = .off
+
+        let stateEnvelope = EventEnvelope(
+            type: EventType.jobState.rawValue,
+            ts: "2026-02-25T00:00:00.000Z",
+            jobId: "job_replay_active",
+            seq: 3,
+            payload: [
+                "state": .string(JobState.running.rawValue),
+            ]
+        )
+
+        let deltaEnvelope = EventEnvelope(
+            type: EventType.itemAgentMessageDelta.rawValue,
+            ts: "2026-02-25T00:00:00.100Z",
+            jobId: "job_replay_active",
+            seq: 4,
+            payload: [
+                "itemId": .string("assistant_replay_delta"),
+                "delta": .string("streaming..."),
+            ]
+        )
+
+        await store.send(
+            .threadHistorySyncResponse(
+                threadId: "thread_replay_active",
+                .success([stateEnvelope, deltaEnvelope])
+            )
+        ) {
+            $0.currentJobId = "job_replay_active"
+            $0.cursor = 4
+            $0.jobState = .running
+        }
+        #expect(store.state.pendingAssistantDeltas["assistant_replay_delta"]?.text == "streaming...")
+
+        await store.receive({ action in
+            if case .startStreaming(let jobId, let cursor) = action {
+                return jobId == "job_replay_active" && cursor == 4
+            }
+            return false
+        }) {
+            $0.isStreaming = true
+            $0.streamConnectionState = .connecting
+        }
     }
 }

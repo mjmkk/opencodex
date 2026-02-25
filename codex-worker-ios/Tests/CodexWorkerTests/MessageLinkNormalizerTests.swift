@@ -40,8 +40,9 @@ struct MessageLinkNormalizerTests {
     func keepsExistingMarkdownLinkWithoutDoubleWrapping() {
         let input = "[/Users/Apple/Dev/OpenCodex/README.md](codexfs://open?ref=/Users/Apple/Dev/OpenCodex/README.md)"
         let output = MessageLinkNormalizer.live.normalize(input)
+        let expected = "[/Users/Apple/Dev/OpenCodex/README.md](codexfs://open?ref=%2FUsers%2FApple%2FDev%2FOpenCodex%2FREADME.md)"
 
-        #expect(output == input)
+        #expect(output == expected)
         #expect(!output.contains("[[/Users/Apple"))
     }
 

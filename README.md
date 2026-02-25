@@ -33,6 +33,10 @@ Connect your iPhone to a Worker service running on your Mac to engage in multi-t
 | 📁 File Browser | Tree view, full-text search, code viewing & editing |
 | 🔗 Message Links | Tap `path:line` references in messages to jump directly to the file |
 
+### Screenshots
+
+![OpenCodex iOS Preview](docs/assets/chat-screen.png)
+
 ## Architecture Overview
 
 ```
@@ -71,7 +75,6 @@ OpenCodex/
 │       └── Services/        # Markdown rendering, message pipeline, etc.
 ├── codex-worker-mvp/        # Node.js Worker backend
 ├── codex-sessions-tool/     # Session backup / restore CLI tool
-├── swift-composable-architecture/  # Local TCA dependency (path reference)
 └── docs/                    # Design docs & architecture decisions
 ```
 
@@ -82,6 +85,16 @@ OpenCodex/
 - **Node.js ≥ 22** — to run the Worker backend
 - **codex CLI** — Worker calls `codex app-server` internally (API Key must be configured)
 - **iPhone or iOS Simulator** (iOS 17+)
+
+## Runtime Dependency Boundary
+
+- This repository fully includes:
+  - `codex-worker-ios` (iOS package)
+  - `codex-worker-mvp` (Node.js worker)
+  - `codex-sessions-tool` (session utility)
+- This repository does **not** include `codex app-server` implementation.
+  - Runtime depends on local `codex` CLI availability and account permission.
+  - Without `codex app-server` access, contributors can still run unit tests, static checks, and submit UI/state-machine/documentation improvements.
 
 ## Quick Start
 
@@ -140,7 +153,9 @@ cd CodexWorkerApp/CodexWorkerApp
 xcodebuild -project CodexWorkerApp.xcodeproj \
   -scheme CodexWorkerApp \
   -configuration Debug \
-  -destination 'generic/platform=iOS Simulator' build
+  -destination 'generic/platform=iOS Simulator' \
+  -skipMacroValidation \
+  build
 ```
 
 ### Session Backup & Restore
@@ -241,6 +256,10 @@ OpenCodex 是一个 **iOS 客户端 + 本地 Node.js Worker 后端**的研发平
 | 📁 文件浏览 | 树形目录、全文搜索、代码查看与编辑 |
 | 🔗 消息跳转 | 点击消息中的 `path:line` 引用直接跳转到文件 |
 
+### 截图预览
+
+![OpenCodex iOS 预览](docs/assets/chat-screen.png)
+
 ## 架构概览
 
 ```
@@ -279,7 +298,6 @@ OpenCodex/
 │       └── Services/        # Markdown 渲染、消息管道等服务
 ├── codex-worker-mvp/        # Node.js Worker 后端
 ├── codex-sessions-tool/     # Session 备份 / 恢复 CLI 工具
-├── swift-composable-architecture/  # 本地 TCA 依赖（path 引用）
 └── docs/                    # 设计文档 & 架构决策
 ```
 
@@ -290,6 +308,16 @@ OpenCodex/
 - **Node.js ≥ 22** — 运行 Worker 后端
 - **codex CLI** — Worker 内部调用 `codex app-server`（需已配置 API Key）
 - **iPhone 或 iOS 模拟器**（iOS 17+）
+
+## 运行时依赖边界
+
+- 本仓库完整开源并提供：
+  - `codex-worker-ios`（iOS 侧）
+  - `codex-worker-mvp`（Node.js Worker）
+  - `codex-sessions-tool`（会话工具）
+- 本仓库**不包含** `codex app-server` 的实现源码。
+  - 运行时依赖本机 `codex` 命令和对应账号权限。
+  - 即使没有 app-server 访问权限，贡献者仍可执行单元测试、静态检查，并提交 UI/状态机/文档改进。
 
 ## 快速启动
 
@@ -348,7 +376,9 @@ cd CodexWorkerApp/CodexWorkerApp
 xcodebuild -project CodexWorkerApp.xcodeproj \
   -scheme CodexWorkerApp \
   -configuration Debug \
-  -destination 'generic/platform=iOS Simulator' build
+  -destination 'generic/platform=iOS Simulator' \
+  -skipMacroValidation \
+  build
 ```
 
 ### Session 备份与恢复

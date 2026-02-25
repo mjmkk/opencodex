@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            codex-worker-mvp/package-lock.json
+            codex-sessions-tool/package-lock.json
+
+      - name: Test codex-worker-mvp
+        working-directory: codex-worker-mvp
+        run: |
+          npm ci
+          npm test
+
+      - name: Test codex-sessions-tool
+        working-directory: codex-sessions-tool
+        run: |
+          npm ci
+          npm test
+
+  ios-build-and-style:
+    name: iOS Build & Style
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 16.2
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.2'
+
+      - name: Setup Swift lint/format tools
+        run: |
+          brew update
+          brew install swiftlint swiftformat
+
+      - name: SwiftFormat lint
+        run: swiftformat --lint . --config .swiftformat
+
+      - name: SwiftLint
+        run: swiftlint lint --config .swiftlint.yml
+
+      - name: Build CodexWorkerApp
+        run: |
+          cd CodexWorkerApp/CodexWorkerApp
+          xcodebuild -project CodexWorkerApp.xcodeproj \
+            -scheme CodexWorkerApp \
+            -destination 'generic/platform=iOS Simulator' \
+            -skipMacroValidation \
+            build

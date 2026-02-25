@@ -18,7 +18,7 @@ let package = Package(
     ],
     dependencies: [
         // TCA（The Composable Architecture，组合式架构库）
-        .package(path: "../swift-composable-architecture"),
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.23.1"),
         // Exyte Chat（聊天 UI 组件）
         .package(url: "https://github.com/exyte/Chat.git", from: "2.7.6"),
         // MarkdownUI（完整 Markdown 渲染，支持 GitHub 风格 Markdown 的表格/任务列表）

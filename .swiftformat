@@ -1,0 +1,5 @@
+--exclude swift-composable-architecture,archive,.derived,CodexWorkerApp/CodexWorkerApp/CodexWorkerApp.xcodeproj
+--swiftversion 6.0
+--linebreaks lf
+--disable all
+--enable linebreaks

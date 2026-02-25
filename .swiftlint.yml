@@ -1,0 +1,36 @@
+included:
+  - codex-worker-ios/Sources
+  - codex-worker-ios/Tests
+  - CodexWorkerApp/CodexWorkerApp/CodexWorkerApp
+
+excluded:
+  - swift-composable-architecture
+  - archive
+  - .derived
+  - CodexWorkerApp/CodexWorkerApp/CodexWorkerApp.xcodeproj
+
+line_length:
+  warning: 180
+  error: 220
+
+file_length:
+  warning: 1400
+  error: 2500
+
+type_body_length:
+  warning: 900
+  error: 2000
+
+function_body_length:
+  warning: 200
+  error: 400
+
+cyclomatic_complexity:
+  warning: 30
+  error: 60
+
+disabled_rules:
+  - trailing_whitespace
+  - todo
+  - force_try
+  - identifier_name

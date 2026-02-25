@@ -1,0 +1,71 @@
+name: Bug report
+description: 报告可复现的缺陷
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提交前请确认：
+        - 使用的是最新 `main`
+        - 已阅读 README 与已知问题
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: 问题描述
+      description: 用 1-3 句话描述问题现象
+      placeholder: 在 xxx 场景下出现 xxx
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 请提供可重复执行的步骤
+      placeholder: |
+        1. 打开 ...
+        2. 点击 ...
+        3. 观察到 ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期行为
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志与截图
+      description: 贴关键日志、错误栈或截图
+      render: shell
+
+  - type: input
+    id: ios_version
+    attributes:
+      label: iOS / Simulator 版本
+      placeholder: iOS 18.2
+
+  - type: input
+    id: xcode_version
+    attributes:
+      label: Xcode 版本
+      placeholder: Xcode 16.2
+
+  - type: input
+    id: backend_version
+    attributes:
+      label: 后端版本或 commit
+      placeholder: 例如 main@abc123

@@ -216,13 +216,23 @@ extension Thread {
     /// 最后活跃时间（解析 ISO 8601 时间戳）
     public var lastActiveAt: Date? {
         guard let updatedAt = updatedAt else { return nil }
-        return ISO8601DateFormatter().date(from: updatedAt)
+        return Self.parseISO8601Date(updatedAt)
     }
 
     /// 创建时间 Date
     public var createdDate: Date? {
         guard let createdAt = createdAt else { return nil }
-        return ISO8601DateFormatter().date(from: createdAt)
+        return Self.parseISO8601Date(createdAt)
+    }
+
+    private static func parseISO8601Date(_ value: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = formatter.date(from: value) {
+            return date
+        }
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter.date(from: value)
     }
 }
 

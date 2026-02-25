@@ -32,7 +32,7 @@ struct ThreadsFeatureTests {
             ThreadsFeature()
         } withDependencies: { dependencies in
             var apiClient = APIClient.mock
-            apiClient.listThreads = { response }
+            apiClient.listThreads = { _ in response }
             dependencies.apiClient = apiClient
             dependencies.threadHistoryStore = .testValue
         }
@@ -42,12 +42,23 @@ struct ThreadsFeatureTests {
             $0.isLoading = true
             $0.errorMessage = nil
         }
-        await store.receive(.loadResponse(.success(response))) {
+        await store.receive({ action in
+            if case .loadResponse(.success(let value)) = action {
+                return value.nextCursor == response.nextCursor &&
+                    value.data.map(\.threadId) == response.data.map(\.threadId)
+            }
+            return false
+        }) {
             $0.isLoading = false
             $0.items = response.data
             $0.selectedThreadId = "thread_recent"
         }
-        await store.receive(.delegate(.didActivateThread(recent)))
+        await store.receive({ action in
+            if case .delegate(.didActivateThread(let thread)) = action {
+                return thread.threadId == recent.threadId
+            }
+            return false
+        })
     }
 
     @Test
@@ -126,12 +137,24 @@ struct ThreadsFeatureTests {
             $0.errorMessage = nil
         }
 
-        await store.receive(.archiveResponse("thread_recent", .success(.init(threadId: "thread_recent", status: "archived")))) {
+        await store.receive({ action in
+            if case .archiveResponse(let threadId, .success(let response)) = action {
+                return threadId == "thread_recent" &&
+                    response.threadId == "thread_recent" &&
+                    response.status == "archived"
+            }
+            return false
+        }) {
             $0.archivingThreadIds.remove("thread_recent")
             $0.items = [older]
             $0.selectedThreadId = "thread_old"
         }
 
-        await store.receive(.delegate(.didActivateThread(older)))
+        await store.receive({ action in
+            if case .delegate(.didActivateThread(let thread)) = action {
+                return thread.threadId == older.threadId
+            }
+            return false
+        })
     }
 }

@@ -299,6 +299,141 @@ struct TerminalFeatureTests {
     }
 
     @Test
+    func streamFailureDoesNotReconnectWhenTerminalHidden() async {
+        let thread = makeThread(id: "thr_terminal_hidden")
+        var initialState = TerminalFeature.State()
+        initialState.activeThread = thread
+        initialState.isPresented = false
+        initialState.connectionState = .connected
+        initialState.session = TerminalSessionSnapshot(
+            sessionId: "term_hidden",
+            threadId: thread.threadId,
+            cwd: thread.cwd ?? "/repo",
+            shell: "/bin/zsh",
+            pid: 105,
+            status: "running",
+            createdAt: nil,
+            lastActiveAt: nil,
+            cols: 120,
+            rows: 24,
+            exitCode: nil,
+            signal: nil,
+            nextSeq: 7,
+            clientCount: 1
+        )
+
+        let store = TestStore(initialState: initialState) {
+            TerminalFeature()
+        }
+        store.exhaustivity = .off
+
+        await store.send(.streamFailed(.connectionFailed("hidden")))
+
+        #expect(store.state.connectionState == .failed("连接失败: hidden"))
+        #expect(store.state.errorMessage == "连接失败: hidden")
+        #expect(store.state.reconnectAttempt == 0)
+    }
+
+    @Test
+    func readyFrameFlushesPendingInputQueue() async {
+        let thread = makeThread(id: "thr_terminal_ready_flush")
+
+        actor InputRecorder {
+            private var payloads: [String] = []
+
+            func append(_ payload: String) {
+                payloads.append(payload)
+            }
+
+            func snapshot() -> [String] {
+                payloads
+            }
+        }
+
+        let recorder = InputRecorder()
+
+        var initialState = TerminalFeature.State()
+        initialState.activeThread = thread
+        initialState.isPresented = true
+        initialState.connectionState = .connecting
+        initialState.pendingInputQueue = ["ls\n", "pwd\n"]
+        initialState.session = TerminalSessionSnapshot(
+            sessionId: "term_ready_flush",
+            threadId: thread.threadId,
+            cwd: thread.cwd ?? "/repo",
+            shell: "/bin/zsh",
+            pid: 106,
+            status: "running",
+            createdAt: nil,
+            lastActiveAt: nil,
+            cols: 120,
+            rows: 24,
+            exitCode: nil,
+            signal: nil,
+            nextSeq: 10,
+            clientCount: 1
+        )
+
+        let store = TestStore(initialState: initialState) {
+            TerminalFeature()
+        } withDependencies: { dependencies in
+            dependencies.terminalSocketClient = TerminalSocketClient(
+                subscribe: { _, _ in throw CancellationError() },
+                sendInput: { payload in
+                    await recorder.append(payload)
+                },
+                sendResize: { _, _ in },
+                disconnect: {}
+            )
+        }
+        store.exhaustivity = .off
+
+        await store.send(
+            .streamEventReceived(
+                TerminalStreamFrame(
+                    type: "ready",
+                    seq: 10,
+                    data: nil,
+                    exitCode: nil,
+                    signal: nil,
+                    sessionId: "term_ready_flush",
+                    threadId: thread.threadId,
+                    cwd: thread.cwd,
+                    transportMode: "pty",
+                    code: nil,
+                    message: nil,
+                    clientTs: nil,
+                    serverTs: nil
+                )
+            )
+        ) {
+            $0.latestSeq = 10
+            $0.connectionState = .connected
+            $0.reconnectAttempt = 0
+            $0.pendingInputQueue = []
+            $0.session?.cwd = thread.cwd ?? "/repo"
+            $0.session?.threadId = thread.threadId
+            $0.session?.transportMode = "pty"
+        }
+
+        await store.receive({ action in
+            if case .sendRawInput(let payload) = action {
+                return payload == "ls\n"
+            }
+            return false
+        })
+        await store.receive({ action in
+            if case .sendRawInput(let payload) = action {
+                return payload == "pwd\n"
+            }
+            return false
+        })
+
+        let payloads = await recorder.snapshot()
+        #expect(payloads == ["ls\n", "pwd\n"])
+    }
+
+    @Test
     func rawInputKeepsOriginalPayload() async {
         let thread = makeThread(id: "thr_terminal_raw_input")
         actor InputRecorder {
