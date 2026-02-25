@@ -388,6 +388,7 @@ public struct FileBrowserView: View {
 }
 
 public struct FileViewerView: View {
+    @Environment(\.colorScheme) private var colorScheme
     let store: StoreOf<FileViewerFeature>
     private let markdownParser = MarkdownParserService.live
     private let codeSyntaxHighlighter: CodeSyntaxHighlighter = CodexCodeSyntaxHighlighter()
@@ -601,12 +602,111 @@ public struct FileViewerView: View {
         ScrollView {
             Markdown(markdownParser.parse(text).markdownContent)
                 .markdownTheme(.gitHub)
+                .tint(markdownLinkColor)
+                .markdownTextStyle(\.text) {
+                    ForegroundColor(.primary)
+                    BackgroundColor(nil)
+                }
+                .markdownTextStyle(\.link) {
+                    ForegroundColor(markdownLinkColor)
+                    UnderlineStyle(.single)
+                }
+                .markdownTextStyle(\.code) {
+                    FontFamilyVariant(.monospaced)
+                    FontSize(.em(0.85))
+                    BackgroundColor(previewInnerCodeColor)
+                }
+                .markdownBlockStyle(\.heading1) { configuration in
+                    configuration.label
+                        .markdownMargin(top: 8, bottom: 12)
+                }
+                .markdownBlockStyle(\.heading2) { configuration in
+                    configuration.label
+                        .markdownMargin(top: 6, bottom: 10)
+                }
+                .markdownBlockStyle(\.heading3) { configuration in
+                    configuration.label
+                        .markdownMargin(top: 4, bottom: 8)
+                }
+                .markdownBlockStyle(\.blockquote) { configuration in
+                    configuration.label
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .background(previewQuoteBackgroundColor)
+                        .overlay(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                                .fill(previewBorderColor)
+                                .frame(width: 3)
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .markdownMargin(top: 0, bottom: 12)
+                }
+                .markdownBlockStyle(\.codeBlock) { configuration in
+                    ScrollView(.horizontal) {
+                        configuration.label
+                            .fixedSize(horizontal: false, vertical: true)
+                            .relativeLineSpacing(.em(0.225))
+                            .markdownTextStyle {
+                                FontFamilyVariant(.monospaced)
+                                FontSize(.em(0.85))
+                            }
+                            .padding(12)
+                    }
+                    .background(previewInnerCodeColor)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .stroke(previewBorderColor, lineWidth: 0.8)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .markdownMargin(top: 0, bottom: 12)
+                }
+                .markdownBlockStyle(\.table) { configuration in
+                    configuration.label
+                        .fixedSize(horizontal: false, vertical: true)
+                        .markdownTableBorderStyle(.init(color: previewBorderColor))
+                        .markdownTableBackgroundStyle(
+                            .alternatingRows(previewTableEvenRowColor, previewTableOddRowColor)
+                        )
+                        .markdownMargin(top: 0, bottom: 12)
+                }
                 .markdownCodeSyntaxHighlighter(codeSyntaxHighlighter)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
         }
         .background(Color(uiColor: .secondarySystemBackground))
+    }
+
+    private var markdownLinkColor: Color {
+        Color(uiColor: .link)
+    }
+
+    private var previewInnerCodeColor: Color {
+        colorScheme == .dark
+            ? Color(uiColor: .tertiarySystemBackground)
+            : Color(uiColor: .secondarySystemBackground)
+    }
+
+    private var previewBorderColor: Color {
+        Color(uiColor: .separator).opacity(colorScheme == .dark ? 0.5 : 0.28)
+    }
+
+    private var previewQuoteBackgroundColor: Color {
+        colorScheme == .dark
+            ? Color(uiColor: .secondarySystemBackground).opacity(0.88)
+            : Color(uiColor: .secondarySystemBackground).opacity(0.65)
+    }
+
+    private var previewTableEvenRowColor: Color {
+        colorScheme == .dark
+            ? Color(uiColor: .secondarySystemBackground).opacity(0.72)
+            : Color(uiColor: .systemBackground).opacity(0.6)
+    }
+
+    private var previewTableOddRowColor: Color {
+        colorScheme == .dark
+            ? Color(uiColor: .tertiarySystemFill).opacity(0.92)
+            : Color(uiColor: .secondarySystemFill).opacity(0.9)
     }
 
     private struct MetaChip: View {
