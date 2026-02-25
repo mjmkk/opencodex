@@ -304,50 +304,11 @@ test("TerminalManager 在 zsh -f 失败时会改用 zsh -i 并保持 PTY 模式"
   assert.ok(warnings.some((message) => message.includes("recovered with alternate args")));
 });
 
-test("TerminalManager 启动钩子注入对客户端输出保持静默", () => {
-  const process = new FakePtyProcess(9999);
-  const events = [];
-  const manager = new TerminalManager({
-    autoSweep: false,
-    ptyAdapter: {
-      spawn: () => process,
-    },
-    logger: {
-      warn: () => {},
-      info: () => {},
-    },
-  });
-
-  const opened = manager.openSession({
-    threadId: "thr_bootstrap_silent",
-    cwd: "/repo",
-  });
-
-  manager.attachClient({
-    sessionId: opened.session.sessionId,
-    clientId: "client_bootstrap",
-    fromSeq: -1,
-    onEvent: (event) => events.push(event),
-  });
-
-  process.emitData(
-    'if [ -n "$ZSH_VERSION" ]; then autoload -Uz add-zsh-hook >/dev/null 2>&1; __cw_emit_state(){ local mode="$1"; }; fi; print -r -- "__CW_BOOTSTRAP_DONE__"\r\n'
-  );
-  process.emitData("MacBook-Pro% ");
-
-  assert.ok(events.length >= 1);
-  assert.ok(events.every((event) => !String(event.data ?? "").includes("__cw_emit_state")));
-  assert.ok(events.every((event) => !String(event.data ?? "").includes("__CW_BOOTSTRAP_DONE__")));
-  assert.ok(events.some((event) => String(event.data ?? "").includes("MacBook-Pro% ")));
-});
-
-test("TerminalManager 启动静默在超时后自动解除，避免吞掉后续输出", () => {
-  let now = Date.parse("2026-02-25T00:00:00.000Z");
+test("TerminalManager 仍会过滤 __CW_STATE__ 标记并更新忙闲状态", () => {
   const process = new FakePtyProcess(10001);
   const events = [];
   const manager = new TerminalManager({
     autoSweep: false,
-    now: () => now,
     ptyAdapter: {
       spawn: () => process,
     },
@@ -364,18 +325,17 @@ test("TerminalManager 启动静默在超时后自动解除，避免吞掉后续�
 
   manager.attachClient({
     sessionId: opened.session.sessionId,
-    clientId: "client_bootstrap_timeout",
+    clientId: "client_state_markers",
     fromSeq: -1,
     onEvent: (event) => events.push(event),
   });
 
-  // 启动噪声：启动静默阶段会吞掉。
-  process.emitData("then> add-zsh-hook preexec __cw_preexec\r\n");
-  assert.equal(events.length, 0);
+  process.emitData("__CW_STATE__:busy:1\r\nhello from shell\r\n__CW_STATE__:idle:0\r\n");
+  const payload = events.map((event) => String(event.data ?? "")).join("");
+  assert.ok(payload.includes("hello from shell"));
+  assert.ok(!payload.includes("__CW_STATE__"));
 
-  // 超过静默窗口后，未命中完成标记也应恢复透传。
-  now += 16000;
-  process.emitData("real output after timeout\r\n");
-
-  assert.ok(events.some((event) => String(event.data ?? "").includes("real output after timeout")));
+  const snapshot = manager.getSessionById(opened.session.sessionId);
+  assert.equal(snapshot?.foregroundBusy, false);
+  assert.equal(snapshot?.backgroundJobs, 0);
 });

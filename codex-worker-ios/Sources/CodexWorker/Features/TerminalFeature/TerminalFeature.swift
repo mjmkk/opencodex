@@ -47,6 +47,7 @@ public struct TerminalFeature {
         public var isClosing = false
         public var errorMessage: String?
         public var showRiskNotice = false
+        public var needsInitialOutputCleanup = false
 
         // 线程内存缓冲（仅前端内存态，不落盘）
         public var threadBuffers: [String: ThreadBuffer] = [:]
@@ -143,6 +144,7 @@ public struct TerminalFeature {
                     state.connectionState = .idle
                     state.errorMessage = nil
                     state.showRiskNotice = false
+                    state.needsInitialOutputCleanup = false
                     state.inputText = ""
                     state.session = nil
                     state.isOpening = false
@@ -194,8 +196,10 @@ public struct TerminalFeature {
                 if !response.reused {
                     state.terminalText = ""
                     state.latestSeq = -1
+                    state.needsInitialOutputCleanup = true
                     state.threadBuffers[activeThreadId] = ThreadBuffer(text: "", latestSeq: -1)
                 } else {
+                    state.needsInitialOutputCleanup = false
                     restoreBufferIfNeeded(state: &state)
                 }
 
@@ -272,7 +276,12 @@ public struct TerminalFeature {
 
                 case "output":
                     if let data = frame.data, !data.isEmpty {
-                        state.terminalText += data
+                        // 新会话首次输出通常包含 shell 钩子注入回显，直接丢弃一次可避免首屏噪声。
+                        if state.needsInitialOutputCleanup {
+                            state.needsInitialOutputCleanup = false
+                        } else {
+                            state.terminalText += data
+                        }
                         trimTerminalTextIfNeeded(state: &state)
                     }
 
@@ -459,6 +468,7 @@ public struct TerminalFeature {
         state.session = nil
         state.connectionState = .connecting
         state.errorMessage = nil
+        state.needsInitialOutputCleanup = false
         state.isOpening = false
         state.isClosing = false
         state.reconnectAttempt = 0

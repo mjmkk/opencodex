@@ -132,6 +132,7 @@ struct TerminalFeatureTests {
             $0.lastSentRows = 24
             $0.terminalText = ""
             $0.latestSeq = -1
+            $0.needsInitialOutputCleanup = true
             $0.threadBuffers[thread.threadId] = .init(text: "", latestSeq: -1)
         }
 
@@ -142,6 +143,92 @@ struct TerminalFeatureTests {
             return false
         }) {
             $0.connectionState = .connecting
+        }
+    }
+
+    @Test
+    func firstOutputIsDroppedOnlyOnceForNewSession() async {
+        let thread = makeThread(id: "thr_terminal_clean_once")
+        var initialState = TerminalFeature.State()
+        initialState.activeThread = thread
+        initialState.isPresented = true
+        initialState.connectionState = .connected
+        initialState.needsInitialOutputCleanup = true
+        initialState.session = TerminalSessionSnapshot(
+            sessionId: "term_clean_once",
+            threadId: thread.threadId,
+            cwd: thread.cwd ?? "/repo",
+            shell: "/bin/zsh",
+            pid: 105,
+            status: "running",
+            createdAt: nil,
+            lastActiveAt: nil,
+            cols: 120,
+            rows: 24,
+            exitCode: nil,
+            signal: nil,
+            nextSeq: 3,
+            clientCount: 1
+        )
+
+        let store = TestStore(initialState: initialState) {
+            TerminalFeature()
+        } withDependencies: { dependencies in
+            dependencies.terminalSocketClient = TerminalSocketClient(
+                subscribe: { _, _ in throw CancellationError() },
+                sendInput: { _ in },
+                sendResize: { _, _ in },
+                disconnect: {}
+            )
+        }
+        store.exhaustivity = .off
+
+        await store.send(
+            .streamEventReceived(
+                TerminalStreamFrame(
+                    type: "output",
+                    seq: 0,
+                    data: "MacBook-Pro% if [ -n \"$ZSH_VERSION\" ]; then autoload -Uz add-zsh-hook >/dev/null 2>&1; fi\nthen> add-zsh-hook preexec __cw_preexec\n",
+                    exitCode: nil,
+                    signal: nil,
+                    sessionId: "term_clean_once",
+                    threadId: thread.threadId,
+                    cwd: nil,
+                    transportMode: nil,
+                    code: nil,
+                    message: nil,
+                    clientTs: nil,
+                    serverTs: nil
+                )
+            )
+        ) {
+            $0.latestSeq = 0
+            $0.needsInitialOutputCleanup = false
+            $0.threadBuffers[thread.threadId] = .init(text: "", latestSeq: 0)
+        }
+
+        await store.send(
+            .streamEventReceived(
+                TerminalStreamFrame(
+                    type: "output",
+                    seq: 1,
+                    data: "hello\n",
+                    exitCode: nil,
+                    signal: nil,
+                    sessionId: "term_clean_once",
+                    threadId: thread.threadId,
+                    cwd: nil,
+                    transportMode: nil,
+                    code: nil,
+                    message: nil,
+                    clientTs: nil,
+                    serverTs: nil
+                )
+            )
+        ) {
+            $0.latestSeq = 1
+            $0.terminalText = "hello\n"
+            $0.threadBuffers[thread.threadId] = .init(text: "hello\n", latestSeq: 1)
         }
     }
 

@@ -21,8 +21,6 @@ const DEFAULTS = {
 };
 
 const SHELL_STATE_MARKER = "__CW_STATE__";
-const SHELL_BOOTSTRAP_DONE_MARKER = "__CW_BOOTSTRAP_DONE__";
-const BOOTSTRAP_SILENT_MAX_MS = 15000;
 
 function isPosixSpawnFailure(error) {
   const message = error instanceof Error ? error.message : String(error ?? "");
@@ -313,9 +311,6 @@ export class TerminalManager {
       foregroundBusy: false,
       backgroundJobs: 0,
       shellStateCarry: "",
-      bootstrapFilterCarry: "",
-      suppressBootstrapNoise: this.trackShellState && ptyProcess.supportsShellStateHooks === true,
-      bootstrapStartedAtMs: this.now(),
       pty: ptyProcess,
     };
 
@@ -667,7 +662,7 @@ export class TerminalManager {
       return;
     }
 
-    const script = `if [ -n "$ZSH_VERSION" ]; then autoload -Uz add-zsh-hook >/dev/null 2>&1; __cw_emit_state(){ local mode="$1"; local jobs_count; jobs_count=$(jobs -p | wc -l | tr -d ' '); print -r -- "${SHELL_STATE_MARKER}:$mode:$jobs_count"; }; __cw_preexec(){ __cw_emit_state busy; }; __cw_precmd(){ __cw_emit_state idle; }; add-zsh-hook preexec __cw_preexec >/dev/null 2>&1; add-zsh-hook precmd __cw_precmd >/dev/null 2>&1; __cw_emit_state idle; fi; print -r -- "${SHELL_BOOTSTRAP_DONE_MARKER}"\n`;
+    const script = `if [ -n "$ZSH_VERSION" ]; then autoload -Uz add-zsh-hook >/dev/null 2>&1; __cw_emit_state(){ local mode="$1"; local jobs_count; jobs_count=$(jobs -p | wc -l | tr -d ' '); print -r -- "${SHELL_STATE_MARKER}:$mode:$jobs_count"; }; __cw_preexec(){ __cw_emit_state busy; }; __cw_precmd(){ __cw_emit_state idle; }; add-zsh-hook preexec __cw_preexec >/dev/null 2>&1; add-zsh-hook precmd __cw_precmd >/dev/null 2>&1; __cw_emit_state idle; fi\n`;
     try {
       session.pty.write(script);
     } catch (error) {
@@ -721,41 +716,12 @@ export class TerminalManager {
     session.shellStateCarry = carry;
 
     const markerRegex = /(?:\r?\n)?__CW_STATE__:(busy|idle):(\d+)(?:\r?\n)?/g;
-    const stateFiltered = processText.replace(markerRegex, (_line, mode, jobsRaw) => {
+    return processText.replace(markerRegex, (_line, mode, jobsRaw) => {
       session.foregroundBusy = mode === "busy";
       const jobs = Number.parseInt(String(jobsRaw), 10);
       session.backgroundJobs = Number.isInteger(jobs) && jobs >= 0 ? jobs : 0;
       return "";
     });
-    return this.#filterBootstrapNoise(session, stateFiltered);
-  }
-
-  #filterBootstrapNoise(session, text) {
-    if (!session.suppressBootstrapNoise || !text) {
-      return text;
-    }
-
-    const nowMs = this.now();
-    if (nowMs - session.bootstrapStartedAtMs > BOOTSTRAP_SILENT_MAX_MS) {
-      session.suppressBootstrapNoise = false;
-      session.bootstrapFilterCarry = "";
-      return text;
-    }
-
-    const combined = `${session.bootstrapFilterCarry}${text}`;
-    const markerIndex = combined.indexOf(SHELL_BOOTSTRAP_DONE_MARKER);
-    if (markerIndex < 0) {
-      // 启动期仅做一次静默清屏：未看到完成标记前，暂不向客户端透传输出。
-      session.bootstrapFilterCarry = combined.slice(-8192);
-      return "";
-    }
-
-    session.suppressBootstrapNoise = false;
-    session.bootstrapFilterCarry = "";
-
-    const markerEnd = markerIndex + SHELL_BOOTSTRAP_DONE_MARKER.length;
-    const remainder = combined.slice(markerEnd).replace(/^\r?\n/, "");
-    return remainder;
   }
 
   #toSessionSnapshot(session) {
