@@ -57,6 +57,8 @@ public struct ChatFeature {
         case binding(BindingAction<State>)
         case onAppear
         case onDisappear
+        case appDidBecomeActive
+        case appDidEnterBackground
         case setActiveThread(Thread?)
         case threadHistoryCacheResponse(threadId: String, Result<[EventEnvelope], CodexError>)
         case threadHistorySyncResponse(threadId: String, Result<[EventEnvelope], CodexError>)
@@ -111,6 +113,22 @@ public struct ChatFeature {
                     },
                     .cancel(id: CancelID.sseStream)
                 )
+
+            case .appDidBecomeActive:
+                guard let threadId = state.activeThread?.threadId else { return .none }
+                let shouldPreemptStream = state.isStreaming || state.streamConnectionState != .idle
+                let refreshEffect = Self.refreshThreadHistoryFromRemote(threadId: threadId)
+                    .cancellable(id: CancelID.threadHistoryLoad, cancelInFlight: true)
+                if shouldPreemptStream {
+                    return .concatenate(.send(.stopStreaming), refreshEffect)
+                }
+                return refreshEffect
+
+            case .appDidEnterBackground:
+                if state.isStreaming || state.streamConnectionState != .idle {
+                    return .send(.stopStreaming)
+                }
+                return .none
 
             case .setActiveThread(let thread):
                 // 切线程时重置聊天上下文，避免串流状态污染
@@ -201,6 +219,11 @@ public struct ChatFeature {
 
             case .threadHistorySyncNoChange(let threadId):
                 guard state.activeThread?.threadId == threadId else { return .none }
+                if shouldResumeStreamingAfterSync(state: state),
+                   let activeJobId = state.currentJobId
+                {
+                    return .send(.startStreaming(jobId: activeJobId, cursor: state.cursor))
+                }
                 return .none
 
             case .didSendDraft(let draft):
@@ -640,6 +663,43 @@ public struct ChatFeature {
             return ThreadHistorySyncOutcome(events: syncedEvents, shouldApply: true)
         }
         return ThreadHistorySyncOutcome(events: [], shouldApply: false)
+    }
+
+    private static func refreshThreadHistoryFromRemote(threadId: String) -> Effect<Action> {
+        .run { send in
+            @Dependency(\.apiClient) var apiClient
+            @Dependency(\.threadHistoryStore) var threadHistoryStore
+
+            do {
+                let syncResult = try await Self.syncThreadHistory(
+                    threadId: threadId,
+                    apiClient: apiClient,
+                    threadHistoryStore: threadHistoryStore
+                )
+                if syncResult.shouldApply {
+                    await send(.threadHistorySyncResponse(threadId: threadId, .success(syncResult.events)))
+                } else {
+                    await send(.threadHistorySyncNoChange(threadId: threadId))
+                }
+            } catch {
+                await send(
+                    .threadHistorySyncResponse(
+                        threadId: threadId,
+                        .failure(CodexError.from(error))
+                    )
+                )
+            }
+        }
+    }
+
+    private func shouldResumeStreamingAfterSync(state: State) -> Bool {
+        guard let activeState = state.jobState, activeState.isActive else { return false }
+        switch state.streamConnectionState {
+        case .idle, .failed:
+            return true
+        case .connecting, .connected:
+            return false
+        }
     }
 
     /// 将线程历史事件回放为聊天状态

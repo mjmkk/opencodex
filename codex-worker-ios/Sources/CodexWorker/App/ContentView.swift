@@ -13,6 +13,7 @@ import UIKit
 
 public struct ContentView: View {
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.scenePhase) private var scenePhase
 
     private struct ViewState: Equatable {
         let connectionState: ConnectionState
@@ -158,6 +159,20 @@ public struct ContentView: View {
                 if isPresented {
                     dismissKeyboard()
                 }
+            }
+            .onChange(of: scenePhase) { _, newValue in
+                let lifecycle: AppFeature.LifecycleState
+                switch newValue {
+                case .active:
+                    lifecycle = .active
+                case .inactive:
+                    lifecycle = .inactive
+                case .background:
+                    lifecycle = .background
+                @unknown default:
+                    lifecycle = .inactive
+                }
+                viewStore.send(.lifecycleChanged(lifecycle))
             }
             .onAppear { viewStore.send(.onAppear) }
             .onDisappear { viewStore.send(.onDisappear) }

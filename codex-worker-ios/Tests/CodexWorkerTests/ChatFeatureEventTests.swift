@@ -6,6 +6,91 @@ import Testing
 @MainActor
 struct ChatFeatureEventTests {
     @Test
+    func foregroundResumeCanRestartStreamWhenSyncNoChange() async {
+        let thread = Thread(
+            threadId: "thread_resume_1",
+            preview: nil,
+            cwd: "/Users/Apple/Dev/OpenCodex",
+            createdAt: nil,
+            updatedAt: nil,
+            modelProvider: nil
+        )
+
+        var initialState = ChatFeature.State()
+        initialState.activeThread = thread
+        initialState.currentJobId = "job_resume_1"
+        initialState.jobState = .running
+        initialState.cursor = 12
+        initialState.isStreaming = true
+        initialState.streamConnectionState = .connected
+
+        let store = TestStore(initialState: initialState) {
+            ChatFeature()
+        } withDependencies: { dependencies in
+            var apiClient = APIClient.mock
+            apiClient.listThreadEvents = { _, _, _ in
+                ThreadEventsResponse(data: [], nextCursor: 12, hasMore: false)
+            }
+            apiClient.listEvents = { _, _ in
+                EventsListResponse(data: [], nextCursor: 12, firstSeq: 12, job: nil)
+            }
+            dependencies.apiClient = apiClient
+
+            dependencies.threadHistoryStore = ThreadHistoryStore(
+                loadCachedEvents: { _ in [] },
+                loadCursor: { _ in 12 },
+                mergeRemotePage: { _, _, _ in },
+                appendLiveEvent: { _, _ in },
+                resetThread: { _ in }
+            )
+
+            dependencies.sseClient = SSEClient(
+                subscribe: { _, _ in
+                    AsyncStream { _ in }
+                },
+                cancel: {}
+            )
+        }
+        store.exhaustivity = .off
+
+        await store.send(.appDidBecomeActive)
+        await store.receive(.stopStreaming) {
+            $0.isStreaming = false
+            $0.streamConnectionState = .idle
+        }
+        await store.receive(.threadHistorySyncNoChange(threadId: "thread_resume_1"))
+        await store.receive(.startStreaming(jobId: "job_resume_1", cursor: 12)) {
+            $0.isStreaming = true
+            $0.streamConnectionState = .connecting
+        }
+    }
+
+    @Test
+    func backgroundTransitionStopsStreaming() async {
+        var initialState = ChatFeature.State()
+        initialState.isStreaming = true
+        initialState.streamConnectionState = .connected
+
+        let store = TestStore(initialState: initialState) {
+            ChatFeature()
+        } withDependencies: { dependencies in
+            dependencies.sseClient = SSEClient(
+                subscribe: { _, _ in
+                    AsyncStream { _ in }
+                },
+                cancel: {}
+            )
+        }
+        store.exhaustivity = .off
+
+        await store.send(.appDidEnterBackground)
+        await store.receive(.stopStreaming) {
+            $0.isStreaming = false
+            $0.streamConnectionState = .idle
+        }
+    }
+
+    @Test
     func liveDeltaDoesNotRenderPartialMessageBeforeCompletion() async {
         var initialState = ChatFeature.State()
         initialState.currentJobId = "job_live_delta_1"

@@ -21,6 +21,12 @@ public struct AppFeature {
         case unreachable(String)
     }
 
+    public enum LifecycleState: Equatable, Sendable {
+        case active
+        case inactive
+        case background
+    }
+
     @ObservableState
     public struct State: Equatable {
         public var connectionState: ConnectionState = .disconnected
@@ -46,6 +52,7 @@ public struct AppFeature {
         case terminal(TerminalFeature.Action)
         case approval(ApprovalFeature.Action)
         case settings(SettingsFeature.Action)
+        case lifecycleChanged(LifecycleState)
         case setDrawerPresented(Bool)
         case setExecutionAccessMode(ExecutionAccessMode)
         case healthCheckNow
@@ -89,6 +96,19 @@ public struct AppFeature {
 
             case .onDisappear:
                 return .cancel(id: CancelID.healthMonitor)
+
+            case .lifecycleChanged(let lifecycle):
+                switch lifecycle {
+                case .active:
+                    return .merge(
+                        .send(.healthCheckNow),
+                        .send(.chat(.appDidBecomeActive))
+                    )
+                case .background:
+                    return .send(.chat(.appDidEnterBackground))
+                case .inactive:
+                    return .none
+                }
 
             case .healthCheckNow:
                 if shouldEnterCheckingState(state.workerReachability) {
