@@ -196,6 +196,13 @@ For full backend configuration options, see [`codex-worker-mvp/README.md`](codex
 | WebSocket (ws) | Terminal stream transport |
 | SSE | Message event push |
 
+## License
+
+This repository is licensed under the [Apache License 2.0](LICENSE).
+
+- See [NOTICE](NOTICE) for attribution notice.
+- Vendored third-party code keeps its original license (for example, `swift-composable-architecture/` has its own `LICENSE`).
+
 ## Development Guidelines
 
 - Before committing, run at minimum: backend `npm test` and iOS `xcodebuild ... build`
@@ -396,6 +403,13 @@ node bin/doctor.js
 | SQLite (better-sqlite3) | 数据持久化 |
 | WebSocket (ws) | 终端流传输 |
 | SSE | 消息事件推送 |
+
+## 许可证
+
+本仓库采用 [Apache License 2.0](LICENSE)。
+
+- 归属声明见 [NOTICE](NOTICE)。
+- 仓库内保留的第三方代码沿用其原始许可证（例如 `swift-composable-architecture/` 目录下自带 `LICENSE`）。
 
 ## 开发约定
 
