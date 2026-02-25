@@ -720,6 +720,7 @@ export function createHttpServer(options) {
         sessionId: session.sessionId,
         threadId: session.threadId,
         cwd: session.cwd,
+        transportMode: session.transportMode ?? null,
         seq: session.nextSeq > 0 ? session.nextSeq - 1 : -1,
       });
       for (const replayEvent of attachedResult.replay) {

@@ -147,6 +147,7 @@ struct TerminalFeatureTests {
 
     @Test
     func viewportChangeTriggersResizeWhenConnected() async {
+        let clock = TestClock()
         let thread = makeThread(id: "thr_terminal_resize")
         var initialState = TerminalFeature.State()
         initialState.activeThread = thread
@@ -188,6 +189,7 @@ struct TerminalFeatureTests {
         let store = TestStore(initialState: initialState) {
             TerminalFeature()
         } withDependencies: { dependencies in
+            dependencies.continuousClock = clock
             dependencies.terminalSocketClient = TerminalSocketClient(
                 subscribe: { _, _ in throw CancellationError() },
                 sendInput: { _ in },
@@ -203,6 +205,15 @@ struct TerminalFeatureTests {
             $0.viewportCols = 121
             $0.viewportRows = 24
         }
+
+        await clock.advance(by: .milliseconds(160))
+
+        await store.receive({ action in
+            if case .resizeDebounced = action {
+                return true
+            }
+            return false
+        })
 
         await store.receive({ action in
             if case .sendResize = action {

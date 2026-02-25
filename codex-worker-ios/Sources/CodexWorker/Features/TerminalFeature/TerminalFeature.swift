@@ -13,6 +13,7 @@ public struct TerminalFeature {
     private enum CancelID {
         case stream
         case reconnect
+        case resizeDebounce
     }
 
     public struct ThreadBuffer: Equatable, Sendable {
@@ -82,10 +83,12 @@ public struct TerminalFeature {
         case streamFailed(CodexError)
         case reconnectNow
         case viewportChanged(width: Double, height: Double)
+        case resizeDebounced
         case sendResize
         case sendResizeFailed(CodexError)
         case sendInput
         case sendRawInput(String)
+        case clearOutput
         case sendInputFailed(CodexError)
         case closeSession
         case closeSessionResponse(Result<TerminalCloseResponse, CodexError>)
@@ -148,6 +151,7 @@ public struct TerminalFeature {
                     return .merge(
                         .cancel(id: CancelID.stream),
                         .cancel(id: CancelID.reconnect),
+                        .cancel(id: CancelID.resizeDebounce),
                         .run { _ in
                             @Dependency(\.terminalSocketClient) var terminalSocketClient
                             await terminalSocketClient.disconnect()
@@ -259,6 +263,9 @@ public struct TerminalFeature {
                     if let threadId = frame.threadId {
                         state.session?.threadId = threadId
                     }
+                    if let transportMode = frame.transportMode, !transportMode.isEmpty {
+                        state.session?.transportMode = transportMode
+                    }
                     if state.lastSentCols != state.viewportCols || state.lastSentRows != state.viewportRows {
                         return .send(.sendResize)
                     }
@@ -326,14 +333,24 @@ public struct TerminalFeature {
                 }
                 state.viewportCols = nextCols
                 state.viewportRows = nextRows
-
                 guard state.connectionState == .connected else {
                     return .none
                 }
+                return .run { send in
+                    @Dependency(\.continuousClock) var clock
+                    try await clock.sleep(for: .milliseconds(160))
+                    await send(.resizeDebounced)
+                }
+                .cancellable(id: CancelID.resizeDebounce, cancelInFlight: true)
+
+            case .resizeDebounced:
                 return .send(.sendResize)
 
             case .sendResize:
                 guard let session = state.session, session.status == "running" else {
+                    return .none
+                }
+                if session.transportMode == "pipe" {
                     return .none
                 }
                 let cols = state.viewportCols
@@ -365,6 +382,10 @@ public struct TerminalFeature {
                     return .none
                 }
                 state.inputText = ""
+                if state.session?.transportMode == "pipe" {
+                    appendPipeCommandEcho(state: &state, command: raw)
+                    persistBuffer(state: &state, threadId: state.activeThread?.threadId)
+                }
                 let payload = raw.hasSuffix("\n") ? raw : raw + "\n"
                 return sendSocketInput(payload)
 
@@ -376,6 +397,11 @@ public struct TerminalFeature {
                     return .none
                 }
                 return sendSocketInput(payload)
+
+            case .clearOutput:
+                state.terminalText = ""
+                persistBuffer(state: &state, threadId: state.activeThread?.threadId)
+                return .none
 
             case .sendInputFailed(let error):
                 state.errorMessage = "发送失败：\(error.localizedDescription)"
@@ -410,6 +436,7 @@ public struct TerminalFeature {
                 return .merge(
                     .cancel(id: CancelID.stream),
                     .cancel(id: CancelID.reconnect),
+                    .cancel(id: CancelID.resizeDebounce),
                     .run { _ in
                         @Dependency(\.terminalSocketClient) var terminalSocketClient
                         await terminalSocketClient.disconnect()
@@ -438,6 +465,7 @@ public struct TerminalFeature {
         return .merge(
             .cancel(id: CancelID.stream),
             .cancel(id: CancelID.reconnect),
+            .cancel(id: CancelID.resizeDebounce),
             .run { _ in
                 @Dependency(\.terminalSocketClient) var terminalSocketClient
                 await terminalSocketClient.disconnect()
@@ -502,5 +530,19 @@ public struct TerminalFeature {
                 await send(.sendInputFailed(CodexError.from(error)))
             }
         }
+    }
+
+    private func appendPipeCommandEcho(state: inout State, command: String) {
+        let normalized = command.replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !normalized.isEmpty else { return }
+
+        if !state.terminalText.isEmpty, !state.terminalText.hasSuffix("\n") {
+            state.terminalText += "\n"
+        }
+        state.terminalText += "$ \(normalized)\n"
+        trimTerminalTextIfNeeded(state: &state)
     }
 }

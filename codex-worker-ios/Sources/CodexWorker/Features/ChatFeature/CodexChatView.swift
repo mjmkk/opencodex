@@ -113,7 +113,7 @@ public struct CodexChatView: View {
                 .showDateHeaders(false)
                 .showMessageTimeView(false)
                 .keyboardDismissMode(.onDrag)
-                .setAvailableInputs(viewStore.canInput ? [.text] : [])
+                .setAvailableInputs((viewStore.canInput && !isTerminalPresented) ? [.text] : [])
                 .id(viewStore.activeThreadId ?? "no-thread")
                 .overlay(alignment: .center) {
                     if viewStore.activeThreadId == nil {

@@ -2,11 +2,14 @@
 //  TerminalView.swift
 //  CodexWorker
 //
-//  半屏终端视图
+//  半屏终端视图（iSH 风格：终端区直接输入）
 //
 
 import ComposableArchitecture
 import SwiftUI
+#if canImport(Foundation)
+import Foundation
+#endif
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -15,25 +18,27 @@ import SwiftTerm
 #endif
 
 public struct TerminalView: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     private struct ViewState: Equatable {
         let cwd: String
         let connectionState: TerminalFeature.State.ConnectionState
         let terminalText: String
-        let inputText: String
         let canSendInput: Bool
         let errorMessage: String?
         let isClosing: Bool
         let showRiskNotice: Bool
+        let transportMode: String
 
         init(_ state: TerminalFeature.State) {
             self.cwd = state.session?.cwd ?? state.activeThread?.cwd ?? "未绑定目录"
             self.connectionState = state.connectionState
             self.terminalText = state.terminalText
-            self.inputText = state.inputText
             self.canSendInput = state.canSendInput
             self.errorMessage = state.errorMessage
             self.isClosing = state.isClosing
             self.showRiskNotice = state.showRiskNotice
+            self.transportMode = state.session?.transportMode ?? "pty"
         }
     }
 
@@ -49,16 +54,11 @@ public struct TerminalView: View {
                 header(viewStore: viewStore)
 
                 Divider()
-                    .background(SwiftUI.Color.white.opacity(0.2))
+                    .background(Color(uiColor: .separator))
 
                 terminalOutput(viewStore: viewStore)
-
-                Divider()
-                    .background(SwiftUI.Color.white.opacity(0.2))
-
-                inputBar(viewStore: viewStore)
             }
-            .background(terminalBackground)
+            .background(Color(uiColor: .secondarySystemBackground))
             .overlay(alignment: .topLeading) {
                 if let error = viewStore.errorMessage {
                     Text(error)
@@ -66,7 +66,7 @@ public struct TerminalView: View {
                         .foregroundStyle(.red)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(SwiftUI.Color.black.opacity(0.45))
+                        .background(Color(uiColor: .systemBackground).opacity(0.95))
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         .padding(.top, 8)
                         .padding(.leading, 8)
@@ -79,19 +79,19 @@ public struct TerminalView: View {
                             .foregroundStyle(.orange)
                         Text("该终端直接执行 Mac 命令，不经过审批。")
                             .font(.caption)
-                            .foregroundStyle(.white.opacity(0.95))
+                            .foregroundStyle(Color(uiColor: .label))
                             .fixedSize(horizontal: false, vertical: true)
                         Button {
                             viewStore.send(.dismissRiskNotice)
                         } label: {
                             Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(.white.opacity(0.75))
+                                .foregroundStyle(.secondary)
                         }
                         .buttonStyle(.plain)
                     }
                     .padding(.horizontal, 10)
                     .padding(.vertical, 8)
-                    .background(SwiftUI.Color.orange.opacity(0.2))
+                    .background(Color.orange.opacity(colorScheme == .dark ? 0.20 : 0.12))
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                     .padding(.top, 8)
                     .padding(.trailing, 8)
@@ -99,7 +99,7 @@ public struct TerminalView: View {
             }
             .background(
                 GeometryReader { proxy in
-                    SwiftUI.Color.clear
+                    Color.clear
                         .onAppear {
                             viewStore.send(
                                 .viewportChanged(
@@ -121,28 +121,43 @@ public struct TerminalView: View {
         }
     }
 
-    private var terminalBackground: SwiftUI.Color {
-        SwiftUI.Color(red: 0.05, green: 0.06, blue: 0.08)
-    }
-
     @ViewBuilder
     private func header(viewStore: ViewStore<ViewState, TerminalFeature.Action>) -> some View {
         HStack(spacing: 10) {
             Image(systemName: "terminal.fill")
-                .foregroundStyle(.green)
+                .foregroundStyle(Color.accentColor)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(viewStore.cwd)
                     .font(.caption.monospaced())
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color(uiColor: .label))
                     .lineLimit(1)
 
-                Text(connectionLabel(for: viewStore.connectionState))
-                    .font(.caption2)
-                    .foregroundStyle(connectionColor(for: viewStore.connectionState))
+                HStack(spacing: 6) {
+                    Text(connectionLabel(for: viewStore.connectionState))
+                        .font(.caption2)
+                        .foregroundStyle(connectionColor(for: viewStore.connectionState))
+
+                    Text(viewStore.transportMode == "pipe" ? "兼容模式" : "终端模式")
+                        .font(.caption2.weight(.semibold))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color(uiColor: .tertiarySystemFill))
+                        .clipShape(Capsule())
+                }
             }
 
             Spacer(minLength: 8)
+
+            Button {
+                viewStore.send(.clearOutput)
+            } label: {
+                Image(systemName: "trash")
+                    .font(.subheadline)
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.secondary)
+            .accessibilityLabel("清空终端显示")
 
             Button {
                 viewStore.send(.closeSession)
@@ -155,7 +170,7 @@ public struct TerminalView: View {
                 }
             }
             .buttonStyle(.plain)
-            .foregroundStyle(.white.opacity(0.86))
+            .foregroundStyle(.secondary)
             .accessibilityLabel("关闭终端会话")
         }
         .padding(.horizontal, 12)
@@ -166,47 +181,15 @@ public struct TerminalView: View {
     private func terminalOutput(viewStore: ViewStore<ViewState, TerminalFeature.Action>) -> some View {
         TerminalOutputSurface(
             text: viewStore.terminalText,
-            placeholder: "终端已连接，输入命令后回车执行。",
+            canSendInput: viewStore.canSendInput,
+            isDarkMode: colorScheme == .dark,
+            placeholder: "终端连接后会在此显示输出。",
             onInput: { payload in
                 viewStore.send(.sendRawInput(payload))
             }
         )
         .padding(.horizontal, 8)
         .padding(.vertical, 8)
-    }
-
-    @ViewBuilder
-    private func inputBar(viewStore: ViewStore<ViewState, TerminalFeature.Action>) -> some View {
-        HStack(spacing: 8) {
-            TextField(
-                "输入命令后回车（例如：ls -la）",
-                text: Binding(
-                    get: { viewStore.inputText },
-                    set: { viewStore.send(.binding(.set(\.inputText, $0))) }
-                )
-            )
-            .textFieldStyle(.plain)
-            .font(.system(size: 13, weight: .regular, design: .monospaced))
-            .foregroundStyle(.white)
-            .submitLabel(.send)
-            .disabled(!viewStore.canSendInput)
-            .onSubmit {
-                viewStore.send(.sendInput)
-            }
-
-            Button {
-                viewStore.send(.sendInput)
-            } label: {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.title3)
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(viewStore.canSendInput ? .green : .gray)
-            .disabled(!viewStore.canSendInput)
-            .accessibilityLabel("发送终端输入")
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 9)
     }
 
     private func connectionLabel(for state: TerminalFeature.State.ConnectionState) -> String {
@@ -227,7 +210,7 @@ public struct TerminalView: View {
         case .idle:
             return .gray
         case .connecting:
-            return .yellow
+            return .orange
         case .connected:
             return .green
         case .failed:
@@ -238,6 +221,8 @@ public struct TerminalView: View {
 
 private struct TerminalOutputSurface: View {
     let text: String
+    let canSendInput: Bool
+    let isDarkMode: Bool
     let placeholder: String
     let onInput: (String) -> Void
 
@@ -245,45 +230,71 @@ private struct TerminalOutputSurface: View {
 #if canImport(SwiftTerm) && canImport(UIKit)
         TerminalSurfaceRepresentable(
             text: text,
-            placeholder: placeholder,
+            canSendInput: canSendInput,
+            isDarkMode: isDarkMode,
             onInput: onInput
         )
 #else
         ScrollView {
             Text(text.isEmpty ? placeholder : text)
                 .font(.system(size: 13, weight: .regular, design: .monospaced))
-                .foregroundStyle(text.isEmpty ? .white.opacity(0.55) : .white.opacity(0.95))
+                .foregroundStyle(text.isEmpty ? .secondary : Color(uiColor: .label))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .textSelection(.enabled)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
         }
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(uiColor: .systemBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color(uiColor: .separator).opacity(0.35), lineWidth: 1)
+        )
 #endif
     }
 }
 
 #if canImport(SwiftTerm) && canImport(UIKit)
 private struct TerminalSurfaceRepresentable: UIViewRepresentable {
+    private struct TerminalPalette: Equatable {
+        let background: UIColor
+        let foreground: UIColor
+    }
+
     let text: String
-    let placeholder: String
+    let canSendInput: Bool
+    let isDarkMode: Bool
     let onInput: (String) -> Void
 
     func makeUIView(context: Context) -> SwiftTerm.TerminalView {
         let view = SwiftTerm.TerminalView(frame: .zero)
         view.terminalDelegate = context.coordinator
-        view.backgroundColor = UIColor(red: 0.05, green: 0.06, blue: 0.08, alpha: 1.0)
-        view.nativeBackgroundColor = UIColor(red: 0.05, green: 0.06, blue: 0.08, alpha: 1.0)
-        view.nativeForegroundColor = UIColor(white: 0.95, alpha: 1.0)
+        context.coordinator.applyTheme(isDarkMode: isDarkMode, to: view)
         view.font = UIFont.monospacedSystemFont(ofSize: 13, weight: .regular)
         view.optionAsMetaKey = true
         view.allowMouseReporting = true
         view.notifyUpdateChanges = false
+        // 关闭输入附件条，保持 iSH 风格的纯终端区域输入。
+        view.inputAccessoryView = nil
+        #if !os(visionOS)
+        view.inputAssistantItem.leadingBarButtonGroups = []
+        view.inputAssistantItem.trailingBarButtonGroups = []
+        #endif
+        view.autocorrectionType = .no
+        view.autocapitalizationType = .none
+        view.smartDashesType = .no
+        view.smartQuotesType = .no
+        view.spellCheckingType = .no
         return view
     }
 
     func updateUIView(_ uiView: SwiftTerm.TerminalView, context: Context) {
+        context.coordinator.applyTheme(isDarkMode: isDarkMode, to: uiView)
         context.coordinator.updateInputHandler(onInput)
-        context.coordinator.apply(content: text, placeholder: placeholder, to: uiView)
+        context.coordinator.apply(content: text, to: uiView)
+        context.coordinator.updateFocus(enabled: canSendInput, on: uiView)
     }
 
     func makeCoordinator() -> Coordinator {
@@ -293,28 +304,55 @@ private struct TerminalSurfaceRepresentable: UIViewRepresentable {
     final class Coordinator: NSObject, SwiftTerm.TerminalViewDelegate {
         private var lastRendered = ""
         private var onInput: ((String) -> Void)?
+        private var autoFocused = false
+        private var appliedPalette: TerminalPalette?
 
         func updateInputHandler(_ handler: @escaping (String) -> Void) {
             onInput = handler
         }
 
-        func apply(content: String, placeholder: String, to view: SwiftTerm.TerminalView) {
-            let next = content.isEmpty ? "\(placeholder)\r\n" : content
-            guard next != lastRendered else {
-                return
-            }
-
-            if next.hasPrefix(lastRendered) {
-                let deltaStart = next.index(next.startIndex, offsetBy: lastRendered.count)
-                let delta = String(next[deltaStart...])
+        func apply(content: String, to view: SwiftTerm.TerminalView) {
+            guard content != lastRendered else { return }
+            if content.hasPrefix(lastRendered) {
+                let deltaStart = content.index(content.startIndex, offsetBy: lastRendered.count)
+                let delta = String(content[deltaStart...])
                 if !delta.isEmpty {
                     view.feed(text: delta)
                 }
             } else {
                 view.feed(text: "\u{001B}[2J\u{001B}[H")
-                view.feed(text: next)
+                if !content.isEmpty {
+                    view.feed(text: content)
+                }
             }
-            lastRendered = next
+            lastRendered = content
+        }
+
+        func applyTheme(isDarkMode: Bool, to view: SwiftTerm.TerminalView) {
+            let palette = TerminalSurfaceRepresentable.palette(isDarkMode: isDarkMode)
+            guard appliedPalette != palette else {
+                return
+            }
+            appliedPalette = palette
+            view.backgroundColor = palette.background
+            view.nativeBackgroundColor = palette.background
+            view.nativeForegroundColor = palette.foreground
+        }
+
+        func updateFocus(enabled: Bool, on view: SwiftTerm.TerminalView) {
+            if enabled {
+                if !autoFocused || !view.isFirstResponder {
+                    autoFocused = true
+                    DispatchQueue.main.async {
+                        _ = view.becomeFirstResponder()
+                    }
+                }
+            } else {
+                autoFocused = false
+                if view.isFirstResponder {
+                    view.resignFirstResponder()
+                }
+            }
         }
 
         func sizeChanged(source: SwiftTerm.TerminalView, newCols: Int, newRows: Int) {}
@@ -331,6 +369,19 @@ private struct TerminalSurfaceRepresentable: UIViewRepresentable {
         func clipboardCopy(source: SwiftTerm.TerminalView, content: Data) {}
         func iTermContent(source: SwiftTerm.TerminalView, content: ArraySlice<UInt8>) {}
         func rangeChanged(source: SwiftTerm.TerminalView, startY: Int, endY: Int) {}
+    }
+
+    private static func palette(isDarkMode: Bool) -> TerminalPalette {
+        if isDarkMode {
+            return TerminalPalette(
+                background: UIColor(red: 0.05, green: 0.06, blue: 0.08, alpha: 1.0),
+                foreground: UIColor(white: 0.95, alpha: 1.0)
+            )
+        }
+        return TerminalPalette(
+            background: UIColor(red: 0.96, green: 0.97, blue: 0.99, alpha: 1.0),
+            foreground: UIColor(red: 0.10, green: 0.11, blue: 0.13, alpha: 1.0)
+        )
     }
 }
 #endif

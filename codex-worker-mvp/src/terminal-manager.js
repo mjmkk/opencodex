@@ -1,4 +1,5 @@
 import { execFile as execFileCallback, spawn as spawnChildProcess } from "node:child_process";
+import path from "node:path";
 import { promisify } from "node:util";
 
 import pty from "node-pty";
@@ -20,6 +21,8 @@ const DEFAULTS = {
 };
 
 const SHELL_STATE_MARKER = "__CW_STATE__";
+const SHELL_BOOTSTRAP_DONE_MARKER = "__CW_BOOTSTRAP_DONE__";
+const BOOTSTRAP_SILENT_MAX_MS = 2000;
 
 function isPosixSpawnFailure(error) {
   const message = error instanceof Error ? error.message : String(error ?? "");
@@ -55,6 +58,7 @@ function createPipeTerminalProcess(child) {
   return {
     pid: Number.isInteger(child.pid) ? child.pid : -1,
     supportsShellStateHooks: false,
+    transportMode: "pipe",
     onData(handler) {
       dataListeners.add(handler);
     },
@@ -225,44 +229,61 @@ export class TerminalManager {
       DEFAULTS.defaultRows
     );
 
+    const terminalEnv = {
+      ...process.env,
+      TERM: "xterm-256color",
+      COLORTERM: "truecolor",
+      PROMPT_EOL_MARK: "",
+    };
+
     let ptyProcess = null;
-    try {
-      ptyProcess = this.ptyAdapter.spawn(this.shell, ["-i"], {
-        name: "xterm-256color",
-        cwd,
-        cols,
-        rows,
-        env: {
-          ...process.env,
-          TERM: "xterm-256color",
-          COLORTERM: "truecolor",
-          PROMPT_EOL_MARK: "",
-        },
-      });
-      ptyProcess.supportsShellStateHooks = true;
-    } catch (error) {
-      if (isPosixSpawnFailure(error)) {
-        try {
-          const child = this.childProcessSpawner(this.shell, ["-i"], {
-            cwd,
-            env: {
-              ...process.env,
-              TERM: "xterm-256color",
-              COLORTERM: "truecolor",
-              PROMPT_EOL_MARK: "",
-            },
-            stdio: ["pipe", "pipe", "pipe"],
-          });
-          ptyProcess = createPipeTerminalProcess(child);
+    const ptyArgCandidates = this.#resolvePrimaryPtyArgCandidates();
+    let lastPtySpawnError = null;
+    for (const shellArgs of ptyArgCandidates) {
+      try {
+        ptyProcess = this.ptyAdapter.spawn(this.shell, shellArgs, {
+          name: "xterm-256color",
+          cwd,
+          cols,
+          rows,
+          env: terminalEnv,
+        });
+        ptyProcess.supportsShellStateHooks = true;
+        ptyProcess.transportMode = "pty";
+        if (JSON.stringify(shellArgs) !== JSON.stringify(ptyArgCandidates[0])) {
           this.logger?.warn?.(
-            `[terminal] node-pty spawn failed, fallback to pipe mode: shell=${this.shell}, cwd=${cwd}`
+            `[terminal] node-pty recovered with alternate args: shell=${this.shell}, args=${JSON.stringify(
+              shellArgs
+            )}, cwd=${cwd}`
           );
-        } catch (fallbackError) {
-          const message = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+        }
+        break;
+      } catch (error) {
+        lastPtySpawnError = error;
+        if (!isPosixSpawnFailure(error)) {
+          const message = error instanceof Error ? error.message : String(error);
           throw createTerminalError("TERMINAL_OPEN_FAILED", `启动终端失败: ${message}`);
         }
-      } else {
-        const message = error instanceof Error ? error.message : String(error);
+      }
+    }
+
+    if (!ptyProcess) {
+      try {
+        const fallbackArgs = this.#resolveFallbackShellArgs();
+        const child = this.childProcessSpawner(this.shell, fallbackArgs, {
+          cwd,
+          env: terminalEnv,
+          stdio: ["pipe", "pipe", "pipe"],
+        });
+        ptyProcess = createPipeTerminalProcess(child);
+        this.logger?.warn?.(
+          `[terminal] node-pty spawn failed, fallback to pipe mode: shell=${this.shell}, args=${JSON.stringify(
+            fallbackArgs
+          )}, cwd=${cwd}`
+        );
+      } catch (fallbackError) {
+        const root = fallbackError ?? lastPtySpawnError;
+        const message = root instanceof Error ? root.message : String(root);
         throw createTerminalError("TERMINAL_OPEN_FAILED", `启动终端失败: ${message}`);
       }
     }
@@ -288,9 +309,13 @@ export class TerminalManager {
       clients: new Set(),
       listeners: new Map(),
       supportsShellStateHooks: ptyProcess.supportsShellStateHooks === true,
+      transportMode: ptyProcess.transportMode === "pipe" ? "pipe" : "pty",
       foregroundBusy: false,
       backgroundJobs: 0,
       shellStateCarry: "",
+      bootstrapFilterCarry: "",
+      suppressBootstrapNoise: this.trackShellState && ptyProcess.supportsShellStateHooks === true,
+      bootstrapStartedAtMs: this.now(),
       pty: ptyProcess,
     };
 
@@ -642,22 +667,7 @@ export class TerminalManager {
       return;
     }
 
-    const script =
-      `if [ -n "$ZSH_VERSION" ]; then
-autoload -Uz add-zsh-hook >/dev/null 2>&1
-__cw_emit_state() {
-  local mode="$1"
-  local jobs_count
-  jobs_count=$(jobs -p | wc -l | tr -d ' ')
-  print -r -- "${SHELL_STATE_MARKER}:$mode:$jobs_count"
-}
-__cw_preexec() { __cw_emit_state busy; }
-__cw_precmd() { __cw_emit_state idle; }
-add-zsh-hook preexec __cw_preexec >/dev/null 2>&1
-add-zsh-hook precmd __cw_precmd >/dev/null 2>&1
-__cw_emit_state idle
-fi
-`;
+    const script = `if [ -n "$ZSH_VERSION" ]; then autoload -Uz add-zsh-hook >/dev/null 2>&1; __cw_emit_state(){ local mode="$1"; local jobs_count; jobs_count=$(jobs -p | wc -l | tr -d ' '); print -r -- "${SHELL_STATE_MARKER}:$mode:$jobs_count"; }; __cw_preexec(){ __cw_emit_state busy; }; __cw_precmd(){ __cw_emit_state idle; }; add-zsh-hook preexec __cw_preexec >/dev/null 2>&1; add-zsh-hook precmd __cw_precmd >/dev/null 2>&1; __cw_emit_state idle; fi; print -r -- "${SHELL_BOOTSTRAP_DONE_MARKER}"\n`;
     try {
       session.pty.write(script);
     } catch (error) {
@@ -666,6 +676,30 @@ fi
         `[terminal] failed to install shell state hooks: sessionId=${session.sessionId}, error=${message}`
       );
     }
+  }
+
+  #resolveFallbackShellArgs() {
+    const shellName = path.basename(this.shell).toLowerCase();
+    if (shellName.includes("zsh")) {
+      // 回退模式下禁用用户自定义启动脚本，避免 compdef 等初始化报错。
+      return ["-f"];
+    }
+    if (shellName.includes("bash")) {
+      return ["--noprofile", "--norc"];
+    }
+    return [];
+  }
+
+  #resolvePrimaryPtyArgCandidates() {
+    const shellName = path.basename(this.shell).toLowerCase();
+    if (shellName.includes("zsh")) {
+      // 先走 -f（稳定、无用户启动脚本副作用），必要时再退到 -i。
+      return [["-f"], ["-i"], []];
+    }
+    if (shellName.includes("bash")) {
+      return [["--noprofile", "--norc", "-i"], ["-i"], []];
+    }
+    return [["-i"], []];
   }
 
   #updateShellStateAndFilterOutput(session, text) {
@@ -687,13 +721,41 @@ fi
     session.shellStateCarry = carry;
 
     const markerRegex = /(?:\r?\n)?__CW_STATE__:(busy|idle):(\d+)(?:\r?\n)?/g;
-    const filtered = processText.replace(markerRegex, (_line, mode, jobsRaw) => {
+    const stateFiltered = processText.replace(markerRegex, (_line, mode, jobsRaw) => {
       session.foregroundBusy = mode === "busy";
       const jobs = Number.parseInt(String(jobsRaw), 10);
       session.backgroundJobs = Number.isInteger(jobs) && jobs >= 0 ? jobs : 0;
       return "";
     });
-    return filtered;
+    return this.#filterBootstrapNoise(session, stateFiltered);
+  }
+
+  #filterBootstrapNoise(session, text) {
+    if (!session.suppressBootstrapNoise || !text) {
+      return text;
+    }
+
+    const nowMs = this.now();
+    if (nowMs - session.bootstrapStartedAtMs > BOOTSTRAP_SILENT_MAX_MS) {
+      session.suppressBootstrapNoise = false;
+      session.bootstrapFilterCarry = "";
+      return text;
+    }
+
+    const combined = `${session.bootstrapFilterCarry}${text}`;
+    const markerIndex = combined.indexOf(SHELL_BOOTSTRAP_DONE_MARKER);
+    if (markerIndex < 0) {
+      // 启动期仅做一次静默清屏：未看到完成标记前，暂不向客户端透传输出。
+      session.bootstrapFilterCarry = combined.slice(-8192);
+      return "";
+    }
+
+    session.suppressBootstrapNoise = false;
+    session.bootstrapFilterCarry = "";
+
+    const markerEnd = markerIndex + SHELL_BOOTSTRAP_DONE_MARKER.length;
+    const remainder = combined.slice(markerEnd).replace(/^\r?\n/, "");
+    return remainder;
   }
 
   #toSessionSnapshot(session) {
@@ -712,6 +774,7 @@ fi
       signal: session.signal,
       nextSeq: session.nextSeq,
       clientCount: session.clients.size,
+      transportMode: session.transportMode,
       foregroundBusy: session.foregroundBusy,
       backgroundJobs: session.backgroundJobs,
     };

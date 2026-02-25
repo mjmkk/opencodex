@@ -58,6 +58,7 @@ extension TerminalSocketClient {
                             sessionId: "term_mock",
                             threadId: "thread_mock",
                             cwd: "/Users/test/project",
+                            transportMode: "pty",
                             code: nil,
                             message: nil,
                             clientTs: nil,

@@ -216,6 +216,7 @@ test("TerminalManager 空闲回收遵循 shell 忙闲状态", async () => {
 test("TerminalManager 在 node-pty spawn 失败时回退到 pipe 模式", () => {
   const fakeChild = new FakePipeChild(7777);
   const warnings = [];
+  const spawnCalls = [];
   const manager = new TerminalManager({
     autoSweep: false,
     ptyAdapter: {
@@ -223,7 +224,10 @@ test("TerminalManager 在 node-pty spawn 失败时回退到 pipe 模式", () => 
         throw new Error("posix_spawnp failed.");
       },
     },
-    childProcessSpawner: () => fakeChild,
+    childProcessSpawner: (shell, args) => {
+      spawnCalls.push({ shell, args });
+      return fakeChild;
+    },
     logger: {
       warn: (message) => warnings.push(message),
       info: () => {},
@@ -237,6 +241,9 @@ test("TerminalManager 在 node-pty spawn 失败时回退到 pipe 模式", () => 
 
   assert.equal(opened.session.pid, 7777);
   assert.equal(opened.reused, false);
+  assert.equal(opened.session.transportMode, "pipe");
+  assert.equal(spawnCalls.length, 1);
+  assert.deepEqual(spawnCalls[0].args, ["-f"]);
   assert.ok(warnings.some((message) => String(message).includes("fallback to pipe mode")));
 
   manager.writeInput(opened.session.sessionId, "pwd\n");
@@ -258,4 +265,117 @@ test("TerminalManager 在 node-pty spawn 失败时回退到 pipe 模式", () => 
   manager.closeSession(opened.session.sessionId, { reason: "test_pipe_close" });
   manager.detachClient(opened.session.sessionId, "client_pipe");
   assert.equal(manager.getSessionById(opened.session.sessionId), null);
+});
+
+test("TerminalManager 在 zsh -f 失败时会改用 zsh -i 并保持 PTY 模式", () => {
+  const ptyCalls = [];
+  const warnings = [];
+  const fallbackCalls = [];
+  const manager = new TerminalManager({
+    autoSweep: false,
+    ptyAdapter: {
+      spawn: (_shell, args) => {
+        ptyCalls.push(args);
+        if (args.length === 1 && args[0] === "-f") {
+          throw new Error("posix_spawnp failed.");
+        }
+        return new FakePtyProcess(8888);
+      },
+    },
+    childProcessSpawner: (...args) => {
+      fallbackCalls.push(args);
+      throw new Error("should not fallback to pipe");
+    },
+    logger: {
+      warn: (message) => warnings.push(String(message)),
+      info: () => {},
+    },
+  });
+
+  const opened = manager.openSession({
+    threadId: "thr_pty_retry",
+    cwd: "/repo",
+  });
+
+  assert.equal(opened.session.transportMode, "pty");
+  assert.equal(opened.session.pid, 8888);
+  assert.deepEqual(ptyCalls, [["-f"], ["-i"]]);
+  assert.equal(fallbackCalls.length, 0);
+  assert.ok(warnings.some((message) => message.includes("recovered with alternate args")));
+});
+
+test("TerminalManager 启动钩子注入对客户端输出保持静默", () => {
+  const process = new FakePtyProcess(9999);
+  const events = [];
+  const manager = new TerminalManager({
+    autoSweep: false,
+    ptyAdapter: {
+      spawn: () => process,
+    },
+    logger: {
+      warn: () => {},
+      info: () => {},
+    },
+  });
+
+  const opened = manager.openSession({
+    threadId: "thr_bootstrap_silent",
+    cwd: "/repo",
+  });
+
+  manager.attachClient({
+    sessionId: opened.session.sessionId,
+    clientId: "client_bootstrap",
+    fromSeq: -1,
+    onEvent: (event) => events.push(event),
+  });
+
+  process.emitData(
+    'if [ -n "$ZSH_VERSION" ]; then autoload -Uz add-zsh-hook >/dev/null 2>&1; __cw_emit_state(){ local mode="$1"; }; fi; print -r -- "__CW_BOOTSTRAP_DONE__"\r\n'
+  );
+  process.emitData("MacBook-Pro% ");
+
+  assert.ok(events.length >= 1);
+  assert.ok(events.every((event) => !String(event.data ?? "").includes("__cw_emit_state")));
+  assert.ok(events.every((event) => !String(event.data ?? "").includes("__CW_BOOTSTRAP_DONE__")));
+  assert.ok(events.some((event) => String(event.data ?? "").includes("MacBook-Pro% ")));
+});
+
+test("TerminalManager 启动静默在超时后自动解除，避免吞掉后续输出", () => {
+  let now = Date.parse("2026-02-25T00:00:00.000Z");
+  const process = new FakePtyProcess(10001);
+  const events = [];
+  const manager = new TerminalManager({
+    autoSweep: false,
+    now: () => now,
+    ptyAdapter: {
+      spawn: () => process,
+    },
+    logger: {
+      warn: () => {},
+      info: () => {},
+    },
+  });
+
+  const opened = manager.openSession({
+    threadId: "thr_bootstrap_timeout",
+    cwd: "/repo",
+  });
+
+  manager.attachClient({
+    sessionId: opened.session.sessionId,
+    clientId: "client_bootstrap_timeout",
+    fromSeq: -1,
+    onEvent: (event) => events.push(event),
+  });
+
+  // 启动噪声：启动静默阶段会吞掉。
+  process.emitData("then> add-zsh-hook preexec __cw_preexec\r\n");
+  assert.equal(events.length, 0);
+
+  // 超过静默窗口后，未命中完成标记也应恢复透传。
+  now += 3000;
+  process.emitData("real output after timeout\r\n");
+
+  assert.ok(events.some((event) => String(event.data ?? "").includes("real output after timeout")));
 });

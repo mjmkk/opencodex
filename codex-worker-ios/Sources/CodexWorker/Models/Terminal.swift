@@ -24,6 +24,7 @@ public struct TerminalSessionSnapshot: Codable, Equatable, Sendable {
     public var signal: String?
     public var nextSeq: Int
     public var clientCount: Int?
+    public var transportMode: String?
     public var foregroundBusy: Bool?
     public var backgroundJobs: Int?
 
@@ -42,6 +43,7 @@ public struct TerminalSessionSnapshot: Codable, Equatable, Sendable {
         signal: String?,
         nextSeq: Int,
         clientCount: Int?,
+        transportMode: String? = nil,
         foregroundBusy: Bool? = nil,
         backgroundJobs: Int? = nil
     ) {
@@ -59,6 +61,7 @@ public struct TerminalSessionSnapshot: Codable, Equatable, Sendable {
         self.signal = signal
         self.nextSeq = nextSeq
         self.clientCount = clientCount
+        self.transportMode = transportMode
         self.foregroundBusy = foregroundBusy
         self.backgroundJobs = backgroundJobs
     }
@@ -123,6 +126,7 @@ public struct TerminalStreamFrame: Codable, Equatable, Sendable {
     public let sessionId: String?
     public let threadId: String?
     public let cwd: String?
+    public let transportMode: String?
     public let code: String?
     public let message: String?
     public let clientTs: String?

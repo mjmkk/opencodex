@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "better-sqlite3": "^11.6.0",
-    "node-pty": "^1.1.0",
+    "node-pty": "1.2.0-beta.11",
     "ws": "^8.19.0"
   },
   "engines": {

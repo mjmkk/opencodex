@@ -7,6 +7,9 @@
 
 import ComposableArchitecture
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public struct ContentView: View {
     @Environment(\.colorScheme) private var colorScheme
@@ -31,6 +34,7 @@ public struct ContentView: View {
 
     public let store: StoreOf<AppFeature>
     @State private var isSettingsPresented = false
+    @State private var terminalDragStartRatio: Double?
 
     public init(store: StoreOf<AppFeature>) {
         self.store = store
@@ -78,10 +82,18 @@ public struct ContentView: View {
                                     .gesture(
                                         DragGesture(minimumDistance: 8)
                                             .onChanged { value in
-                                                let proposed = terminalHeight - value.translation.height
-                                                let ratio = proposed / max(geometry.size.height, 1)
-                                                let clamped = min(max(ratio, 0.35), 0.72)
-                                                viewStore.send(.terminal(.binding(.set(\.heightRatio, clamped))))
+                                                if terminalDragStartRatio == nil {
+                                                    terminalDragStartRatio = viewStore.terminalHeightRatio
+                                                }
+                                                let baselineRatio = terminalDragStartRatio ?? viewStore.terminalHeightRatio
+                                                let deltaRatio = -value.translation.height / max(geometry.size.height, 1)
+                                                let clamped = min(max(baselineRatio + deltaRatio, 0.35), 0.72)
+                                                if abs(clamped - viewStore.terminalHeightRatio) >= 0.002 {
+                                                    viewStore.send(.terminal(.binding(.set(\.heightRatio, clamped))))
+                                                }
+                                            }
+                                            .onEnded { _ in
+                                                terminalDragStartRatio = nil
                                             }
                                     )
 
@@ -142,6 +154,11 @@ public struct ContentView: View {
                     )
                 }
             }
+            .onChange(of: viewStore.isTerminalPresented) { _, isPresented in
+                if isPresented {
+                    dismissKeyboard()
+                }
+            }
             .onAppear { viewStore.send(.onAppear) }
             .onDisappear { viewStore.send(.onDisappear) }
             .sheet(isPresented: $isSettingsPresented) {
@@ -165,5 +182,11 @@ public struct ContentView: View {
 
     private var drawerShadowColor: Color {
         Color.black.opacity(colorScheme == .dark ? 0.26 : 0.15)
+    }
+
+    private func dismissKeyboard() {
+#if canImport(UIKit)
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+#endif
     }
 }
