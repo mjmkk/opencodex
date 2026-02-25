@@ -18,6 +18,8 @@ public struct ChatFeature {
     private static let threadHistoryPageLimit = 1000
     private static let streamBatchSize = 24
     private static let streamBatchMaxDelay: Duration = .milliseconds(80)
+    /// pendingAssistantDeltas 累计文本上限（5 MB），防止长流场景内存溢出
+    private static let maxPendingDeltaTotalBytes = 5 * 1024 * 1024
 
     private struct ThreadHistorySyncOutcome: Sendable {
         let events: [EventEnvelope]
@@ -848,7 +850,6 @@ public struct ChatFeature {
         pendingAssistantDeltas: inout [String: MessageDelta],
         envelope: EventEnvelope
     ) {
-        _ = messages
         guard let payload = envelope.payload else { return }
         let itemId = payload["itemId"]?.stringValue ?? "assistant-\(envelope.jobId)-\(envelope.seq)"
         let delta = payload["delta"]?.stringValue
@@ -864,6 +865,17 @@ public struct ChatFeature {
             var newDelta = MessageDelta(id: itemId, text: "", sender: .assistant)
             newDelta.append(delta)
             pendingAssistantDeltas[itemId] = newDelta
+        }
+
+        // OOM 保护：累计超过 5 MB 时强制收敛最旧的增量
+        let totalBytes = pendingAssistantDeltas.values.reduce(0) { $0 + $1.text.utf8.count }
+        if totalBytes > Self.maxPendingDeltaTotalBytes,
+           let oldestKey = pendingAssistantDeltas.keys.sorted().first,
+           var oldest = pendingAssistantDeltas[oldestKey]
+        {
+            oldest.markComplete()
+            pendingAssistantDeltas.removeValue(forKey: oldestKey)
+            upsertMessage(&messages, with: oldest.toMessage())
         }
     }
 

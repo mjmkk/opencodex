@@ -8,6 +8,7 @@
 import ComposableArchitecture
 import EventSource
 import Foundation
+import OSLog
 
 // MARK: - SSE 客户端协议
 
@@ -76,6 +77,8 @@ actor LiveSSEClient {
 
     /// 重连策略
     private let reconnectStrategy = ReconnectStrategy()
+
+    private let logger = Logger(subsystem: "com.opencodex", category: "SSEClient")
 
     // MARK: - 订阅
 
@@ -225,15 +228,15 @@ actor LiveSSEClient {
         do {
             return try decoder.decode(EventEnvelope.self, from: data)
         } catch {
-            print("[SSEClient] 解析事件失败: \(error)")
-            print("[SSEClient] 原始数据: \(raw)")
+            logger.error("解析事件失败: \(error)")
+            logger.debug("原始数据: \(raw)")
             return nil
         }
     }
 
     /// 处理错误
     private func handleError(_ error: Error, jobId: String) {
-        print("[SSEClient] 错误: \(error.localizedDescription)")
+        logger.error("错误 jobId=\(jobId): \(error.localizedDescription)")
     }
 
     /// 取消订阅

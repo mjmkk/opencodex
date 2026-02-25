@@ -7,6 +7,7 @@
 
 import ComposableArchitecture
 import Foundation
+import MarkdownUI
 import SwiftUI
 #if canImport(UIKit)
 import UIKit
@@ -388,6 +389,8 @@ public struct FileBrowserView: View {
 
 public struct FileViewerView: View {
     let store: StoreOf<FileViewerFeature>
+    private let markdownParser = MarkdownParserService.live
+    private let codeSyntaxHighlighter: CodeSyntaxHighlighter = CodexCodeSyntaxHighlighter()
 
     public init(store: StoreOf<FileViewerFeature>) {
         self.store = store
@@ -437,23 +440,23 @@ public struct FileViewerView: View {
                             }
                             .background(Color(uiColor: .secondarySystemBackground))
                         } else if viewStore.isEditing {
-                            TextEditor(
-                                text: Binding(
-                                    get: { viewStore.content },
-                                    set: { viewStore.send(.contentChanged($0)) }
-                                )
+                            RunestoneCodeView(
+                                content: viewStore.content,
+                                language: viewStore.language,
+                                focusLine: nil,
+                                isEditable: true,
+                                onContentChanged: { updatedContent in
+                                    viewStore.send(.contentChanged(updatedContent))
+                                }
                             )
-                            .font(.system(.body, design: .monospaced))
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled(true)
-                            .scrollContentBackground(.hidden)
-                            .background(Color(uiColor: .secondarySystemBackground))
-                            .padding(.horizontal, 8)
+                        } else if viewStore.isMarkdownDocument, viewStore.focusLine == nil {
+                            markdownPreview(text: viewStore.content)
                         } else {
                             RunestoneCodeView(
                                 content: viewStore.content,
                                 language: viewStore.language,
-                                focusLine: viewStore.focusLine
+                                focusLine: viewStore.focusLine,
+                                isEditable: false
                             )
                         }
                     }
@@ -591,6 +594,19 @@ public struct FileViewerView: View {
 #if canImport(UIKit)
         UIPasteboard.general.string = text
 #endif
+    }
+
+    @ViewBuilder
+    private func markdownPreview(text: String) -> some View {
+        ScrollView {
+            Markdown(markdownParser.parse(text).markdownContent)
+                .markdownTheme(.gitHub)
+                .markdownCodeSyntaxHighlighter(codeSyntaxHighlighter)
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(12)
+        }
+        .background(Color(uiColor: .secondarySystemBackground))
     }
 
     private struct MetaChip: View {

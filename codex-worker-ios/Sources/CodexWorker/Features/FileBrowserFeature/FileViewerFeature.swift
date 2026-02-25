@@ -47,6 +47,17 @@ public struct FileViewerFeature {
             content != originalContent
         }
 
+        public var isMarkdownDocument: Bool {
+            let normalizedLanguage = language
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased()
+            if normalizedLanguage == "markdown" || normalizedLanguage == "md" || normalizedLanguage == "mdx" {
+                return true
+            }
+            let ext = URL(fileURLWithPath: filePath).pathExtension.lowercased()
+            return ext == "md" || ext == "markdown" || ext == "mdx"
+        }
+
         public var diffPreview: String {
             makeSimpleDiff(oldText: originalContent, newText: content)
         }

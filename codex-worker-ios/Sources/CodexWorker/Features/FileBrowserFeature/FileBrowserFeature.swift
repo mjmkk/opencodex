@@ -87,6 +87,10 @@ public struct FileBrowserFeature {
         case openInTerminal(path: String)
     }
 
+    private enum CancelID {
+        case treeCache
+    }
+
     public init() {}
 
     public var body: some ReducerOf<Self> {
@@ -186,6 +190,7 @@ public struct FileBrowserFeature {
                     @Dependency(\.fileSystemStore) var fileSystemStore
                     try? await fileSystemStore.saveTreeCache(cacheRootPath, path, response)
                 }
+                .cancellable(id: CancelID.treeCache, cancelInFlight: true)
 
             case .loadTreeResponse(_, _, .failure(let error)):
                 state.isLoadingTree = false

@@ -7,6 +7,7 @@
 
 import ComposableArchitecture
 import Foundation
+import OSLog
 
 // MARK: - API 客户端协议
 
@@ -158,6 +159,7 @@ actor LiveAPIClient {
     private let session: URLSession
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
+    private let logger = Logger(subsystem: "com.opencodex", category: "APIClient")
 
     init() {
         // 配置 URLSession
@@ -218,33 +220,49 @@ actor LiveAPIClient {
         return request
     }
 
-    /// 执行请求
+    /// 执行请求（带指数退避重试，针对瞬态错误最多重试 2 次）
     private func performRequest<T: Codable>(_ request: URLRequest) async throws -> T {
-        do {
-            let (data, response) = try await session.data(for: request)
+        let maxRetries = 2
+        var lastTransientError: CodexError?
 
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw CodexError.invalidState
+        for attempt in 0 ... maxRetries {
+            if attempt > 0 {
+                let delaySecs = min(pow(2.0, Double(attempt - 1)), 8.0)
+                logger.warning("[\(attempt)/\(maxRetries)] 瞬态错误，\(delaySecs)s 后重试: \(String(describing: lastTransientError))")
+                // Task.sleep 会在 Task 取消时抛出 CancellationError，无需额外处理
+                try await Task.sleep(for: .seconds(delaySecs))
             }
 
-            // 检查 HTTP 状态码
-            guard (200 ... 299).contains(httpResponse.statusCode) else {
-                throw CodexError.from(statusCode: httpResponse.statusCode, data: data)
-            }
-
-            // 解析响应
             do {
-                return try decoder.decode(T.self, from: data)
+                let (data, response) = try await session.data(for: request)
+
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    throw CodexError.invalidState
+                }
+
+                guard (200 ... 299).contains(httpResponse.statusCode) else {
+                    throw CodexError.from(statusCode: httpResponse.statusCode, data: data)
+                }
+
+                do {
+                    return try decoder.decode(T.self, from: data)
+                } catch {
+                    logger.error("解析错误: \(error)")
+                    logger.error("原始数据: \(String(data: data, encoding: .utf8) ?? "nil")")
+                    throw CodexError.decodingError
+                }
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch let error as CodexError where error.isTransient && attempt < maxRetries {
+                lastTransientError = error
+            } catch let error as CodexError {
+                throw error
             } catch {
-                print("[APIClient] 解析错误: \(error)")
-                print("[APIClient] 原始数据: \(String(data: data, encoding: .utf8) ?? "nil")")
-                throw CodexError.decodingError
+                throw CodexError.from(error)
             }
-        } catch let error as CodexError {
-            throw error
-        } catch {
-            throw CodexError.from(error)
         }
+
+        throw lastTransientError ?? CodexError.unknown("请求重试耗尽")
     }
 
     // MARK: - API 实现
@@ -284,9 +302,7 @@ actor LiveAPIClient {
         let url = try buildURL(path: "/v1/threads", queryItems: queryItems.isEmpty ? nil : queryItems)
         let request = try buildRequest(url: url)
         let response: ThreadsListResponse = try await performRequest(request)
-#if DEBUG
-        print("[APIClient] listThreads ok, count=\(response.data.count)")
-#endif
+        logger.debug("listThreads ok, count=\(response.data.count)")
         return response
     }
 

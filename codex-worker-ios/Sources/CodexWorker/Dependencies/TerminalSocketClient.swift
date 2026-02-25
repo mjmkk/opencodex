@@ -7,6 +7,7 @@
 
 import ComposableArchitecture
 import Foundation
+import OSLog
 
 public struct TerminalSocketClient: DependencyKey, Sendable {
     /// 连接终端流并返回消息流
@@ -78,6 +79,7 @@ actor LiveTerminalSocketClient {
     private let session: URLSession
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
+    private let logger = Logger(subsystem: "com.opencodex", category: "TerminalSocketClient")
 
     private var socketTask: URLSessionWebSocketTask?
     private var receiveTask: Task<Void, Never>?
@@ -219,8 +221,8 @@ actor LiveTerminalSocketClient {
         do {
             return try decoder.decode(TerminalStreamFrame.self, from: data)
         } catch {
-            // 解码失败时打印日志，便于服务端协议变更时排查问题。
-            print("[TerminalSocketClient] failed to decode frame: \(error)")
+            // 解码失败时记录日志，便于服务端协议变更时排查问题。
+            logger.error("无法解析 WebSocket 帧: \(error)")
             return nil
         }
     }

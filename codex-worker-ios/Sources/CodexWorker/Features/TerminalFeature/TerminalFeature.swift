@@ -16,6 +16,9 @@ public struct TerminalFeature {
         case resizeDebounce
     }
 
+    /// 内存中最多缓存的线程终端缓冲数量（超出时淘汰非当前线程的最旧缓冲）
+    private static let maxCachedThreadBuffers = 10
+
     public struct ThreadBuffer: Equatable, Sendable {
         public var text: String
         public var latestSeq: Int
@@ -515,6 +518,13 @@ public struct TerminalFeature {
     private func persistBuffer(state: inout State, threadId: String?) {
         guard let threadId else { return }
         state.threadBuffers[threadId] = ThreadBuffer(text: state.terminalText, latestSeq: state.latestSeq)
+
+        // 超出上限时淘汰一个非当前线程的缓冲，防止内存无限增长
+        if state.threadBuffers.count > Self.maxCachedThreadBuffers,
+           let keyToEvict = state.threadBuffers.keys.first(where: { $0 != threadId })
+        {
+            state.threadBuffers.removeValue(forKey: keyToEvict)
+        }
     }
 
     private func canReconnect(state: State) -> Bool {
