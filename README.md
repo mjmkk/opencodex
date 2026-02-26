@@ -241,12 +241,6 @@ This repository is licensed under the [Apache License 2.0](LICENSE).
 - All network-layer logging uses `OSLog Logger` (with per-module categories), never `print()`
 - TCA `Effect` side effects follow structured concurrency; all cancellable tasks use explicit `CancelID`s
 
-## Community Growth Kit
-
-- Growth plan: [`docs/community-growth-playbook.md`](docs/community-growth-playbook.md)
-- Launch copy templates: [`docs/launch-posts.md`](docs/launch-posts.md)
-- Metric snapshot script: `make growth-report`
-
 </details>
 
 ---
@@ -476,11 +470,5 @@ node bin/doctor.js
 - Swift 代码启用了 `StrictConcurrency`，确保并发安全
 - 所有网络层日志使用 `OSLog Logger`（category 区分模块），不使用 `print()`
 - TCA `Effect` 副作用遵循结构化并发，cancellable 任务均设置明确的 `CancelID`
-
-## 社区增长工具包
-
-- 增长作战手册：[`docs/community-growth-playbook.md`](docs/community-growth-playbook.md)
-- 发布文案模板：[`docs/launch-posts.md`](docs/launch-posts.md)
-- 指标快照脚本：`make growth-report`
 
 </details>
