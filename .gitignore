@@ -26,6 +26,11 @@ codex-worker-mvp/worker.config.json
 # Common local outputs
 output/
 *.log
+
+# Local TCA source copy (replaced by remote SPM dependency)
+swift-composable-architecture/
+
+# Development experiment artifacts
 archive/
 
 # Runtime SQLite cache/data

@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # Node.js 后端依赖
+  - package-ecosystem: "npm"
+    directory: "/codex-worker-mvp"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "npm"
+    directory: "/codex-sessions-tool"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+
+  # iOS Swift 依赖
+  - package-ecosystem: "swift"
+    directory: "/codex-worker-ios"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # GitHub Actions 依赖
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
