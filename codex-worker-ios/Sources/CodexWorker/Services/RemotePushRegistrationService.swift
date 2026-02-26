@@ -82,12 +82,14 @@ public enum RemotePushRegistrationService {
             request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         }
 
+        // UIDevice.current 是 @MainActor 隔离的，需要在主线程读取
+        let deviceName = await MainActor.run { currentDeviceName }
         let payload = RegisterRequest(
             platform: "ios",
             deviceToken: token,
             bundleId: Bundle.main.bundleIdentifier,
             environment: buildEnvironment,
-            deviceName: currentDeviceName
+            deviceName: deviceName
         )
         request.httpBody = try JSONEncoder().encode(payload)
 
@@ -118,6 +120,7 @@ public enum RemotePushRegistrationService {
         #endif
     }
 
+    @MainActor
     private static var currentDeviceName: String? {
         #if canImport(UIKit)
         return UIDevice.current.name
