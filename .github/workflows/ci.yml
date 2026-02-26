@@ -40,15 +40,15 @@ jobs:
 
   ios-build-and-style:
     name: iOS Build & Style
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode 16.2
+      - name: Select latest stable Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.2'
+          xcode-version: 'latest-stable'
 
       - name: Setup Swift lint/format tools
         run: |
