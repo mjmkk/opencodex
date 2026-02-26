@@ -18,7 +18,7 @@ let package = Package(
     ],
     dependencies: [
         // TCA（The Composable Architecture，组合式架构库）
-        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.23.1"),
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.24.1"),
         // Exyte Chat（聊天 UI 组件）
         .package(url: "https://github.com/exyte/Chat.git", from: "2.7.6"),
         // 锁定 Giphy SDK 到 2.2.x：ExyteChat 2.7.6 使用的 GPHClient.gifByID API 在 2.3.0 中被移除
