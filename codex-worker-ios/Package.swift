@@ -25,7 +25,7 @@ let package = Package(
         .package(url: "https://github.com/Giphy/giphy-ios-sdk", "2.2.16" ..< "2.3.0"),
         // 锁定 swift-navigation 到 2.6.x：2.7.0 使用了 Swift 6.1 的参数列表尾逗号语法，
         // 该特性 Xcode 16.2 (Swift 6.0.3) 不支持
-        .package(url: "https://github.com/pointfreeco/swift-navigation", "2.3.2" ..< "2.7.0"),
+        .package(url: "https://github.com/pointfreeco/swift-navigation", "2.3.2" ..< "3.0.0"),
         // MarkdownUI（完整 Markdown 渲染，支持 GitHub 风格 Markdown 的表格/任务列表）
         .package(url: "https://github.com/gonzalezreal/swift-markdown-ui.git", from: "2.0.2"),
         // EventSource（SSE，Server-Sent Events 客户端）

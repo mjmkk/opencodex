@@ -1,5 +1,5 @@
 {
-  "originHash" : "07ce134fffdbaf7bd266d7205f1eb48789072ae522ccb8d3b1e7e939faa2d0f4",
+  "originHash" : "fd2afd68dce78ac46c166466359db4b924320caa90b80d3c4903d0aaa82e07f9",
   "pins" : [
     {
       "identity" : "activityindicatorview",
@@ -98,6 +98,15 @@
       "state" : {
         "revision" : "2849f5323265386e200484b0d0f896e73c3411b9",
         "version" : "6.0.1"
+      }
+    },
+    {
+      "identity" : "opencombine",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenCombine/OpenCombine.git",
+      "state" : {
+        "revision" : "8576f0d579b27020beccbccc3ea6844f3ddfc2c2",
+        "version" : "0.14.0"
       }
     },
     {
@@ -213,8 +222,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-navigation",
       "state" : {
-        "revision" : "bf498690e1f6b4af790260f542e8428a4ba10d78",
-        "version" : "2.6.0"
+        "revision" : "e7441dc4dfec6a4ae929e614e3c1e67c6639d164",
+        "version" : "2.7.0"
       }
     },
     {
