@@ -151,8 +151,8 @@ actor LiveSSEClient {
                     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
                 }
 
-                // 创建 EventSource
-                let eventSource = EventSource(timeoutInterval: 300)
+                // 创建 EventSource（0.1.7+ 将 timeoutInterval 拆为两个参数）
+                let eventSource = EventSource(timeoutIntervalForRequest: 60, timeoutIntervalForResource: 300)
                 let dataTask = eventSource.dataTask(for: request)
 
                 connectionState = .connected
