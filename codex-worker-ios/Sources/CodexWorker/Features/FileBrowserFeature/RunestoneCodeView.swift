@@ -176,7 +176,7 @@ public struct RunestoneCodeView: UIViewRepresentable {
     }
 
     @MainActor
-    public final class Coordinator: @MainActor TextViewDelegate {
+    public final class Coordinator: @preconcurrency TextViewDelegate {
         fileprivate let textView = TextView()
         fileprivate var lastContent = ""
         fileprivate var lastLanguageKey = ""
