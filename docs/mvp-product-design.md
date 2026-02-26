@@ -4,6 +4,15 @@
 >
 > 使用者只有你本人，目标是“在 iPhone 上无缝衔接 Mac 上的 Codex 工作流”。
 
+## English Summary
+
+This product design document focuses on a single-user workflow continuity experience:
+
+1. Continue Mac Codex sessions from iPhone without losing context.
+2. Handle approvals quickly and safely on mobile.
+3. Recover smoothly from network/background interruptions.
+4. Define measurable MVP acceptance criteria for UX, not only engineering completeness.
+
 ## 0. 文档边界
 
 ### 0.1 这份文档负责什么

@@ -2,6 +2,15 @@
 
 > 基于 TCA + exyte/Chat + EventSource 的 Codex Worker iOS 客户端设计
 
+## English Summary
+
+This document is the detailed iOS frontend design for OpenCodex.
+
+1. Defines goals, architecture, and module boundaries for the iOS app.
+2. Uses TCA (The Composable Architecture，组合式架构), Exyte Chat, and SSE streaming.
+3. Specifies runtime flows for thread switching, incremental rendering, approval handling, and reconnect behavior.
+4. Provides implementation constraints and acceptance criteria for production-ready delivery.
+
 ## 1. 项目概述
 
 ### 1.1 目标

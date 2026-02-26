@@ -2,6 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 中文摘要
+
+本文件是给 Claude Code 使用的仓库协作说明，核心内容包括：
+
+1. 项目结构与关键模块（Worker、JSON-RPC、SSE、SQLite）。
+2. 常用命令（启动、单测、全量测试、冒烟测试、场景测试）。
+3. 协议关键点（参数命名、任务状态机、审批事件）。
+4. 实现约束（审批必须幂等、事件必须可回放、错误必须可观测）。
+
 ## Project Overview
 
 OpenCodex is a system that enables iPhone to seamlessly continue Codex workflows started on Mac, with approval capabilities. The core component is `codex-worker-mvp`, a Mac Worker service that:

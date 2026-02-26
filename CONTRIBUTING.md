@@ -3,6 +3,17 @@
 感谢你愿意参与 OpenCodex。
 本文档定义了最小贡献流程，确保 iOS 客户端、Worker 后端与文档在同一质量基线下演进。
 
+## English Quick Guide
+
+Thank you for contributing to OpenCodex.  
+This project uses a practical contribution baseline:
+
+1. Follow Apache-2.0 licensing requirements.
+2. Do not commit secrets, certificates, or local config files.
+3. Run backend tests and iOS build checks before opening a pull request.
+4. Use `codex/<topic>` branch names and clear commit messages.
+5. If runtime access to Codex app-server is unavailable, you can still contribute via tests, UI state logic, and documentation improvements.
+
 ## 1. 开始前请先确认
 
 - 你同意本仓库采用 Apache License 2.0（Apache 2.0 开源许可证）。

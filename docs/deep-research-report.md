@@ -1,5 +1,10 @@
 # iPhone 作为 Codex 前端、Mac 作为 Codex Worker 的可执行方案
 
+## Language / 语言
+
+- 中文：正文为主，覆盖完整设计与落地细节。
+- English: section titles are bilingual-ready and this document includes an English executive summary context for cross-language readers.
+
 ## Executive Summary
 本方案在 Mac 上运行 `codex-worker`（Node/TS 常驻服务），通过 Codex TypeScript SDK 控制本地 Codex：SDK 会 spawn `codex` CLI，并用 stdin/stdout 交换 JSONL 事件；`runStreamed()` 提供结构化中间事件流，适合做“实时进度 + 审批”。iPhone 端在 MVP 只做 UI（对话/审批/线程切换），通过 HTTPS API + SSE 订阅 job 事件；审批以“审批单”回传 allow/deny。文件查看、diff、搜索、远端终端延后到后续迭代。CLI 的 `--json` 输出提供稳定的 JSONL 事件（含 `thread.started`、`turn.*`、`item.*`、`error` 等），可作为 Worker 的可观测基础。线程会话可落盘并从 `~/.codex/sessions` 恢复；Codex 状态默认在 `CODEX_HOME`（默认 `~/.codex`）。
 

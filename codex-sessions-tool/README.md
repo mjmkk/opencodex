@@ -1,5 +1,20 @@
 # codex-sessions-tool
 
+## English Summary
+
+`codex-sessions-tool` is a command-line utility for Codex session homes (default `~/.codex`) with four commands:
+
+1. `backup` to export session packages
+2. `restore` to import session packages
+3. `verify` to validate recoverability
+4. `doctor` to check directory/permission/JSONL health
+
+Recommended workflow:
+
+1. run `backup`
+2. run `verify`
+3. run `restore` with conflict policy and post-verify
+
 `codex-sessions-tool` 是一个面向 Codex 会话目录（默认 `~/.codex`）的命令行工具，提供四类能力：
 
 1. `backup`：导出会话数据包

@@ -1,5 +1,15 @@
 # codex-worker-mvp
 
+## English Summary
+
+`codex-worker-mvp` is a minimal Mac worker service that bridges iOS clients and the official Codex app-server.
+
+- Upstream: official `codex app-server` via JSON-RPC 2.0 over stdio
+- Downstream: REST + SSE APIs for mobile clients
+- Capabilities: thread/job orchestration, approval callbacks, cursor-based event resume
+
+This repository is open source for the Worker layer. The upstream Codex app-server binary remains an external runtime dependency.
+
 一个“第一版最简流程”的 Mac Worker：
 - 对接官方 `codex app-server`（JSON-RPC 2.0 协议）
 - 对外提供 `REST`（Representational State Transfer，资源风格 HTTP 接口）

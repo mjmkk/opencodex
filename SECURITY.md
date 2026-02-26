@@ -1,5 +1,11 @@
 # Security Policy
 
+## English Summary
+
+This project is in rapid iteration. Only the latest `main` branch is considered supported for security fixes.  
+Please report vulnerabilities privately through GitHub Security Advisory whenever possible.  
+We target acknowledgment within 24 hours, initial triage within 72 hours, and a fix or mitigation plan within 7 days.
+
 ## Supported Versions
 
 当前处于快速迭代阶段，仅保证 `main` 分支最新提交的安全修复。

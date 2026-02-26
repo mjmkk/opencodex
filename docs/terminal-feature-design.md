@@ -1,5 +1,14 @@
 # iOS 半屏远端终端功能详细设计（TermAway 思路 + codex-worker-mvp 风格）
 
+## English Summary
+
+This document describes the half-screen remote terminal feature for iOS:
+
+1. iOS connects to Worker via WebSocket for low-latency bidirectional stream.
+2. Worker hosts a PTY-backed `/bin/zsh -i` shell on Mac and relays terminal I/O.
+3. Terminal sessions are isolated by `threadId` and default to each thread's `cwd`.
+4. Chat pipeline and terminal pipeline are intentionally decoupled for reliability and maintainability.
+
 ## 0. 结论
 
 本功能采用“**Mac 侧终端网关 + iOS 侧终端面板**”方案：

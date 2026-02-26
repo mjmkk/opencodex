@@ -4,6 +4,15 @@
 >
 > 因此本文档以 OpenAI 官方 `codex app-server` 协议与 schema 为实现基线；`@openai/codex-sdk` 仅作为非审批场景参考。
 
+## English Summary
+
+This architecture document defines the MVP baseline for iPhone frontend + Mac Worker:
+
+1. Approval-capable flows must use official `codex app-server` bidirectional JSON-RPC, not SDK-only streaming.
+2. Worker exposes REST + SSE to iOS, while orchestrating thread/job/approval state internally.
+3. Event replay is cursor-based and append-only, with idempotent approval handling.
+4. MVP prioritizes thread lifecycle, chat streaming, and approval loop; file tree and terminal are later stages.
+
 ## 0. 术语说明
 
 - `TS SDK-only`：仅使用 `@openai/codex-sdk` 的 `Codex.startThread()/thread.run()/thread.runStreamed()` 与其 JSON 事件流，不接入 `codex app-server` 的 server->client request 通道。

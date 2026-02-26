@@ -1,5 +1,14 @@
 # 聊天文件链接可读与文件系统浏览详细设计（V1）
 
+## English Summary
+
+This document defines V1 design for making chat file references truly actionable on iOS:
+
+1. Convert file references and web links into clickable links in chat messages.
+2. Open files with line navigation via a Worker-side file proxy API.
+3. Add thread-bound file tree browsing, search, and local cache for weak-network scenarios.
+4. Keep the architecture incremental: no full IDE scope in V1, but preserve future extension points (diff/edit/history).
+
 ## 0. 结论
 
 本功能可行，建议采用“后端文件代理 + iOS 原生代码阅读器 + 本地缓存”的架构，分三期落地：
