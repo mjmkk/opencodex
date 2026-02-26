@@ -22,7 +22,7 @@ let package = Package(
         // Exyte Chat（聊天 UI 组件）
         .package(url: "https://github.com/exyte/Chat.git", from: "2.7.6"),
         // 锁定 Giphy SDK 到 2.2.x：ExyteChat 2.7.6 使用的 GPHClient.gifByID API 在 2.3.0 中被移除
-        .package(url: "https://github.com/Giphy/giphy-ios-sdk", "2.2.16" ..< "2.3.0"),
+        .package(url: "https://github.com/Giphy/giphy-ios-sdk", "2.2.16" ..< "3.0.0"),
         // 锁定 swift-navigation 到 2.6.x：2.7.0 使用了 Swift 6.1 的参数列表尾逗号语法，
         // 该特性 Xcode 16.2 (Swift 6.0.3) 不支持
         .package(url: "https://github.com/pointfreeco/swift-navigation", "2.3.2" ..< "2.7.0"),
