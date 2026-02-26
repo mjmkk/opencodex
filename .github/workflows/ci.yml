@@ -61,6 +61,14 @@ jobs:
       - name: SwiftLint
         run: swiftlint lint --config .swiftlint.yml
 
+      - name: Test CodexWorker (Swift Package)
+        run: |
+          cd codex-worker-ios
+          xcodebuild test \
+            -scheme CodexWorker \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -skipMacroValidation
+
       - name: Build CodexWorkerApp
         run: |
           cd CodexWorkerApp/CodexWorkerApp
