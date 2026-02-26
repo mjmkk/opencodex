@@ -104,37 +104,40 @@ OpenCodex/
 
 ## Quick Start
 
-### Step 1: Start the Worker Backend
+### Option A — Docker (Recommended)
+
+```bash
+# 1. Clone and configure
+git clone https://github.com/mjmkk/opencodex.git && cd opencodex
+cp codex-worker-mvp/worker.config.example.json codex-worker-mvp/worker.config.json
+# Edit worker.config.json — add your Codex/Claude API key
+
+# 2. Start the backend
+make docker-up          # builds image and starts in background
+
+# 3. Verify
+curl http://localhost:3000/v1/health
+# → {"status":"ok"}
+```
+
+### Option B — Node.js (Development)
 
 ```bash
 cd codex-worker-mvp
+cp ../codex-worker-mvp/worker.config.example.json worker.config.json
 npm install
-npm start
-```
-
-Listens on `http://127.0.0.1:8787` by default. Verify it's running:
-
-```bash
-curl http://127.0.0.1:8787/health
-# → {"status":"ok","authEnabled":false}
-```
-
-To enable token authentication:
-
-```bash
-WORKER_TOKEN=your_secret npm start
+npm start               # listens on http://127.0.0.1:3000
 ```
 
 ### Step 2: Run the iOS App
 
-1. Open the Xcode project:
-   `CodexWorkerApp/CodexWorkerApp/CodexWorkerApp.xcodeproj`
-2. Select the `CodexWorkerApp` scheme, choose a simulator or device, and run
-3. In the App **Settings**, configure the connection:
-   - **Base URL**: `http://127.0.0.1:8787` (simulator) or Mac's LAN IP (physical device)
-   - **Token**: if `WORKER_TOKEN` is set on the backend, enter the same value here
+1. Open `CodexWorkerApp/CodexWorkerApp/CodexWorkerApp.xcodeproj` in Xcode
+2. Select the `CodexWorkerApp` scheme → choose a simulator or your iPhone → **Run**
+3. In the App **Settings**, set the connection URL:
+   - Simulator: `http://127.0.0.1:3000`
+   - Physical iPhone: `http://<Mac-LAN-IP>:3000` (same Wi-Fi network required)
 
-> **Physical Device Note**: iPhone and Mac must be on the same Wi-Fi network. Use the Mac's LAN IP (e.g. `http://192.168.1.x:8787`).
+> **Full deployment guide** → [docs/deployment.md](docs/deployment.md)
 
 ## Common Commands
 
@@ -327,37 +330,40 @@ OpenCodex/
 
 ## 快速启动
 
-### 第一步：启动 Worker 后端
+### 方式 A — Docker（推荐）
+
+```bash
+# 1. 克隆并配置
+git clone https://github.com/mjmkk/opencodex.git && cd opencodex
+cp codex-worker-mvp/worker.config.example.json codex-worker-mvp/worker.config.json
+# 编辑 worker.config.json，填入 Codex/Claude API Key
+
+# 2. 启动后端
+make docker-up          # 自动构建镜像并在后台运行
+
+# 3. 验证
+curl http://localhost:3000/v1/health
+# → {"status":"ok"}
+```
+
+### 方式 B — Node.js（开发调试）
 
 ```bash
 cd codex-worker-mvp
+cp ../codex-worker-mvp/worker.config.example.json worker.config.json
 npm install
-npm start
-```
-
-默认监听 `http://127.0.0.1:8787`，验证是否正常：
-
-```bash
-curl http://127.0.0.1:8787/health
-# → {"status":"ok","authEnabled":false}
-```
-
-如需鉴权，可设置环境变量：
-
-```bash
-WORKER_TOKEN=your_secret npm start
+npm start               # 监听 http://127.0.0.1:3000
 ```
 
 ### 第二步：运行 iOS App
 
-1. 打开 Xcode 工程：
-   `CodexWorkerApp/CodexWorkerApp/CodexWorkerApp.xcodeproj`
-2. 选择 Scheme `CodexWorkerApp`，选择模拟器或真机，点击运行
-3. 在 App **设置页**填写连接信息：
-   - **Base URL**：`http://127.0.0.1:8787`（模拟器）或 Mac 的局域网 IP（真机）
-   - **Token**：若后端启用了 `WORKER_TOKEN`，填入相同值
+1. 用 Xcode 打开 `CodexWorkerApp/CodexWorkerApp/CodexWorkerApp.xcodeproj`
+2. 选择 Scheme `CodexWorkerApp` → 选择模拟器或真机 → **运行**
+3. 在 App **设置页**填写连接 URL：
+   - 模拟器：`http://127.0.0.1:3000`
+   - 真机：`http://<Mac局域网IP>:3000`（与 Mac 同一 Wi-Fi 网络）
 
-> **真机提示**：iPhone 与 Mac 须在同一局域网，使用 Mac IP（如 `http://192.168.1.x:8787`）。
+> **完整部署指南** → [docs/deployment.md](docs/deployment.md)
 
 ## 常用命令
 

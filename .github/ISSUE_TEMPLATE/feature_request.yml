@@ -1,38 +1,42 @@
-name: Feature request
-description: 提出新功能或改进建议
-title: "[Feature] "
-labels: [enhancement]
+name: Feature Request
+description: Suggest a new feature or improvement
+labels: ["enhancement"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Got an idea? We'd love to hear it!
+
   - type: textarea
     id: problem
     attributes:
-      label: 背景问题
-      description: 你遇到了什么问题或限制？
+      label: Problem / Motivation
+      description: Is your feature request related to a problem? What workflow is painful right now?
+      placeholder: "I'm frustrated when I have to..."
     validations:
       required: true
 
   - type: textarea
-    id: proposal
+    id: solution
     attributes:
-      label: 方案建议
-      description: 描述你期望的行为、交互或 API
+      label: Proposed Solution
+      description: Describe the feature you'd like to see.
     validations:
       required: true
 
   - type: textarea
     id: alternatives
     attributes:
-      label: 备选方案
-      description: 你考虑过的其他方案
+      label: Alternatives Considered
+      description: Any alternative solutions or workarounds you've tried?
 
-  - type: textarea
-    id: scope
+  - type: dropdown
+    id: component
     attributes:
-      label: 影响范围
-      description: 涉及 iOS、Worker、文档或其他模块
-
-  - type: textarea
-    id: extra
-    attributes:
-      label: 额外信息
-      description: 参考链接、草图、截图等
+      label: Component
+      options:
+        - iOS App
+        - Worker Backend (Node.js)
+        - Docker / Deployment
+        - Documentation
+        - Other
