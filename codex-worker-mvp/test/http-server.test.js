@@ -550,6 +550,12 @@ test("WebSocket 终端流：ready/ping/input/resize/detach", async (t) => {
     detach: [],
   };
   let pushEvent = null;
+  // detachTerminalClient 在服务端 close 事件中调用，晚于客户端 close 事件，
+  // 用独立 Promise 等待它完成，避免竞态断言失败。
+  let resolveDetach;
+  const detachCalledPromise = new Promise((resolve) => {
+    resolveDetach = resolve;
+  });
 
   const service = {
     attachTerminalClient: (sessionId, clientId, params) => {
@@ -580,6 +586,7 @@ test("WebSocket 终端流：ready/ping/input/resize/detach", async (t) => {
     },
     detachTerminalClient: (sessionId, clientId) => {
       calls.detach.push({ sessionId, clientId });
+      resolveDetach();
     },
   };
 
@@ -636,6 +643,10 @@ test("WebSocket 终端流：ready/ping/input/resize/detach", async (t) => {
       reject(error);
     });
   });
+
+  // 等待服务端 close 事件处理完成（detachTerminalClient 在服务端 close 中调用，
+  // 晚于客户端 close 事件，需要单独等待）
+  await detachCalledPromise;
 
   assert.equal(calls.attach.sessionId, "term_ws");
   assert.equal(calls.attach.fromSeq, 1);
