@@ -1,5 +1,5 @@
 {
-  "originHash" : "07ce134fffdbaf7bd266d7205f1eb48789072ae522ccb8d3b1e7e939faa2d0f4",
+  "originHash" : "7c8c23eb64929c2153b99ff0e21ac22cf694b6d3fd42d65dcaa77a0e26b0aad6",
   "pins" : [
     {
       "identity" : "activityindicatorview",
@@ -51,8 +51,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Giphy/giphy-ios-sdk",
       "state" : {
-        "revision" : "37f5b1ff6cf8bc4a78c0bc5eb1b814381bac9580",
-        "version" : "2.2.16"
+        "revision" : "f7a8edf513ab14147ef33c942b10b45cdac1e765",
+        "version" : "2.3.0"
       }
     },
     {
@@ -98,6 +98,15 @@
       "state" : {
         "revision" : "2849f5323265386e200484b0d0f896e73c3411b9",
         "version" : "6.0.1"
+      }
+    },
+    {
+      "identity" : "opencombine",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenCombine/OpenCombine.git",
+      "state" : {
+        "revision" : "8576f0d579b27020beccbccc3ea6844f3ddfc2c2",
+        "version" : "0.14.0"
       }
     },
     {
