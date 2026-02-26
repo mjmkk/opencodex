@@ -30,7 +30,14 @@ jobs:
         working-directory: codex-worker-mvp
         run: |
           npm ci
-          npm test
+          npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: codex-worker-mvp/coverage/lcov.info
+          flags: backend
+          fail_ci_if_error: false
 
       - name: Test codex-sessions-tool
         working-directory: codex-sessions-tool

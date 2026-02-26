@@ -1,0 +1,14 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto        # 不低于上次覆盖率
+        threshold: 2%       # 允许 2% 的浮动
+    patch:
+      default:
+        target: 60%         # PR 新增代码至少 60% 覆盖率
+
+ignore:
+  - "codex-worker-mvp/test/**"
+  - "codex-sessions-tool/**"
+  - "docs/**"

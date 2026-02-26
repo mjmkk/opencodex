@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node src/index.js",
     "test": "node --test",
+    "test:coverage": "c8 --reporter=lcov --reporter=text node --test",
     "test:all": "npm test"
   },
   "dependencies": {
@@ -16,5 +17,8 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "c8": "^11.0.0"
   }
 }

@@ -1,0 +1,20 @@
+services:
+  worker:
+    build:
+      context: ./codex-worker-mvp
+      dockerfile: Dockerfile
+    ports:
+      - "${WORKER_PORT:-3000}:3000"
+    volumes:
+      # 挂载配置文件（只读）
+      # 请先执行：cp codex-worker-mvp/worker.config.example.json codex-worker-mvp/worker.config.json
+      - ./codex-worker-mvp/worker.config.json:/app/worker.config.json:ro
+      # 持久化 SQLite 数据库
+      - worker-data:/app/data
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+
+volumes:
+  worker-data:
+    driver: local

@@ -18,6 +18,7 @@
 > Run an AI coding assistant on your iPhone — real-time chat, terminal access, file browsing, and command approval in one app.
 
 [![CI](https://github.com/mjmkk/opencodex/actions/workflows/ci.yml/badge.svg)](https://github.com/mjmkk/opencodex/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/mjmkk/opencodex/graph/badge.svg)](https://codecov.io/gh/mjmkk/opencodex)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Swift](https://img.shields.io/badge/Swift-6%2B-orange.svg)](https://swift.org)
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-green.svg)](https://nodejs.org)
