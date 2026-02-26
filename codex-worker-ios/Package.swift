@@ -21,11 +21,10 @@ let package = Package(
         .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.24.1"),
         // Exyte Chat（聊天 UI 组件）
         .package(url: "https://github.com/exyte/Chat.git", from: "2.7.6"),
-        // 锁定 Giphy SDK 到 2.2.x：ExyteChat 2.7.6 使用的 GPHClient.gifByID API 在 2.3.0 中被移除
+        // Giphy SDK 版本范围：已验证 2.3.0 可用，限制在 3.0.0 以内避免未来破坏性升级
         .package(url: "https://github.com/Giphy/giphy-ios-sdk", "2.2.16" ..< "3.0.0"),
-        // 锁定 swift-navigation 到 2.6.x：2.7.0 使用了 Swift 6.1 的参数列表尾逗号语法，
-        // 该特性 Xcode 16.2 (Swift 6.0.3) 不支持
-        .package(url: "https://github.com/pointfreeco/swift-navigation", "2.3.2" ..< "2.7.0"),
+        // swift-navigation 版本范围：当前工具链已验证 2.7.x 可编译，限制在 3.0.0 以内
+        .package(url: "https://github.com/pointfreeco/swift-navigation", "2.3.2" ..< "3.0.0"),
         // MarkdownUI（完整 Markdown 渲染，支持 GitHub 风格 Markdown 的表格/任务列表）
         .package(url: "https://github.com/gonzalezreal/swift-markdown-ui.git", from: "2.0.2"),
         // EventSource（SSE，Server-Sent Events 客户端）
