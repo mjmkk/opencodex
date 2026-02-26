@@ -35,6 +35,17 @@
 OpenCodex is an **iOS client + local Node.js Worker backend** development platform.
 Connect your iPhone to a Worker service running on your Mac to engage in multi-turn conversations with Claude / Codex, view execution logs, approve high-risk commands, browse and edit project files, and operate a remote terminal.
 
+## Why OpenCodex
+
+AI agents can run coding tasks for 10-20 minutes continuously. In that window, human work is mostly supervision: review, approval, and direction decisions.
+
+OpenCodex is built to decouple supervision from desk location while keeping local control:
+
+- Local-first workflow on your own Mac
+- Observable execution through file browsing and logs
+- Deterministic fallback through direct terminal passthrough
+- Approval gates for high-risk operations
+
 ### Key Features
 
 | Feature | Description |
@@ -108,6 +119,13 @@ OpenCodex/
 - This repository does **not** include `codex app-server` implementation.
   - Runtime depends on local `codex` CLI availability and account permission.
   - Without `codex app-server` access, contributors can still run unit tests, static checks, and submit UI/state-machine/documentation improvements.
+
+## Non-Goals
+
+- Not a cloud execution platform
+- Not a fully autonomous no-review coding system
+- Not a replacement for architecture and product decisions
+- Not a generic remote desktop tool
 
 ## Quick Start
 
@@ -204,6 +222,28 @@ node bin/doctor.js
 
 For full backend configuration options, see [`codex-worker-mvp/README.md`](codex-worker-mvp/README.md).
 
+## FAQ
+
+### Do I need `codex app-server`?
+
+Yes. OpenCodex integrates with a locally running `codex app-server` via `codex-worker-mvp`.
+
+### Why local-first instead of cloud agents?
+
+Local-first keeps full control over environment, tools, history, and debugging paths.
+
+### Does my repository leave my Mac?
+
+By default, repository operations run against your local environment through your own worker service.
+
+### Why keep terminal passthrough if chat already exists?
+
+Chat is flexible, while terminal passthrough is deterministic for direct commands and fast recovery.
+
+### How does remote access work without renting servers?
+
+Recommended path is Tailscale peer-to-peer networking between iPhone and Mac.
+
 ## Tech Stack
 
 **iOS Frontend**
@@ -264,6 +304,17 @@ This repository is licensed under the [Apache License 2.0](LICENSE).
 
 OpenCodex 是一个 **iOS 客户端 + 本地 Node.js Worker 后端**的研发平台。
 通过 iPhone 连接运行在 Mac 上的 Worker 服务，即可使用 Claude / Codex 进行多轮对话、查看执行日志、审批高危命令、浏览和编辑项目文件，以及操作远端终端。
+
+## 为什么做 OpenCodex
+
+AI agent 已经可以连续执行 10-20 分钟任务。在这段时间里，人类的核心工作通常是监督：审阅、审批和方向决策。
+
+OpenCodex 的目标是把“监督能力”从桌面位置解耦，同时保留本地可控性：
+
+- 本地优先：工作流运行在你自己的 Mac 上
+- 可观测：通过文件浏览和日志了解执行过程
+- 可回收：通过终端透传走确定性操作路径
+- 可管控：高风险操作必须经过审批
 
 ### 核心功能
 
@@ -338,6 +389,13 @@ OpenCodex/
 - 本仓库**不包含** `codex app-server` 的实现源码。
   - 运行时依赖本机 `codex` 命令和对应账号权限。
   - 即使没有 app-server 访问权限，贡献者仍可执行单元测试、静态检查，并提交 UI/状态机/文档改进。
+
+## 非目标（Non-Goals）
+
+- 不是云端托管执行平台
+- 不是“无需审阅”的全自动编码系统
+- 不是替代架构与产品决策的人类判断
+- 不是通用远程桌面工具
 
 ## 快速启动
 
@@ -433,6 +491,28 @@ node bin/doctor.js
 | SQLite 数据库 | `codex-worker-mvp/data/worker.db` | 自动创建 |
 
 详细后端配置见 [`codex-worker-mvp/README.md`](codex-worker-mvp/README.md)。
+
+## 常见问题（FAQ）
+
+### 是否必须依赖 `codex app-server`？
+
+是。OpenCodex 通过 `codex-worker-mvp` 对接本地运行的 `codex app-server`。
+
+### 为什么做本地优先，而不是纯云端 agent？
+
+本地优先能保留环境、工具链、历史上下文和排障路径的完整控制权。
+
+### 仓库代码会离开我的 Mac 吗？
+
+默认情况下，仓库相关操作都通过你本地 worker 服务对接本机环境执行。
+
+### 已有聊天能力，为什么还要终端透传？
+
+聊天更灵活，终端透传更确定，适合直接命令和快速回收控制权。
+
+### 不买服务器，怎么实现远程访问？
+
+推荐使用 Tailscale 点对点网络连接 iPhone 与 Mac。
 
 ## 技术栈
 
