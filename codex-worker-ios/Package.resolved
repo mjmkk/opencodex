@@ -1,5 +1,5 @@
 {
-  "originHash" : "a71aa149eafd4fc90b53819f01c68b62b023a54d1e312232ff98f42813f7cc07",
+  "originHash" : "161a4e8b3057cad4d1a8db5aa3a0d973aba115613c75b3fecedaff386fc114ab",
   "pins" : [
     {
       "identity" : "activityindicatorview",
@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Recouse/EventSource.git",
       "state" : {
-        "revision" : "7b2f4f585d3927876bd76eaede9fdff779eff102",
-        "version" : "0.1.5"
+        "revision" : "713f8c0a0270a80a968c007ddc0d6067e80a5393",
+        "version" : "0.1.7"
       }
     },
     {
@@ -51,8 +51,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Giphy/giphy-ios-sdk",
       "state" : {
-        "revision" : "f7a8edf513ab14147ef33c942b10b45cdac1e765",
-        "version" : "2.3.0"
+        "revision" : "37f5b1ff6cf8bc4a78c0bc5eb1b814381bac9580",
+        "version" : "2.2.16"
       }
     },
     {
@@ -69,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/onevcat/Kingfisher",
       "state" : {
-        "revision" : "d30a5fad881137e2267f96a8e3fc35c58999bb94",
-        "version" : "8.6.2"
+        "revision" : "e227df15448d2ad1a5d4e4c49722a71c68f9058a",
+        "version" : "8.7.0"
       }
     },
     {
