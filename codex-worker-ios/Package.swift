@@ -31,7 +31,7 @@ let package = Package(
         // EventSource（SSE，Server-Sent Events 客户端）
         .package(url: "https://github.com/Recouse/EventSource.git", from: "0.1.5"),
         // GRDB（SQLite 封装）
-        .package(url: "https://github.com/groue/GRDB.swift.git", from: "6.0.0"),
+        .package(url: "https://github.com/groue/GRDB.swift.git", from: "7.10.0"),
         // SwiftTerm（终端渲染）
         .package(url: "https://github.com/migueldeicaza/SwiftTerm.git", from: "1.2.6"),
         // Runestone（代码编辑器视图）
