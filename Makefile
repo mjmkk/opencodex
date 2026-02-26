@@ -1,4 +1,4 @@
-.PHONY: help test test-backend test-ios lint format build dev setup clean
+.PHONY: help test test-backend test-ios lint format build dev setup growth-report clean
 
 # 默认目标：显示帮助
 help: ## 显示所有可用命令
@@ -57,6 +57,9 @@ setup: ## 安装所有依赖
 	cd codex-sessions-tool && npm install
 	@echo "✅ Node.js 依赖安装完成"
 	@echo "提示：iOS 依赖由 Xcode 在首次构建时自动解析"
+
+growth-report: ## 输出 GitHub 增长指标（Star/Watch/Fork）
+	./scripts/growth/github_growth_report.sh mjmkk opencodex
 
 # ── Docker ────────────────────────────────────────────────────────────────────
 

@@ -1,0 +1,36 @@
+changelog:
+  categories:
+    - title: "🚀 Features / 新功能"
+      labels:
+        - "feature"
+        - "enhancement"
+    - title: "🐛 Fixes / 缺陷修复"
+      labels:
+        - "bug"
+        - "fix"
+    - title: "🧩 Terminal & File System / 终端与文件系统"
+      labels:
+        - "terminal"
+        - "filesystem"
+    - title: "📚 Docs / 文档"
+      labels:
+        - "documentation"
+        - "docs"
+    - title: "🛠️ Maintenance / 维护"
+      labels:
+        - "chore"
+        - "refactor"
+      
+  exclude:
+    labels:
+      - "skip-changelog"
+
+template: |
+  ## Highlights / 版本亮点
+  $CHANGES
+
+  ## Follow Updates / 订阅更新
+  - Watch this repository for release notifications:
+    https://github.com/mjmkk/opencodex/subscription
+  - Join Discussions:
+    https://github.com/mjmkk/opencodex/discussions

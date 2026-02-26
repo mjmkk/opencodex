@@ -1,4 +1,6 @@
-# Deployment Guide
+# Deployment Guide / 部署指南
+
+> Language / 语言：English below first, 中文在文末。
 
 This guide covers self-hosting the OpenCodex backend (`codex-worker-mvp`).
 
@@ -112,3 +114,70 @@ curl -H "Authorization: Bearer your-secret-token" http://localhost:3000/v1/healt
 - Use Tailscale or a reverse proxy with TLS in production
 - Keep `authToken` secret; rotate it if compromised (see `SECURITY.md`)
 - Terminal feature gives shell access — only enable on trusted networks
+
+---
+
+## 中文速览
+
+本文用于部署 `codex-worker-mvp` 后端服务。
+
+### 前置条件
+
+- Node.js >= 22
+- 可访问的 Codex `app-server`
+- 可选：Tailscale（用于远程安全访问）
+
+### 快速启动
+
+```bash
+cd codex-worker-mvp
+npm install
+cp worker.config.example.json worker.config.json
+```
+
+编辑 `worker.config.json`（示例）：
+
+```json
+{
+  "port": 3000,
+  "authToken": "your-secret-token",
+  "codexBaseUrl": "http://localhost:3100",
+  "tailscaleServiceName": "svc:opencodex"
+}
+```
+
+启动：
+
+```bash
+npm start
+```
+
+### 关键配置项
+
+- `port`：监听端口，默认 `3000`
+- `authToken`：鉴权令牌（需与 iOS 设置页一致）
+- `codexBaseUrl`：Codex app-server 地址
+- `tailscaleServiceName`：Tailscale Serve 服务名（可选）
+- `terminalEnabled`：是否启用终端功能
+- `pushNotifications`：推送配置
+
+### 远程访问（推荐）
+
+```bash
+tailscale serve --bg http://localhost:3000
+```
+
+iOS 端使用 Tailscale HTTPS 地址（示例：`https://your-machine.tail12345.ts.net`）。
+
+### 健康检查
+
+```bash
+curl -H "Authorization: Bearer your-secret-token" http://localhost:3000/v1/health
+```
+
+### 安全建议
+
+- 不要在无鉴权情况下直接暴露到公网
+- 生产环境请配合 TLS（或 Tailscale）
+- `authToken` 泄露要立即轮换
+- 终端功能具备 shell 权限，仅在可信网络启用

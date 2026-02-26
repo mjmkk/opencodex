@@ -26,6 +26,10 @@
 [![Swift](https://img.shields.io/badge/Swift-6%2B-orange.svg)](https://swift.org)
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-green.svg)](https://nodejs.org)
 
+> If OpenCodex helps your workflow, please click **Watch** to receive release notifications.
+>
+> [Watch Releases](https://github.com/mjmkk/opencodex/subscription) · [Star Repository](https://github.com/mjmkk/opencodex/stargazers) · [Join Discussions](https://github.com/mjmkk/opencodex/discussions)
+
 ## Overview
 
 OpenCodex is an **iOS client + local Node.js Worker backend** development platform.
@@ -237,6 +241,12 @@ This repository is licensed under the [Apache License 2.0](LICENSE).
 - All network-layer logging uses `OSLog Logger` (with per-module categories), never `print()`
 - TCA `Effect` side effects follow structured concurrency; all cancellable tasks use explicit `CancelID`s
 
+## Community Growth Kit
+
+- Growth plan: [`docs/community-growth-playbook.md`](docs/community-growth-playbook.md)
+- Launch copy templates: [`docs/launch-posts.md`](docs/launch-posts.md)
+- Metric snapshot script: `make growth-report`
+
 </details>
 
 ---
@@ -251,6 +261,10 @@ This repository is licensed under the [Apache License 2.0](LICENSE).
 # OpenCodex
 
 > 在 iPhone 上运行 AI 编程助手 —— 实时对话、终端操作、文件浏览、命令审批，一体化体验。
+
+> 如果 OpenCodex 对你有帮助，欢迎点击 **Watch** 订阅版本更新通知。
+>
+> [订阅更新（Watch）](https://github.com/mjmkk/opencodex/subscription) · [点赞（Star）](https://github.com/mjmkk/opencodex/stargazers) · [参与讨论](https://github.com/mjmkk/opencodex/discussions)
 
 ## 简介
 
@@ -462,5 +476,11 @@ node bin/doctor.js
 - Swift 代码启用了 `StrictConcurrency`，确保并发安全
 - 所有网络层日志使用 `OSLog Logger`（category 区分模块），不使用 `print()`
 - TCA `Effect` 副作用遵循结构化并发，cancellable 任务均设置明确的 `CancelID`
+
+## 社区增长工具包
+
+- 增长作战手册：[`docs/community-growth-playbook.md`](docs/community-growth-playbook.md)
+- 发布文案模板：[`docs/launch-posts.md`](docs/launch-posts.md)
+- 指标快照脚本：`make growth-report`
 
 </details>

@@ -1,0 +1,60 @@
+name: Showcase / 使用案例
+about: Share how you use OpenCodex in real workflows / 分享你的真实使用方式
+labels: ["showcase"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing your workflow!
+
+        感谢分享你的使用案例，这会帮助更多人理解 OpenCodex 的价值。
+
+  - type: input
+    id: title
+    attributes:
+      label: Title / 标题
+      placeholder: e.g. iPhone + Mac daily coding workflow
+    validations:
+      required: true
+
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Workflow / 使用流程
+      description: Describe your actual scenario, steps, and what part OpenCodex helped.
+      placeholder: |
+        - Scenario:
+        - Steps:
+        - Outcome:
+    validations:
+      required: true
+
+  - type: textarea
+    id: stack
+    attributes:
+      label: Stack / 环境信息
+      placeholder: |
+        - iOS version:
+        - Device:
+        - Backend mode: local / docker
+        - AI provider/model:
+
+  - type: textarea
+    id: wins
+    attributes:
+      label: Wins / 收益
+      description: Time saved, pain reduced, reliability improved, etc.
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or Demo / 截图或演示
+      description: Drag and drop images if possible.
+
+  - type: checkboxes
+    id: permission
+    attributes:
+      label: Permission / 授权
+      options:
+        - label: You can quote this showcase in README/Release notes / 我同意维护者在 README 或 Release 说明中引用该案例
+          required: false
