@@ -18,7 +18,7 @@ let package = Package(
     ],
     dependencies: [
         // TCA（The Composable Architecture，组合式架构库）
-        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.24.1"),
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.25.2"),
         // Exyte Chat（聊天 UI 组件）
         .package(url: "https://github.com/exyte/Chat.git", from: "2.7.6"),
         // Giphy SDK 版本范围：已验证 2.3.0 可用，限制在 3.0.0 以内避免未来破坏性升级
