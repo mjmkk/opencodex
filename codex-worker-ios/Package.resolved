@@ -1,5 +1,5 @@
 {
-  "originHash" : "3297917b1215daf49799be143afe9d31cf26e6933e0bea87e35a473c80fc80c7",
+  "originHash" : "d0dfa22ad9663f5f2d4934f054baa21417ccf4901cd11ec964cf97adea947010",
   "pins" : [
     {
       "identity" : "activityindicatorview",
@@ -114,8 +114,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/simonbs/Runestone.git",
       "state" : {
-        "revision" : "1fad339aab99cf2136ce6bf8c32da3265b2e85e5",
-        "version" : "0.5.1"
+        "revision" : "592434a103a4d1ab83e14f87ac6eef569dd7a99d",
+        "version" : "0.5.2"
       }
     },
     {
