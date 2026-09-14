@@ -95,6 +95,10 @@ public enum EventType: String, CaseIterable, Sendable {
 /// }
 /// ```
 public struct EventEnvelope: Codable, Equatable, Sendable {
+    public var detailCursor: Int?
+    public var detailGeneration: String?
+    public var detailBytes: Int?
+    public var threadCursor: Int?
     /// 事件类型
     public let type: String
 
@@ -110,7 +114,8 @@ public struct EventEnvelope: Codable, Equatable, Sendable {
     /// 事件负载数据
     public let payload: [String: JSONValue]?
 
-    public init(type: String, ts: String, jobId: String, seq: Int, payload: [String: JSONValue]?) {
+    public init(type: String, ts: String, jobId: String, seq: Int, payload: [String: JSONValue]?, threadCursor: Int? = nil) {
+        self.threadCursor = threadCursor
         self.type = type
         self.ts = ts
         self.jobId = jobId
@@ -276,13 +281,16 @@ public struct EventsListResponse: Codable, Sendable {
 ///
 /// 对应 `GET /v1/threads/{threadId}/events` 返回
 public struct ThreadEventsResponse: Codable, Sendable {
+    public var sourceConnected: Bool? = nil
+    public let generation: String?
     public let data: [EventEnvelope]
     /// 线程级游标（不是事件 seq）
     public let nextCursor: Int
     /// 是否还有后续分页
     public let hasMore: Bool
 
-    public init(data: [EventEnvelope], nextCursor: Int, hasMore: Bool) {
+    public init(data: [EventEnvelope], nextCursor: Int, hasMore: Bool, generation: String? = nil) {
+        self.generation = generation
         self.data = data
         self.nextCursor = nextCursor
         self.hasMore = hasMore

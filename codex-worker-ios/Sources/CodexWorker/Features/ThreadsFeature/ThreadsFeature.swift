@@ -10,14 +10,6 @@ import Foundation
 
 @Reducer
 public struct ThreadsFeature {
-    private enum CancelID {
-        case prewarmHistory
-    }
-
-    private static let prewarmThreadCount = 3
-    private static let prewarmPageLimit = 500
-    private static let prewarmMaxPages = 2
-
     public enum GroupingMode: String, CaseIterable, Equatable, Hashable, Sendable {
         case byCwd
         case byTime
@@ -46,7 +38,8 @@ public struct ThreadsFeature {
         public var isLoading = false
         public var isCreating = false
         public var archivingThreadIds: Set<String> = []
-        public var hasPrewarmedHistory = false
+        public var syncMetadata: [String: ThreadSyncMetadata] = [:]
+        public var isSyncing = false
         public var selectedThreadId: String?
         public var errorMessage: String?
         public var groupingMode: GroupingMode = .byCwd
@@ -123,6 +116,7 @@ public struct ThreadsFeature {
     public enum Action {
         case onAppear
         case refresh
+        case cacheLoaded(MobileSyncResult)
         case createTapped(cwd: String?)
         case archiveTapped(String)
         case groupingModeChanged(GroupingMode)
@@ -130,6 +124,8 @@ public struct ThreadsFeature {
         case createResponse(Result<Thread, CodexError>)
         case archiveResponse(String, Result<ArchiveThreadResponse, CodexError>)
         case threadTapped(String)
+        case pinTapped(String)
+        case pinResponse(String, Result<Bool, CodexError>)
         case clearError
         case delegate(Delegate)
     }
@@ -137,6 +133,7 @@ public struct ThreadsFeature {
     public enum Delegate {
         case didActivateThread(Thread)
         case didClearActiveThread
+        case refreshRequested
     }
 
     public init() {}
@@ -144,19 +141,19 @@ public struct ThreadsFeature {
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
-            case .onAppear, .refresh:
-                state.isLoading = true
-                state.errorMessage = nil
+            case .onAppear:
                 return .run { send in
-                    @Dependency(\.apiClient) var apiClient
-                    await send(
-                        .loadResponse(
-                            Result {
-                                try await apiClient.listThreads(nil)
-                            }.mapError { CodexError.from($0) }
-                        )
-                    )
+                    @Dependency(\.threadSyncClient) var sync
+                    do { await send(.cacheLoaded(try await sync.cached())) }
+                    catch { await send(.loadResponse(.failure(CodexError.from(error)))) }
                 }
+
+            case .refresh:
+                return .send(.delegate(.refreshRequested))
+
+            case .cacheLoaded(let cache):
+                state.syncMetadata = cache.metadata
+                return .send(.loadResponse(.success(ThreadsListResponse(data: cache.threads, nextCursor: nil))))
 
             case .groupingModeChanged(let mode):
                 state.groupingMode = mode
@@ -222,42 +219,13 @@ public struct ThreadsFeature {
                 }
 
                 let sortedByRecency = state.sortedItems
-                let prewarmCandidates = Array(sortedByRecency.prefix(Self.prewarmThreadCount))
-                let shouldPrewarm = !state.hasPrewarmedHistory
-                if shouldPrewarm {
-                    state.hasPrewarmedHistory = true
-                }
                 let shouldAutoActivate = state.selectedThreadId == nil
                 let autoActivateTarget = shouldAutoActivate ? sortedByRecency.first : nil
                 if let autoActivateTarget {
                     state.selectedThreadId = autoActivateTarget.threadId
                 }
 
-                return .merge(
-                    shouldPrewarm
-                        ? .run { _ in
-                            @Dependency(\.apiClient) var apiClient
-                            @Dependency(\.threadHistoryStore) var threadHistoryStore
-
-                            for thread in prewarmCandidates {
-                                if Task.isCancelled {
-                                    return
-                                }
-                                do {
-                                    try await Self.prewarmThreadHistory(
-                                        threadId: thread.threadId,
-                                        apiClient: apiClient,
-                                        threadHistoryStore: threadHistoryStore
-                                    )
-                                } catch {
-                                    // 预热失败不影响主流程，避免干扰线程列表可用性。
-                                }
-                            }
-                        }
-                        .cancellable(id: CancelID.prewarmHistory, cancelInFlight: true)
-                        : .none,
-                    autoActivateTarget.map { .send(.delegate(.didActivateThread($0))) } ?? .none
-                )
+                return autoActivateTarget.map { .send(.delegate(.didActivateThread($0))) } ?? .none
 
             case .loadResponse(.failure(let error)):
                 state.isLoading = false
@@ -312,6 +280,22 @@ public struct ThreadsFeature {
                 state.errorMessage = nil
                 return .send(.delegate(.didActivateThread(thread)))
 
+            case .pinTapped(let id):
+                guard let thread = state.items.first(where: { $0.threadId == id }) else { return .none }
+                let pinned = !(state.syncMetadata[id]?.pinned ?? false)
+                return .run { send in
+                    do {
+                        try await MobileLifecycle.setPinned(pinned, thread: thread)
+                        await send(.pinResponse(id, .success(pinned)))
+                    } catch { await send(.pinResponse(id, .failure(CodexError.from(error)))) }
+                }
+            case .pinResponse(let id, .success(let pinned)):
+                state.syncMetadata[id]?.pinned = pinned
+                return .none
+            case .pinResponse(_, .failure(let error)):
+                state.errorMessage = "持续展示未能更新：" + error.localizedDescription
+                return .none
+
             case .clearError:
                 state.errorMessage = nil
                 return .none
@@ -322,35 +306,4 @@ public struct ThreadsFeature {
         }
     }
 
-    private static func prewarmThreadHistory(
-        threadId: String,
-        apiClient: APIClient,
-        threadHistoryStore: ThreadHistoryStore
-    ) async throws {
-        var cursor = try await threadHistoryStore.loadCursor(threadId)
-        var hasResetOnce = false
-        var fetchedPages = 0
-
-        while fetchedPages < prewarmMaxPages {
-            do {
-                let page = try await apiClient.listThreadEvents(threadId, cursor, prewarmPageLimit)
-                if page.hasMore, page.nextCursor <= cursor {
-                    return
-                }
-                try await threadHistoryStore.mergeRemotePage(threadId, cursor, page)
-                cursor = page.nextCursor
-                fetchedPages += 1
-                if !page.hasMore || page.data.isEmpty {
-                    return
-                }
-            } catch let error as CodexError where error == .cursorExpired {
-                if hasResetOnce {
-                    return
-                }
-                hasResetOnce = true
-                try await threadHistoryStore.resetThread(threadId)
-                cursor = -1
-            }
-        }
-    }
 }

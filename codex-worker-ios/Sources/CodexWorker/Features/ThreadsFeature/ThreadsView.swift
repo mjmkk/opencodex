@@ -270,6 +270,7 @@ public struct ThreadsView: View {
             dismissKeyboard()
             viewStore.send(.threadTapped(thread.threadId))
         } label: {
+            VStack(alignment: .leading, spacing: 4) {
             ThreadRow(
                 thread: thread,
                 isSelected: viewStore.selectedThreadId == thread.threadId,
@@ -277,12 +278,29 @@ public struct ThreadsView: View {
                 isArchiving: isArchiving
             )
             .contentShape(Rectangle())
+                HStack(spacing: 5) {
+                    if viewStore.syncMetadata[thread.threadId]?.pinned == true { Image(systemName: "pin.fill") }
+                    if (viewStore.syncMetadata[thread.threadId]?.unreadEvents ?? 0) > 0 { Text("有新内容").foregroundStyle(.blue) }
+                    if let synced = viewStore.syncMetadata[thread.threadId]?.lastSyncedAt {
+                        Text("同步于 \(synced.formatted(date: .omitted, time: .shortened))")
+                    } else { Text("本地内容 · 等待同步") }
+                    if viewStore.syncMetadata[thread.threadId]?.isRebuilding == true { Text("补齐中") }
+                }.font(.caption2).foregroundStyle(.secondary).padding(.horizontal, 8)
+            }
         }
         .buttonStyle(.plain)
         .disabled(isArchiving)
         .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
         .listRowSeparator(.hidden)
         .listRowBackground(Color.clear)
+        .contextMenu {
+            Button {
+                viewStore.send(.pinTapped(thread.threadId))
+            } label: {
+                Label(viewStore.syncMetadata[thread.threadId]?.pinned == true ? "取消持续展示" : "Pin 持续展示",
+                      systemImage: viewStore.syncMetadata[thread.threadId]?.pinned == true ? "pin.slash" : "pin")
+            }
+        }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button(role: .destructive) {
                 viewStore.send(.archiveTapped(thread.threadId))
@@ -451,6 +469,7 @@ private struct CwdGroupHeader: View {
 
 private extension Thread {
     var listTitle: String {
+        if let name, !name.isEmpty { return name }
         let normalized = preview?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         if !normalized.isEmpty {
             return normalized

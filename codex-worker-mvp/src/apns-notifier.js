@@ -4,7 +4,7 @@
  * 通过 Apple Push Notification service（APNs）向 iOS 设备发送远程通知。
  */
 
-import { createSign } from "node:crypto";
+import { createHash, createSign } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { connect as connectHttp2 } from "node:http2";
 
@@ -70,6 +70,8 @@ export class ApnsNotifier {
     this.cachedJwt = null;
     this.cachedJwtExpirySec = 0;
     this.clients = new Map();
+    this.policy = new NotificationPolicy(options.db);
+    this.postJson = options.postJson ?? ((...args) => this.#postJson(...args));
   }
 
   close() {
@@ -88,97 +90,19 @@ export class ApnsNotifier {
     this.clients.clear();
   }
 
-  async notify({ envelope, job, thread, devices }) {
-    const eventType = envelope?.type;
-    const payload = envelope?.payload ?? {};
-    const message = this.#buildMessage(eventType, payload, job, thread);
-    if (!message) {
-      return { delivered: 0, failed: 0, invalidDeviceTokens: [] };
+  async notify({ envelope, job, devices, syncHead }) {
+    const message = notificationMessage(envelope, job, syncHead);
+    const results = [];
+    for (const device of devices ?? []) {
+      if (device.platform !== "ios" || !isNonEmptyString(device.deviceToken)) continue;
+      if (!this.policy.reserve(device.deviceToken, message, Date.now())) continue;
+      const result = await this.#sendToDevice(device, message);
+      this.policy.record(result.ok ? "apns_accepted" : "apns_failed");
+      results.push(result);
     }
-
-    const targets = Array.isArray(devices)
-      ? devices.filter(
-          (device) =>
-            device &&
-            device.platform === "ios" &&
-            isNonEmptyString(device.deviceToken)
-        )
-      : [];
-
-    if (targets.length === 0) {
-      return { delivered: 0, failed: 0, invalidDeviceTokens: [] };
-    }
-
-    const results = await Promise.all(targets.map((device) => this.#sendToDevice(device, message)));
-    const delivered = results.filter((item) => item.ok).length;
-    const failed = results.length - delivered;
-    const invalidDeviceTokens = results
-      .filter((item) => !item.ok && INVALID_DEVICE_REASONS.has(item.reason))
-      .map((item) => item.deviceToken);
-
-    return { delivered, failed, invalidDeviceTokens };
-  }
-
-  #buildMessage(eventType, payload, job, thread) {
-    const threadId = job?.threadId ?? payload?.threadId ?? null;
-    const jobId = job?.jobId ?? payload?.jobId ?? null;
-    const threadName =
-      truncate(
-        (isNonEmptyString(thread?.preview) && thread.preview)
-          || (isNonEmptyString(thread?.cwd) && thread.cwd.split("/").filter(Boolean).at(-1))
-          || threadId
-          || "当前线程",
-        48
-      ) || "当前线程";
-
-    if (eventType === "approval.required") {
-      const commandSnippet = truncate(payload?.command, 96);
-      return {
-        title: "Codex 需要审批",
-        body: commandSnippet
-          ? `命令审批：${commandSnippet}`
-          : `线程「${threadName}」有新的审批请求`,
-        threadId,
-        jobId,
-        approvalId: payload?.approvalId ?? payload?.approval_id ?? null,
-        eventType,
-      };
-    }
-
-    if (eventType === "approval.resolved") {
-      const decisionRaw = String(payload?.decision ?? "").trim().toLowerCase();
-      const denied = decisionRaw.includes("decline") || decisionRaw.includes("reject");
-      return {
-        title: denied ? "Codex 审批已拒绝" : "Codex 审批已完成",
-        body: `线程「${threadName}」审批已处理`,
-        threadId,
-        jobId,
-        approvalId: payload?.approvalId ?? payload?.approval_id ?? null,
-        eventType,
-      };
-    }
-
-    if (eventType === "job.finished") {
-      const state = String(payload?.state ?? "DONE").toUpperCase();
-      let title = "Codex 任务已结束";
-      if (state === "DONE") {
-        title = "Codex 任务已完成";
-      } else if (state === "FAILED") {
-        title = "Codex 任务失败";
-      } else if (state === "CANCELLED") {
-        title = "Codex 任务已取消";
-      }
-      return {
-        title,
-        body: `线程「${threadName}」状态：${state}`,
-        threadId,
-        jobId,
-        approvalId: null,
-        eventType,
-      };
-    }
-
-    return null;
+    const accepted = results.filter(item => item.ok).length;
+    return { accepted, delivered: null, seen: null, failed: results.length - accepted,
+      invalidDeviceTokens: results.filter(item => INVALID_DEVICE_REASONS.has(item.reason)).map(item => item.deviceToken) };
   }
 
   #getJwt() {
@@ -193,7 +117,7 @@ export class ApnsNotifier {
     const signer = createSign("sha256");
     signer.update(unsignedToken);
     signer.end();
-    const signature = signer.sign(this.privateKey);
+    const signature = signer.sign({ key: this.privateKey, dsaEncoding: "ieee-p1363" });
     const token = `${unsignedToken}.${base64url(signature)}`;
 
     // APNs 要求 token 在 1 小时内有效，缓存 50 分钟
@@ -229,25 +153,29 @@ export class ApnsNotifier {
     const authorization = `bearer ${this.#getJwt()}`;
 
     const payload = {
-      aps: {
-        alert: {
-          title: message.title,
-          body: message.body,
-        },
-        sound: "default",
-        ...(isNonEmptyString(message.threadId) ? { "thread-id": message.threadId } : {}),
+      aps: message.silent ? { "content-available": 1 } : {
+        alert: { title: message.title, body: message.body },
+        "thread-id": message.threadId,
+        category: message.approvalId ? "AGT_APPROVAL" : "AGT_THREAD",
+        "mutable-content": 1,
+        "interruption-level": "active",
       },
       eventType: message.eventType,
-      ...(isNonEmptyString(message.threadId) ? { threadId: message.threadId } : {}),
-      ...(isNonEmptyString(message.jobId) ? { jobId: message.jobId } : {}),
-      ...(isNonEmptyString(message.approvalId) ? { approvalId: message.approvalId } : {}),
+      threadId: message.threadId,
+      jobId: message.jobId,
+      latest_cursor: message.latestCursor,
+      requestVersion: message.requestVersion,
+      approvalId: message.approvalId,
+      source: message.source,
+      deepLink: message.source === "structured_approval" ? "opencodex://approvals" : `opencodex://thread/${encodeURIComponent(message.threadId)}`,
     };
-
-    const response = await this.#postJson(host, requestPath, {
+    const response = await this.postJson(host, requestPath, {
       authorization,
       "apns-topic": topic,
-      "apns-push-type": "alert",
-      "apns-priority": "10",
+      "apns-push-type": message.silent ? "background" : "alert",
+      "apns-priority": message.silent ? "5" : "10",
+      "apns-collapse-id": createHash("sha256").update(message.collapseKey).digest("hex"),
+      "apns-expiration": String(Math.floor(Date.now() / 1000) + (message.silent ? 1200 : 3600)),
       "content-type": "application/json",
     }, payload);
 
@@ -292,6 +220,7 @@ export class ApnsNotifier {
         resolve(result);
       };
 
+      req.setTimeout(15000, () => { done({ ok: false, statusCode: 0, reason: "transport:timeout" }); req.close(); });
       req.setEncoding("utf8");
       req.on("response", (responseHeaders) => {
         statusCode = Number(responseHeaders[":status"] ?? 0);
@@ -324,5 +253,56 @@ export class ApnsNotifier {
 
       req.end(JSON.stringify(payload));
     });
+  }
+}
+
+
+export function notificationMessage(envelope, job, head = {}) {
+  const eventType = envelope.type;
+  const approvalId = eventType === "approval.required" ? envelope.payload?.approvalId : null;
+  const completion = eventType === "job.finished";
+  const threadId = job.threadId;
+  return {
+    eventType, threadId, jobId: job.jobId, approvalId,
+    source: envelope.payload?.source ?? "native",
+    requestVersion: envelope.payload?.requestVersion ?? null,
+    latestCursor: head?.latestCursor ?? null,
+    silent: !approvalId && !completion,
+    title: approvalId ? "Codex 需要你确认" : "Codex 任务有结果",
+    // Commands, full logs and arbitrary model text never enter lock-screen payloads.
+    body: approvalId ? "打开查看当前请求的范围与上下文。" : "打开查看原任务的最新结果。",
+    collapseKey: approvalId ? `approval:${approvalId}` : `${completion ? "completion" : "progress"}:${threadId}`,
+    dedupKey: approvalId ? `approval:${approvalId}:${envelope.payload?.requestVersion ?? ""}` : `${job.jobId}:${envelope.seq}:${eventType}`,
+  };
+}
+
+export class NotificationPolicy {
+  constructor(db = null) {
+    this.db = db; this.entries = new Map(); this.counters = {};
+    db?.exec(`CREATE TABLE IF NOT EXISTS mobile_push_policy (key TEXT PRIMARY KEY, at INTEGER NOT NULL);
+      CREATE TABLE IF NOT EXISTS mobile_metrics (name TEXT PRIMARY KEY, value INTEGER NOT NULL);`);
+  }
+  record(name) {
+    if (this.db) this.db.prepare("INSERT INTO mobile_metrics VALUES(?,1) ON CONFLICT(name) DO UPDATE SET value=value+1").run(name);
+    else this.counters[name] = (this.counters[name] ?? 0) + 1;
+  }
+  reserve(token, message, now) {
+    const device = createHash("sha256").update(token).digest("hex");
+    const key = `${device}:${message.dedupKey}`;
+    const rateKey = `${device}:${message.silent ? "background" : message.collapseKey}`;
+    const get = key => this.db ? this.db.prepare("SELECT at FROM mobile_push_policy WHERE key=?").get(key)?.at : this.entries.get(key);
+    const put = (key, at) => this.db ? this.db.prepare("INSERT INTO mobile_push_policy VALUES(?,?) ON CONFLICT(key) DO UPDATE SET at=excluded.at").run(key,at) : this.entries.set(key,at);
+    const reserve = () => {
+      if (get(key) !== undefined) { this.record("push_duplicate_suppressed"); return false; }
+      const previous = get(rateKey);
+      // At most three silent hints per hour per device. Durable pull recovers every thread.
+      const interval = message.silent ? 20 * 60 * 1000 : (message.approvalId ? 0 : 30 * 1000);
+      if (previous !== undefined && now - previous < interval) { this.record("push_coalesced"); return false; }
+      put(key, now); put(rateKey, now); this.record(message.silent ? "silent_attempted" : "visible_attempted");
+      if (this.db) this.db.prepare("DELETE FROM mobile_push_policy WHERE at<?").run(now - 86400000);
+      else for (const [entry, at] of this.entries) if (at < now - 86400000) this.entries.delete(entry);
+      return true;
+    };
+    return this.db ? this.db.transaction(reserve)() : reserve();
   }
 }

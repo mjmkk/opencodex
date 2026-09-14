@@ -418,6 +418,65 @@ export function createHttpServer(options) {
       }
 
       // ==================== API 路由 ====================
+      const metrics = options.mobileMetricsDb;
+      if (metrics && (pathname.includes("/events") || pathname.startsWith("/v1/sync") || pathname.startsWith("/v1/approvals"))) {
+        metrics.exec("CREATE TABLE IF NOT EXISTS mobile_metrics (name TEXT PRIMARY KEY, value INTEGER NOT NULL)");
+        const record = (key, amount) => metrics.prepare("INSERT INTO mobile_metrics VALUES(?,?) ON CONFLICT(name) DO UPDATE SET value=value+excluded.value").run(key, amount);
+        const category = pathname.startsWith("/v1/approvals") ? "approval_http" : "sync_http";
+        let bytes = 0;
+        const write = res.write.bind(res), end = res.end.bind(res);
+        res.write = (chunk, ...args) => { if (chunk) bytes += Buffer.byteLength(chunk); return write(chunk, ...args); };
+        res.end = (chunk, ...args) => { if (chunk && typeof chunk !== "function") bytes += Buffer.byteLength(chunk); return end(chunk, ...args); };
+        let recorded = false;
+        const finish = () => { if (recorded) return; recorded = true; record(category + "_requests", 1); record(category + "_response_bytes", bytes); };
+        res.once("finish", finish); res.once("close", finish);
+      }
+      if (method === "GET" && pathname === "/v1/mobile/audit") {
+        metrics?.exec("CREATE TABLE IF NOT EXISTS mobile_metrics (name TEXT PRIMARY KEY, value INTEGER NOT NULL)");
+        const counters = metrics?.prepare("SELECT name,value FROM mobile_metrics").all() ?? [];
+        sendJson(res, 200, { counters: Object.fromEntries(counters.map(row => [row.name, row.value])),
+          approvals: options.mobileApprovals ? await options.mobileApprovals("audit") : null,
+          modelTokensForSync: 0, deviceEnergy: null, userSeenNotifications: null,
+          networkBillingCost: null, scope: "worker_http_and_apns_attempts; physical delivery and energy unknown" }); return;
+      }
+      const detailRoute = pathname.match(/^\/v1\/threads\/([^/]+)\/events\/(\d+)\/detail$/);
+      if (method === "GET" && detailRoute) {
+        sendJson(res, 200, service.eventDetail(decodeURIComponent(detailRoute[1]), Number(detailRoute[2]), {
+          generation: requestUrl.searchParams.get("generation"),
+          offset: Number(requestUrl.searchParams.get("offset") ?? 0),
+          limit: Number(requestUrl.searchParams.get("limit") ?? 16000),
+        })); return;
+      }
+      if (pathname === "/v1/approvals" || pathname.startsWith("/v1/approvals/")) {
+        if (!options.mobileApprovals) throw new HttpError(503,"APPROVAL_ADAPTER_UNAVAILABLE","Structured approvals are not configured");
+        let operation, body = {};
+        if (method === "GET" && pathname === "/v1/approvals") operation = "list";
+        else if (method === "POST" && pathname === "/v1/approvals/batch") { operation = "batch"; body = await readJsonBody(req); }
+        else {
+          const parts = pathname.split("/");
+          body = method === "POST" ? await readJsonBody(req) : {};
+          body.id = decodeURIComponent(parts[3] ?? "");
+          operation = method === "GET" && parts.length === 4 ? "get" : (method === "POST" && ["answer","view"].includes(parts[4]) ? parts[4] : null);
+        }
+        if (!operation) throw new HttpError(404,"NOT_FOUND","Unknown approval endpoint");
+        sendJson(res,200,await options.mobileApprovals(operation,body)); return;
+      }
+
+
+      // Global foreground hints; every reconnect still pulls the durable cursor.
+      if (method === "GET" && pathname === "/v1/sync/stream") {
+        res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive", "X-Accel-Buffering": "no" });
+        res.write(": connected\n\n");
+        const pending = new Map();
+        const listener = hint => pending.set(hint.threadId, hint);
+        service.syncSubscribers.add(listener);
+        const flush = setInterval(() => {
+          if (pending.size) { res.write(`data: ${JSON.stringify([...pending.values()])}\n\n`); pending.clear(); }
+        }, 500);
+        const heartbeat = setInterval(() => res.write(": heartbeat\n\n"), 15000);
+        res.on("close", () => { clearInterval(flush); clearInterval(heartbeat); service.syncSubscribers.delete(listener); });
+        return;
+      }
 
       // GET /health - 健康检查
       if (method === "GET" && pathname === "/health") {
@@ -642,7 +701,9 @@ export function createHttpServer(options) {
         const threadId = decodeURIComponent(threadEventsMatch[0]);
         const cursor = parseCursor(requestUrl.searchParams);
         const limit = parseLimit(requestUrl.searchParams);
-        const page = await service.listThreadEvents(threadId, { cursor, limit });
+        const sync = requestUrl.searchParams.get("sync") === "1";
+        const generation = requestUrl.searchParams.get("generation");
+        const page = await service.listThreadEvents(threadId, { cursor, limit, ...(sync ? { sync, generation } : {}) });
         sendJson(res, 200, page);
         return;
       }

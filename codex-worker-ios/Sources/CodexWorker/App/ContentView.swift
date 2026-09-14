@@ -23,6 +23,8 @@ public struct ContentView: View {
         let isTerminalPresented: Bool
         let isFileBrowserPresented: Bool
         let terminalHeightRatio: Double
+        let activeThreadId: String?
+        let isPinned: Bool
 
         init(_ state: AppFeature.State) {
             self.connectionState = state.connectionState
@@ -32,11 +34,14 @@ public struct ContentView: View {
             self.isTerminalPresented = state.terminal.isPresented
             self.isFileBrowserPresented = state.isFileBrowserPresented
             self.terminalHeightRatio = state.terminal.heightRatio
+            self.activeThreadId = state.activeThread?.threadId
+            self.isPinned = state.activeThread.flatMap { state.threads.syncMetadata[$0.threadId]?.pinned } ?? false
         }
     }
 
     public let store: StoreOf<AppFeature>
     @State private var isSettingsPresented = false
+    @State private var isInboxPresented = false
     @State private var terminalDragStartRatio: Double?
 
     public init(store: StoreOf<AppFeature>) {
@@ -52,6 +57,11 @@ public struct ContentView: View {
 
                 ZStack(alignment: .leading) {
                     VStack(spacing: 0) {
+                        HStack {
+                            Spacer()
+                            Button { isInboxPresented = true } label: { Label("待确认", systemImage: "checklist") }
+                                .padding(.horizontal, 14).padding(.vertical, 6)
+                        }
                         CodexChatView(
                             store: store.scope(
                                 state: \.chat,
@@ -77,7 +87,11 @@ public struct ContentView: View {
                             },
                             onOpenFileReference: { ref in
                                 viewStore.send(.openFileReference(ref))
-                            }
+                            },
+                            onPinTap: {
+                                if let id = viewStore.activeThreadId { viewStore.send(.threads(.pinTapped(id))) }
+                            },
+                            isPinned: viewStore.isPinned
                         )
 
                         if viewStore.isTerminalPresented {
@@ -182,7 +196,26 @@ public struct ContentView: View {
                 }
                 viewStore.send(.lifecycleChanged(lifecycle))
             }
-            .onAppear { viewStore.send(.onAppear) }
+            .onAppear {
+                viewStore.send(.onAppear)
+                if let id = MobileLifecycle.takePendingThread() { viewStore.send(.openNotificationThread(id)) }
+                if MobileLifecycle.takePendingApprovals() { isInboxPresented = true }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: MobileLifecycle.openApprovalsNotification)) { _ in
+                _ = MobileLifecycle.takePendingApprovals(); isInboxPresented = true
+            }
+            .onReceive(NotificationCenter.default.publisher(for: MobileLifecycle.openThreadNotification)) { note in
+                if let id = note.object as? String {
+                    _ = MobileLifecycle.takePendingThread()
+                    viewStore.send(.openNotificationThread(id))
+                }
+            }
+            .onOpenURL { url in
+                if url.scheme == "opencodex", url.host == "approvals" { isInboxPresented = true }
+                if url.scheme == "opencodex", url.host == "thread", url.pathComponents.count == 2 {
+                    viewStore.send(.openNotificationThread(url.lastPathComponent))
+                }
+            }
             .onDisappear { viewStore.send(.onDisappear) }
             .sheet(isPresented: $isSettingsPresented) {
                 SettingsSheetView(
@@ -195,6 +228,9 @@ public struct ContentView: View {
                         isSettingsPresented = false
                     }
                 )
+            }
+            .sheet(isPresented: $isInboxPresented) {
+                MobileInboxView(store: store.scope(state: \.mobileInbox, action: \.mobileInbox))
             }
             .sheet(
                 isPresented: Binding(

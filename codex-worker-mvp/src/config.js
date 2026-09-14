@@ -450,6 +450,8 @@ export function loadConfig(env = process.env, options = {}) {
 
   return {
     port: /** @type {number} */ (port),
+    mobileApprovals: asPlainObject(fileConfig.mobileApprovals),
+    host: asNonEmptyString(env.WORKER_HOST) || asNonEmptyString(fileConfig.host) || null,
     authToken: asNonEmptyString(env.WORKER_TOKEN) || asNonEmptyString(fileConfig.authToken) || null,
     configFilePath,
     projectPaths,
@@ -471,6 +473,9 @@ export function loadConfig(env = process.env, options = {}) {
     rpc: {
       command,
       args,
+      transport: asNonEmptyString(env.CODEX_TRANSPORT) || asNonEmptyString(fileRpc.transport) || "stdio",
+      socketPath: asNonEmptyString(env.CODEX_SOCKET_PATH) || asNonEmptyString(fileRpc.socketPath) || null,
+      observedThreadIds: parseStringList(fileRpc.observedThreadIds),
       cwd: asNonEmptyString(env.WORKER_CWD) || resolvePathFromFile(fileRpc.cwd, configFileBaseDir) || cwd,
     },
     tailscaleServe: {

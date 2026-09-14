@@ -9,6 +9,7 @@ let package = Package(
         .iOS(.v17)
     ],
     products: [
+        .library(name: "CodexActivityModels", targets: ["CodexActivityModels"]),
         .library(
             name: "CodexWorker",
             targets: ["CodexWorker"]
@@ -39,9 +40,11 @@ let package = Package(
         .package(url: "https://github.com/simonbs/TreeSitterLanguages.git", from: "0.1.10"),
     ],
     targets: [
+        .target(name: "CodexActivityModels"),
         .target(
             name: "CodexWorker",
             dependencies: [
+                "CodexActivityModels",
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
                 .product(name: "ExyteChat", package: "Chat"),
                 .product(name: "MarkdownUI", package: "swift-markdown-ui"),

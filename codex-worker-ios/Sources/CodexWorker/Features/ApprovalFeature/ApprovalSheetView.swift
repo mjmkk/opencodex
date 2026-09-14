@@ -50,6 +50,14 @@ public struct ApprovalSheetView: View {
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
+                    if viewStore.awaitingConfirmation {
+                        Text("已发送，等待原任务确认")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                    if approval.scope == "this_native_request" {
+                        Text("仅授权当前请求；任务结束或连接变化后需重新确认。")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
 
                     VStack(alignment: .leading, spacing: 6) {
                         Text("拒绝理由（可选）")
@@ -74,24 +82,26 @@ public struct ApprovalSheetView: View {
                         }
                         .buttonStyle(.bordered)
 
-                        Button("会话接受") {
-                            viewStore.send(.submitTapped(.acceptForSession))
+                        if approval.scope != "this_native_request" {
+                            Button("会话接受") {
+                                viewStore.send(.submitTapped(.acceptForSession))
+                            }
+                            .buttonStyle(.bordered)
                         }
-                        .buttonStyle(.bordered)
 
                         Button("接受") {
                             viewStore.send(.submitTapped(.accept))
                         }
                         .buttonStyle(.borderedProminent)
                     }
-                    .disabled(viewStore.isSubmitting)
+                    .disabled(viewStore.isSubmitting || viewStore.awaitingConfirmation)
 
                     Button("取消任务") {
                         viewStore.send(.submitTapped(.cancel))
                     }
                     .font(.footnote)
                     .foregroundStyle(.red)
-                    .disabled(viewStore.isSubmitting)
+                    .disabled(viewStore.isSubmitting || viewStore.awaitingConfirmation)
                 }
                 .padding(14)
                 .background(.ultraThinMaterial)

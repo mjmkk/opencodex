@@ -147,6 +147,10 @@ public enum RiskLevel: Int, Codable, Sendable {
 /// }
 /// ```
 public struct Approval: Identifiable, Codable, Equatable, Sendable {
+    public var requestVersion: String? = nil
+    public var scope: String? = nil
+    public var contextVersion: String? = nil
+    public var expiresWhen: String? = nil
     /// 审批唯一标识符
     public let approvalId: String
 
@@ -267,7 +271,7 @@ extension Approval {
                 ]
             )
 
-        return Approval(
+        var approval = Approval(
             approvalId: approvalId,
             jobId: jobId,
             threadId: threadId,
@@ -283,6 +287,11 @@ extension Approval {
             grantRoot: grantRoot,
             proposedExecpolicyAmendment: proposedExecpolicyAmendment
         )
+        approval.requestVersion = payload["requestVersion"]?.stringValue
+        approval.scope = payload["scope"]?.stringValue
+        approval.contextVersion = payload["contextVersion"]?.stringValue
+        approval.expiresWhen = payload["expiresWhen"]?.stringValue
+        return approval
     }
 
     private static func nonEmptyString(in payload: [String: JSONValue], keys: [String]) -> String? {
@@ -403,6 +412,7 @@ extension Approval {
 ///
 /// 对应 `POST /v1/jobs/{jobId}/approve` 请求格式
 public struct ApprovalRequest: Codable, Sendable {
+    public var requestVersion: String? = nil
     /// 审批 ID
     public let approvalId: String
 

@@ -14,6 +14,7 @@ import UIKit
 #endif
 
 public struct CodexChatView: View {
+    @State private var selectedActivity: ThreadActivityItem?
     @Environment(\.colorScheme) private var colorScheme
 
     private struct ViewState: Equatable {
@@ -27,6 +28,11 @@ public struct CodexChatView: View {
         let isSending: Bool
         let isStreaming: Bool
         let canInput: Bool
+        let nativeManaged: Bool
+        let activities: [ThreadActivityItem]
+        let lastSyncedAt: Date?
+        let isHistorySyncing: Bool
+        let hasNativeReviewWait: Bool
 
         init(_ state: ChatFeature.State) {
             self.activeThreadId = state.activeThread?.threadId
@@ -38,7 +44,12 @@ public struct CodexChatView: View {
             self.errorMessage = state.errorMessage
             self.isSending = state.isSending
             self.isStreaming = state.isStreaming
-            self.canInput = state.activeThread != nil && !state.isApprovalLocked
+            self.canInput = state.activeThread != nil && !state.isApprovalLocked && !state.hasNativeReviewWait
+            self.nativeManaged = state.activeThread?.nativeManaged == true
+            self.activities = state.activities
+            self.lastSyncedAt = state.lastSyncedAt
+            self.isHistorySyncing = state.isHistorySyncing
+            self.hasNativeReviewWait = state.hasNativeReviewWait
         }
     }
 
@@ -52,6 +63,8 @@ public struct CodexChatView: View {
     let isTerminalPresented: Bool
     let onTerminalToggle: (() -> Void)?
     let onOpenFileReference: ((String) -> Void)?
+    let onPinTap: (() -> Void)?
+    let isPinned: Bool
     private let renderPipeline: MessageRenderPipeline
     private let codeSyntaxHighlighter: CodeSyntaxHighlighter
 
@@ -66,6 +79,8 @@ public struct CodexChatView: View {
         isTerminalPresented: Bool = false,
         onTerminalToggle: (() -> Void)? = nil,
         onOpenFileReference: ((String) -> Void)? = nil,
+        onPinTap: (() -> Void)? = nil,
+        isPinned: Bool = false,
         renderPipeline: MessageRenderPipeline = .live,
         codeSyntaxHighlighter: CodeSyntaxHighlighter = CodexCodeSyntaxHighlighter()
     ) {
@@ -79,6 +94,8 @@ public struct CodexChatView: View {
         self.isTerminalPresented = isTerminalPresented
         self.onTerminalToggle = onTerminalToggle
         self.onOpenFileReference = onOpenFileReference
+        self.onPinTap = onPinTap
+        self.isPinned = isPinned
         self.renderPipeline = renderPipeline
         self.codeSyntaxHighlighter = codeSyntaxHighlighter
     }
@@ -87,6 +104,19 @@ public struct CodexChatView: View {
         WithViewStore(store, observe: ViewState.init) { viewStore in
             VStack(spacing: 0) {
                 header(viewStore: viewStore)
+                if !viewStore.activities.isEmpty {
+                    DisclosureGroup("执行记录（\(viewStore.activities.count)）") {
+                        ScrollView {
+                            LazyVStack(alignment: .leading) {
+                                ForEach(viewStore.activities) { item in
+                                    Button { selectedActivity = item } label: {
+                                        HStack { Text(item.title); Spacer(); Image(systemName: "chevron.right") }
+                                    }.padding(.vertical, 6)
+                                }
+                            }
+                        }.frame(maxHeight: 170)
+                    }.font(.caption).padding(.horizontal, 12).padding(.vertical, 8)
+                }
 
                 if viewStore.shouldShowGeneratingIndicator {
                     HStack(spacing: 8) {
@@ -159,6 +189,9 @@ public struct CodexChatView: View {
                 viewStore.send(.onAppear)
             }
             .onDisappear { viewStore.send(.onDisappear) }
+            .sheet(item: $selectedActivity) { item in
+                ThreadActivityDetailView(item: item, threadId: viewStore.activeThreadId ?? "")
+            }
         }
     }
 
@@ -253,6 +286,10 @@ public struct CodexChatView: View {
                     .layoutPriority(2)
                 Spacer()
                 ConnectionStateBadge(state: connectionState)
+                if viewStore.activeThreadId != nil {
+                    Button { onPinTap?() } label: { Image(systemName: isPinned ? "pin.fill" : "pin") }
+                        .accessibilityLabel(isPinned ? "取消持续展示" : "Pin 持续展示")
+                }
 
                 Menu {
                     ForEach(ExecutionAccessMode.allCases, id: \.self) { mode in
@@ -276,7 +313,7 @@ public struct CodexChatView: View {
                     accessModePill(mode: executionAccessMode, tint: selectedModeTint)
                 }
                 .layoutPriority(0)
-                .disabled(viewStore.isSending || viewStore.isStreaming)
+                .disabled(viewStore.nativeManaged || viewStore.isSending || viewStore.isStreaming)
 
                 Button {
                     onFileBrowserTap?()
@@ -317,15 +354,26 @@ public struct CodexChatView: View {
             }
 
             if let state = viewStore.jobState {
-                Text("任务状态：\(state.rawValue)")
+                Text(viewStore.hasNativeReviewWait ? "执行状态：等待原生确认" : "执行状态：\(state.rawValue)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+            if viewStore.activeThreadId != nil {
+                HStack(spacing: 6) {
+                    if viewStore.isHistorySyncing { ProgressView().controlSize(.mini); Text("正在补齐内容") }
+                    else if let date = viewStore.lastSyncedAt { Text("最后同步"); Text(date, style: .relative) }
+                    else { Text("本地记录 · 尚未确认同步时间") }
+                }.font(.caption2).foregroundStyle(.secondary)
+                if viewStore.nativeManaged { Text("执行权限沿用原任务设置").font(.caption2).foregroundStyle(.secondary) }
             }
 
             if viewStore.isApprovalLocked {
                 Text("检测到审批请求，输入已暂时锁定")
                     .font(.caption)
                     .foregroundStyle(.orange)
+            }
+            if viewStore.hasNativeReviewWait {
+                Text("原任务等待原生确认，请在 Codex 的原任务中处理。").font(.caption).foregroundStyle(.orange)
             }
 
             if let error = viewStore.errorMessage {

@@ -23,6 +23,7 @@ import { HttpError } from "./errors.js";
 import { createId } from "./ids.js";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { randomUUID } from "node:crypto";
 import {
   defaultCodexHome,
   defaultThreadExportDir,
@@ -30,6 +31,7 @@ import {
   importThreadFromPackageAsNew,
 } from "./thread-transfer.js";
 import { mapDecisionToRpc } from "./worker-service/approval.js";
+import { ThreadSyncLog } from "./thread-sync-log.js";
 import {
   ACTIVE_STATES,
   RPC_EVENT_TYPE_MAP,
@@ -53,6 +55,7 @@ const PUSH_RELEVANT_EVENT_TYPES = new Set([
   "approval.required",
   "approval.resolved",
   "job.finished",
+  "item.completed",
 ]);
 const THREAD_EVENTS_CACHE_TTL_MS_DEFAULT = 5000;
 const FILE_TREE_LIMIT_DEFAULT = 200;
@@ -151,6 +154,13 @@ export class WorkerService {
     // 外部依赖
     this.rpc = options.rpc;
     this.store = options.store ?? null;
+    this.syncLog = this.store?.db ? new ThreadSyncLog(this.store.db) : null;
+    this.syncSeeds = new Map();
+    this.observedThreadIds = new Set(options.observedThreadIds ?? []);
+    this.nativeWriteGuard = options.nativeWriteGuard;
+    this.observationErrors = new Map();
+    this.syncSubscribers = new Set();
+    this.startingThreads = new Set();
     this.logger = options.logger ?? console;
     this.eventRetention = options.eventRetention ?? 2000;
     this.pushNotifier = options.pushNotifier ?? null;
@@ -226,7 +236,7 @@ export class WorkerService {
         title: "OpenClaw Worker MVP",
         version: "0.1.0",
       },
-      capabilities: null,
+      capabilities: this.rpc.sharedNative ? { experimentalApi: true } : null,
     });
 
     this.rpc.notify("initialized");
@@ -241,6 +251,57 @@ export class WorkerService {
     }
 
     this.initialized = true;
+    for (const id of this.observedThreadIds) {
+      try { await this.observeThread(id); }
+      catch (error) { this.observationErrors.set(id, error.message); }
+    }
+  }
+
+  async observeThread(threadId) {
+    this.#validateThreadId(threadId);
+    const result = await this.rpc.request("thread/read", { threadId, includeTurns: true });
+    const thread = result?.thread;
+    if (thread?.id !== threadId) throw new Error("Native thread identity mismatch");
+    this.#upsertThread(thread);
+    this.store?.upsertThread?.(this.#toThreadDto(thread));
+    this.#indexNativeTurns(threadId, thread.turns ?? []);
+    this.#recordNativeSnapshot(threadId, thread.turns ?? []);
+    // Attach a reader to the same backend. Do not override the native permissions.
+    const attached = await this.rpc.request("thread/resume", { threadId, excludeTurns: true });
+    if (attached?.thread?.id !== threadId) throw new Error("Native attachment identity mismatch");
+    this.loadedThreads.add(threadId);
+    // Reconcile the read/attach interval. Replaying stable items is idempotent.
+    const after = await this.rpc.request("thread/read", { threadId, includeTurns: true });
+    if (after?.thread?.id !== threadId) throw new Error("Native thread identity mismatch");
+    this.#indexNativeTurns(threadId, after.thread.turns ?? []);
+    this.#recordNativeSnapshot(threadId, after.thread.turns ?? []);
+    this.observationErrors.delete(threadId);
+  }
+
+  eventDetail(threadId, cursor, options) {
+    this.#validateThreadId(threadId);
+    if (!this.syncLog) throw new HttpError(503, "SYNC_STORE_UNAVAILABLE", "Durable sync storage is unavailable");
+    return this.syncLog.detail(threadId, cursor, options);
+  }
+
+  #indexNativeTurns(threadId, turns) {
+    for (const turn of turns) {
+      if (!turn.id) continue;
+      const persisted = this.store?.db?.prepare("SELECT jobId FROM jobs WHERE threadId=? AND turnId=? ORDER BY createdAt DESC LIMIT 1").get(threadId, turn.id);
+      const jobId = persisted?.jobId ?? `native_${threadId}_${turn.id}`;
+      this.turnToJob.set(this.#turnKey(threadId, turn.id), jobId);
+      if (turn.status === "inProgress" && !this.jobs.has(jobId)) {
+        const job = this.#createJob(threadId, jobId);
+        job.turnId = turn.id; job.state = "RUNNING";
+        this.store?.updateJob?.(this.#toJobSnapshot(job));
+      }
+    }
+  }
+
+  #recordNativeSnapshot(threadId, turns) {
+    this.syncLog?.append(threadId, buildThreadReplayEvents({ threadId, turns,
+      turnToJob: this.turnToJob, turnKey: (id, turnId) => this.#turnKey(id, turnId) }), { seeded: true, replay: true });
+    this.observationErrors.delete(threadId);
   }
 
   /**
@@ -335,6 +396,7 @@ export class WorkerService {
    * });
    */
   async createThread(payload = {}) {
+    if (this.rpc.sharedNative) throw new HttpError(403, "NATIVE_THREAD_IDENTITY_PRESERVED", "Register the original Primary instead of creating a mobile execution thread");
     // 解析项目路径
     const cwd = this.#resolveProjectPath(payload);
     const approvalPolicy = normalizeApprovalPolicy(payload.approvalPolicy) ?? "on-request";
@@ -385,6 +447,21 @@ export class WorkerService {
    * @returns {Promise<Object>} { data: ThreadDTO[], nextCursor: string|null }
    */
   async listThreads(options = {}) {
+    if (this.rpc.sharedNative) {
+      if (!this.catalogRefresh && Date.now() - (this.catalogRefreshedAt ?? 0) > 15000) {
+        this.catalogRefresh = Promise.all([...this.observedThreadIds].map(async threadId => {
+          try {
+            const result = await this.rpc.request("thread/read", { threadId, includeTurns: false }, { timeoutMs: 8000 });
+            if (result?.thread?.id !== threadId) throw new Error("Native identity mismatch");
+            this.#upsertThread(result.thread);
+            if (this.loadedThreads.has(threadId)) this.observationErrors.delete(threadId);
+          } catch (error) { this.observationErrors.set(threadId, error.message); }
+        })).finally(() => { this.catalogRefreshedAt = Date.now(); this.catalogRefresh = null; });
+      }
+      await this.catalogRefresh;
+      return { data: [...this.threads.values()].filter(t => this.observedThreadIds.has(t.id)).map(t => this.#toThreadDto(t)),
+        nextCursor: null, observationErrors: Object.fromEntries(this.observationErrors) };
+    }
     const archived = options.archived === true;
     const result = await this.rpc.request("thread/list", {
       cursor: null,
@@ -437,8 +514,6 @@ export class WorkerService {
     // 调用 app-server 恢复线程
     const result = await this.rpc.request("thread/resume", {
       threadId,
-      approvalPolicy: "on-request",
-      sandbox: "workspace-write",
     });
 
     const thread = result.thread;
@@ -463,6 +538,7 @@ export class WorkerService {
    * @returns {Promise<Object>} { threadId, status }
    */
   async archiveThread(threadId) {
+    if (this.rpc.sharedNative) throw new HttpError(403, "NATIVE_THREAD_IDENTITY_PRESERVED", "Manage the original task in its native interface");
     this.#validateThreadId(threadId);
 
     const attempts = [
@@ -506,6 +582,7 @@ export class WorkerService {
    * @returns {Promise<Object>} { threadId, status }
    */
   async unarchiveThread(threadId) {
+    if (this.rpc.sharedNative) throw new HttpError(403, "NATIVE_THREAD_IDENTITY_PRESERVED", "Manage the original task in its native interface");
     this.#validateThreadId(threadId);
 
     const attempts = [
@@ -846,6 +923,7 @@ export class WorkerService {
    * @returns {Promise<{data: Object}>}
    */
   async writeThreadFsFile(threadId, options = {}) {
+    if (this.rpc.sharedNative) throw new HttpError(403, "NATIVE_FILES_READ_ONLY", "Send an edit request to the original task so its native permissions apply");
     this.#validateThreadId(threadId);
     const thread = await this.#resolveThreadForFs(threadId);
     const requestedPath = isNonEmptyString(options.path) ? options.path.trim() : "";
@@ -1130,6 +1208,21 @@ export class WorkerService {
    */
   async startTurn(threadId, payload = {}) {
     this.#validateThreadId(threadId);
+    if (this.startingThreads.has(threadId)) throw new HttpError(409, "THREAD_BUSY", "A send is already in progress");
+    this.startingThreads.add(threadId);
+    try {
+    if (this.rpc.sharedNative) {
+      if (payload.approvalPolicy || payload.sandbox || payload.model) {
+        throw new HttpError(400, "NATIVE_SETTINGS_PRESERVED", "Mobile input cannot change native permissions or model settings");
+      }
+      const current = await this.rpc.request("thread/turns/list", {
+        threadId, cursor: null, limit: 1, sortDirection: "desc", itemsView: "notLoaded",
+      });
+      if (!Array.isArray(current?.data)) throw new HttpError(503, "NATIVE_STATE_UNKNOWN", "Native state is unavailable");
+      if (current.data.some(turn => turn.status === "inProgress")) {
+        throw new HttpError(409, "THREAD_HAS_ACTIVE_JOB", "The original thread is busy; retain the draft and send after it finishes");
+      }
+    }
     const input = this.#normalizeTurnInput(payload);
     const approvalPolicy = normalizeApprovalPolicy(payload.approvalPolicy);
     const sandbox = normalizeSandboxMode(payload.sandbox);
@@ -1137,7 +1230,7 @@ export class WorkerService {
 
     // 检查是否有活跃任务（防止同一线程并发执行）
     const activeJob = this.#findActiveJobByThread(threadId);
-    if (activeJob) {
+    if (activeJob && !this.rpc.sharedNative) {
       throw new HttpError(
         409,
         "THREAD_HAS_ACTIVE_JOB",
@@ -1149,6 +1242,7 @@ export class WorkerService {
     await this.#ensureThreadLoaded(threadId);
 
     // 创建 Job 对象
+    if (this.rpc.sharedNative) await this.nativeWriteGuard?.(threadId);
     const job = this.#createJob(threadId);
     this.pendingJobByThread.set(threadId, job.jobId);
 
@@ -1189,6 +1283,7 @@ export class WorkerService {
         this.pendingJobByThread.delete(threadId);
       }
     }
+    } finally { this.startingThreads.delete(threadId); }
   }
 
   /**
@@ -1302,6 +1397,20 @@ export class WorkerService {
     this.#validateThreadId(threadId);
     const normalizedCursor = normalizeThreadCursor(options.cursor);
     const limit = normalizeThreadEventsLimit(options.limit);
+    if (options.sync === true) {
+      if (!this.syncLog) throw new HttpError(503, "SYNC_STORE_UNAVAILABLE", "Durable sync storage is unavailable");
+      if (!this.syncLog.head(threadId).seeded) {
+        if (!this.syncSeeds.has(threadId)) {
+          const seed = this.#loadThreadEventsFromSourceOfTruth(threadId).then(events => {
+            this.syncLog.append(threadId, events, { seeded: true, replay: true });
+          }).finally(() => this.syncSeeds.delete(threadId));
+          this.syncSeeds.set(threadId, seed);
+        }
+        await this.syncSeeds.get(threadId);
+      }
+      return { ...this.syncLog.page(threadId, { cursor: normalizedCursor, limit, generation: options.generation }),
+        sourceConnected: this.rpc.started !== false && !this.observationErrors.has(threadId) };
+    }
     const canUseProjection = this.#supportsThreadEventsProjectionStore();
 
     if (canUseProjection) {
@@ -1390,7 +1499,7 @@ export class WorkerService {
     if (approval.decisionResult) {
       return {
         approvalId,
-        status: "already_submitted",
+        status: this.rpc.sharedNative && !approval.confirmed ? "sent_waiting_confirmation" : "already_submitted",
         decision: approval.decisionText,
       };
     }
@@ -1408,6 +1517,35 @@ export class WorkerService {
       decisionText,
       execPolicyAmendment
     );
+
+    if (this.rpc.sharedNative) {
+      if (!["accept", "decline", "cancel"].includes(decisionText) || execPolicyAmendment) {
+        throw new HttpError(400, "APPROVAL_SCOPE_EXCEEDED", "Only this individual request may be answered");
+      }
+      if (payload.requestVersion !== approval.requestVersion) {
+        throw new HttpError(409, "APPROVAL_VERSION_CHANGED", "Reload this request before submitting");
+      }
+      if (approval.submitting) throw new HttpError(409, "APPROVAL_SUBMITTING", "This request is already being submitted");
+      approval.submitting = true;
+      try {
+        await this.nativeWriteGuard?.(approval.threadId);
+        const current = await this.rpc.request("thread/turns/list", {
+          threadId: approval.threadId, cursor: null, limit: 1, sortDirection: "desc", itemsView: "notLoaded",
+        });
+        if (approval.invalidated || approval.connectionId !== this.rpc.connectionId ||
+            !current?.data?.some(turn => turn.id === approval.turnId && turn.status === "inProgress")) {
+          throw new HttpError(409, "APPROVAL_EXPIRED", "The original request is no longer active");
+        }
+        // Only a user submission reaches this point. Reconnect never calls respond.
+        this.rpc.respond(approval.requestId, { decision: decisionResult });
+        approval.decisionResult = decisionResult;
+        approval.decisionText = decisionText;
+        approval.decidedAt = nowIso();
+        this.store?.insertDecision?.({ approvalId, decision: decisionText, decidedAt: approval.decidedAt,
+          actor: "mobile", extra: { requestVersion: approval.requestVersion, state: "response_sent" } });
+        return { approvalId, status: "sent_waiting_confirmation", decision: decisionText };
+      } finally { approval.submitting = false; }
+    }
 
     // 响应服务端请求
     this.rpc.respond(approval.requestId, {
@@ -1483,6 +1621,7 @@ export class WorkerService {
     }
 
     // 发送中断请求
+    if (this.rpc.sharedNative) await this.nativeWriteGuard?.(job.threadId);
     await this.rpc.request("turn/interrupt", {
       threadId: job.threadId,
       turnId: job.turnId,
@@ -1600,6 +1739,20 @@ export class WorkerService {
 
     // 子进程退出
     this.rpc.on("exit", (event) => {
+      for (const approval of this.approvals.values()) {
+        if (!approval.confirmed) {
+          approval.invalidated = true;
+          const job = this.jobs.get(approval.jobId);
+          if (job) {
+            job.pendingApprovalIds.delete(approval.approvalId);
+            this.#appendEvent(job, "approval.resolved", { approvalId: approval.approvalId,
+              decision: "expired", source: "native_connection_closed" });
+          }
+        }
+      }
+      this.approvalRequestToId.clear();
+      this.approvalFingerprintToId.clear();
+      this.loadedThreads.clear();
       this.logger.error("app-server 进程退出", event);
     });
 
@@ -1620,13 +1773,37 @@ export class WorkerService {
    */
   #handleRpcNotification(message) {
     const { method, params } = message;
+    if (method === "serverRequest/resolved") {
+      for (const approval of this.approvals.values()) {
+        if (approval.threadId === params?.threadId && approval.requestId === params?.requestId && !approval.confirmed) {
+          approval.invalidated = true;
+          approval.confirmed = true;
+          const job = this.jobs.get(approval.jobId);
+          if (job) {
+            job.pendingApprovalIds.delete(approval.approvalId);
+            this.#appendEvent(job, "approval.resolved", { approvalId: approval.approvalId,
+              decision: "resolved", submittedDecision: approval.decisionText,
+              source: "native_server_request_resolved" });
+            if (job.pendingApprovalIds.size === 0 && !TERMINAL_STATES.has(job.state)) this.#setJobState(job, "RUNNING");
+          }
+        }
+      }
+      return;
+    }
     if (!SUPPORTED_EVENT_METHODS.has(method)) {
       return;
     }
 
     const threadId = params?.threadId;
     const turnId = params?.turnId ?? params?.turn?.id;
-    const job = this.#locateJob(threadId, turnId);
+    let job = this.#locateJob(threadId, turnId);
+    if (!job && this.rpc.sharedNative && this.observedThreadIds.has(threadId) && turnId) {
+      const jobId = `native_${threadId}_${turnId}`;
+      job = this.#createJob(threadId, jobId); job.turnId = turnId;
+      if (!TERMINAL_STATES.has(job.state)) job.state = "RUNNING";
+      this.turnToJob.set(this.#turnKey(threadId, turnId), jobId);
+      this.store?.updateJob?.(this.#toJobSnapshot(job));
+    }
     if (!job) {
       return;
     }
@@ -1645,6 +1822,12 @@ export class WorkerService {
 
     // turn/completed: 终态，更新 Job 状态
     if (method === "turn/completed") {
+      for (const id of [...job.pendingApprovalIds]) {
+        const approval = this.approvals.get(id);
+        if (approval) approval.invalidated = true;
+        job.pendingApprovalIds.delete(id);
+        this.#appendEvent(job, "approval.resolved", { approvalId: id, decision: "expired", source: "original_turn_ended" });
+      }
       this.#appendEvent(job, "turn.completed", params);
 
       const finalState = toJobStateFromTurnStatus(params?.turn?.status);
@@ -1688,6 +1871,7 @@ export class WorkerService {
       method !== "item/commandExecution/requestApproval" &&
       method !== "item/fileChange/requestApproval"
     ) {
+      if (this.rpc.sharedNative) return; // Another native review surface may own this request.
       this.rpc.respondError(requestId, -32601, `Unsupported server request: ${method}`);
       return;
     }
@@ -1704,6 +1888,7 @@ export class WorkerService {
     // 定位对应的 Job
     const job = this.#locateJob(threadId, turnId);
     if (!job) {
+      if (this.rpc.sharedNative) return;
       this.rpc.respondError(requestId, -32000, "No active job matches this approval request");
       return;
     }
@@ -1713,6 +1898,7 @@ export class WorkerService {
     if (requestMappedApprovalId) {
       const existingApproval = this.approvals.get(requestMappedApprovalId);
       if (existingApproval?.decisionResult) {
+        if (this.rpc.sharedNative) return; // Reconnect never replays an earlier approval.
         this.rpc.respond(requestId, {
           decision: existingApproval.decisionResult,
         });
@@ -1720,7 +1906,7 @@ export class WorkerService {
       return;
     }
 
-    const fingerprint = this.#approvalFingerprint(job, kind, params);
+    const fingerprint = this.rpc.sharedNative ? null : this.#approvalFingerprint(job, kind, params);
     if (fingerprint) {
       const fingerprintApprovalId = this.approvalFingerprintToId.get(fingerprint);
       if (fingerprintApprovalId) {
@@ -1757,6 +1943,8 @@ export class WorkerService {
       decisionResult: null,
       decidedAt: null,
       fingerprint,
+      connectionId: this.rpc.connectionId,
+      requestVersion: randomUUID(),
     };
 
     // 更新状态
@@ -1783,6 +1971,10 @@ export class WorkerService {
       kind,
       requestMethod: method,
       createdAt: approval.createdAt,
+      requestVersion: approval.requestVersion,
+      scope: this.rpc.sharedNative ? "this_native_request" : "worker_request",
+      contextVersion: this.rpc.sharedNative ? `${approval.connectionId}:${turnId}` : null,
+      expiresWhen: "Native request resolves, connection closes, or original turn ends",
       reason: params?.reason ?? null,
       command: params?.command ?? null,
       cwd: params?.cwd ?? null,
@@ -1841,7 +2033,7 @@ export class WorkerService {
   }
 
   async #loadThreadEventsFromSourceOfTruth(threadId) {
-    await this.#ensureThreadLoaded(threadId);
+    if (!this.rpc.sharedNative) await this.#ensureThreadLoaded(threadId);
     const result = await this.rpc.request("thread/read", {
       threadId,
       includeTurns: true,
@@ -2414,6 +2606,7 @@ export class WorkerService {
         job: this.#toJobSnapshot(job),
         thread,
         devices,
+        syncHead: this.syncLog?.head(job.threadId),
       })
     )
       .then((result) => {
@@ -2623,11 +2816,11 @@ export class WorkerService {
    * @param {string} threadId - 线程 ID
    * @returns {Object} Job 对象
    */
-  #createJob(threadId) {
+  #createJob(threadId, jobId = createId("job")) {
     const createdAtMs = Date.now();
     const timestamp = nowIso();
     const job = {
-      jobId: createId("job"),
+      jobId,
       threadId,
       turnId: null,
       state: "QUEUED",
@@ -2644,6 +2837,14 @@ export class WorkerService {
       finishedEmitted: false,
     };
 
+    const persisted = this.rpc.sharedNative ? this.store?.getJob?.(jobId) : null;
+    if (persisted) {
+      Object.assign(job, persisted);
+      const lastSeq = this.store?.db?.prepare("SELECT MAX(seq) AS seq FROM job_events WHERE jobId=?").get(jobId)?.seq;
+      job.nextSeq = (lastSeq ?? -1) + 1;
+      job.firstSeq = job.nextSeq;
+      job.finishedEmitted = TERMINAL_STATES.has(persisted.state);
+    }
     this.jobs.set(job.jobId, job);
     this.store?.insertJob?.(this.#toJobSnapshot(job));
     return job;
@@ -2730,13 +2931,26 @@ export class WorkerService {
       job.firstSeq = job.events[0]?.seq ?? envelope.seq;
     }
 
+    // Persist before delivery: a client cursor never acknowledges volatile data.
+    const persist = () => {
+      this.store?.appendEvent?.(envelope);
+      this.syncLog?.append(job.threadId, [envelope]);
+    };
+    if (this.store?.db) this.store.db.transaction(persist)(); else persist();
+    const thread = this.threads.get(job.threadId);
+    if (thread) {
+      thread.updatedAt = Math.floor(Date.now() / 1000);
+      this.store?.upsertThread?.(this.#toThreadDto(thread));
+    }
+    const head = this.syncLog?.head(job.threadId);
+    for (const listener of this.syncSubscribers) {
+      listener({ threadId: job.threadId, latestCursor: head?.latestCursor, generation: head?.generation });
+    }
+
     // 通知所有订阅者
     for (const listener of job.subscribers) {
       listener(envelope);
     }
-
-    // 持久化
-    this.store?.appendEvent?.(envelope);
 
     // 触发远程推送（异步，不阻塞主流程）
     this.#dispatchPushNotification(job, envelope);
@@ -2772,7 +2986,7 @@ export class WorkerService {
     const pendingJobId = this.pendingJobByThread.get(threadId);
     if (pendingJobId) {
       const pendingJob = this.jobs.get(pendingJobId);
-      if (pendingJob) {
+      if (pendingJob && (!pendingJob.turnId || !turnId || pendingJob.turnId === turnId)) {
         // 如果有 turnId 但 job 还没有，补上
         if (isNonEmptyString(turnId) && !isNonEmptyString(pendingJob.turnId)) {
           pendingJob.turnId = turnId;
@@ -2783,6 +2997,7 @@ export class WorkerService {
     }
 
     // 策略 3：查找线程的活跃 Job
+    if (this.rpc.sharedNative && isNonEmptyString(turnId)) return null;
     return this.#findActiveJobByThread(threadId) ?? null;
   }
 
@@ -2825,12 +3040,15 @@ export class WorkerService {
     const pendingApprovalCount = activeJob?.pendingApprovalIds?.size ?? 0;
     return {
       threadId: thread.id,
+      name: thread.name ?? null,
       preview: thread.preview,
       cwd: thread.cwd,
       createdAt: thread.createdAt,
       updatedAt: thread.updatedAt,
       modelProvider: thread.modelProvider,
       pendingApprovalCount,
+      nativeManaged: Boolean(this.rpc.sharedNative),
+      executionState: thread.status?.activeFlags?.includes("waitingOnApproval") ? "WAITING_APPROVAL" : activeJob?.state ?? [...this.jobs.values()].filter(job => job.threadId === thread.id).sort((a,b) => b.createdAtMs-a.createdAtMs)[0]?.state ?? "IDLE",
     };
   }
 
@@ -2878,6 +3096,9 @@ export class WorkerService {
   #validateThreadId(threadId) {
     if (!isNonEmptyString(threadId)) {
       throw new HttpError(400, "INVALID_THREAD_ID", "threadId 不能为空");
+    }
+    if (this.rpc.sharedNative && !this.observedThreadIds.has(threadId)) {
+      throw new HttpError(403, "THREAD_NOT_REGISTERED", "This native thread is not registered for mobile access");
     }
   }
 

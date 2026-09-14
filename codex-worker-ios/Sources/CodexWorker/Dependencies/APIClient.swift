@@ -40,6 +40,10 @@ public struct APIClient: DependencyKey, Sendable {
 
     /// 获取线程历史事件分页（线程级游标）
     public var listThreadEvents: @Sendable (_ threadId: String, _ cursor: Int?, _ limit: Int?) async throws -> ThreadEventsResponse
+    public var mobileApprovals: @Sendable () async throws -> MobileApprovalList = { throw CodexError.invalidState }
+    public var viewMobileApproval: @Sendable (String) async throws -> Void = { _ in }
+    public var submitMobileApprovals: @Sendable ([MobileApprovalSubmission], String?) async throws -> MobileApprovalList = { _, _ in throw CodexError.invalidState }
+    public var syncThreadEvents: @Sendable (_ threadId: String, _ cursor: Int, _ generation: String?, _ limit: Int) async throws -> ThreadEventsResponse = { _, _, _, _ in throw CodexError.invalidState }
 
     /// 查询线程终端状态
     public var getThreadTerminal: @Sendable (_ threadId: String) async throws -> ThreadTerminalStatusResponse
@@ -131,6 +135,10 @@ extension APIClient {
             unarchiveThread: { try await impl.unarchiveThread(threadId: $0) },
             activateThread: { try await impl.activateThread(threadId: $0) },
             listThreadEvents: { try await impl.listThreadEvents(threadId: $0, cursor: $1, limit: $2) },
+            mobileApprovals: { try await impl.mobileApprovals() },
+            viewMobileApproval: { try await impl.viewMobileApproval($0) },
+            submitMobileApprovals: { try await impl.submitMobileApprovals($0, scope: $1) },
+            syncThreadEvents: { try await impl.syncThreadEvents(threadId: $0, cursor: $1, generation: $2, limit: $3) },
             getThreadTerminal: { try await impl.getThreadTerminal(threadId: $0) },
             openThreadTerminal: { try await impl.openThreadTerminal(threadId: $0, request: $1) },
             resizeTerminal: { try await impl.resizeTerminal(sessionId: $0, request: $1) },
@@ -221,8 +229,10 @@ actor LiveAPIClient {
     }
 
     /// 执行请求（带指数退避重试，针对瞬态错误最多重试 2 次）
-    private func performRequest<T: Codable>(_ request: URLRequest) async throws -> T {
-        let maxRetries = 2
+    private func performRequest<T: Codable>(_ request: URLRequest, preservingKeys: Bool = false) async throws -> T {
+        // A timed-out write may already have reached the original thread.
+        // Only reads are automatically retried; the UI keeps uncertain writes visible.
+        let maxRetries = request.httpMethod == "GET" ? 2 : 0
         var lastTransientError: CodexError?
 
         for attempt in 0 ... maxRetries {
@@ -245,10 +255,10 @@ actor LiveAPIClient {
                 }
 
                 do {
-                    return try decoder.decode(T.self, from: data)
+                    return try (preservingKeys ? JSONDecoder() : decoder).decode(T.self, from: data)
                 } catch {
                     logger.error("解析错误: \(error)")
-                    logger.error("原始数据: \(String(data: data, encoding: .utf8) ?? "nil")")
+                    logger.error("响应解析失败，字节数: \(data.count)")
                     throw CodexError.decodingError
                 }
             } catch is CancellationError {
@@ -266,6 +276,14 @@ actor LiveAPIClient {
     }
 
     // MARK: - API 实现
+
+    func syncThreadEvents(threadId: String, cursor: Int, generation: String?, limit: Int) async throws -> ThreadEventsResponse {
+        var query = [URLQueryItem(name: "sync", value: "1"),
+            URLQueryItem(name: "cursor", value: String(cursor)), URLQueryItem(name: "limit", value: String(limit))]
+        if let generation { query.append(URLQueryItem(name: "generation", value: generation)) }
+        let request = try buildRequest(url: buildURL(path: "/v1/threads/\(threadId)/events", queryItems: query))
+        return try await performRequest(request)
+    }
 
     func listProjects() async throws -> [Project] {
         let url = try buildURL(path: "/v1/projects")
@@ -485,6 +503,29 @@ actor LiveAPIClient {
         let url = try buildURL(path: "/v1/jobs/\(jobId)/events", queryItems: queryItems)
         let request = try buildRequest(url: url)
         return try await performRequest(request)
+    }
+
+    func mobileApprovals() async throws -> MobileApprovalList {
+        try await performRequest(buildRequest(url: buildURL(path: "/v1/approvals")), preservingKeys: true)
+    }
+    func viewMobileApproval(_ id: String) async throws {
+        struct Recorded: Codable { let recorded: Bool }
+        let safeId = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed.subtracting(CharacterSet(charactersIn: "/?#"))) ?? ""
+        let _: Recorded = try await performRequest(buildRequest(url: buildURL(path: "/v1/approvals/\(safeId)/view"), method: "POST"))
+    }
+    func submitMobileApprovals(_ answers: [MobileApprovalSubmission], scope: String?) async throws -> MobileApprovalList {
+        guard let first = answers.first else { throw CodexError.invalidState }
+        let path: String
+        let body: Data
+        if let scope {
+            struct Batch: Encodable { var answers: [MobileApprovalSubmission]; var scope: String }
+            path = "/v1/approvals/batch"; body = try encoder.encode(Batch(answers: answers, scope: scope))
+        } else {
+            guard answers.count == 1 else { throw CodexError.invalidState }
+            path = "/v1/approvals/\(first.id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? "")/answer"
+            body = try encoder.encode(first)
+        }
+        return try await performRequest(buildRequest(url: buildURL(path: path), method: "POST", body: body), preservingKeys: true)
     }
 
     func approve(jobId: String, request: ApprovalRequest) async throws -> ApprovalResponse {
