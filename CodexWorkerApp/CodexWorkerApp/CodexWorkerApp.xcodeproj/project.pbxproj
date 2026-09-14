@@ -156,6 +156,7 @@ F86F60A99B5C85CCFC5DA1E0 = { isa = PBXNativeTarget; buildConfigurationList = F9A
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				1828EB0C2F421B5D00400F7D /* XCLocalSwiftPackageReference "../../codex-worker-ios" */,
+				CE84297041A2946475DA2331 /* XCLocalSwiftPackageReference "../../codex-activity-models" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1828EAFE2F421B5C00400F7D /* Products */;
@@ -418,6 +419,7 @@ F9A8AD40355191E18584F636 = { isa = XCConfigurationList; buildConfigurations = (8
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		CE84297041A2946475DA2331 = { isa = XCLocalSwiftPackageReference; relativePath = "../../codex-activity-models"; };
 		1828EB0C2F421B5D00400F7D /* XCLocalSwiftPackageReference "../../codex-worker-ios" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../../codex-worker-ios";
@@ -429,7 +431,7 @@ F9A8AD40355191E18584F636 = { isa = XCConfigurationList; buildConfigurations = (8
 			isa = XCSwiftPackageProductDependency;
 			productName = CodexWorker;
 		};
-		8F48E2B220FEEA76DF95E1E6 = { isa = XCSwiftPackageProductDependency; productName = CodexActivityModels; };
+		8F48E2B220FEEA76DF95E1E6 = { isa = XCSwiftPackageProductDependency; package = CE84297041A2946475DA2331; productName = CodexActivityModels; };
 FC8232C81D97BF8C51202B43 = { isa = XCSwiftPackageProductDependency; productName = CodexWorker; };
 /* End XCSwiftPackageProductDependency section */
 	};

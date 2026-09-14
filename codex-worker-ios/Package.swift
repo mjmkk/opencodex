@@ -9,7 +9,6 @@ let package = Package(
         .iOS(.v17)
     ],
     products: [
-        .library(name: "CodexActivityModels", targets: ["CodexActivityModels"]),
         .library(
             name: "CodexWorker",
             targets: ["CodexWorker"]
@@ -18,6 +17,7 @@ let package = Package(
         // 如需创建 iOS App，请参考项目根目录的 README 或创建新的 Xcode App 项目
     ],
     dependencies: [
+        .package(path: "../codex-activity-models"),
         // TCA（The Composable Architecture，组合式架构库）
         .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.24.1"),
         // Exyte Chat（聊天 UI 组件）
@@ -40,11 +40,10 @@ let package = Package(
         .package(url: "https://github.com/simonbs/TreeSitterLanguages.git", from: "0.1.10"),
     ],
     targets: [
-        .target(name: "CodexActivityModels"),
         .target(
             name: "CodexWorker",
             dependencies: [
-                "CodexActivityModels",
+                .product(name: "CodexActivityModels", package: "codex-activity-models"),
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
                 .product(name: "ExyteChat", package: "Chat"),
                 .product(name: "MarkdownUI", package: "swift-markdown-ui"),

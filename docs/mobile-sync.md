@@ -56,6 +56,8 @@ The Inbox supports approve/reject, single/multiple choices, text and nested form
 
 The Xcode project includes the main app, a light Notification Service Extension, a Live Activity widget extension and a test target. Configure a valid signing team and profiles for all three app bundles. Set APNs credentials using protected `apns.keyPath`, `teamId`, `keyId`, `bundleId`, and the matching sandbox/production environment. Never commit the private key or device token.
 
+The dependency-free `codex-activity-models` package shares Live Activity attributes between the app and widget. Keeping it separate preserves the existing `CodexWorker` package test scheme used by CI.
+
 Progress hints are silent and limited to three attempts per hour per device. Completion notifications are coalesced by thread. Approval IDs and versions remain independent. Payloads contain identifiers and generic readable fallback text, not commands, full logs or credentials. APNs acceptance, device delivery and human visibility are separate metrics; unknown delivery/visibility/energy/billing stay unknown.
 
 Foreground SSE, bounded background refresh and silent push opportunities fill cache gaps. iOS does not guarantee background execution or push delivery. Live Activities begin only after an explicit Pin, end on Unpin or task completion, and never grant execution permissions. Activity updates currently depend on local foreground/background opportunities; remote Live Activity push updates are not implemented.
