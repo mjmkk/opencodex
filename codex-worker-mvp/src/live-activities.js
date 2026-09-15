@@ -41,8 +41,9 @@ export class LiveActivities {
       throw new HttpError(409,'THREAD_UNAVAILABLE','The original thread cannot be verified');
     // Unpin may arrive while the read-only catalog request is in flight.
     const save = this.db.transaction(() => {
-      const current = this.db.prepare('SELECT state FROM mobile_live_activities WHERE id=? AND clientScope=?').get(body.id,body.clientScope);
+      const current = this.db.prepare('SELECT state,threadId FROM mobile_live_activities WHERE id=? AND clientScope=?').get(body.id,body.clientScope);
       if (current && current.state !== 'active') throw new HttpError(409,'ACTIVITY_ENDED','The activity was unpinned');
+      if (current && current.threadId !== body.threadId) throw new HttpError(409,'ACTIVITY_CHANGED','The activity is already bound to another thread');
       this.db.prepare(`INSERT INTO mobile_live_activities(id,clientScope,threadId,token,environment,state,expiresAt)
         VALUES(@id,@clientScope,@threadId,@token,@environment,'active',@expiresAt)
         ON CONFLICT(id,clientScope) DO UPDATE SET

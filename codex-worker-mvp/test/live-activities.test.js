@@ -43,6 +43,20 @@ test('concurrent Unpin wins while registration awaits current native catalog',as
   } finally {t.db.close();}
 });
 
+test('concurrent registrations cannot rebind one activity to a different task',async()=>{
+  const t=setup();
+  try {
+    const releases=[];
+    t.service.listThreads=()=>new Promise(resolve=>releases.push(resolve));
+    const first=t.activities.register(registration);
+    const second=t.activities.register({...registration,threadId:'another'});
+    const catalog={data:[{threadId:'original'},{threadId:'another'}]};
+    releases[0](catalog);await first;
+    releases[1](catalog);await assert.rejects(second,{code:'ACTIVITY_CHANGED'});
+    assert.equal(t.db.prepare('SELECT threadId FROM mobile_live_activities').get().threadId,'original');
+  } finally {t.db.close();}
+});
+
 test('updates are bounded, unavailable sources do not advance freshness, terminal ends once',async()=>{
   const t=setup();
   try {
