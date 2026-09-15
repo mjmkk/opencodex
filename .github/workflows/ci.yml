@@ -73,7 +73,7 @@ jobs:
           cd codex-worker-ios
           xcodebuild test \
             -scheme CodexWorker \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
             -skipMacroValidation
 
       - name: Build CodexWorkerApp
