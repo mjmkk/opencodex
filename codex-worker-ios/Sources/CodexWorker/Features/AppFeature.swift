@@ -298,7 +298,9 @@ public struct AppFeature {
                 )
 
             case .settings(.saveFinished):
-                return .send(.healthCheckNow)
+                return .merge(.send(.healthCheckNow), .run { _ in
+                    await RemotePushRegistrationService.flushPendingRegistration()
+                })
 
             case .settings(.delegate(.didRestoreArchivedThread)):
                 return .send(.threads(.refresh))

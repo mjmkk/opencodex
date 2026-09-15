@@ -16,7 +16,8 @@ export function startApprovalNotifications({ bridge, notifier, store, intervalMs
         if (!threadId) continue;
         const result = await notifier.notify({ devices, job: { threadId, jobId: `structured:${request.id}` },
           envelope: { type: "approval.required", seq: 0,
-            payload: { approvalId: request.id, requestVersion: document.request_version, source: "structured_approval" } } });
+            payload: { approvalId: request.id, requestVersion: document.request_version, source: "structured_approval",
+              quickResponse: document.quick_response } } });
         for (const token of result.invalidDeviceTokens ?? []) store.removePushDevice(token);
       }
     } catch { logger.warn?.("Structured approval notification refresh is unavailable"); }

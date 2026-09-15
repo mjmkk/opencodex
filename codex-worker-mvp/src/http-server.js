@@ -439,6 +439,12 @@ export function createHttpServer(options) {
           modelTokensForSync: 0, deviceEnergy: null, userSeenNotifications: null,
           networkBillingCost: null, scope: "worker_http_and_apns_attempts; physical delivery and energy unknown" }); return;
       }
+      if (method === 'POST' && ['/v1/live-activities/register','/v1/live-activities/unregister'].includes(pathname)) {
+        if (!options.liveActivities) throw new HttpError(503,'ACTIVITY_UNAVAILABLE','Remote activity updates are not configured');
+        const body = await readJsonBody(req);
+        sendJson(res,200,pathname.endsWith('/unregister') ? options.liveActivities.unregister(body) : await options.liveActivities.register(body));
+        return;
+      }
       const detailRoute = pathname.match(/^\/v1\/threads\/([^/]+)\/events\/(\d+)\/detail$/);
       if (method === "GET" && detailRoute) {
         sendJson(res, 200, service.eventDetail(decodeURIComponent(detailRoute[1]), Number(detailRoute[2]), {

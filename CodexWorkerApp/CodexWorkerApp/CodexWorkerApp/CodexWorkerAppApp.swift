@@ -30,8 +30,12 @@ final class NotificationAppDelegate: NSObject, UIApplicationDelegate, UNUserNoti
         MobileLifecycle.registerBackgroundRefresh()
         UNUserNotificationCenter.current().delegate = self
         let view = UNNotificationAction(identifier: "VIEW_CONTEXT", title: "查看请求", options: [.foreground])
+        let approve = UNNotificationAction(identifier: "AGT_APPROVE", title: "批准本次", options: [.foreground, .authenticationRequired])
+        let reject = UNNotificationAction(identifier: "AGT_REJECT", title: "拒绝本次", options: [.foreground, .authenticationRequired, .destructive])
         UNUserNotificationCenter.current().setNotificationCategories([
             UNNotificationCategory(identifier: "AGT_APPROVAL", actions: [view], intentIdentifiers: []),
+            // View comes first so a default/watch gesture cannot grant approval.
+            UNNotificationCategory(identifier: "AGT_APPROVAL_SIMPLE", actions: [view, approve, reject], intentIdentifiers: []),
             UNNotificationCategory(identifier: "AGT_THREAD", actions: [], intentIdentifiers: []),
         ])
         requestPushAuthorizationAndRegister(application)
@@ -91,7 +95,20 @@ final class NotificationAppDelegate: NSObject, UIApplicationDelegate, UNUserNoti
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
-        if response.notification.request.content.userInfo["source"] as? String == "structured_approval" {
+        let info = response.notification.request.content.userInfo.reduce(into: [String: String]()) { result, pair in
+            if let key = pair.key as? String, let value = pair.value as? String { result[key] = value }
+        }
+        if ["AGT_APPROVE", "AGT_REJECT"].contains(response.actionIdentifier) {
+            let action = response.actionIdentifier
+            Task {
+                let message = await NotificationApprovalResponder.respond(info: info, action: action)
+                MobileLifecycle.recordNotificationResult(message)
+                MobileLifecycle.openApprovals()
+                completionHandler()
+            }
+            return
+        }
+        if info["source"] == "structured_approval" {
             MobileLifecycle.openApprovals()
         } else if let id = response.notification.request.content.userInfo["threadId"] as? String {
             MobileLifecycle.openThread(id)

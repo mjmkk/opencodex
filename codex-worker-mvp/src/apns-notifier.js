@@ -105,6 +105,21 @@ export class ApnsNotifier {
       invalidDeviceTokens: results.filter(item => INVALID_DEVICE_REASONS.has(item.reason)).map(item => item.deviceToken) };
   }
 
+  async sendActivity(activity, payload) {
+    const host = APNS_HOSTS[normalizeEnvironment(activity.environment,this.defaultEnvironment)];
+    this.policy.record('live_activity_attempted');
+    const result = await this.postJson(host,`/3/device/${encodeURIComponent(activity.token)}`,{
+      authorization:`bearer ${this.#getJwt()}`,
+      'apns-topic':`${this.bundleId}.push-type.liveactivity`,
+      'apns-push-type':'liveactivity','apns-priority':'5',
+      'apns-expiration':String(payload.aps.timestamp+1200),
+      'apns-collapse-id':createHash('sha256').update(activity.clientScope+':'+activity.id).digest('hex'),
+      'content-type':'application/json',
+    },payload);
+    this.policy.record(result.ok?'live_activity_accepted':'live_activity_failed');
+    return result;
+  }
+
   #getJwt() {
     const nowSec = Math.floor(Date.now() / 1000);
     if (this.cachedJwt && nowSec < this.cachedJwtExpirySec) {
@@ -156,7 +171,7 @@ export class ApnsNotifier {
       aps: message.silent ? { "content-available": 1 } : {
         alert: { title: message.title, body: message.body },
         "thread-id": message.threadId,
-        category: message.approvalId ? "AGT_APPROVAL" : "AGT_THREAD",
+        category: message.quickResponse && device.clientScope ? "AGT_APPROVAL_SIMPLE" : (message.approvalId ? "AGT_APPROVAL" : "AGT_THREAD"),
         "mutable-content": 1,
         "interruption-level": "active",
       },
@@ -167,6 +182,7 @@ export class ApnsNotifier {
       requestVersion: message.requestVersion,
       approvalId: message.approvalId,
       source: message.source,
+      clientScope: device.clientScope ?? null,
       deepLink: message.source === "structured_approval" ? "opencodex://approvals" : `opencodex://thread/${encodeURIComponent(message.threadId)}`,
     };
     const response = await this.postJson(host, requestPath, {
@@ -262,6 +278,9 @@ export function notificationMessage(envelope, job, head = {}) {
   const approvalId = eventType === "approval.required" ? envelope.payload?.approvalId : null;
   const completion = eventType === "job.finished";
   const threadId = job.threadId;
+  const quick = envelope.payload?.quickResponse;
+  const quickResponse = !!approvalId && envelope.payload?.source === "structured_approval" &&
+    quick?.kind === "approve_reject" && typeof quick.body === "string" && quick.body.length > 0 && Buffer.byteLength(quick.body) <= 1200;
   return {
     eventType, threadId, jobId: job.jobId, approvalId,
     source: envelope.payload?.source ?? "native",
@@ -270,7 +289,8 @@ export function notificationMessage(envelope, job, head = {}) {
     silent: !approvalId && !completion,
     title: approvalId ? "Codex 需要你确认" : "Codex 任务有结果",
     // Commands, full logs and arbitrary model text never enter lock-screen payloads.
-    body: approvalId ? "打开查看当前请求的范围与上下文。" : "打开查看原任务的最新结果。",
+    body: quickResponse ? quick.body : (approvalId ? "打开查看当前请求的范围与上下文。" : "打开查看原任务的最新结果。"),
+    quickResponse,
     collapseKey: approvalId ? `approval:${approvalId}` : `${completion ? "completion" : "progress"}:${threadId}`,
     dedupKey: approvalId ? `approval:${approvalId}:${envelope.payload?.requestVersion ?? ""}` : `${job.jobId}:${envelope.seq}:${eventType}`,
   };

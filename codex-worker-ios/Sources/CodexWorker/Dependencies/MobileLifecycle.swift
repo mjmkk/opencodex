@@ -8,6 +8,13 @@ import OSLog
 public enum MobileLifecycle {
     public static let openThreadNotification = Notification.Name("opencodex.openThread")
     public static let openApprovalsNotification = Notification.Name("opencodex.openApprovals")
+    public static func recordNotificationResult(_ message: String) {
+        UserDefaults.standard.set(message, forKey: "opencodex.notificationResult")
+    }
+    public static func takeNotificationResult() -> String? {
+        defer { UserDefaults.standard.removeObject(forKey: "opencodex.notificationResult") }
+        return UserDefaults.standard.string(forKey: "opencodex.notificationResult")
+    }
     public static func openApprovals() {
         UserDefaults.standard.set(true, forKey: "opencodex.pendingApprovals")
         NotificationCenter.default.post(name: openApprovalsNotification, object: nil)
@@ -58,14 +65,18 @@ public enum MobileLifecycle {
             $0.attributes.threadId == thread.threadId && $0.attributes.accountScope == scope
         }
         if !pinned {
-            for activity in existing { await activity.end(nil, dismissalPolicy: .immediate) }
+            for activity in existing {
+                await activity.end(nil, dismissalPolicy: .immediate)
+                RemoteLiveActivities.stop(activity)
+            }
             try await ThreadSyncClient.liveValue.setPinned(thread.threadId, false)
             return
         }
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { throw CodexError.invalidState }
         if existing.isEmpty {
             let content = ActivityContent(state: PinnedThreadAttributes.ContentState(summary: "等待同步", updatedAt: Date()), staleDate: Date(timeIntervalSinceNow: 1200))
-            _ = try Activity.request(attributes: PinnedThreadAttributes(threadId: thread.threadId, title: thread.displayName, accountScope: scope), content: content, pushType: nil)
+            let activity = try Activity.request(attributes: PinnedThreadAttributes(threadId: thread.threadId, title: thread.displayName, accountScope: scope), content: content, pushType: .token)
+            RemoteLiveActivities.observe(activity)
         }
         try await ThreadSyncClient.liveValue.setPinned(thread.threadId, true)
     }
@@ -75,7 +86,9 @@ public enum MobileLifecycle {
         for activity in Activity<PinnedThreadAttributes>.activities {
             let id = activity.attributes.threadId
             guard activity.attributes.accountScope == scope, result.metadata[id]?.pinned == true else {
-                await activity.end(nil, dismissalPolicy: .immediate); continue
+                await activity.end(nil, dismissalPolicy: .immediate)
+                RemoteLiveActivities.stop(activity)
+                continue
             }
             guard let metadata = result.metadata[id], let synced = metadata.lastSyncedAt,
                   !metadata.isRebuilding else { continue }
@@ -87,8 +100,12 @@ public enum MobileLifecycle {
             let content = ActivityContent(state: PinnedThreadAttributes.ContentState(summary: summary, updatedAt: synced), staleDate: synced.addingTimeInterval(1200))
             if terminal {
                 await activity.end(content, dismissalPolicy: .after(Date(timeIntervalSinceNow: 60)))
+                RemoteLiveActivities.stop(activity)
                 try? await ThreadSyncClient.liveValue.setPinned(id, false)
-            } else { await activity.update(content) }
+            } else {
+                await activity.update(content)
+                RemoteLiveActivities.observe(activity)
+            }
         }
     }
 }

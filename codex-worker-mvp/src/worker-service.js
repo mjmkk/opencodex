@@ -1661,6 +1661,7 @@ export class WorkerService {
       bundleId,
       environment,
       deviceName,
+      clientScope: typeof payload.clientScope === "string" && /^[A-Za-z0-9-]{16,80}$/.test(payload.clientScope) ? payload.clientScope : null,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
       lastSeenAt: now,

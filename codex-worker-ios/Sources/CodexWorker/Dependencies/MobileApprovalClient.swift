@@ -8,6 +8,7 @@ public struct MobileApproval: Codable, Equatable, Sendable, Identifiable {
     public var invalid_reason: String?
     public var response: JSONValue?
     public var delivery: [String: JSONValue]?
+    public var quick_response: [String: JSONValue]?
     public var id: String { request["id"]?.stringValue ?? "" }
     public var question: String { request["question"]?.stringValue ?? "待确认请求" }
     public var schema: [String: JSONValue] { request["input"]?.objectValue ?? [:] }
@@ -35,6 +36,7 @@ public struct MobileApprovalSubmission: Codable, Sendable {
     public var request_version: String
     public var event_id: String
     public var value: JSONValue
+    public var notification_action: Bool? = nil
 }
 
 public enum MobileApprovalStore {

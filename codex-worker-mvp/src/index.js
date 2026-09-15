@@ -18,6 +18,7 @@ import { WorkerService } from "./worker-service.js";
 import { mobileApprovalBridge } from "./mobile-approval-bridge.js";
 import { ApnsNotifier } from "./apns-notifier.js";
 import { startApprovalNotifications } from "./mobile-notifications.js";
+import { LiveActivities } from "./live-activities.js";
 import { ensureTailscaleServe } from "./tailscale-serve.js";
 
 /**
@@ -136,6 +137,7 @@ async function main() {
 
   // 初始化服务：启动子进程、握手 JSON-RPC
   await service.init();
+  const liveActivities = apnsNotifier ? new LiveActivities({db:store.db,notifier:apnsNotifier,service}) : null;
 
   // 5. 创建 HTTP 服务器
   // 提供 REST API 和 SSE 事件流
@@ -143,6 +145,7 @@ async function main() {
     service,
     mobileApprovals: approvals,
     mobileMetricsDb: store.db,
+    liveActivities,
     authToken: config.authToken,
     terminalHeartbeatMs: config.terminal?.heartbeatMs,
     logger: {
@@ -154,6 +157,7 @@ async function main() {
   await server.listen(config.port, config.host ?? (rpc.sharedNative ? "127.0.0.1" : "0.0.0.0"));
   const stopApprovalNotifications = startApprovalNotifications({ bridge: approvals, notifier: apnsNotifier, store,
     logger: { warn: msg => log("warn", msg) } });
+  const stopLiveActivities = liveActivities?.start({warn:msg=>log('warn',msg)});
 
   if (config.tailscaleServe?.enabled) {
     const routeResult = await ensureTailscaleServe({
@@ -201,6 +205,7 @@ async function main() {
     if (stopping) return;
     stopping = true;
     stopApprovalNotifications();
+    stopLiveActivities?.();
     const deadline = setTimeout(() => process.exit(exitCode), 3000);
     deadline.unref();
     log("info", "shutdown requested", { signal });

@@ -28,6 +28,7 @@ public struct MobileInboxFeature {
         case load
         case cached([MobileApproval], [String: MobileApprovalDraft], String)
         case loaded(Result<MobileApprovalList, CodexError>)
+        case notificationResult(String)
         case edit(String, JSONValue)
         case view(String)
         case select(String, Bool)
@@ -52,7 +53,11 @@ public struct MobileInboxFeature {
                         try await MobileApprovalStore.save(response.data)
                         await send(.loaded(.success(response)))
                     } catch { await send(.loaded(.failure(CodexError.from(error)))) }
+                    if let message = await MobileLifecycle.takeNotificationResult() { await send(.notificationResult(message)) }
                 }.cancellable(id: CancelID.load, cancelInFlight: true)
+            case .notificationResult(let message):
+                state.message = message
+                return .none
             case .cached(let items, let drafts, let scope):
                 state.items = items; state.drafts = drafts; state.accountScope = scope
                 return .none
