@@ -24,7 +24,7 @@ public enum MobileLifecycle {
         return UserDefaults.standard.bool(forKey: "opencodex.pendingApprovals")
     }
     private static let pendingKey = "opencodex.pendingNotificationThread"
-    private static let refreshID = "li.CodexWorkerApp.refresh"
+    private static let refreshID = (Bundle.main.bundleIdentifier ?? "li.CodexWorkerApp") + ".refresh"
     private static let logger = Logger(subsystem: "OpenCodex", category: "MobileSync")
 
     public static func registerBackgroundRefresh() {

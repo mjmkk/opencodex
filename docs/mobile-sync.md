@@ -58,6 +58,8 @@ An ordinary approve/reject request may explicitly opt into notification buttons 
 
 The Xcode project includes the main app, a light Notification Service Extension, a Live Activity widget extension and a test target. Configure a valid signing team and profiles for all three app bundles. Set APNs credentials using protected `apns.keyPath`, `teamId`, `keyId`, `bundleId`, and the matching sandbox/production environment. Never commit the private key or device token.
 
+For an existing installation, pass `OPENCODEX_BUNDLE_ID=your.existing.bundle` and `DEVELOPMENT_TEAM=YOUR_TEAM` to `xcodebuild`. The main app, both extensions, test bundle and background refresh identifier derive from that one bundle prefix; the repository default remains `li.CodexWorkerApp`. Match the private Worker's APNs bundle to the actual main app and verify that the existing APNs key permits that topic. An Apple `TopicDisallowed` response is a failed push, not proof of device delivery.
+
 The dependency-free `codex-activity-models` package shares Live Activity attributes between the app and widget. Keeping it separate preserves the existing `CodexWorker` package test scheme used by CI.
 
 Progress hints are silent and limited to three attempts per hour per device. Completion notifications are coalesced by thread. Approval IDs and versions remain independent. Payloads contain identifiers and generic readable fallback text, not commands, full logs or credentials. APNs acceptance, device delivery and human visibility are separate metrics; unknown delivery/visibility/energy/billing stay unknown.
@@ -69,6 +71,8 @@ The activity transport follows [Apple's ActivityKit payload contract](https://de
 ## Validation
 
 Run `npm test` in `codex-worker-mvp`. Build/test the shared `CodexWorkerApp` Xcode scheme against an installed iOS simulator using the tracked package resolution. Keep simulator results separate from real-device evidence.
+
+CI uses Xcode 26.3 and an available iPhone 17 simulator. This matches the validated local toolchain. Runestone 0.5.1 currently fails its UIKit availability check with the Xcode 26.6 SDK; upgrading the toolchain requires a separate full build and test check.
 
 The candidate has exercised durable paging and large-content reconstruction, generation recovery, account isolation, offline drafts, native permission/connection guards, push policy/JWT serialization and cold-cache freshness. Deployment verification additionally used a real native backend and simulator chat round-trip, offline cold launch, expired request, Pin/Unpin and reader restart without starting existing tasks again.
 
