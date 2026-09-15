@@ -37,6 +37,9 @@ public enum ThreadState: String, Codable, Sendable {
 /// }
 /// ```
 public struct Thread: Identifiable, Codable, Equatable, Sendable {
+    public var name: String?
+    public var nativeManaged = false
+    public var executionState: String? = nil
     /// 线程唯一标识符
     public let threadId: String
 
@@ -81,6 +84,7 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
+        case nativeManaged, executionState, name
         case threadId
         case id
         case thread_id
@@ -98,6 +102,9 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        nativeManaged = try container.decodeIfPresent(Bool.self, forKey: .nativeManaged) ?? false
+        name = try container.decodeIfPresent(String.self, forKey: .name)
+        executionState = try container.decodeIfPresent(String.self, forKey: .executionState)
 
         guard
             let decodedThreadId = try Self.decodeLossyString(
@@ -136,6 +143,9 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
         try container.encodeIfPresent(updatedAt, forKey: .updatedAt)
         try container.encodeIfPresent(modelProvider, forKey: .modelProvider)
         try container.encode(pendingApprovalCount, forKey: .pendingApprovalCount)
+        try container.encode(nativeManaged, forKey: .nativeManaged)
+        try container.encodeIfPresent(name, forKey: .name)
+        try container.encodeIfPresent(executionState, forKey: .executionState)
     }
 
     private static func decodeLossyString(
@@ -208,6 +218,7 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
 extension Thread {
     /// 显示名称（从 cwd 提取最后一段）
     public var displayName: String {
+        if let name, !name.isEmpty { return name }
         guard let cwd = cwd else { return "Untitled" }
         let components = cwd.split(separator: "/")
         return components.last.map(String.init) ?? "Untitled"

@@ -15,7 +15,6 @@ public struct ChatFeature {
         case sseStream
         case threadHistoryLoad
     }
-    private static let threadHistoryPageLimit = 1000
     private static let streamBatchSize = 24
     private static let streamBatchMaxDelay: Duration = .milliseconds(80)
     /// pendingAssistantDeltas 累计文本上限（5 MB），防止长流场景内存溢出
@@ -42,14 +41,18 @@ public struct ChatFeature {
         public var pendingApprovalsById: [String: Approval] = [:]
         public var approvalOrder: [String] = []
         public var errorMessage: String?
+        public var isHistorySyncing = false
+        public var lastSyncedAt: Date?
+        public var activities: [ThreadActivityItem] = []
         public var jobState: JobState?
+        public var hasNativeReviewWait: Bool { activeThread?.nativeManaged == true && activeThread?.executionState == "WAITING_APPROVAL" && pendingApprovalsById.isEmpty }
 
         public var canSend: Bool {
-            activeThread != nil && !isSending && !isApprovalLocked
+            activeThread != nil && !isSending && !isApprovalLocked && !hasNativeReviewWait
         }
 
         public var shouldShowGeneratingIndicator: Bool {
-            isStreaming && (jobState?.isActive ?? false) && !isApprovalLocked
+            isStreaming && (jobState?.isActive ?? false) && !isApprovalLocked && !hasNativeReviewWait
         }
 
         public init() {}
@@ -65,6 +68,7 @@ public struct ChatFeature {
         case threadHistoryCacheResponse(threadId: String, Result<[EventEnvelope], CodexError>)
         case threadHistorySyncResponse(threadId: String, Result<[EventEnvelope], CodexError>)
         case threadHistorySyncNoChange(threadId: String)
+        case syncMetadata(threadId: String, ThreadSyncMetadata?)
         case didSendDraft(DraftMessage)
         case startTurnResponse(localMessageId: String, Result<StartTurnResponse, CodexError>)
         case startStreaming(jobId: String, cursor: Int)
@@ -135,6 +139,9 @@ public struct ChatFeature {
             case .setActiveThread(let thread):
                 // 切线程时重置聊天上下文，避免串流状态污染
                 state.activeThread = thread
+                state.isHistorySyncing = thread != nil
+                state.lastSyncedAt = nil
+                state.activities = []
                 state.currentJobId = nil
                 state.cursor = -1
                 state.messages = []
@@ -164,26 +171,25 @@ public struct ChatFeature {
                 return .merge(
                     cancelEffect,
                     .run { send in
-                        @Dependency(\.apiClient) var apiClient
-                        @Dependency(\.threadHistoryStore) var threadHistoryStore
+                        @Dependency(\.threadSyncClient) var threadSyncClient
 
                         // 第一步：先读本地缓存，保证切线程秒开。
+                        let cachedMetadata = try? await threadSyncClient.cached().metadata[thread.threadId]
+                        await send(.syncMetadata(threadId: thread.threadId, cachedMetadata))
                         await send(
                             .threadHistoryCacheResponse(
                                 threadId: thread.threadId,
                                 Result {
-                                    try await threadHistoryStore.loadCachedEvents(thread.threadId)
+                                    try await threadSyncClient.cachedEvents(thread.threadId)
                                 }.mapError { CodexError.from($0) }
                             )
                         )
 
                         // 第二步：远端按 cursor 增量同步并落库，再刷新 UI。
                         do {
-                            let syncResult = try await Self.syncThreadHistory(
-                                threadId: thread.threadId,
-                                apiClient: apiClient,
-                                threadHistoryStore: threadHistoryStore
-                            )
+                            let syncResult = try await Self.syncThreadHistory(threadId: thread.threadId)
+                            let metadata = try? await threadSyncClient.cached().metadata[thread.threadId]
+                            await send(.syncMetadata(threadId: thread.threadId, metadata))
                             if syncResult.shouldApply {
                                 await send(.threadHistorySyncResponse(threadId: thread.threadId, .success(syncResult.events)))
                             } else {
@@ -212,20 +218,29 @@ public struct ChatFeature {
 
             case .threadHistorySyncResponse(let threadId, .success(let events)):
                 guard state.activeThread?.threadId == threadId else { return .none }
+                state.isHistorySyncing = false
                 return applyThreadReplay(state: &state, events: events)
 
             case .threadHistorySyncResponse(let threadId, .failure(let error)):
                 guard state.activeThread?.threadId == threadId else { return .none }
+                state.isHistorySyncing = false
                 state.errorMessage = error.localizedDescription
                 return .none
 
             case .threadHistorySyncNoChange(let threadId):
                 guard state.activeThread?.threadId == threadId else { return .none }
+                state.isHistorySyncing = false
                 if shouldResumeStreamingAfterSync(state: state),
                    let activeJobId = state.currentJobId
                 {
                     return .send(.startStreaming(jobId: activeJobId, cursor: state.cursor))
                 }
+                return .none
+
+            case let .syncMetadata(threadId, metadata):
+                guard state.activeThread?.threadId == threadId else { return .none }
+                state.lastSyncedAt = metadata?.lastSyncedAt
+                state.isHistorySyncing = metadata?.isRebuilding ?? false
                 return .none
 
             case .didSendDraft(let draft):
@@ -247,6 +262,7 @@ public struct ChatFeature {
                 state.isSending = true
                 state.errorMessage = nil
 
+                let nativeManaged = state.activeThread?.nativeManaged == true
                 return .run { send in
                     @Dependency(\.apiClient) var apiClient
                     @Dependency(\.executionAccessStore) var executionAccessStore
@@ -257,9 +273,9 @@ public struct ChatFeature {
                     let request = StartTurnRequest(
                         text: text,
                         input: nil,
-                        approvalPolicy: settings.approvalPolicy,
-                        sandbox: settings.sandbox,
-                        model: preferredModel
+                        approvalPolicy: nativeManaged ? nil : settings.approvalPolicy,
+                        sandbox: nativeManaged ? nil : settings.sandbox,
+                        model: nativeManaged ? nil : preferredModel
                     )
                     await send(
                         .startTurnResponse(
@@ -424,7 +440,9 @@ public struct ChatFeature {
             let eventsToPersist = acceptedEvents
             effects.append(
                 .run { _ in
+                    @Dependency(\.threadSyncClient) var sync
                     @Dependency(\.threadHistoryStore) var threadHistoryStore
+                    try? await sync.appendStream(threadId, eventsToPersist)
                     for envelope in eventsToPersist {
                         do {
                             try await threadHistoryStore.appendLiveEvent(threadId, envelope)
@@ -569,6 +587,7 @@ public struct ChatFeature {
 
     /// 应用线程历史回放结果到当前状态
     private func applyThreadReplay(state: inout State, events: [EventEnvelope]) -> Effect<Action> {
+        state.activities = ThreadActivityItem.collect(events)
         let replay = replayThreadEvents(events)
         var replayMessages = replay.messages
         var replayPendingDeltas = replay.pendingAssistantDeltas
@@ -625,59 +644,20 @@ public struct ChatFeature {
     }
 
     /// 基于线程游标执行远端增量同步
-    private static func syncThreadHistory(
-        threadId: String,
-        apiClient: APIClient,
-        threadHistoryStore: ThreadHistoryStore
-    ) async throws -> ThreadHistorySyncOutcome {
-        var cursor = try await threadHistoryStore.loadCursor(threadId)
-        let originalCursor = cursor
-        var hasResetOnce = false
-        var didMutateCache = false
-
-        while true {
-            do {
-                let page = try await apiClient.listThreadEvents(threadId, cursor, Self.threadHistoryPageLimit)
-                if page.hasMore, page.nextCursor <= cursor {
-                    throw CodexError.invalidState
-                }
-                try await threadHistoryStore.mergeRemotePage(threadId, cursor, page)
-                if !page.data.isEmpty || page.nextCursor > cursor {
-                    didMutateCache = true
-                }
-                cursor = page.nextCursor
-                if !page.hasMore {
-                    break
-                }
-            } catch let error as CodexError where error == .cursorExpired {
-                if hasResetOnce {
-                    throw error
-                }
-                hasResetOnce = true
-                try await threadHistoryStore.resetThread(threadId)
-                cursor = -1
-                didMutateCache = true
-            }
-        }
-
-        if hasResetOnce || didMutateCache || cursor != originalCursor {
-            let syncedEvents = try await threadHistoryStore.loadCachedEvents(threadId)
-            return ThreadHistorySyncOutcome(events: syncedEvents, shouldApply: true)
-        }
-        return ThreadHistorySyncOutcome(events: [], shouldApply: false)
+    private static func syncThreadHistory(threadId: String) async throws -> ThreadHistorySyncOutcome {
+        @Dependency(\.threadSyncClient) var sync
+        let before = try await sync.cachedEvents(threadId)
+        let after = try await sync.syncThread(threadId)
+        return ThreadHistorySyncOutcome(events: after, shouldApply: before != after)
     }
 
     private static func refreshThreadHistoryFromRemote(threadId: String) -> Effect<Action> {
         .run { send in
-            @Dependency(\.apiClient) var apiClient
-            @Dependency(\.threadHistoryStore) var threadHistoryStore
-
             do {
-                let syncResult = try await Self.syncThreadHistory(
-                    threadId: threadId,
-                    apiClient: apiClient,
-                    threadHistoryStore: threadHistoryStore
-                )
+                let syncResult = try await Self.syncThreadHistory(threadId: threadId)
+                @Dependency(\.threadSyncClient) var sync
+                let metadata = try? await sync.cached().metadata[threadId]
+                await send(.syncMetadata(threadId: threadId, metadata))
                 if syncResult.shouldApply {
                     await send(.threadHistorySyncResponse(threadId: threadId, .success(syncResult.events)))
                 } else {

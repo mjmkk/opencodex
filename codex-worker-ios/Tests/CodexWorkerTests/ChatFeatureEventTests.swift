@@ -6,6 +6,27 @@ import Testing
 @MainActor
 struct ChatFeatureEventTests {
     @Test
+    func offlineColdOpenKeepsCachedFreshness() async {
+        let thread = Thread(threadId: "offline", preview: nil, cwd: "/workspace",
+                            createdAt: nil, updatedAt: nil, modelProvider: nil)
+        let previousSync = Date(timeIntervalSince1970: 1_700_000_000)
+        let metadata = ThreadSyncMetadata(lastSyncedAt: previousSync, unreadEvents: 0, pinned: false)
+        let store = TestStore(initialState: ChatFeature.State()) { ChatFeature() } withDependencies: {
+            $0.threadSyncClient.cached = {
+                .init(threads: [thread], metadata: ["offline": metadata], changedThreadIds: [], failures: [:])
+            }
+            $0.threadSyncClient.syncThread = { _ in throw URLError(.notConnectedToInternet) }
+        }
+        store.exhaustivity = .off
+        await store.send(.setActiveThread(thread))
+        await store.receive(\.syncMetadata)
+        await store.receive(\.threadHistorySyncResponse)
+        #expect(store.state.lastSyncedAt == previousSync)
+        #expect(store.state.isHistorySyncing == false)
+        #expect(store.state.errorMessage != nil)
+    }
+
+    @Test
     func foregroundResumeCanRestartStreamWhenSyncNoChange() async {
         let thread = Thread(
             threadId: "thread_resume_1",

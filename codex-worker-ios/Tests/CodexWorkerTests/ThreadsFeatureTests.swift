@@ -34,14 +34,14 @@ struct ThreadsFeatureTests {
             var apiClient = APIClient.mock
             apiClient.listThreads = { _ in response }
             dependencies.apiClient = apiClient
+            var sync = ThreadSyncClient.testValue
+            sync.cached = { .init(threads: response.data, metadata: [:], changedThreadIds: [], failures: [:]) }
+            dependencies.threadSyncClient = sync
             dependencies.threadHistoryStore = .testValue
         }
         store.exhaustivity = .off
 
-        await store.send(.onAppear) {
-            $0.isLoading = true
-            $0.errorMessage = nil
-        }
+        await store.send(.onAppear)
         await store.receive({ action in
             if case .loadResponse(.success(let value)) = action {
                 return value.nextCursor == response.nextCursor &&

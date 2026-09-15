@@ -16,6 +16,7 @@ public struct ApprovalFeature {
         public var errorMessage: String?
         public var submittedDecision: ApprovalDecision?
         public var declineReasonInput = ""
+        public var awaitingConfirmation = false
 
         public var isPresented: Bool {
             currentApproval != nil
@@ -43,6 +44,7 @@ public struct ApprovalFeature {
                 state.errorMessage = nil
                 state.submittedDecision = nil
                 state.declineReasonInput = ""
+                state.awaitingConfirmation = false
                 return .none
 
             case .dismiss:
@@ -58,7 +60,7 @@ public struct ApprovalFeature {
                 return .none
 
             case .submitTapped(let decision):
-                guard let approval = state.currentApproval, !state.isSubmitting else { return .none }
+                guard let approval = state.currentApproval, !state.isSubmitting, !state.awaitingConfirmation else { return .none }
                 let approvalId = approval.approvalId.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !approvalId.isEmpty else {
                     state.errorMessage = "审批请求缺少 approvalId，请重试或刷新线程。"
@@ -72,7 +74,7 @@ public struct ApprovalFeature {
 
                 return .run { send in
                     @Dependency(\.apiClient) var apiClient
-                    let request = ApprovalRequest(
+                    var request = ApprovalRequest(
                         approvalId: approvalId,
                         decision: decision.rawValue,
                         execPolicyAmendment: nil,
@@ -80,6 +82,7 @@ public struct ApprovalFeature {
                             ? (declineReason.isEmpty ? nil : declineReason)
                             : nil
                     )
+                    request.requestVersion = approval.requestVersion
                     await send(
                         .submitResponse(
                             Result {
@@ -89,9 +92,10 @@ public struct ApprovalFeature {
                     )
                 }
 
-            case .submitResponse(.success):
+            case .submitResponse(.success(let response)):
                 // 是否关闭由 approval.resolved 事件决定，这里只结束提交态
                 state.isSubmitting = false
+                state.awaitingConfirmation = response.status == "sent_waiting_confirmation"
                 return .none
 
             case .submitResponse(.failure(let error)):

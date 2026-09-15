@@ -6,6 +6,7 @@
 **/*.xcuserstate
 DerivedData/
 .derived/
+.derived-device/
 
 # Swift Package Manager local workspace state
 **/.swiftpm/

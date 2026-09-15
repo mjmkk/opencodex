@@ -6,12 +6,33 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXCopyFilesBuildPhase section */
+		9AD43D2AA798A3F82E13ACED = { isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 13; files = (B80AC624F28F2195E29C4A6E,AE672D6E0B70680A65958DFC,); name = "Embed App Extensions"; runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9346D9B75A98E92BF36E12B3 = { isa = PBXTargetDependency; target = 6F2DE273CEFF794F93962344; targetProxy = A45A75F4229D498E1D31CE12; };
+		5A45D93107CF9B3F8948220E = { isa = PBXTargetDependency; target = 76D872368B3F211D10BEE851; targetProxy = 2A91DE3E7A8E4B63949292E6; };
+/* End PBXTargetDependency section */
+
+/* Begin PBXContainerItemProxy section */
+		A45A75F4229D498E1D31CE12 = { isa = PBXContainerItemProxy; containerPortal = 1828EAF52F421B5C00400F7D; proxyType = 1; remoteGlobalIDString = 6F2DE273CEFF794F93962344; remoteInfo = ThreadActivity; };
+		2A91DE3E7A8E4B63949292E6 = { isa = PBXContainerItemProxy; containerPortal = 1828EAF52F421B5C00400F7D; proxyType = 1; remoteGlobalIDString = 76D872368B3F211D10BEE851; remoteInfo = NotificationService; };
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXBuildFile section */
 		1828EB0B2F421B5D00400F7D /* CodexWorker in Frameworks */ = {isa = PBXBuildFile; productRef = 1828EB0D2F421B5D00400F7D /* CodexWorker */; };
+		6605F476CD2E7536BDE3EC66 = { isa = PBXBuildFile; productRef = 8F48E2B220FEEA76DF95E1E6; };
+		B80AC624F28F2195E29C4A6E = { isa = PBXBuildFile; fileRef = 6A61467A83652FD3793C6EAC; settings = { ATTRIBUTES = (RemoveHeadersOnCopy,); }; };
+		AE672D6E0B70680A65958DFC = { isa = PBXBuildFile; fileRef = 3642521001DF5E4E2AC3120A; settings = { ATTRIBUTES = (RemoveHeadersOnCopy,); }; };
+D3281FBA34455288F4ECB960 = { isa = PBXBuildFile; productRef = FC8232C81D97BF8C51202B43; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		1828EAFD2F421B5C00400F7D /* CodexWorkerApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CodexWorkerApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6A61467A83652FD3793C6EAC = { isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = ThreadActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		3642521001DF5E4E2AC3120A = { isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; path = NotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+E70BAC396593FD10C8971E14 = { isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = CodexWorkerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -22,6 +43,8 @@
 			);
 			target = 1828EAFC2F421B5C00400F7D /* CodexWorkerApp */;
 		};
+		AF6E3F0D6ACC75FCEC9C1172 = { isa = PBXFileSystemSynchronizedBuildFileExceptionSet; membershipExceptions = (Info.plist,); target = 6F2DE273CEFF794F93962344; };
+		FC3D7D1B9229D8204BBFA9D9 = { isa = PBXFileSystemSynchronizedBuildFileExceptionSet; membershipExceptions = (Info.plist,); target = 76D872368B3F211D10BEE851; };
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -33,6 +56,9 @@
 			path = CodexWorkerApp;
 			sourceTree = "<group>";
 		};
+		697FF048F92491C9D234EA39 = { isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AF6E3F0D6ACC75FCEC9C1172,); path = ThreadActivity; sourceTree = "<group>"; };
+		B09AF01EBF7CFBF4F6835ACF = { isa = PBXFileSystemSynchronizedRootGroup; exceptions = (FC3D7D1B9229D8204BBFA9D9,); path = NotificationService; sourceTree = "<group>"; };
+5D12B656E31A4A0B02FD6BDB = { isa = PBXFileSystemSynchronizedRootGroup; path = "../../codex-worker-ios/Tests/CodexWorkerTests"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,6 +70,9 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C0AF62CEA74340A6682AB2A8 = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (6605F476CD2E7536BDE3EC66,); runOnlyForDeploymentPostprocessing = 0; };
+		99C30672F295190FE0943CEC = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+BD6E9CF51615835241BE536C = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (D3281FBA34455288F4ECB960,); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -51,6 +80,9 @@
 			isa = PBXGroup;
 			children = (
 				1828EAFF2F421B5C00400F7D /* CodexWorkerApp */,
+5D12B656E31A4A0B02FD6BDB,
+				697FF048F92491C9D234EA39,
+				B09AF01EBF7CFBF4F6835ACF,
 				1828EAFE2F421B5C00400F7D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -59,6 +91,9 @@
 			isa = PBXGroup;
 			children = (
 				1828EAFD2F421B5C00400F7D /* CodexWorkerApp.app */,
+E70BAC396593FD10C8971E14,
+				6A61467A83652FD3793C6EAC,
+				3642521001DF5E4E2AC3120A,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -73,10 +108,13 @@
 				1828EAF92F421B5C00400F7D /* Sources */,
 				1828EAFA2F421B5C00400F7D /* Frameworks */,
 				1828EAFB2F421B5C00400F7D /* Resources */,
+				9AD43D2AA798A3F82E13ACED,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				9346D9B75A98E92BF36E12B3,
+				5A45D93107CF9B3F8948220E,
 			);
 			fileSystemSynchronizedGroups = (
 				1828EAFF2F421B5C00400F7D /* CodexWorkerApp */,
@@ -89,6 +127,9 @@
 			productReference = 1828EAFD2F421B5C00400F7D /* CodexWorkerApp.app */;
 			productType = "com.apple.product-type.application";
 		};
+		6F2DE273CEFF794F93962344 = { isa = PBXNativeTarget; buildConfigurationList = 1829C7ADA636363C6DD54EAF; buildPhases = (ECBDED10704066C7D7715B18,C0AF62CEA74340A6682AB2A8,607A172BFB34698E9D32D076,); buildRules = (); dependencies = (); fileSystemSynchronizedGroups = (697FF048F92491C9D234EA39,); name = ThreadActivity; packageProductDependencies = (8F48E2B220FEEA76DF95E1E6,); productName = ThreadActivity; productReference = 6A61467A83652FD3793C6EAC; productType = "com.apple.product-type.app-extension"; };
+		76D872368B3F211D10BEE851 = { isa = PBXNativeTarget; buildConfigurationList = 3DB475986E95277F4A05A083; buildPhases = (5332EBB95956CE66E024A7B4,99C30672F295190FE0943CEC,56FD3FE4705A63AF276120E7,); buildRules = (); dependencies = (); fileSystemSynchronizedGroups = (B09AF01EBF7CFBF4F6835ACF,); name = NotificationService; packageProductDependencies = (); productName = NotificationService; productReference = 3642521001DF5E4E2AC3120A; productType = "com.apple.product-type.app-extension"; };
+F86F60A99B5C85CCFC5DA1E0 = { isa = PBXNativeTarget; buildConfigurationList = F9A8AD40355191E18584F636; buildPhases = (CB2767F77F696DFFEBF4C44A,BD6E9CF51615835241BE536C,189586958AF26021E2D6E9CE,); buildRules = (); dependencies = (); fileSystemSynchronizedGroups = (5D12B656E31A4A0B02FD6BDB,); name = CodexWorkerTests; packageProductDependencies = (FC8232C81D97BF8C51202B43,); productName = CodexWorkerTests; productReference = E70BAC396593FD10C8971E14; productType = "com.apple.product-type.bundle.unit-test"; };
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -115,13 +156,16 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				1828EB0C2F421B5D00400F7D /* XCLocalSwiftPackageReference "../../codex-worker-ios" */,
+				CE84297041A2946475DA2331 /* XCLocalSwiftPackageReference "../../codex-activity-models" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1828EAFE2F421B5C00400F7D /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				1828EAFC2F421B5C00400F7D /* CodexWorkerApp */,
+F86F60A99B5C85CCFC5DA1E0,				1828EAFC2F421B5C00400F7D /* CodexWorkerApp */,
+				6F2DE273CEFF794F93962344,
+				76D872368B3F211D10BEE851,
 			);
 		};
 /* End PBXProject section */
@@ -134,6 +178,9 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		607A172BFB34698E9D32D076 = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		56FD3FE4705A63AF276120E7 = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+189586958AF26021E2D6E9CE = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -144,6 +191,9 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		ECBDED10704066C7D7715B18 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		5332EBB95956CE66E024A7B4 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+CB2767F77F696DFFEBF4C44A = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
@@ -204,6 +254,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OPENCODEX_BUNDLE_ID = li.CodexWorkerApp;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -260,6 +311,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				OPENCODEX_BUNDLE_ID = li.CodexWorkerApp;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
@@ -272,6 +324,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				APS_ENVIRONMENT = development;
 				CODE_SIGN_ENTITLEMENTS = CodexWorkerApp/CodexWorkerApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -288,7 +341,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = li.CodexWorkerApp;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(OPENCODEX_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -306,6 +359,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				APS_ENVIRONMENT = production;
 				CODE_SIGN_ENTITLEMENTS = CodexWorkerApp/CodexWorkerApp.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -322,7 +376,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = li.CodexWorkerApp;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(OPENCODEX_BUNDLE_ID)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -334,6 +388,12 @@
 			};
 			name = Release;
 		};
+		C401D8312D08661BCCC09339 = { isa = XCBuildConfiguration; buildSettings = { APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_FILE = ThreadActivity/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 26.2; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)","@executable_path/Frameworks","@executable_path/../../Frameworks",); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = "$(OPENCODEX_BUNDLE_ID).ThreadActivity"; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Debug; };
+		4F728C58EBAC78CF428D6A69 = { isa = XCBuildConfiguration; buildSettings = { APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_FILE = ThreadActivity/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 26.2; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)","@executable_path/Frameworks","@executable_path/../../Frameworks",); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = "$(OPENCODEX_BUNDLE_ID).ThreadActivity"; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
+		FA8A42AC547805E2CFBCE40B = { isa = XCBuildConfiguration; buildSettings = { APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_FILE = NotificationService/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 26.2; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)","@executable_path/Frameworks","@executable_path/../../Frameworks",); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = "$(OPENCODEX_BUNDLE_ID).NotificationService"; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Debug; };
+		2CEE1CD2FD963F03FF4E15CE = { isa = XCBuildConfiguration; buildSettings = { APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_FILE = NotificationService/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 26.2; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)","@executable_path/Frameworks","@executable_path/../../Frameworks",); MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = "$(OPENCODEX_BUNDLE_ID).NotificationService"; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
+8D1E2912F78ADEAC37DB1DE4 = { isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 26.2; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)","@executable_path/Frameworks","@loader_path/Frameworks",); PRODUCT_BUNDLE_IDENTIFIER = "$(OPENCODEX_BUNDLE_ID).Tests"; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Debug; };
+80FF380566429BC77830907F = { isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 26.2; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)","@executable_path/Frameworks","@loader_path/Frameworks",); PRODUCT_BUNDLE_IDENTIFIER = "$(OPENCODEX_BUNDLE_ID).Tests"; PRODUCT_NAME = "$(TARGET_NAME)"; SKIP_INSTALL = YES; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -355,9 +415,13 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		1829C7ADA636363C6DD54EAF = { isa = XCConfigurationList; buildConfigurations = (C401D8312D08661BCCC09339,4F728C58EBAC78CF428D6A69,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		3DB475986E95277F4A05A083 = { isa = XCConfigurationList; buildConfigurations = (FA8A42AC547805E2CFBCE40B,2CEE1CD2FD963F03FF4E15CE,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+F9A8AD40355191E18584F636 = { isa = XCConfigurationList; buildConfigurations = (8D1E2912F78ADEAC37DB1DE4,80FF380566429BC77830907F,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		CE84297041A2946475DA2331 = { isa = XCLocalSwiftPackageReference; relativePath = "../../codex-activity-models"; };
 		1828EB0C2F421B5D00400F7D /* XCLocalSwiftPackageReference "../../codex-worker-ios" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../../codex-worker-ios";
@@ -369,6 +433,8 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = CodexWorker;
 		};
+		8F48E2B220FEEA76DF95E1E6 = { isa = XCSwiftPackageProductDependency; package = CE84297041A2946475DA2331; productName = CodexActivityModels; };
+FC8232C81D97BF8C51202B43 = { isa = XCSwiftPackageProductDependency; productName = CodexWorker; };
 /* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 1828EAF52F421B5C00400F7D /* Project object */;
