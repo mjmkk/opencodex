@@ -34,21 +34,6 @@ public struct ThreadsView: View {
             VStack(spacing: 0) {
                 header(viewStore: viewStore)
 
-                Picker(
-                    "线程分组方式",
-                    selection: Binding(
-                        get: { viewStore.groupingMode },
-                        set: { viewStore.send(.groupingModeChanged($0)) }
-                    )
-                ) {
-                    ForEach(ThreadsFeature.GroupingMode.allCases, id: \.self) { mode in
-                        Text(mode.title).tag(mode)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, 12)
-                .padding(.bottom, 10)
-
                 Divider()
 
                 List {
@@ -93,23 +78,23 @@ public struct ThreadsView: View {
                                     CwdGroupHeader(
                                         group: group,
                                         isCreating: viewStore.isCreating,
-                                        onCreateTapped: group.fullPath == nil
-                                            ? nil
-                                            : {
-                                                viewStore.send(.createTapped(cwd: group.fullPath))
-                                            }
+                                        onCreateTapped: nil
                                     )
                                 }
                             }
 
                         case .byTime:
-                            Section("最近对话") {
-                                ForEach(viewStore.sortedItems, id: \.threadId) { thread in
-                                    threadButton(
-                                        viewStore: viewStore,
-                                        thread: thread,
-                                        showCwd: true
-                                    )
+                            let attention = viewStore.sortedItems.filter { $0.attentionReason != nil || viewStore.syncMetadata[$0.threadId]?.pinned == true }
+                            if !attention.isEmpty {
+                                Section("需要关注") {
+                                    ForEach(attention, id: \.threadId) { thread in
+                                        threadButton(viewStore: viewStore, thread: thread, showCwd: false)
+                                    }
+                                }
+                            }
+                            Section("最近任务") {
+                                ForEach(viewStore.sortedItems.filter { thread in !attention.contains(where: { $0.threadId == thread.threadId }) }, id: \.threadId) { thread in
+                                    threadButton(viewStore: viewStore, thread: thread, showCwd: false)
                                 }
                             }
                         }
@@ -145,7 +130,7 @@ public struct ThreadsView: View {
                     .accessibilityLabel("收起线程列表")
                 }
 
-                Text("Threads")
+                Text("任务")
                     .font(.title3.weight(.semibold))
 
                 Spacer()
@@ -164,51 +149,19 @@ public struct ThreadsView: View {
                     .accessibilityLabel("刷新线程列表")
                 }
 
-                if viewStore.isCreating {
-                    ProgressView()
-                } else {
-                    Button {
-                        viewStore.send(.createTapped(cwd: selectedThreadCwd))
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.headline)
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(viewStore.isLoading)
-                    .accessibilityLabel("新建线程")
-                }
-            }
-
-            HStack(spacing: 8) {
-                Label("权限", systemImage: "lock.shield")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-
-                Spacer()
-
                 Menu {
-                    ForEach(ExecutionAccessMode.allCases, id: \.self) { mode in
-                        Button {
-                            onExecutionAccessModeChanged?(mode)
-                        } label: {
-                            HStack {
-                                Image(systemName: accessModeIconName(for: mode))
-                                    .foregroundStyle(accessModeTint(for: mode))
-                                Text(mode.title)
-                                    .lineLimit(1)
-                                    .foregroundStyle(accessModeTint(for: mode))
-                                Spacer()
-                                if mode == executionAccessMode {
-                                    Image(systemName: "checkmark")
-                                }
-                            }
-                        }
+                    Picker("任务分组", selection: Binding(
+                        get: { viewStore.groupingMode },
+                        set: { viewStore.send(.groupingModeChanged($0)) })) {
+                        Text("最近任务").tag(ThreadsFeature.GroupingMode.byTime)
+                        Text("按目录分组").tag(ThreadsFeature.GroupingMode.byCwd)
                     }
-                } label: {
-                    accessModePill(mode: executionAccessMode, tint: selectedModeTint)
-                }
+                } label: { Image(systemName: "line.3.horizontal.decrease") }
+                .accessibilityLabel("任务分组")
+
             }
-            .padding(.horizontal, 2)
+
+
         }
         .padding(.horizontal, 14)
         .padding(.top, 12)
@@ -270,6 +223,7 @@ public struct ThreadsView: View {
             dismissKeyboard()
             viewStore.send(.threadTapped(thread.threadId))
         } label: {
+            VStack(alignment: .leading, spacing: 4) {
             ThreadRow(
                 thread: thread,
                 isSelected: viewStore.selectedThreadId == thread.threadId,
@@ -277,12 +231,30 @@ public struct ThreadsView: View {
                 isArchiving: isArchiving
             )
             .contentShape(Rectangle())
+                HStack(spacing: 5) {
+                    if viewStore.syncMetadata[thread.threadId]?.pinned == true { Image(systemName: "pin.fill") }
+                    if (viewStore.syncMetadata[thread.threadId]?.unreadMessages ?? 0) > 0 { Text("有新内容").foregroundStyle(.blue) }
+                    if let synced = viewStore.syncMetadata[thread.threadId]?.lastSyncedAt {
+                        Text(MobileTime.ago(synced) + "同步")
+                    } else { Text("本地内容 · 等待同步") }
+                    if viewStore.syncMetadata[thread.threadId]?.isPartial == true { Text("部分历史") }
+                }.font(.caption2).foregroundStyle(.secondary).padding(.horizontal, 8)
+            }
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("thread-" + thread.threadId)
         .disabled(isArchiving)
         .listRowInsets(EdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 10))
         .listRowSeparator(.hidden)
         .listRowBackground(Color.clear)
+        .contextMenu {
+            Button {
+                viewStore.send(.pinTapped(thread.threadId))
+            } label: {
+                Label(viewStore.syncMetadata[thread.threadId]?.pinned == true ? "取消持续展示" : "Pin 持续展示",
+                      systemImage: viewStore.syncMetadata[thread.threadId]?.pinned == true ? "pin.slash" : "pin")
+            }
+        }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button(role: .destructive) {
                 viewStore.send(.archiveTapped(thread.threadId))
@@ -322,22 +294,17 @@ private struct ThreadRow: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(thread.listTitle)
                     .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
+                    .lineLimit(3).fixedSize(horizontal: false, vertical: true)
 
                 Spacer()
 
-                if let relativeTime = thread.relativeTimeText {
-                    Text(relativeTime)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
 
-                if thread.pendingApprovalCount > 0 {
+                if thread.pendingRequestCount > 0 {
                     HStack(spacing: 4) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(.caption2)
-                        if thread.pendingApprovalCount > 1 {
-                            Text("\(thread.pendingApprovalCount)")
+                        if thread.pendingRequestCount > 1 {
+                            Text("\(thread.pendingRequestCount)")
                                 .font(.caption2.weight(.semibold))
                         }
                     }
@@ -349,8 +316,8 @@ private struct ThreadRow: View {
                 }
 
                 if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(Color.accentColor)
                 }
 
                 if isArchiving {
@@ -359,6 +326,12 @@ private struct ThreadRow: View {
                 }
             }
 
+            if let reason = thread.attentionReason {
+                Text(reason).font(.caption).foregroundStyle(thread.pendingRequestCount > 0 ? .orange : .secondary)
+            }
+            if let relativeTime = thread.relativeTimeText {
+                Text(relativeTime + "更新").font(.caption2).foregroundStyle(.secondary)
+            }
             if let subtitle = thread.listSubtitle(showCwd: showCwd) {
                 Text(subtitle)
                     .font(.caption)
@@ -369,29 +342,11 @@ private struct ThreadRow: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(rowBackground)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(rowBorder, lineWidth: isSelected ? 1.2 : 0.8)
-        )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .shadow(color: rowShadow, radius: isSelected ? 6 : 2, x: 0, y: 1)
     }
 
     private var rowBackground: some View {
-        Group {
-            if isSelected {
-                LinearGradient(
-                    colors: [
-                        Color.accentColor.opacity(colorScheme == .dark ? 0.32 : 0.18),
-                        Color.accentColor.opacity(colorScheme == .dark ? 0.20 : 0.09),
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            } else {
-                Color(uiColor: colorScheme == .dark ? .secondarySystemBackground : .systemBackground)
-            }
-        }
+        isSelected ? Color.accentColor.opacity(0.09) : Color.clear
     }
 
     private var rowBorder: Color {
@@ -451,6 +406,7 @@ private struct CwdGroupHeader: View {
 
 private extension Thread {
     var listTitle: String {
+        if let name, !name.isEmpty { return name }
         let normalized = preview?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         if !normalized.isEmpty {
             return normalized
@@ -463,26 +419,17 @@ private extension Thread {
     }
 
     func listSubtitle(showCwd: Bool) -> String? {
-        if showCwd {
-            let normalizedCwd = cwd?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            if !normalizedCwd.isEmpty {
-                return normalizedCwd
-            }
-        }
-
         let normalized = preview?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         guard !normalized.isEmpty else { return nil }
         let lines = normalized.split(whereSeparator: \.isNewline).map(String.init)
         if lines.count > 1 {
             return lines.dropFirst().joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines)
         }
-        return nil
+        return normalized == listTitle ? nil : normalized
     }
 
     var relativeTimeText: String? {
         guard let date = lastActiveAt else { return nil }
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .short
-        return formatter.localizedString(for: date, relativeTo: Date())
+        return MobileTime.ago(date)
     }
 }

@@ -23,6 +23,8 @@ public struct SettingsFeature {
         public var archivedThreadsLoadError: String?
         public var restoringThreadIds: Set<String> = []
         public var saveSucceeded = false
+        public var authenticatedResponseAt: Date?
+        public var connectionEdited = false
 
         public init() {}
 
@@ -65,6 +67,8 @@ public struct SettingsFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
+                state.authenticatedResponseAt = nil
+                state.connectionEdited = false
                 state.isLoadingModels = true
                 state.isLoadingArchivedThreads = true
                 state.modelLoadError = nil
@@ -105,6 +109,7 @@ public struct SettingsFeature {
                 return .none
 
             case .modelsLoaded(.success(let models)):
+                if !state.connectionEdited { state.authenticatedResponseAt = Date() }
                 state.isLoadingModels = false
                 state.modelLoadError = nil
                 state.availableModels = models
@@ -128,6 +133,7 @@ public struct SettingsFeature {
                 return .none
 
             case .archivedThreadsLoaded(.success(let threads)):
+                if !state.connectionEdited { state.authenticatedResponseAt = Date() }
                 state.isLoadingArchivedThreads = false
                 state.archivedThreadsLoadError = nil
                 state.archivedThreads = threads.sorted(by: State.compareThreadsByRecency)
@@ -141,11 +147,15 @@ public struct SettingsFeature {
                 return .none
 
             case .baseURLChanged(let value):
+                state.authenticatedResponseAt = nil
+                state.connectionEdited = true
                 state.baseURL = value
                 state.saveSucceeded = false
                 return .none
 
             case .tokenChanged(let value):
+                state.authenticatedResponseAt = nil
+                state.connectionEdited = true
                 state.token = value
                 state.saveSucceeded = false
                 return .none

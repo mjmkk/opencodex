@@ -12,6 +12,8 @@ import Foundation
 public struct AppFeature {
     private enum CancelID {
         case healthMonitor
+        case syncLoop
+        case syncRequest
     }
 
     public enum WorkerReachability: Equatable, Sendable {
@@ -31,17 +33,16 @@ public struct AppFeature {
     public struct State: Equatable {
         public var connectionState: ConnectionState = .disconnected
         public var workerReachability: WorkerReachability = .unknown
-        public var streamConnectionState: ChatFeature.StreamConnectionState = .idle
         public var executionAccessMode: ExecutionAccessMode = .defaultPermissions
         public var threads = ThreadsFeature.State()
         public var chat = ChatFeature.State()
         public var terminal = TerminalFeature.State()
         public var fileBrowser = FileBrowserFeature.State()
-        public var approval = ApprovalFeature.State()
         public var settings = SettingsFeature.State()
         public var activeThread: Thread?
         public var isDrawerPresented = true
         public var isFileBrowserPresented = false
+        public var pendingNotificationThread: String?
 
         public init() {}
     }
@@ -53,7 +54,6 @@ public struct AppFeature {
         case chat(ChatFeature.Action)
         case terminal(TerminalFeature.Action)
         case fileBrowser(FileBrowserFeature.Action)
-        case approval(ApprovalFeature.Action)
         case settings(SettingsFeature.Action)
         case lifecycleChanged(LifecycleState)
         case setDrawerPresented(Bool)
@@ -62,6 +62,10 @@ public struct AppFeature {
         case setExecutionAccessMode(ExecutionAccessMode)
         case healthCheckNow
         case healthCheckResponse(Result<HealthCheckResponse, CodexError>)
+        case syncNow
+        case syncResponse(Result<MobileSyncResult, CodexError>)
+        case syncCached(MobileSyncResult)
+        case openNotificationThread(String)
     }
 
     public init() {}
@@ -71,7 +75,6 @@ public struct AppFeature {
         Scope(state: \.chat, action: \.chat) { ChatFeature() }
         Scope(state: \.terminal, action: \.terminal) { TerminalFeature() }
         Scope(state: \.fileBrowser, action: \.fileBrowser) { FileBrowserFeature() }
-        Scope(state: \.approval, action: \.approval) { ApprovalFeature() }
         Scope(state: \.settings, action: \.settings) { SettingsFeature() }
 
         Reduce { state, action in
@@ -81,6 +84,7 @@ public struct AppFeature {
                     state.isDrawerPresented = true
                 }
                 return .merge(
+                    syncLoop(),
                     .run { send in
                         @Dependency(\.workerConfigurationStore) var workerConfigurationStore
                         @Dependency(\.executionAccessStore) var executionAccessStore
@@ -101,17 +105,20 @@ public struct AppFeature {
                 )
 
             case .onDisappear:
-                return .cancel(id: CancelID.healthMonitor)
+                return .merge(.cancel(id: CancelID.healthMonitor), .cancel(id: CancelID.syncLoop), .cancel(id: CancelID.syncRequest))
 
             case .lifecycleChanged(let lifecycle):
                 switch lifecycle {
                 case .active:
                     return .merge(
+                        syncLoop(),
                         .send(.healthCheckNow),
                         .send(.chat(.appDidBecomeActive))
                     )
                 case .background:
-                    return .send(.chat(.appDidEnterBackground))
+                    state.threads.isSyncing = false
+                    return .merge(.send(.chat(.appDidEnterBackground)),
+                        .cancel(id: CancelID.syncLoop), .cancel(id: CancelID.syncRequest))
                 case .inactive:
                     return .none
                 }
@@ -131,6 +138,58 @@ public struct AppFeature {
                         )
                     )
                 }
+
+
+            case .syncNow:
+                guard !state.threads.isSyncing else { return .none }
+                state.threads.isSyncing = true
+                let preferred = state.activeThread.map { [$0.threadId] } ?? []
+                return .run { send in
+                    @Dependency(\.threadSyncClient) var sync
+                    do { await send(.syncResponse(.success(try await sync.sync(preferred, false)))) }
+                    catch is CancellationError { }
+                    catch { await send(.syncResponse(.failure(CodexError.from(error)))) }
+                }.cancellable(id: CancelID.syncRequest, cancelInFlight: true)
+
+            case .syncResponse(.failure(let error)):
+                state.threads.isSyncing = false
+                state.threads.errorMessage = "同步未完成，保留本地内容：" + error.localizedDescription
+                return .none
+
+            case .syncResponse(.success(let result)):
+                state.threads.isSyncing = false
+                state.threads.errorMessage = result.failures.isEmpty ? nil : "部分任务尚未同步，已保留本地内容。"
+                var changedIdentity: Thread?
+                if let id = state.activeThread?.threadId {
+                    state.chat.lastSyncedAt = result.metadata[id]?.lastSyncedAt
+                    if let fresh = result.threads.first(where: { $0.threadId == id }) {
+                        state.activeThread = fresh
+                        if state.chat.activeThread?.id != fresh.id { changedIdentity = fresh }
+                        else { state.chat.activeThread = fresh }
+                    }
+                }
+                let target = state.pendingNotificationThread
+                if target != nil && result.threads.contains(where: { $0.threadId == target }) { state.pendingNotificationThread = nil }
+                return .merge(.send(.threads(.cacheLoaded(result))),
+                    changedIdentity.map { .send(.chat(.setActiveThread($0))) } ?? .none,
+                    refreshCachedChat(state: state, changed: result.changedThreadIds),
+                    .run { send in
+                        await MobileLifecycle.updatePinned(result)
+                        if let target, result.threads.contains(where: { $0.threadId == target }) {
+                            await send(.threads(.threadTapped(target)))
+                        }
+                    })
+
+            case .syncCached(let result):
+                return .send(.threads(.cacheLoaded(result)))
+
+            case .openNotificationThread(let id):
+                if state.threads.items.contains(where: { $0.threadId == id }) {
+                    state.pendingNotificationThread = nil
+                    return .send(.threads(.threadTapped(id)))
+                }
+                state.pendingNotificationThread = id
+                return .send(.syncNow)
 
             case .healthCheckResponse(.success):
                 state.workerReachability = .reachable
@@ -168,9 +227,12 @@ public struct AppFeature {
                 state.activeThread = thread
                 state.isDrawerPresented = false
                 return .merge(
+                    .run { _ in
+                        @Dependency(\.threadSyncClient) var sync
+                        try? await sync.selectThread(thread.threadId)
+                        try? await sync.markRead(thread.threadId)
+                    },
                     // 切线程时先清理旧线程审批弹层，避免跨线程串窗。
-                    .send(.approval(.dismiss)),
-                    .send(.chat(.setApprovalLocked(false))),
                     .send(.chat(.setActiveThread(thread))),
                     .send(.terminal(.setActiveThread(thread))),
                     .send(.fileBrowser(.setActiveThread(thread)))
@@ -181,45 +243,17 @@ public struct AppFeature {
                 state.isDrawerPresented = true
                 state.isFileBrowserPresented = false
                 return .merge(
-                    .send(.approval(.dismiss)),
-                    .send(.chat(.setApprovalLocked(false))),
+                    .run { _ in
+                        @Dependency(\.threadSyncClient) var sync
+                        try? await sync.selectThread(nil)
+                    },
                     .send(.chat(.setActiveThread(nil))),
                     .send(.terminal(.setActiveThread(nil))),
                     .send(.fileBrowser(.setActiveThread(nil)))
                 )
 
-            case .chat(.delegate(.approvalRequired(let approval))):
-                if let idx = state.threads.items.firstIndex(where: { $0.threadId == approval.threadId }) {
-                    state.threads.items[idx].pendingApprovalCount = max(
-                        1,
-                        state.threads.items[idx].pendingApprovalCount
-                    )
-                }
-                return .merge(
-                    .send(.approval(.present(approval))),
-                    .send(.chat(.setApprovalLocked(true))),
-                    .send(.threads(.refresh))
-                )
-
-            case .chat(.delegate(.approvalResolved(_, _))):
-                if let threadId = state.approval.currentApproval?.threadId,
-                   let idx = state.threads.items.firstIndex(where: { $0.threadId == threadId })
-                {
-                    state.threads.items[idx].pendingApprovalCount = 0
-                }
-                return .merge(
-                    .send(.approval(.dismiss)),
-                    .send(.chat(.setApprovalLocked(false))),
-                    .send(.threads(.refresh))
-                )
-
-            case .chat(.delegate(.streamConnectionChanged(let streamConnectionState))):
-                state.streamConnectionState = streamConnectionState
-                recalculateConnectionState(state: &state)
-                return .none
-
-            case .chat(.delegate(.jobFinished(_, _))):
-                return .none
+            case .threads(.delegate(.refreshRequested)):
+                return .send(.syncNow)
 
             case .fileBrowser(.delegate(.openInTerminal(let path))):
                 state.isFileBrowserPresented = false
@@ -229,13 +263,40 @@ public struct AppFeature {
                 )
 
             case .settings(.saveFinished):
-                return .send(.healthCheckNow)
+                return .merge(.send(.healthCheckNow), .run { _ in
+                    await RemotePushRegistrationService.flushPendingRegistration()
+                })
 
             case .settings(.delegate(.didRestoreArchivedThread)):
                 return .send(.threads(.refresh))
 
-            case .threads, .chat, .terminal, .fileBrowser, .approval, .settings:
+            case .threads(.pinResponse(_, .failure(let error))):
+                state.chat.errorMessage = "持续展示未能更新：" + error.localizedDescription
                 return .none
+            case .threads, .chat, .terminal, .fileBrowser, .settings:
+                return .none
+            }
+        }
+    }
+
+    private func syncLoop() -> Effect<Action> {
+        .run { send in
+            @Dependency(\.threadSyncClient) var sync
+            @Dependency(\.continuousClock) var clock
+            if let cached = try? await sync.cached() { await send(.syncCached(cached)) }
+            while !Task.isCancelled {
+                await send(.syncNow)
+                try await clock.sleep(for: .seconds(20))
+            }
+        }.cancellable(id: CancelID.syncLoop, cancelInFlight: true)
+    }
+    private func refreshCachedChat(state: State, changed: [String]) -> Effect<Action> {
+        guard let thread = state.activeThread, changed.contains(thread.threadId) else { return .none }
+        return .run { send in
+            @Dependency(\.threadSyncClient) var sync
+            if let history = try? await sync.cachedHistory(thread) {
+                await send(.chat(.historyResponse(identity: thread.id, cached: true, .success(history))))
+                try? await sync.markRead(thread.threadId)
             }
         }
     }
@@ -261,14 +322,7 @@ public struct AppFeature {
             state.connectionState = .failed(message)
 
         case .reachable:
-            switch state.streamConnectionState {
-            case .idle, .connected:
-                state.connectionState = .connected
-            case .connecting:
-                state.connectionState = .connecting
-            case .failed(let message):
-                state.connectionState = .failed("实时流连接失败：\(message)")
-            }
+            state.connectionState = .connected
         }
     }
 

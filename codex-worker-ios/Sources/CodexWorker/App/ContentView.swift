@@ -19,24 +19,30 @@ public struct ContentView: View {
         let connectionState: ConnectionState
         let executionAccessMode: ExecutionAccessMode
         let isDrawerPresented: Bool
-        let isApprovalPresented: Bool
         let isTerminalPresented: Bool
         let isFileBrowserPresented: Bool
         let terminalHeightRatio: Double
+        let activeThreadId: String?
+        let isPinned: Bool
+        let lastSyncedAt: Date?
 
         init(_ state: AppFeature.State) {
             self.connectionState = state.connectionState
             self.executionAccessMode = state.executionAccessMode
             self.isDrawerPresented = state.isDrawerPresented
-            self.isApprovalPresented = state.approval.isPresented
             self.isTerminalPresented = state.terminal.isPresented
             self.isFileBrowserPresented = state.isFileBrowserPresented
             self.terminalHeightRatio = state.terminal.heightRatio
+            self.activeThreadId = state.activeThread?.threadId
+            self.isPinned = state.activeThread.flatMap { state.threads.syncMetadata[$0.threadId]?.pinned } ?? false
+            self.lastSyncedAt = state.chat.lastSyncedAt
         }
     }
 
     public let store: StoreOf<AppFeature>
     @State private var isSettingsPresented = false
+    @State private var isInboxPresented = false
+    @State private var nativeRequestRoute: NativeRequestRoute?
     @State private var terminalDragStartRatio: Double?
 
     public init(store: StoreOf<AppFeature>) {
@@ -77,7 +83,12 @@ public struct ContentView: View {
                             },
                             onOpenFileReference: { ref in
                                 viewStore.send(.openFileReference(ref))
-                            }
+                            },
+                            onPinTap: {
+                                if let id = viewStore.activeThreadId { viewStore.send(.threads(.pinTapped(id))) }
+                            },
+                            isPinned: viewStore.isPinned,
+                            onInboxTap: { nativeRequestRoute = nil; isInboxPresented = true }
                         )
 
                         if viewStore.isTerminalPresented {
@@ -148,20 +159,12 @@ public struct ContentView: View {
                     .frame(width: drawerWidth)
                     .background(.ultraThinMaterial)
                     .offset(x: viewStore.isDrawerPresented ? 0 : (-drawerWidth - 12))
+                    .accessibilityHidden(!viewStore.isDrawerPresented)
+                    .allowsHitTesting(viewStore.isDrawerPresented)
                     .shadow(color: drawerShadowColor, radius: 12, x: 4, y: 0)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .animation(.spring(response: 0.28, dampingFraction: 0.9), value: viewStore.isDrawerPresented)
-            }
-            .safeAreaInset(edge: .bottom) {
-                if viewStore.isApprovalPresented {
-                    ApprovalSheetView(
-                        store: store.scope(
-                            state: \.approval,
-                            action: \.approval
-                        )
-                    )
-                }
             }
             .onChange(of: viewStore.isTerminalPresented) { _, isPresented in
                 if isPresented {
@@ -182,7 +185,35 @@ public struct ContentView: View {
                 }
                 viewStore.send(.lifecycleChanged(lifecycle))
             }
-            .onAppear { viewStore.send(.onAppear) }
+            .onAppear {
+                viewStore.send(.onAppear)
+                if let id = MobileLifecycle.takePendingThread() { viewStore.send(.openNotificationThread(id)) }
+                if let route = MobileLifecycle.takePendingNativeRequest() {
+                    nativeRequestRoute = route; isInboxPresented = true
+                }
+
+            }
+            .onReceive(NotificationCenter.default.publisher(for: MobileLifecycle.openNativeRequestNotification)) { note in
+                if let route = note.object as? NativeRequestRoute {
+                    _ = MobileLifecycle.takePendingNativeRequest()
+                    nativeRequestRoute = route; isInboxPresented = true
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: MobileLifecycle.openThreadNotification)) { note in
+                if let id = note.object as? String {
+                    _ = MobileLifecycle.takePendingThread()
+                    viewStore.send(.openNotificationThread(id))
+                }
+            }
+            .onOpenURL { url in
+                if let route = NativeRequestRoute(url: url) {
+                    nativeRequestRoute = route; isInboxPresented = true
+                    return
+                }
+                if url.scheme == "opencodex", url.host == "thread", url.pathComponents.count == 2 {
+                    viewStore.send(.openNotificationThread(url.lastPathComponent))
+                }
+            }
             .onDisappear { viewStore.send(.onDisappear) }
             .sheet(isPresented: $isSettingsPresented) {
                 SettingsSheetView(
@@ -191,10 +222,17 @@ public struct ContentView: View {
                         action: \.settings
                     ),
                     connectionState: viewStore.connectionState,
+                    lastSyncedAt: viewStore.lastSyncedAt,
                     onClose: {
                         isSettingsPresented = false
                     }
                 )
+            }
+            .sheet(isPresented: $isInboxPresented) {
+                MobileInboxView(nativeRequestRoute: nativeRequestRoute) { id in
+                    isInboxPresented = false
+                    viewStore.send(.openNotificationThread(id))
+                }
             }
             .sheet(
                 isPresented: Binding(

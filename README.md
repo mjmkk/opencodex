@@ -63,6 +63,8 @@ OpenCodex is built to decouple supervision from desk location while keeping loca
 
 ## Architecture Overview
 
+The shared-native mobile sync and structured approval candidate is documented in [Mobile sync](docs/mobile-sync.md), including deployment, recovery and device-acceptance limits.
+
 ```
 iPhone App (SwiftUI + TCA)
 ├── AppFeature          ← Global lifecycle & connection management

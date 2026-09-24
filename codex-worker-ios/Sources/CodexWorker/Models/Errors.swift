@@ -114,7 +114,7 @@ public struct APIErrorResponse: Codable, Sendable {
 
     public struct APIErrorDetail: Codable, Sendable {
         let code: String
-        let message: String
+        let message: String?
     }
 }
 
@@ -128,10 +128,14 @@ extension CodexError {
            let errorResponse = try? JSONDecoder().decode(APIErrorResponse.self, from: data)
         {
             let code = errorResponse.error.code
-            let message = errorResponse.error.message
+            let message = errorResponse.error.message ?? code
 
             // 映射常见错误码
             switch code {
+            case "snapshot_changed":
+                return .apiError(code: code, message: "历史在分页期间发生变化，已保留上次内容；请重新读取。")
+            case "thread_not_cached":
+                return .apiError(code: code, message: "来源尚未缓存这个任务，当前保留本机内容。")
             case "UNAUTHORIZED":
                 return .unauthorized
             case "JOB_NOT_FOUND":

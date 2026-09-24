@@ -10,10 +10,14 @@ import Foundation
 import UIKit
 #endif
 
+@MainActor
 public enum RemotePushRegistrationService {
     private enum Keys {
         static let pendingDeviceToken = "codex.push.pending_device_token"
         static let uploadedDeviceToken = "codex.push.uploaded_device_token"
+        static let uploadedScope = "codex.push.uploaded_scope"
+        static let uploadedEnvironment = "codex.push.uploaded_environment"
+        static let uploadedAt = "codex.push.uploaded_at"
     }
 
     private struct RegisterRequest: Codable, Sendable {
@@ -22,6 +26,7 @@ public enum RemotePushRegistrationService {
         let bundleId: String?
         let environment: String
         let deviceName: String?
+        let clientScope: String
     }
 
     public static func handleDeviceToken(_ tokenData: Data) async {
@@ -44,15 +49,19 @@ public enum RemotePushRegistrationService {
         }
 
         let uploaded = UserDefaults.standard.string(forKey: Keys.uploadedDeviceToken)
-        if uploaded == normalized {
-            UserDefaults.standard.removeObject(forKey: Keys.pendingDeviceToken)
+        guard let configuration = WorkerConfiguration.load(), let scope = try? MobileSyncEngine.scope() else { return }
+        if UserDefaults.standard.string(forKey: Keys.uploadedEnvironment) == PushEnvironment.current && uploaded == normalized && UserDefaults.standard.string(forKey: Keys.uploadedScope) == scope &&
+            Date().timeIntervalSince1970 - UserDefaults.standard.double(forKey: Keys.uploadedAt) < 86400 {
             return
         }
 
         do {
-            try await register(token: normalized)
+            try await register(token: normalized, configuration: configuration, clientScope: binding(for: scope))
+            guard (try? MobileSyncEngine.scope()) == scope else { return }
             UserDefaults.standard.set(normalized, forKey: Keys.uploadedDeviceToken)
-            UserDefaults.standard.removeObject(forKey: Keys.pendingDeviceToken)
+            UserDefaults.standard.set(scope, forKey: Keys.uploadedScope)
+            UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Keys.uploadedAt)
+            UserDefaults.standard.set(PushEnvironment.current, forKey: Keys.uploadedEnvironment)
         } catch {
             #if DEBUG
             print("[PushSync] register failed: \(error.localizedDescription)")
@@ -60,11 +69,7 @@ public enum RemotePushRegistrationService {
         }
     }
 
-    private static func register(token: String) async throws {
-        guard let configuration = WorkerConfiguration.load() else {
-            throw URLError(.userAuthenticationRequired)
-        }
-
+    private static func register(token: String, configuration: WorkerConfiguration, clientScope: String) async throws {
         guard var components = URLComponents(string: configuration.baseURL) else {
             throw URLError(.badURL)
         }
@@ -75,6 +80,7 @@ public enum RemotePushRegistrationService {
         }
 
         var request = URLRequest(url: url)
+        request.timeoutInterval = 15
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
@@ -89,7 +95,8 @@ public enum RemotePushRegistrationService {
             deviceToken: token,
             bundleId: Bundle.main.bundleIdentifier,
             environment: buildEnvironment,
-            deviceName: deviceName
+            deviceName: deviceName,
+            clientScope: clientScope
         )
         request.httpBody = try JSONEncoder().encode(payload)
 
@@ -100,6 +107,20 @@ public enum RemotePushRegistrationService {
         guard (200 ... 299).contains(httpResponse.statusCode) else {
             throw URLError(.cannotParseResponse)
         }
+    }
+
+    // A random public installation binding is sent in APNs, never an account/token hash.
+    static func binding(for accountScope: String, defaults: UserDefaults = .standard) -> String {
+        let key = "codex.push.binding." + accountScope
+        if let value = defaults.string(forKey: key) { return value }
+        let value = UUID().uuidString
+        defaults.set(value, forKey: key)
+        return value
+    }
+
+    public static func matchesCurrentAccount(_ clientScope: String?) -> Bool {
+        guard let clientScope, let account = try? MobileSyncEngine.scope() else { return false }
+        return binding(for: account) == clientScope
     }
 
     private static func normalize(_ token: String?) -> String? {
@@ -113,11 +134,7 @@ public enum RemotePushRegistrationService {
     }
 
     private static var buildEnvironment: String {
-        #if DEBUG
-        return "sandbox"
-        #else
-        return "production"
-        #endif
+        PushEnvironment.current
     }
 
     @MainActor

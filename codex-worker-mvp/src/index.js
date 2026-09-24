@@ -15,7 +15,10 @@ import { createHttpServer } from "./http-server.js";
 import { JsonRpcClient } from "./json-rpc-client.js";
 import { SqliteStore } from "./sqlite-store.js";
 import { WorkerService } from "./worker-service.js";
+import { mobileApprovalBridge } from "./mobile-approval-bridge.js";
 import { ApnsNotifier } from "./apns-notifier.js";
+import { startApprovalNotifications } from "./mobile-notifications.js";
+import { LiveActivities } from "./live-activities.js";
 import { ensureTailscaleServe } from "./tailscale-serve.js";
 
 /**
@@ -61,7 +64,10 @@ async function main() {
     command: config.rpc.command,
     args: config.rpc.args,
     cwd: config.rpc.cwd,
+    transport: config.rpc.transport,
+    socketPath: config.rpc.socketPath,
   });
+  if (rpc.sharedNative && !config.authToken) throw new Error("Shared native access requires a Worker authentication token");
 
   // 3. 初始化 SQLite 本地缓存
   // 负责：线程、任务、事件、审批的缓存与降级回放（非真相源）
@@ -78,6 +84,7 @@ async function main() {
   let apnsNotifier = null;
   if (config.apns?.enabled) {
     apnsNotifier = new ApnsNotifier({
+      db: store.db,
       teamId: config.apns.teamId,
       keyId: config.apns.keyId,
       bundleId: config.apns.bundleId,
@@ -107,9 +114,12 @@ async function main() {
   }
 
   // 4. 创建 Worker 服务
+  const approvals = mobileApprovalBridge(config.mobileApprovals);
   // 负责：线程管理、任务执行、审批处理、事件分发
   const service = new WorkerService({
     rpc,
+    observedThreadIds: config.rpc.observedThreadIds,
+    nativeWriteGuard: approvals ? threadId => approvals("validate_thread", { threadId }) : null,
     store,
     projectPaths: config.projectPaths,
     defaultProjectPath: config.defaultProjectPath,
@@ -127,11 +137,15 @@ async function main() {
 
   // 初始化服务：启动子进程、握手 JSON-RPC
   await service.init();
+  const liveActivities = apnsNotifier ? new LiveActivities({db:store.db,notifier:apnsNotifier,service}) : null;
 
   // 5. 创建 HTTP 服务器
   // 提供 REST API 和 SSE 事件流
   const server = createHttpServer({
     service,
+    mobileApprovals: approvals,
+    mobileMetricsDb: store.db,
+    liveActivities,
     authToken: config.authToken,
     terminalHeartbeatMs: config.terminal?.heartbeatMs,
     logger: {
@@ -140,7 +154,10 @@ async function main() {
   });
 
   // 启动监听
-  await server.listen(config.port);
+  await server.listen(config.port, config.host ?? (rpc.sharedNative ? "127.0.0.1" : "0.0.0.0"));
+  const stopApprovalNotifications = startApprovalNotifications({ bridge: approvals, notifier: apnsNotifier, store,
+    logger: { warn: msg => log("warn", msg) } });
+  const stopLiveActivities = liveActivities?.start({warn:msg=>log('warn',msg)});
 
   if (config.tailscaleServe?.enabled) {
     const routeResult = await ensureTailscaleServe({
@@ -183,14 +200,21 @@ async function main() {
    *
    * @param {string} signal - 触发关闭的信号：SIGINT 或 SIGTERM
    */
-  const shutdown = async (signal) => {
+  let stopping = false;
+  const shutdown = async (signal, exitCode = 0) => {
+    if (stopping) return;
+    stopping = true;
+    stopApprovalNotifications();
+    stopLiveActivities?.();
+    const deadline = setTimeout(() => process.exit(exitCode), 3000);
+    deadline.unref();
     log("info", "shutdown requested", { signal });
     try {
       await server.close();
       await service.shutdown();
       apnsNotifier?.close?.();
       store.close();
-      process.exit(0);
+      process.exit(exitCode);
     } catch (error) {
       log("error", "shutdown failed", {
         error: error instanceof Error ? error.message : String(error),
@@ -206,6 +230,7 @@ async function main() {
   process.on("SIGTERM", () => {
     shutdown("SIGTERM");
   });
+  if (rpc.sharedNative) rpc.on("exit", () => shutdown("native_connection_closed", 1));
 }
 
 // 启动入口，捕获顶层异常

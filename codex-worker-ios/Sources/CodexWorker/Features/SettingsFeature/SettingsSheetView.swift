@@ -7,21 +7,27 @@
 
 import ComposableArchitecture
 import SwiftUI
+import ActivityKit
+import UserNotifications
 
 public struct SettingsSheetView: View {
     @State private var showAllArchivedThreads = false
+    @State private var notificationStatus = "正在读取"
 
     let store: StoreOf<SettingsFeature>
     let connectionState: ConnectionState
+    let lastSyncedAt: Date?
     let onClose: (() -> Void)?
 
     public init(
         store: StoreOf<SettingsFeature>,
         connectionState: ConnectionState,
+        lastSyncedAt: Date? = nil,
         onClose: (() -> Void)? = nil
     ) {
         self.store = store
         self.connectionState = connectionState
+        self.lastSyncedAt = lastSyncedAt
         self.onClose = onClose
     }
 
@@ -35,6 +41,22 @@ public struct SettingsSheetView: View {
 
             NavigationStack {
                 Form {
+                    Section("当前连接") {
+                        LabeledContent("服务可达性") { reachabilityBadge(connectionState) }
+                        LabeledContent("鉴权接口", value: viewStore.authenticatedResponseAt != nil ? "已收到有效响应" : "尚未确认")
+                        LabeledContent("当前任务同步") {
+                            if let lastSyncedAt { Text(lastSyncedAt, style: .relative) }
+                            else { Text("尚未同步") }
+                        }
+                        Text("服务可达、鉴权通过和内容已同步分别核对。保存配置不会代表连接成功。")
+                            .font(.footnote).foregroundStyle(.secondary)
+                    }
+                    Section("通知与持续展示") {
+                        LabeledContent("系统通知", value: notificationStatus)
+                        LabeledContent("实时活动", value: ActivityAuthorizationInfo().areActivitiesEnabled ? "系统允许" : "系统未开启")
+                        Text("只有你 Pin 的任务会持续展示。系统允许通知不代表远程通知已送达。")
+                            .font(.footnote).foregroundStyle(.secondary)
+                    }
                     Section("后端地址") {
                         HStack(spacing: 8) {
                             TextField(
@@ -75,7 +97,7 @@ public struct SettingsSheetView: View {
                     }
 
                     Section("鉴权 Token（可选）") {
-                        TextField(
+                        SecureField(
                             "Bearer Token",
                             text: Binding(
                                 get: { viewStore.token },
@@ -168,8 +190,12 @@ public struct SettingsSheetView: View {
                         }
                     }
 
+                    Section("关于") {
+                        LabeledContent("版本", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "未知")
+                        LabeledContent("构建", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "未知")
+                    }
                 }
-                .navigationTitle("连接设置")
+                .navigationTitle("连接")
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button("关闭") {
@@ -181,6 +207,15 @@ public struct SettingsSheetView: View {
             .onAppear {
                 showAllArchivedThreads = false
                 viewStore.send(.onAppear)
+            }
+            .task {
+                let settings = await UNUserNotificationCenter.current().notificationSettings()
+                switch settings.authorizationStatus {
+                case .authorized: notificationStatus = "已允许"
+                case .provisional, .ephemeral: notificationStatus = "静默或临时授权"
+                case .denied: notificationStatus = "已关闭"
+                default: notificationStatus = "尚未授权"
+                }
             }
         }
     }

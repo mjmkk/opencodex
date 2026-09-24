@@ -20,6 +20,10 @@
 import { spawn } from "node:child_process";
 import { EventEmitter } from "node:events";
 import { createInterface } from "node:readline";
+import { connect } from "node:net";
+import { Duplex } from "node:stream";
+import WebSocket from "ws";
+import { randomUUID } from "node:crypto";
 
 /** 默认请求超时时间（毫秒）：2 分钟 */
 const DEFAULT_REQUEST_TIMEOUT_MS = 120000;
@@ -76,6 +80,11 @@ export class JsonRpcClient extends EventEmitter {
     this.cwd = options.cwd ?? process.cwd();
     this.env = options.env ?? process.env;
     this.requestTimeoutMs = options.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS;
+    this.transport = options.transport ?? "stdio";
+    this.socketPath = options.socketPath;
+    this.sharedNative = this.transport === "unix" || this.transport === "websocket-proxy";
+    this.ws = null;
+    this.connectionId = null;
 
     // 运行时状态
     this.child = null;           // 子进程引用
@@ -102,6 +111,42 @@ export class JsonRpcClient extends EventEmitter {
   async start() {
     // 防止重复启动
     if (this.started) {
+      return;
+    }
+
+    if (this.sharedNative) {
+      this.connectionId = randomUUID();
+      let connection;
+      if (this.transport === "unix") {
+        if (!this.socketPath) throw new Error("A registered native socketPath is required");
+        connection = connect(this.socketPath);
+      } else {
+        this.child = spawn(this.command, this.args, { cwd: this.cwd, env: this.env, stdio: ["pipe", "pipe", "pipe"] });
+        connection = Duplex.from({ readable: this.child.stdout, writable: this.child.stdin });
+        this.child.on("error", error => connection.destroy(error));
+        this.child.stderr.on("data", chunk => this.emit("stderr", chunk.toString("utf8")));
+      }
+      // The native proxy does not negotiate compression. Stream-backed sockets
+      // also need a deadline independent of HTTP socket timeout support.
+      this.ws = new WebSocket("ws://codex-app-server/rpc", { perMessageDeflate: false, createConnection: () => connection });
+      const ws = this.ws;
+      ws.on("message", data => { if (this.ws === ws) this.#handleLine(data.toString()); });
+      ws.on("error", error => { if (this.ws === ws) this.#failAllPending(error); });
+      ws.on("close", () => {
+        if (this.ws !== ws) return;
+        this.started = false;
+        this.#failAllPending(new Error("Native connection closed; inspect uncertain writes before retrying"));
+        this.emit("exit", { sharedNative: true });
+      });
+      try {
+        await new Promise((resolve, reject) => {
+          const timer = setTimeout(() => { ws.terminate(); reject(new Error("Native handshake timed out")); }, Math.min(this.requestTimeoutMs, 10000));
+          ws.once("open", () => { clearTimeout(timer); resolve(); });
+          ws.once("error", error => { clearTimeout(timer); reject(error); });
+          ws.once("close", () => { clearTimeout(timer); reject(new Error("Native handshake closed")); });
+        });
+      } catch (error) { await this.stop(); throw error; }
+      this.started = true;
       return;
     }
 
@@ -156,6 +201,9 @@ export class JsonRpcClient extends EventEmitter {
    * @returns {Promise<void>}
    */
   async stop() {
+    this.started = false;
+    this.#failAllPending(new Error("Client disconnected; do not retry uncertain writes"));
+    if (this.ws) { this.ws.terminate(); this.ws = null; }
     if (!this.child) {
       return;
     }
@@ -189,7 +237,7 @@ export class JsonRpcClient extends EventEmitter {
    * const result = await rpc.request('thread/list', { limit: 100 });
    * console.log(result.data); // 线程列表
    */
-  request(method, params) {
+  request(method, params, options = {}) {
     // 分配请求 ID
     const id = this.nextId;
     this.nextId += 1;
@@ -199,7 +247,7 @@ export class JsonRpcClient extends EventEmitter {
       const timeout = setTimeout(() => {
         this.pending.delete(id);
         reject(new Error(`JSON-RPC request timeout: ${method}`));
-      }, this.requestTimeoutMs);
+      }, options.timeoutMs ?? this.requestTimeoutMs);
 
       // 记录等待中的请求
       this.pending.set(id, {
@@ -210,7 +258,8 @@ export class JsonRpcClient extends EventEmitter {
       });
 
       // 发送请求
-      this.#send({ id, method, params });
+      try { this.#send({ id, method, params }); }
+      catch (error) { clearTimeout(timeout); this.pending.delete(id); reject(error); }
     });
   }
 
@@ -282,6 +331,11 @@ export class JsonRpcClient extends EventEmitter {
    * @throws {Error} 如果 stdin 不可写
    */
   #send(message) {
+    if (this.sharedNative) {
+      if (this.ws?.readyState !== WebSocket.OPEN) throw new Error("Native connection is unavailable");
+      this.ws.send(JSON.stringify(message));
+      return;
+    }
     if (!this.child || !this.child.stdin.writable) {
       throw new Error("app-server stdin is not writable");
     }

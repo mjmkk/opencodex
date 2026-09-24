@@ -120,6 +120,11 @@ export function toReplayChatItem(rawItem, itemId) {
     };
   }
 
+  // Preserve completed activities as well as readable chat; the client renders
+  // tool output behind an expandable activity row.
+  if (["commandExecution", "fileChange", "mcpToolCall", "webSearch", "reasoning"].includes(rawItem.type)) {
+    return { ...rawItem, id: itemId };
+  }
   return null;
 }
 

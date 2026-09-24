@@ -37,6 +37,12 @@ public enum ThreadState: String, Codable, Sendable {
 /// }
 /// ```
 public struct Thread: Identifiable, Codable, Equatable, Sendable {
+    public var name: String?
+    public var nativeManaged = false
+    public var executionState: String? = nil
+    var origin: ThreadOrigin? = nil
+    public var sourceDevice: String? { origin?.hostID }
+    public var hasCachedSource: Bool { origin != nil }
     /// 线程唯一标识符
     public let threadId: String
 
@@ -56,11 +62,11 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
     public var modelProvider: String?
 
     /// 待处理审批数量（用于线程列表标记）
-    public var pendingApprovalCount: Int
+    public var pendingRequestCount: Int
 
     // MARK: - Identifiable
 
-    public var id: String { threadId }
+    public var id: String { (origin?.namespace ?? "legacy") + ":" + threadId }
 
     public init(
         threadId: String,
@@ -69,7 +75,7 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
         createdAt: String?,
         updatedAt: String?,
         modelProvider: String?,
-        pendingApprovalCount: Int = 0
+        pendingRequestCount: Int = 0
     ) {
         self.threadId = threadId
         self.preview = preview
@@ -77,10 +83,11 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.modelProvider = modelProvider
-        self.pendingApprovalCount = max(0, pendingApprovalCount)
+        self.pendingRequestCount = max(0, pendingRequestCount)
     }
 
     private enum CodingKeys: String, CodingKey {
+        case nativeManaged, executionState, name, origin
         case threadId
         case id
         case thread_id
@@ -92,12 +99,16 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
         case updated_at
         case modelProvider
         case model_provider
-        case pendingApprovalCount
-        case pending_approval_count
+        case pendingRequestCount
+        case pending_request_count
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        nativeManaged = try container.decodeIfPresent(Bool.self, forKey: .nativeManaged) ?? false
+        name = try container.decodeIfPresent(String.self, forKey: .name)
+        origin = try container.decodeIfPresent(ThreadOrigin.self, forKey: .origin)
+        executionState = try container.decodeIfPresent(String.self, forKey: .executionState)
 
         guard
             let decodedThreadId = try Self.decodeLossyString(
@@ -121,9 +132,9 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
         self.createdAt = Self.decodeTimestampString(from: container, keys: [.createdAt, .created_at])
         self.updatedAt = Self.decodeTimestampString(from: container, keys: [.updatedAt, .updated_at])
         self.modelProvider = Self.decodeLossyString(from: container, keys: [.modelProvider, .model_provider])
-        self.pendingApprovalCount = max(
+        self.pendingRequestCount = max(
             0,
-            Self.decodeLossyInt(from: container, keys: [.pendingApprovalCount, .pending_approval_count]) ?? 0
+            Self.decodeLossyInt(from: container, keys: [.pendingRequestCount, .pending_request_count]) ?? 0
         )
     }
 
@@ -135,7 +146,11 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
         try container.encodeIfPresent(createdAt, forKey: .createdAt)
         try container.encodeIfPresent(updatedAt, forKey: .updatedAt)
         try container.encodeIfPresent(modelProvider, forKey: .modelProvider)
-        try container.encode(pendingApprovalCount, forKey: .pendingApprovalCount)
+        try container.encode(pendingRequestCount, forKey: .pendingRequestCount)
+        try container.encode(nativeManaged, forKey: .nativeManaged)
+        try container.encodeIfPresent(name, forKey: .name)
+        try container.encodeIfPresent(origin, forKey: .origin)
+        try container.encodeIfPresent(executionState, forKey: .executionState)
     }
 
     private static func decodeLossyString(
@@ -208,9 +223,9 @@ public struct Thread: Identifiable, Codable, Equatable, Sendable {
 extension Thread {
     /// 显示名称（从 cwd 提取最后一段）
     public var displayName: String {
-        guard let cwd = cwd else { return "Untitled" }
-        let components = cwd.split(separator: "/")
-        return components.last.map(String.init) ?? "Untitled"
+        if let name, !name.isEmpty { return name }
+        if let first = preview?.split(whereSeparator: \.isNewline).first, !first.isEmpty { return String(first) }
+        return "未命名任务"
     }
 
     /// 最后活跃时间（解析 ISO 8601 时间戳）
@@ -226,13 +241,10 @@ extension Thread {
     }
 
     private static func parseISO8601Date(_ value: String) -> Date? {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        if let date = formatter.date(from: value) {
-            return date
-        }
-        formatter.formatOptions = [.withInternetDateTime]
-        return formatter.date(from: value)
+        // Sorting and accessibility read these properties repeatedly. The value-type
+        // strategy reuses Foundation's parser instead of constructing ICU formatters
+        // for every comparison, which can stall a large real directory on the main thread.
+        try? Date.ISO8601FormatStyle(includingFractionalSeconds: value.contains(".")).parse(value)
     }
 }
 
@@ -366,3 +378,5 @@ public struct Project: Identifiable, Codable, Equatable, Sendable {
 public struct ProjectsListResponse: Codable, Sendable {
     public let data: [Project]
 }
+
+struct ThreadOrigin: Codable, Equatable, Sendable { var namespace: String; var hostID: String? }

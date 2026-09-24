@@ -186,6 +186,10 @@ export class SqliteStore {
       ON thread_event_projection(threadId, threadCursor);
     `);
 
+    if (!db.prepare("PRAGMA table_info(push_devices)").all().some(column => column.name === "clientScope")) {
+      db.exec("ALTER TABLE push_devices ADD COLUMN clientScope TEXT");
+    }
+
     // 准备预编译语句（提高性能，防止 SQL 注入）
     this.stmt = {
       // 线程操作
@@ -292,16 +296,17 @@ export class SqliteStore {
       // 推送设备操作
       upsertPushDevice: db.prepare(`
         INSERT INTO push_devices(
-          deviceToken, platform, bundleId, environment, deviceName, createdAt, updatedAt, lastSeenAt
+          deviceToken, platform, bundleId, environment, deviceName, createdAt, updatedAt, lastSeenAt, clientScope
         )
         VALUES(
-          @deviceToken, @platform, @bundleId, @environment, @deviceName, @createdAt, @updatedAt, @lastSeenAt
+          @deviceToken, @platform, @bundleId, @environment, @deviceName, @createdAt, @updatedAt, @lastSeenAt, @clientScope
         )
         ON CONFLICT(deviceToken) DO UPDATE SET
           platform=excluded.platform,
           bundleId=excluded.bundleId,
           environment=excluded.environment,
           deviceName=excluded.deviceName,
+          clientScope=excluded.clientScope,
           updatedAt=excluded.updatedAt,
           lastSeenAt=excluded.lastSeenAt
       `),
@@ -309,7 +314,7 @@ export class SqliteStore {
         DELETE FROM push_devices WHERE deviceToken = ?
       `),
       listPushDevices: db.prepare(`
-        SELECT deviceToken, platform, bundleId, environment, deviceName, createdAt, updatedAt, lastSeenAt
+        SELECT deviceToken, platform, bundleId, environment, deviceName, createdAt, updatedAt, lastSeenAt, clientScope
         FROM push_devices
         ORDER BY updatedAt DESC
       `),
@@ -649,6 +654,7 @@ export class SqliteStore {
       bundleId: device.bundleId ?? null,
       environment: device.environment,
       deviceName: device.deviceName ?? null,
+      clientScope: device.clientScope ?? null,
       createdAt: device.createdAt,
       updatedAt: device.updatedAt,
       lastSeenAt: device.lastSeenAt,
@@ -678,6 +684,7 @@ export class SqliteStore {
       bundleId: row.bundleId,
       environment: row.environment,
       deviceName: row.deviceName,
+      clientScope: row.clientScope,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       lastSeenAt: row.lastSeenAt,

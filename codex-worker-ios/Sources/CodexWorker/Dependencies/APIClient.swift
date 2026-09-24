@@ -39,7 +39,11 @@ public struct APIClient: DependencyKey, Sendable {
     public var activateThread: @Sendable (_ threadId: String) async throws -> Thread
 
     /// 获取线程历史事件分页（线程级游标）
-    public var listThreadEvents: @Sendable (_ threadId: String, _ cursor: Int?, _ limit: Int?) async throws -> ThreadEventsResponse
+    public var mirrorIndex: @Sendable () async throws -> MirrorIndex = { throw CodexError.invalidState }
+    public var mirrorBody: @Sendable (String, Bool, Int, String?) async throws -> MirrorBody = { _, _, _, _ in throw CodexError.invalidState }
+    public var nativeRequests: @Sendable () async throws -> NativeRequestList = { throw CodexError.invalidState }
+    public var readNativeRequest: @Sendable (NativeRequestSelection) async throws -> NativeRemoteRequest = { _ in throw CodexError.invalidState }
+    public var respondNativeRequest: @Sendable (NativeRequestSelection) async throws -> NativeRemoteRequest = { _ in throw CodexError.invalidState }
 
     /// 查询线程终端状态
     public var getThreadTerminal: @Sendable (_ threadId: String) async throws -> ThreadTerminalStatusResponse
@@ -75,28 +79,23 @@ public struct APIClient: DependencyKey, Sendable {
     public var writeThreadFsFile: @Sendable (_ threadId: String, _ request: FileWriteRequest) async throws -> FileWriteResponse
 
     /// 发送消息（创建 Turn）
-    public var startTurn: @Sendable (_ threadId: String, _ request: StartTurnRequest) async throws -> StartTurnResponse
 
     /// 获取任务快照
-    public var getJob: @Sendable (_ jobId: String) async throws -> Job
 
     /// 获取任务事件列表（非 SSE）
-    public var listEvents: @Sendable (_ jobId: String, _ cursor: Int?) async throws -> EventsListResponse
 
     /// 提交审批决策
-    public var approve: @Sendable (_ jobId: String, _ request: ApprovalRequest) async throws -> ApprovalResponse
 
     /// 取消任务
-    public var cancel: @Sendable (_ jobId: String) async throws -> CancelResponse
 
     /// 健康检查
     public var healthCheck: @Sendable () async throws -> HealthCheckResponse
 
     // MARK: - DependencyKey
 
-    public static let liveValue = APIClient.live
-    public static let testValue = APIClient.mock
-    public static let previewValue = APIClient.mock
+    public static let liveValue: APIClient = APIClient.live
+    public static let testValue: APIClient = APIClient.live
+    public static let previewValue: APIClient = APIClient.live
 }
 
 // MARK: - Dependency Values
@@ -130,7 +129,11 @@ extension APIClient {
             archiveThread: { try await impl.archiveThread(threadId: $0) },
             unarchiveThread: { try await impl.unarchiveThread(threadId: $0) },
             activateThread: { try await impl.activateThread(threadId: $0) },
-            listThreadEvents: { try await impl.listThreadEvents(threadId: $0, cursor: $1, limit: $2) },
+            mirrorIndex: { try await impl.mirrorIndex() },
+            mirrorBody: { try await impl.mirrorBody($0, offline: $1, offset: $2, snapshot: $3) },
+            nativeRequests: { try await impl.nativeRequests() },
+            readNativeRequest: { try await impl.nativeRequest($0, operation: "read") },
+            respondNativeRequest: { try await impl.nativeRequest($0, operation: "respond") },
             getThreadTerminal: { try await impl.getThreadTerminal(threadId: $0) },
             openThreadTerminal: { try await impl.openThreadTerminal(threadId: $0, request: $1) },
             resizeTerminal: { try await impl.resizeTerminal(sessionId: $0, request: $1) },
@@ -142,11 +145,6 @@ extension APIClient {
             getThreadFsStat: { try await impl.getThreadFsStat(threadId: $0, fsPath: $1) },
             searchThreadFs: { try await impl.searchThreadFs(threadId: $0, query: $1, fsPath: $2, cursor: $3, limit: $4) },
             writeThreadFsFile: { try await impl.writeThreadFsFile(threadId: $0, request: $1) },
-            startTurn: { try await impl.startTurn(threadId: $0, request: $1) },
-            getJob: { try await impl.getJob(jobId: $0) },
-            listEvents: { try await impl.listEvents(jobId: $0, cursor: $1) },
-            approve: { try await impl.approve(jobId: $0, request: $1) },
-            cancel: { try await impl.cancel(jobId: $0) },
             healthCheck: { try await impl.healthCheck() }
         )
     }
@@ -221,8 +219,10 @@ actor LiveAPIClient {
     }
 
     /// 执行请求（带指数退避重试，针对瞬态错误最多重试 2 次）
-    private func performRequest<T: Codable>(_ request: URLRequest) async throws -> T {
-        let maxRetries = 2
+    private func performRequest<T: Codable>(_ request: URLRequest, preservingKeys: Bool = false) async throws -> T {
+        // A timed-out write may already have reached the original thread.
+        // Only reads are automatically retried; the UI keeps uncertain writes visible.
+        let maxRetries = request.httpMethod == "GET" ? 2 : 0
         var lastTransientError: CodexError?
 
         for attempt in 0 ... maxRetries {
@@ -245,10 +245,10 @@ actor LiveAPIClient {
                 }
 
                 do {
-                    return try decoder.decode(T.self, from: data)
+                    return try (preservingKeys ? JSONDecoder() : decoder).decode(T.self, from: data)
                 } catch {
                     logger.error("解析错误: \(error)")
-                    logger.error("原始数据: \(String(data: data, encoding: .utf8) ?? "nil")")
+                    logger.error("响应解析失败，字节数: \(data.count)")
                     throw CodexError.decodingError
                 }
             } catch is CancellationError {
@@ -266,6 +266,19 @@ actor LiveAPIClient {
     }
 
     // MARK: - API 实现
+
+    func mirrorIndex() async throws -> MirrorIndex {
+        try await performRequest(buildRequest(url: buildURL(path: "/v1/mirror/threads")), preservingKeys: true)
+    }
+
+    func mirrorBody(_ threadID: String, offline: Bool, offset: Int, snapshot: String?) async throws -> MirrorBody {
+        guard let component = threadID.addingPercentEncoding(withAllowedCharacters: .alphanumerics) else { throw CodexError.invalidState }
+        var query = [URLQueryItem(name: "offline", value: offline ? "true" : "false"),
+            URLQueryItem(name: "offset", value: String(offset)), URLQueryItem(name: "limit", value: "100")]
+        if let snapshot { query.append(.init(name: "snapshot", value: snapshot)) }
+        let request = try buildRequest(url: buildURL(path: "/v1/mirror/threads/" + component, queryItems: query))
+        return try await performRequest(request, preservingKeys: true)
+    }
 
     func listProjects() async throws -> [Project] {
         let url = try buildURL(path: "/v1/projects")
@@ -328,21 +341,6 @@ actor LiveAPIClient {
 
         let response: ActivateResponse = try await performRequest(request)
         return response.thread
-    }
-
-    func listThreadEvents(threadId: String, cursor: Int?, limit: Int?) async throws -> ThreadEventsResponse {
-        var queryItems: [URLQueryItem] = []
-        if let cursor {
-            queryItems.append(URLQueryItem(name: "cursor", value: String(cursor)))
-        }
-        if let limit {
-            queryItems.append(URLQueryItem(name: "limit", value: String(limit)))
-        }
-
-        let url = try buildURL(path: "/v1/threads/\(threadId)/events", queryItems: queryItems)
-        let request = try buildRequest(url: url)
-        let response: ThreadEventsResponse = try await performRequest(request)
-        return response
     }
 
     func getThreadTerminal(threadId: String) async throws -> ThreadTerminalStatusResponse {
@@ -464,298 +462,17 @@ actor LiveAPIClient {
         return try await performRequest(urlRequest)
     }
 
-    func startTurn(threadId: String, request: StartTurnRequest) async throws -> StartTurnResponse {
-        let url = try buildURL(path: "/v1/threads/\(threadId)/turns")
-        let body = try encoder.encode(request)
-        let urlRequest = try buildRequest(url: url, method: "POST", body: body)
-        return try await performRequest(urlRequest)
+    func nativeRequests() async throws -> NativeRequestList {
+        try await performRequest(buildRequest(url: buildURL(path: "/v1/native-requests")), preservingKeys: true)
     }
-
-    func getJob(jobId: String) async throws -> Job {
-        let url = try buildURL(path: "/v1/jobs/\(jobId)")
-        let request = try buildRequest(url: url)
-        return try await performRequest(request)
-    }
-
-    func listEvents(jobId: String, cursor: Int?) async throws -> EventsListResponse {
-        var queryItems: [URLQueryItem] = []
-        if let cursor = cursor {
-            queryItems.append(URLQueryItem(name: "cursor", value: String(cursor)))
-        }
-        let url = try buildURL(path: "/v1/jobs/\(jobId)/events", queryItems: queryItems)
-        let request = try buildRequest(url: url)
-        return try await performRequest(request)
-    }
-
-    func approve(jobId: String, request: ApprovalRequest) async throws -> ApprovalResponse {
-        let url = try buildURL(path: "/v1/jobs/\(jobId)/approve")
-        let body = try encoder.encode(request)
-        let urlRequest = try buildRequest(url: url, method: "POST", body: body)
-        return try await performRequest(urlRequest)
-    }
-
-    func cancel(jobId: String) async throws -> CancelResponse {
-        let url = try buildURL(path: "/v1/jobs/\(jobId)/cancel")
-        let request = try buildRequest(url: url, method: "POST")
-        return try await performRequest(request)
+    func nativeRequest(_ selection: NativeRequestSelection, operation: String) async throws -> NativeRemoteRequest {
+        let body = try JSONEncoder().encode(selection)
+        return try await performRequest(buildRequest(url: buildURL(path: "/v1/native-requests/" + operation), method: "POST", body: body), preservingKeys: true)
     }
 
     func healthCheck() async throws -> HealthCheckResponse {
         let url = try buildURL(path: "/health")
         let request = try buildRequest(url: url)
         return try await performRequest(request)
-    }
-}
-
-// MARK: - Mock Implementation
-
-extension APIClient {
-    /// Mock 客户端（用于测试和预览）
-    public static var mock: APIClient {
-        APIClient(
-            listProjects: {
-                [
-                    Project(projectId: "proj_1", projectPath: "/Users/test/project", displayName: "project"),
-                ]
-            },
-            listModels: {
-                [
-                    WorkerModel(
-                        id: "gpt-5",
-                        name: "GPT-5",
-                        provider: "openai",
-                        displayName: "openai/gpt-5"
-                    ),
-                    WorkerModel(
-                        id: "claude-sonnet-4-5",
-                        name: "Claude Sonnet 4.5",
-                        provider: "anthropic",
-                        displayName: "anthropic/claude-sonnet-4-5"
-                    ),
-                ]
-            },
-            createThread: { _ in
-                Thread(
-                    threadId: "thread_mock",
-                    preview: nil,
-                    cwd: "/Users/test/project",
-                    createdAt: ISO8601DateFormatter().string(from: Date()),
-                    updatedAt: ISO8601DateFormatter().string(from: Date()),
-                    modelProvider: "openai"
-                )
-            },
-            listThreads: { _ in
-                ThreadsListResponse(
-                    data: [
-                        Thread(
-                            threadId: "thread_mock",
-                            preview: "这是一个测试线程",
-                            cwd: "/Users/test/project",
-                            createdAt: ISO8601DateFormatter().string(from: Date()),
-                            updatedAt: ISO8601DateFormatter().string(from: Date()),
-                            modelProvider: "openai"
-                        ),
-                    ],
-                    nextCursor: nil
-                )
-            },
-            archiveThread: { threadId in
-                ArchiveThreadResponse(threadId: threadId, status: "archived")
-            },
-            unarchiveThread: { threadId in
-                ArchiveThreadResponse(threadId: threadId, status: "active")
-            },
-            activateThread: { threadId in
-                Thread(
-                    threadId: threadId,
-                    preview: nil,
-                    cwd: "/Users/test/project",
-                    createdAt: ISO8601DateFormatter().string(from: Date()),
-                    updatedAt: ISO8601DateFormatter().string(from: Date()),
-                    modelProvider: "openai"
-                )
-            },
-            listThreadEvents: { _, _, _ in
-                ThreadEventsResponse(data: [], nextCursor: -1, hasMore: false)
-            },
-            getThreadTerminal: { _ in
-                ThreadTerminalStatusResponse(session: nil)
-            },
-            openThreadTerminal: { threadId, _ in
-                ThreadTerminalOpenResponse(
-                    session: TerminalSessionSnapshot(
-                        sessionId: "term_mock",
-                        threadId: threadId,
-                        cwd: "/Users/test/project",
-                        shell: "/bin/zsh",
-                        pid: 12345,
-                        status: "running",
-                        createdAt: ISO8601DateFormatter().string(from: Date()),
-                        lastActiveAt: ISO8601DateFormatter().string(from: Date()),
-                        cols: 120,
-                        rows: 24,
-                        exitCode: nil,
-                        signal: nil,
-                        nextSeq: 0,
-                        clientCount: 1
-                    ),
-                    reused: false,
-                    wsPath: "/v1/terminals/term_mock/stream"
-                )
-            },
-            resizeTerminal: { _, request in
-                TerminalResizeResponse(
-                    session: TerminalSessionSnapshot(
-                        sessionId: "term_mock",
-                        threadId: "thread_mock",
-                        cwd: "/Users/test/project",
-                        shell: "/bin/zsh",
-                        pid: 12345,
-                        status: "running",
-                        createdAt: ISO8601DateFormatter().string(from: Date()),
-                        lastActiveAt: ISO8601DateFormatter().string(from: Date()),
-                        cols: request.cols,
-                        rows: request.rows,
-                        exitCode: nil,
-                        signal: nil,
-                        nextSeq: 0,
-                        clientCount: 1
-                    )
-                )
-            },
-            closeTerminal: { _, _ in
-                TerminalCloseResponse(
-                    session: TerminalSessionSnapshot(
-                        sessionId: "term_mock",
-                        threadId: "thread_mock",
-                        cwd: "/Users/test/project",
-                        shell: "/bin/zsh",
-                        pid: 12345,
-                        status: "exited",
-                        createdAt: ISO8601DateFormatter().string(from: Date()),
-                        lastActiveAt: ISO8601DateFormatter().string(from: Date()),
-                        cols: 120,
-                        rows: 24,
-                        exitCode: 0,
-                        signal: "0",
-                        nextSeq: 0,
-                        clientCount: 0
-                    )
-                )
-            },
-            listThreadFsRoots: { _ in
-                FileSystemRootsResponse(
-                    data: [
-                        FileSystemRoot(
-                            rootId: "workspace",
-                            rootPath: "/Users/test/project",
-                            displayName: "project"
-                        ),
-                    ]
-                )
-            },
-            resolveThreadFsReference: { _, ref in
-                FileResolveResponse(
-                    data: FileReferenceResolution(
-                        resolved: true,
-                        ref: ref,
-                        path: "/Users/test/project/README.md",
-                        line: 1,
-                        column: nil,
-                        rootId: "workspace"
-                    )
-                )
-            },
-            listThreadFsTree: { _, _, _, _ in
-                FileTreeResponse(
-                    data: [
-                        FileTreeEntry(
-                            name: "README.md",
-                            path: "/Users/test/project/README.md",
-                            kind: .file,
-                            size: 123,
-                            modifiedAt: ISO8601DateFormatter().string(from: Date())
-                        ),
-                    ],
-                    nextCursor: nil,
-                    hasMore: false,
-                    total: 1
-                )
-            },
-            getThreadFsFile: { _, fsPath, _, _ in
-                FileContentResponse(
-                    data: FileContentPayload(
-                        path: fsPath,
-                        language: "markdown",
-                        etag: "W/\"123-456\"",
-                        totalLines: 1,
-                        fromLine: 1,
-                        toLine: 1,
-                        truncated: false,
-                        lines: [FileContentLine(line: 1, text: "preview")]
-                    )
-                )
-            },
-            getThreadFsStat: { _, fsPath in
-                FileStatResponse(
-                    data: FileStatPayload(
-                        path: fsPath,
-                        kind: .file,
-                        size: 123,
-                        isDirectory: false,
-                        isFile: true,
-                        modifiedAt: ISO8601DateFormatter().string(from: Date()),
-                        createdAt: ISO8601DateFormatter().string(from: Date()),
-                        etag: "W/\"123-456\""
-                    )
-                )
-            },
-            searchThreadFs: { _, _, _, _, _ in
-                FileSearchResponse(data: [], nextCursor: nil, hasMore: false, total: 0)
-            },
-            writeThreadFsFile: { _, request in
-                FileWriteResponse(
-                    data: FileWritePayload(
-                        path: request.path,
-                        size: request.content.utf8.count,
-                        modifiedAt: ISO8601DateFormatter().string(from: Date()),
-                        etag: "W/\"updated\""
-                    )
-                )
-            },
-            startTurn: { threadId, _ in
-                StartTurnResponse(
-                    jobId: "job_mock",
-                    state: "RUNNING",
-                    threadId: threadId,
-                    turnId: "turn_mock"
-                )
-            },
-            getJob: { jobId in
-                Job(
-                    jobId: jobId,
-                    threadId: "thread_mock",
-                    turnId: "turn_mock",
-                    state: .running,
-                    pendingApprovalCount: 0,
-                    createdAt: ISO8601DateFormatter().string(from: Date()),
-                    updatedAt: ISO8601DateFormatter().string(from: Date()),
-                    terminalAt: nil,
-                    errorMessage: nil
-                )
-            },
-            listEvents: { _, _ in
-                EventsListResponse(data: [], nextCursor: 0, firstSeq: 0, job: nil)
-            },
-            approve: { jobId, request in
-                ApprovalResponse(approvalId: request.approvalId, status: "submitted", decision: request.decision)
-            },
-            cancel: { jobId in
-                CancelResponse(jobId: jobId, state: "CANCELLED")
-            },
-            healthCheck: {
-                HealthCheckResponse(status: "ok", authEnabled: false)
-            }
-        )
     }
 }
