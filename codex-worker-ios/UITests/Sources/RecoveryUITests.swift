@@ -50,10 +50,12 @@ final class RecoveryUITests: XCTestCase {
     func testGoalOverviewRealServiceAndRestart() {
         continueAfterFailure = false
         let overviewApp = XCUIApplication(bundleIdentifier: "li.CodexWorkerApp")
+        overviewApp.terminate()
         overviewApp.activate()
         if overviewApp.buttons["允许"].exists { overviewApp.buttons["允许"].tap() }
         func openOverview() {
-            if overviewApp.buttons["收起线程列表"].isHittable { overviewApp.buttons["收起线程列表"].tap() }
+            let drawerClose = overviewApp.buttons["收起线程列表"]
+            if drawerClose.exists && drawerClose.frame.minX >= 0 && drawerClose.frame.maxX < overviewApp.frame.width { drawerClose.tap() }
             XCTAssertTrue(overviewApp.buttons["任务更多选项"].waitForExistence(timeout: 20))
             overviewApp.buttons["任务更多选项"].tap()
             overviewApp.buttons["Goal Overview"].tap()
@@ -73,6 +75,11 @@ final class RecoveryUITests: XCTestCase {
         XCTAssertTrue(overviewApp.staticTexts["资料覆盖："].waitForExistence(timeout: 5))
         XCTAssertTrue(overviewApp.staticTexts["判断时间："].exists)
         evidence("goal-overview-real-expanded")
+        let workers = overviewApp.buttons["Workers"]
+        XCTAssertTrue(workers.exists)
+        workers.tap()
+        XCTAssertTrue(overviewApp.staticTexts["Worker 观察时间："].firstMatch.waitForExistence(timeout: 5))
+        evidence("goal-overview-real-workers")
         overviewApp.segmentedControls.buttons["Risk"].tap()
         evidence("goal-overview-risk")
         overviewApp.segmentedControls.buttons["Blocked"].tap()
