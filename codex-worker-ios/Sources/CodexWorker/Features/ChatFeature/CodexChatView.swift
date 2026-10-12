@@ -60,6 +60,7 @@ public struct CodexChatView: View {
     let onPinTap: (() -> Void)?
     let isPinned: Bool
     let onInboxTap: (() -> Void)?
+    let onOverviewTap: (() -> Void)?
     private let renderPipeline: MessageRenderPipeline
     private let codeSyntaxHighlighter: CodeSyntaxHighlighter
 
@@ -77,6 +78,7 @@ public struct CodexChatView: View {
         onPinTap: (() -> Void)? = nil,
         isPinned: Bool = false,
         onInboxTap: (() -> Void)? = nil,
+        onOverviewTap: (() -> Void)? = nil,
         renderPipeline: MessageRenderPipeline = .live,
         codeSyntaxHighlighter: CodeSyntaxHighlighter = CodexCodeSyntaxHighlighter()
     ) {
@@ -93,6 +95,7 @@ public struct CodexChatView: View {
         self.onPinTap = onPinTap
         self.isPinned = isPinned
         self.onInboxTap = onInboxTap
+        self.onOverviewTap = onOverviewTap
         self.renderPipeline = renderPipeline
         self.codeSyntaxHighlighter = codeSyntaxHighlighter
     }
@@ -313,6 +316,7 @@ public struct CodexChatView: View {
                         .frame(maxWidth: .infinity, alignment: .leading).foregroundStyle(.primary)
                 }.accessibilityLabel("任务信息：" + viewStore.activeThreadTitle)
                 Menu {
+                    Button("Goal Overview", systemImage: "chart.bar.xaxis") { onOverviewTap?() }
                     Button("待你处理", systemImage: "tray") { onInboxTap?() }
                     if viewStore.activeThreadId != nil {
                         Button(isPinned ? "取消持续展示" : "Pin 持续展示", systemImage: isPinned ? "pin.slash" : "pin") { onPinTap?() }

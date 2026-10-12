@@ -80,57 +80,14 @@ struct NativeRequestView: View {
 
     var body: some View {
         Form {
-            Section {
-                Text(item.issue ?? "原任务").font(.caption).foregroundStyle(.secondary)
-                Text(item.title).font(.headline).textSelection(.enabled)
-                Text(fresh ? item.statusText : "正在核对原请求，缓存不能用于提交")
-                if let observation = item.observation { Text(observation).font(.footnote).foregroundStyle(.secondary) }
-                if item.native_resolution == nil && item.native_terminal == nil && !item.response_submitted && !attempted {
-                if let message = item.params["message"]?.stringValue ?? item.params["reason"]?.stringValue {
-                    Text(message).textSelection(.enabled)
-                }
-                forContext("command", title: "命令")
-                forContext("cwd", title: "位置")
-                forContext("networkApprovalContext", title: "网络访问范围")
-                forContext("grantRoot", title: "文件授权范围")
-                forContext("permissions", title: "请求的权限")
-                }
-            }
+            requestSummary
             if item.native_resolution == nil && item.native_terminal == nil && !item.response_submitted && !attempted {
                 responseControls.disabled(!canRespond)
             }
-            if let proposed, canRespond {
-                Section("核对你的选择") {
-                    Text(responseText(proposed)).font(.footnote.monospaced()).textSelection(.enabled)
-                    Button("确认发送这次选择") { Task { await submit(proposed) } }
-                        .buttonStyle(.borderedProminent)
-                }
-            }
-            if attempted || item.response_submitted || item.native_resolution != nil || item.native_terminal != nil {
-                Section("实际回执") {
-                    if let sent { Text(responseText(sent)).font(.footnote.monospaced()).textSelection(.enabled) }
-                    Text(item.response_submitted ? "已收到响应提交回执" : "响应提交结果尚未确认")
-                    Text(item.native_resolution != nil ? "已收到原生 request resolved" : "尚未收到原生 request resolved")
-                    if let terminal = item.native_terminal { Text("原轮次：" + terminal.nativeJSON).font(.footnote) }
-                    else { Text("原轮次后续尚待核对").font(.footnote) }
-                    if attempted && fresh && item.canSubmitResponse {
-                        Button("已核对尚未提交，重新选择") {
-                            attempted = false; sent = nil; proposed = nil
-                            Task { await persistDraft() }
-                        }.disabled(busy)
-                    }
-                    Text("请求结束也可能来自清理；请结合原任务后续判断执行结果。").font(.footnote).foregroundStyle(.secondary)
-                }
-            }
+            confirmationSection
+            receiptSection
             if let error { Section { Text(error).foregroundStyle(.red) } }
-            Section {
-                Button("回到原任务") { onOpenThread?(item.thread_id) }
-                DisclosureGroup("完整原生请求") {
-                    Text(JSONValue.object(item.request ?? [:]).nativeJSON).font(.footnote.monospaced()).textSelection(.enabled)
-                    Text("Thread: " + item.thread_id).textSelection(.enabled)
-                    Text("Turn: " + (item.turn_id ?? "未提供")).textSelection(.enabled)
-                }
-            }
+            requestDetails
         }
         .navigationTitle("原生请求").navigationBarTitleDisplayMode(.inline)
         .toolbar { Button("刷新") { Task { await refresh() } }.disabled(busy) }
@@ -143,6 +100,65 @@ struct NativeRequestView: View {
             while !Task.isCancelled {
                 do { try await Task.sleep(for: .seconds(3)) } catch { return }
                 if attempted || item.response_submitted { await refresh() }
+            }
+        }
+    }
+
+    @ViewBuilder private var requestSummary: some View {
+        Section {
+            Text(item.issue ?? "原任务").font(.caption).foregroundStyle(.secondary)
+            Text(item.title).font(.headline).textSelection(.enabled)
+            Text(fresh ? item.statusText : "正在核对原请求，缓存不能用于提交")
+            if let observation = item.observation { Text(observation).font(.footnote).foregroundStyle(.secondary) }
+            if item.native_resolution == nil && item.native_terminal == nil && !item.response_submitted && !attempted {
+                if let message = item.params["message"]?.stringValue ?? item.params["reason"]?.stringValue {
+                    Text(message).textSelection(.enabled)
+                }
+                forContext("command", title: "命令")
+                forContext("cwd", title: "位置")
+                forContext("networkApprovalContext", title: "网络访问范围")
+                forContext("grantRoot", title: "文件授权范围")
+                forContext("permissions", title: "请求的权限")
+            }
+        }
+    }
+
+    @ViewBuilder private var confirmationSection: some View {
+        if let proposed, canRespond {
+            Section("核对你的选择") {
+                Text(responseText(proposed)).font(.footnote.monospaced()).textSelection(.enabled)
+                Button("确认发送这次选择") { Task { await submit(proposed) } }
+                    .buttonStyle(.borderedProminent)
+            }
+        }
+    }
+
+    @ViewBuilder private var receiptSection: some View {
+        if attempted || item.response_submitted || item.native_resolution != nil || item.native_terminal != nil {
+            Section("实际回执") {
+                if let sent { Text(responseText(sent)).font(.footnote.monospaced()).textSelection(.enabled) }
+                Text(item.response_submitted ? "已收到响应提交回执" : "响应提交结果尚未确认")
+                Text(item.native_resolution != nil ? "已收到原生 request resolved" : "尚未收到原生 request resolved")
+                if let terminal = item.native_terminal { Text("原轮次：" + terminal.nativeJSON).font(.footnote) }
+                else { Text("原轮次后续尚待核对").font(.footnote) }
+                if attempted && fresh && item.canSubmitResponse {
+                    Button("已核对尚未提交，重新选择") {
+                        attempted = false; sent = nil; proposed = nil
+                        Task { await persistDraft() }
+                    }.disabled(busy)
+                }
+                Text("请求结束也可能来自清理；请结合原任务后续判断执行结果。").font(.footnote).foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    @ViewBuilder private var requestDetails: some View {
+        Section {
+            Button("回到原任务") { onOpenThread?(item.thread_id) }
+            DisclosureGroup("完整原生请求") {
+                Text(JSONValue.object(item.request ?? [:]).nativeJSON).font(.footnote.monospaced()).textSelection(.enabled)
+                Text("Thread: " + item.thread_id).textSelection(.enabled)
+                Text("Turn: " + (item.turn_id ?? "未提供")).textSelection(.enabled)
             }
         }
     }

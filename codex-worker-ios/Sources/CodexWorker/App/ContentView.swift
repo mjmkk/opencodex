@@ -42,6 +42,7 @@ public struct ContentView: View {
     public let store: StoreOf<AppFeature>
     @State private var isSettingsPresented = false
     @State private var isInboxPresented = false
+    @State private var isOverviewPresented = false
     @State private var nativeRequestRoute: NativeRequestRoute?
     @State private var terminalDragStartRatio: Double?
 
@@ -88,7 +89,8 @@ public struct ContentView: View {
                                 if let id = viewStore.activeThreadId { viewStore.send(.threads(.pinTapped(id))) }
                             },
                             isPinned: viewStore.isPinned,
-                            onInboxTap: { nativeRequestRoute = nil; isInboxPresented = true }
+                            onInboxTap: { nativeRequestRoute = nil; isInboxPresented = true },
+                            onOverviewTap: { isOverviewPresented = true }
                         )
 
                         if viewStore.isTerminalPresented {
@@ -228,6 +230,7 @@ public struct ContentView: View {
                     }
                 )
             }
+            .sheet(isPresented: $isOverviewPresented) { GoalOverviewScreen() }
             .sheet(isPresented: $isInboxPresented) {
                 MobileInboxView(nativeRequestRoute: nativeRequestRoute) { id in
                     isInboxPresented = false

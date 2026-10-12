@@ -42,6 +42,7 @@ public struct APIClient: DependencyKey, Sendable {
     public var mirrorIndex: @Sendable () async throws -> MirrorIndex = { throw CodexError.invalidState }
     public var mirrorBody: @Sendable (String, Bool, Int, String?) async throws -> MirrorBody = { _, _, _, _ in throw CodexError.invalidState }
     public var nativeRequests: @Sendable () async throws -> NativeRequestList = { throw CodexError.invalidState }
+    public var goalOverview: @Sendable () async throws -> JSONValue = { throw CodexError.invalidState }
     public var readNativeRequest: @Sendable (NativeRequestSelection) async throws -> NativeRemoteRequest = { _ in throw CodexError.invalidState }
     public var respondNativeRequest: @Sendable (NativeRequestSelection) async throws -> NativeRemoteRequest = { _ in throw CodexError.invalidState }
 
@@ -132,6 +133,7 @@ extension APIClient {
             mirrorIndex: { try await impl.mirrorIndex() },
             mirrorBody: { try await impl.mirrorBody($0, offline: $1, offset: $2, snapshot: $3) },
             nativeRequests: { try await impl.nativeRequests() },
+            goalOverview: { try await impl.goalOverview() },
             readNativeRequest: { try await impl.nativeRequest($0, operation: "read") },
             respondNativeRequest: { try await impl.nativeRequest($0, operation: "respond") },
             getThreadTerminal: { try await impl.getThreadTerminal(threadId: $0) },
@@ -464,6 +466,9 @@ actor LiveAPIClient {
 
     func nativeRequests() async throws -> NativeRequestList {
         try await performRequest(buildRequest(url: buildURL(path: "/v1/native-requests")), preservingKeys: true)
+    }
+    func goalOverview() async throws -> JSONValue {
+        try await performRequest(buildRequest(url: buildURL(path: "/v1/overview/goals")), preservingKeys: true)
     }
     func nativeRequest(_ selection: NativeRequestSelection, operation: String) async throws -> NativeRemoteRequest {
         let body = try JSONEncoder().encode(selection)

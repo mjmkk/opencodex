@@ -47,4 +47,42 @@ final class RecoveryUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "CancellationError")).firstMatch.exists)
         capture("03-restored-AGT12-messages")
     }
+    func testGoalOverviewRealServiceAndRestart() {
+        continueAfterFailure = false
+        let overviewApp = XCUIApplication(bundleIdentifier: "li.CodexWorkerApp")
+        overviewApp.activate()
+        if overviewApp.buttons["允许"].exists { overviewApp.buttons["允许"].tap() }
+        func openOverview() {
+            if overviewApp.buttons["收起线程列表"].isHittable { overviewApp.buttons["收起线程列表"].tap() }
+            XCTAssertTrue(overviewApp.buttons["任务更多选项"].waitForExistence(timeout: 20))
+            overviewApp.buttons["任务更多选项"].tap()
+            overviewApp.buttons["Goal Overview"].tap()
+            XCTAssertTrue(overviewApp.navigationBars["Goal Overview"].waitForExistence(timeout: 5))
+        }
+        func evidence(_ name: String) {
+            let screenshot = XCTAttachment(screenshot: overviewApp.screenshot())
+            screenshot.name = name; screenshot.lifetime = .keepAlways; add(screenshot)
+            let tree = XCTAttachment(string: overviewApp.debugDescription)
+            tree.name = name + "-accessibility"; tree.lifetime = .keepAlways; add(tree)
+        }
+        openOverview()
+        let row = overviewApp.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "展开 ")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 35), "Requires real Goal inventory; error or empty fixture is not success")
+        let original = row.label
+        row.tap()
+        XCTAssertTrue(overviewApp.staticTexts["资料覆盖："].waitForExistence(timeout: 5))
+        XCTAssertTrue(overviewApp.staticTexts["判断时间："].exists)
+        evidence("goal-overview-real-expanded")
+        overviewApp.segmentedControls.buttons["Risk"].tap()
+        evidence("goal-overview-risk")
+        overviewApp.segmentedControls.buttons["Blocked"].tap()
+        evidence("goal-overview-blocked")
+        overviewApp.segmentedControls.buttons["All"].tap()
+        overviewApp.terminate()
+        overviewApp.activate()
+        openOverview()
+        XCTAssertTrue(overviewApp.buttons[original].waitForExistence(timeout: 5), "Real cached Goal must survive restart")
+        evidence("goal-overview-after-restart")
+    }
+
 }

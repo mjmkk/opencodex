@@ -39,7 +39,33 @@ actor MobileSyncCache {
                   readCursor INTEGER NOT NULL DEFAULT -1, pinned INTEGER NOT NULL DEFAULT 0,
                   PRIMARY KEY(scope, threadId));
                 CREATE TABLE IF NOT EXISTS mobile_selection (scope TEXT PRIMARY KEY, threadId TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS mobile_observer_snapshots (
+                  scope TEXT NOT NULL, name TEXT NOT NULL, value BLOB NOT NULL, PRIMARY KEY(scope,name));
                 """)
+        }
+    }
+
+    /// Rebuildable observer responses share the existing account-scoped cache.
+    func goalOverview(scope: String) throws -> GoalOverviewCacheEntry? {
+        try db.read { db in
+            try Data.fetchOne(db, sql: "SELECT value FROM mobile_observer_snapshots WHERE scope=? AND name='goal-overview'", arguments: [scope])
+                .map { try JSONDecoder().decode(GoalOverviewCacheEntry.self, from: $0) }
+        }
+    }
+
+    func saveGoalOverview(_ entry: GoalOverviewCacheEntry, scope: String) throws {
+        try db.write { db in
+            guard let incoming = entry.payload.objectValue,
+                  let namespace = incoming["namespace"]?.stringValue,
+                  let revision = incoming["snapshot_revision"]?.intValue else { throw CodexError.invalidState }
+            if let data = try Data.fetchOne(db, sql: "SELECT value FROM mobile_observer_snapshots WHERE scope=? AND name='goal-overview'", arguments: [scope]),
+               let saved = try? JSONDecoder().decode(GoalOverviewCacheEntry.self, from: data),
+               let previous = saved.payload.objectValue,
+               previous["namespace"]?.stringValue == namespace,
+               let oldRevision = previous["snapshot_revision"]?.intValue,
+               oldRevision > revision { throw CodexError.invalidState }
+            try db.execute(sql: "INSERT INTO mobile_observer_snapshots(scope,name,value) VALUES(?,'goal-overview',?) ON CONFLICT(scope,name) DO UPDATE SET value=excluded.value",
+                arguments: [scope, try JSONEncoder().encode(entry)])
         }
     }
 
