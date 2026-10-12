@@ -53,10 +53,9 @@ final class RecoveryUITests: XCTestCase {
         overviewApp.terminate()
         overviewApp.activate()
         if overviewApp.buttons["允许"].exists { overviewApp.buttons["允许"].tap() }
+        if overviewApp.buttons["Allow"].exists { overviewApp.buttons["Allow"].tap() }
         func openOverview() {
-            let drawerClose = overviewApp.buttons["收起线程列表"]
-            if drawerClose.exists && drawerClose.frame.minX >= 0 && drawerClose.frame.maxX < overviewApp.frame.width { drawerClose.tap() }
-            XCTAssertTrue(overviewApp.buttons["任务更多选项"].waitForExistence(timeout: 20))
+            prepareOverviewMenu(overviewApp)
             overviewApp.buttons["任务更多选项"].tap()
             overviewApp.buttons["Goal Overview"].tap()
             XCTAssertTrue(overviewApp.navigationBars["Goal Overview"].waitForExistence(timeout: 5))
@@ -90,6 +89,68 @@ final class RecoveryUITests: XCTestCase {
         openOverview()
         XCTAssertTrue(overviewApp.buttons[original].waitForExistence(timeout: 5), "Real cached Goal must survive restart")
         evidence("goal-overview-after-restart")
+    }
+
+    private func prepareOverviewMenu(_ app: XCUIApplication) {
+        let more = app.buttons["任务更多选项"]
+        XCTAssertTrue(more.waitForExistence(timeout: 20))
+        let ready = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hittable == true"), object: more)
+        if XCTWaiter.wait(for: [ready], timeout: 5) != .completed {
+            let drawerClose = app.buttons["收起线程列表"]
+            if drawerClose.exists && drawerClose.isHittable && drawerClose.frame.minX >= 0 && drawerClose.frame.maxX < app.frame.width {
+                drawerClose.tap()
+            }
+        }
+    }
+
+    private func openOverviewForTransportCheck(_ app: XCUIApplication) {
+        prepareOverviewMenu(app)
+        app.buttons["任务更多选项"].tap()
+        app.buttons["Goal Overview"].tap()
+        XCTAssertTrue(app.navigationBars["Goal Overview"].waitForExistence(timeout: 5))
+    }
+
+    private func captureOverview(_ app: XCUIApplication, name: String) {
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = name; screenshot.lifetime = .keepAlways; add(screenshot)
+        let tree = XCTAttachment(string: app.debugDescription)
+        tree.name = name + "-accessibility"; tree.lifetime = .keepAlways; add(tree)
+    }
+
+    // Uses the actual GET-only QA proxy and real saved production content.
+    // The host switches only transport availability; no Goal fixture is created.
+    func testGoalOverviewKeepsRealCacheDuringTransportFailure() {
+        continueAfterFailure = false
+        let app = XCUIApplication(bundleIdentifier: "li.CodexWorkerApp")
+        app.terminate(); app.activate()
+        openOverviewForTransportCheck(app)
+        let row = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "展开 ")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 15), "A previously saved real Goal is required")
+        let original = row.label
+        let failure = app.staticTexts["读取失败，保留上次观察；判断时间未更新。"]
+        XCTAssertTrue(failure.waitForExistence(timeout: 30), "Requires an actual HTTP503 from the isolated proxy")
+        XCTAssertTrue(app.buttons[original].exists, "A transport failure must retain the actual cached Goal")
+        app.buttons[original].tap()
+        XCTAssertTrue(app.staticTexts["判断时间："].waitForExistence(timeout: 5))
+        captureOverview(app, name: "controlled-http503-retains-real-goal")
+    }
+
+    func testGoalOverviewRecoversAfterTransportFailure() {
+        continueAfterFailure = false
+        let app = XCUIApplication(bundleIdentifier: "li.CodexWorkerApp")
+        app.terminate(); app.activate()
+        openOverviewForTransportCheck(app)
+        let row = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "展开 ")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 15))
+        let refresh = app.buttons["刷新目标观察"]
+        let ready = XCTNSPredicateExpectation(predicate: NSPredicate(format: "enabled == true"), object: refresh)
+        XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 30), .completed)
+        refresh.tap()
+        let refreshed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "enabled == true"), object: refresh)
+        XCTAssertEqual(XCTWaiter.wait(for: [refreshed], timeout: 30), .completed)
+        XCTAssertFalse(app.staticTexts["读取失败，保留上次观察；判断时间未更新。"].exists)
+        XCTAssertTrue(row.exists)
+        captureOverview(app, name: "controlled-http200-recovers-real-goal")
     }
 
 }

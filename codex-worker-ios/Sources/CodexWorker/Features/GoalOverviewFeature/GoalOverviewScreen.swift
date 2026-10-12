@@ -7,6 +7,7 @@ struct GoalOverviewScreen: View {
     @State private var isRefreshing = false
     @State private var failure: String?
     @State private var accountScope: String?
+    @State private var sourceNamespace: String?
     @State private var snapshot: JSONValue?
     @State private var generation = UUID()
 
@@ -17,55 +18,93 @@ struct GoalOverviewScreen: View {
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active { Task { await refresh() } }
             }
-            .onDisappear { generation = UUID() }
+            .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
+                identityChanged()
+            }
+            .onDisappear { generation = UUID(); isRefreshing = false }
     }
 
     @MainActor private func refresh() async {
+        // Foreground and explicit refresh share one cache/version baseline.
+        guard !isRefreshing else { return }
         let request = UUID()
         generation = request
         isRefreshing = true
         defer { if generation == request { isRefreshing = false } }
         do {
             let scope = try MobileSyncEngine.scope()
-            if accountScope != scope {
-                rows = []; snapshot = nil; hasSnapshot = false; failure = nil; accountScope = scope
-                if let entry = try? await MobileSyncCache.shared?.goalOverview(scope: scope) {
-                    guard generation == request, (try? MobileSyncEngine.scope()) == scope else { return }
-                    if (try? validate(entry.payload, scope: scope)) != nil,
-                       let restored = try? GoalOverviewDecoder.rows(entry.payload, cached: true) {
-                        rows = restored; snapshot = entry.payload; hasSnapshot = true
-                    }
-                }
+            let namespace = UserDefaults.standard.string(forKey: "codex.mirror.namespace." + scope)
+            if accountScope != scope || sourceNamespace != namespace {
+                clearSnapshot()
+                accountScope = scope; sourceNamespace = namespace
             }
+            guard let namespace, let cache = MobileSyncCache.shared else { throw CodexError.invalidState }
+            // Read the durable baseline on every refresh, including after an
+            // earlier refresh was cancelled while reading it.
+            await restoreCache(scope: scope, namespace: namespace, request: request)
+            guard accepts(request, scope: scope, namespace: namespace) else { return }
             let payload = try await APIClient.live.goalOverview()
-            guard generation == request, (try? MobileSyncEngine.scope()) == scope else { return }
-            try validate(payload, scope: scope)
+            guard accepts(request, scope: scope, namespace: namespace) else { return }
+            try validate(payload, scope: scope, namespace: namespace)
             let updated = try GoalOverviewDecoder.rows(payload)
-            // Advance the in-memory version before suspension so a concurrent
-            // refresh cannot validate against the older page during persistence.
-            snapshot = payload; rows = updated; hasSnapshot = true
-            try await MobileSyncCache.shared?.saveGoalOverview(.init(payload: payload, receivedAt: Date()), scope: scope)
-            guard generation == request, (try? MobileSyncEngine.scope()) == scope else { return }
+            // Do not publish a response until persistence accepts its version.
+            try await cache.saveGoalOverview(.init(payload: payload, receivedAt: Date()), scope: scope)
+            guard accepts(request, scope: scope, namespace: namespace) else { return }
+            try validate(payload, scope: scope, namespace: namespace)
             snapshot = payload; rows = updated; hasSnapshot = true; failure = nil
         } catch {
             guard generation == request else { return }
-            let expectedNamespace = accountScope.flatMap { UserDefaults.standard.string(forKey: "codex.mirror.namespace." + $0) }
-            if accountScope != (try? MobileSyncEngine.scope()) ||
-                (snapshot != nil && snapshot?.objectValue?["namespace"]?.stringValue != expectedNamespace) {
-                rows = []; snapshot = nil; hasSnapshot = false; accountScope = nil
+            if let scope = accountScope, let namespace = sourceNamespace {
+                guard accepts(request, scope: scope, namespace: namespace) else { return }
+                // A different view may have saved a newer page while this
+                // request was suspended. Restore that page after a rejected write.
+                await restoreCache(scope: scope, namespace: namespace, request: request)
+                guard accepts(request, scope: scope, namespace: namespace) else { return }
             }
             if let snapshot, let restored = try? GoalOverviewDecoder.rows(snapshot, cached: true) { rows = restored }
             failure = hasSnapshot ? "读取失败，保留上次观察；判断时间未更新。" : "目标观察暂不可用，请稍后刷新。"
         }
     }
 
-    private func validate(_ payload: JSONValue, scope: String) throws {
+    @MainActor private func restoreCache(scope: String, namespace: String, request: UUID) async {
+        if let entry = try? await MobileSyncCache.shared?.goalOverview(scope: scope) {
+            guard accepts(request, scope: scope, namespace: namespace) else { return }
+            if (try? validate(entry.payload, scope: scope, namespace: namespace)) != nil,
+               let restored = try? GoalOverviewDecoder.rows(entry.payload, cached: true) {
+                rows = restored; snapshot = entry.payload; hasSnapshot = true
+            }
+        }
+    }
+
+    @MainActor private func accepts(_ request: UUID, scope: String, namespace: String) -> Bool {
+        guard generation == request else { return false }
+        guard (try? MobileSyncEngine.scope()) == scope,
+              UserDefaults.standard.string(forKey: "codex.mirror.namespace." + scope) == namespace else {
+            identityChanged()
+            return false
+        }
+        return true
+    }
+
+    @MainActor private func identityChanged() {
+        let scope = try? MobileSyncEngine.scope()
+        let namespace = scope.flatMap { UserDefaults.standard.string(forKey: "codex.mirror.namespace." + $0) }
+        guard accountScope != scope || sourceNamespace != namespace else { return }
+        generation = UUID(); isRefreshing = false
+        clearSnapshot(); accountScope = nil; sourceNamespace = nil
+        Task { await refresh() }
+    }
+
+    private func clearSnapshot() {
+        rows = []; snapshot = nil; hasSnapshot = false; failure = nil
+    }
+
+    private func validate(_ payload: JSONValue, scope: String, namespace: String) throws {
         guard let root = payload.objectValue,
-              let namespace = root["namespace"]?.stringValue,
-              let revision = root["snapshot_revision"]?.intValue else { throw CodexError.invalidState }
-        // The existing authenticated Mirror sync establishes the source account.
-        guard let expected = UserDefaults.standard.string(forKey: "codex.mirror.namespace." + scope),
-              expected == namespace else { throw CodexError.invalidState }
+              root["namespace"]?.stringValue == namespace,
+              let revision = root["snapshot_revision"]?.intValue,
+              UserDefaults.standard.string(forKey: "codex.mirror.namespace." + scope) == namespace
+        else { throw CodexError.invalidState }
         if let old = snapshot?.objectValue {
             guard old["namespace"]?.stringValue == namespace,
                   let previous = old["snapshot_revision"]?.intValue,

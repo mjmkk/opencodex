@@ -14,7 +14,7 @@ struct GoalOverviewView: View {
     var body: some View {
         NavigationStack {
             GeometryReader { geometry in
-                let columns = Columns(width: max(320, geometry.size.width))
+                let columns = Columns(width: max(1, geometry.size.width))
                 VStack(spacing: 12) {
                     Picker("筛选目标", selection: $filter) {
                         ForEach(GoalOverviewFilter.allCases, id: \.self) { Text($0.rawValue).tag($0) }
@@ -181,10 +181,10 @@ struct GoalOverviewView: View {
 
     private struct Columns {
         let width: CGFloat
-        var project: CGFloat { width < 380 ? 40 : 56 }
-        var progress: CGFloat { width < 380 ? 60 : 76 }
-        var health: CGFloat { 60 }
-        var expand: CGFloat { 30 }
-        var task: CGFloat { width - 40 - project - progress - health - expand }
+        var project: CGFloat { width < 380 ? width * 0.12 : 56 }
+        var progress: CGFloat { width < 380 ? width * 0.18 : 76 }
+        var health: CGFloat { width < 380 ? width * 0.15 : 60 }
+        var expand: CGFloat { width < 380 ? width * 0.075 : 30 }
+        var task: CGFloat { max(0, width - 40 - project - progress - health - expand) }
     }
 }
