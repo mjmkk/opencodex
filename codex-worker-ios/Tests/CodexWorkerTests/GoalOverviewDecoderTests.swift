@@ -472,6 +472,18 @@ final class GoalOverviewDecoderTests: XCTestCase {
         XCTAssertThrowsError(try GoalOverviewDecoder.inventoryValidation(later))
     }
 
+    func testInventoryYearRangeMatchesCoreContract() throws {
+        let original = page(goal(progress: slot("pending", .null), health: slot("pending", .null), availability: "pending"))
+        let zero = pairedInventoryPage(original, observed: "0000-01-01T00:00:00Z", verified: "0000-01-01T00:00:00Z")
+        XCTAssertThrowsError(try GoalOverviewDecoder.rows(zero))
+        XCTAssertThrowsError(try GoalOverviewDecoder.inventoryValidation(zero))
+        for boundary in ["0001-01-01T00:00:00Z", "9999-12-31T23:59:59Z"] {
+            let legal = pairedInventoryPage(original, observed: boundary, verified: boundary)
+            XCTAssertEqual(try GoalOverviewDecoder.rows(legal).count, 1)
+            XCTAssertEqual(try GoalOverviewDecoder.inventoryValidation(legal).availability, .current)
+        }
+    }
+
     private func pairedInventoryPage(_ page: JSONValue, observed: String, verified: String, state: String = "current") -> JSONValue {
         var fields = page.objectValue!; fields["inventory_observed_at"] = .string(observed)
         return inventoryPage(.object(fields), .object(["availability": .string(state), "verified_at": .string(verified),

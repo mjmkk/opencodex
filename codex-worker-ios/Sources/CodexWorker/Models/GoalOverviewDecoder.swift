@@ -70,7 +70,7 @@ enum GoalOverviewDecoder {
         let year = civil[0], month = civil[1], day = civil[2]
         let leap = year.isMultiple(of: 400) || (year.isMultiple(of: 4) && !year.isMultiple(of: 100))
         let monthDays = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-        guard (1...12).contains(month), (1...monthDays[month - 1]).contains(day),
+        guard (1...9999).contains(year), (1...12).contains(month), (1...monthDays[month - 1]).contains(day),
               (0...23).contains(civil[3]), (0...59).contains(civil[4]), (0...59).contains(civil[5]) else { return nil }
         var offset = 0
         let zoneLength = text.hasSuffix("Z") ? 1 : 6
