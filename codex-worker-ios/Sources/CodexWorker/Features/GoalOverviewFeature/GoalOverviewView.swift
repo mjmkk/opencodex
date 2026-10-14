@@ -25,8 +25,8 @@ struct GoalOverviewView: View {
                             Text("\(rows.filter { $0.visibleHealth == .atRisk }.count) at risk")
                             Text("\(rows.filter { $0.visibleHealth == .blocked }.count) blocked")
                         }.font(.caption).foregroundStyle(.secondary)
-                        if rows.contains(where: { $0.visibleHealth == nil || $0.availability == .lastKnown }) {
-                            Text("待评估 \(rows.filter { $0.visibleHealth == nil }.count) · 上次观察 \(rows.filter { $0.availability == .lastKnown }.count)")
+                        if rows.contains(where: { $0.hasPendingAssessment || $0.hasLastKnownAssessment }) {
+                            Text("待评估 \(rows.filter { $0.hasPendingAssessment }.count) · 上次观察 \(rows.filter { $0.hasLastKnownAssessment }.count)")
                                 .font(.caption2).foregroundStyle(.secondary)
                         }
                     }
@@ -91,13 +91,19 @@ struct GoalOverviewView: View {
                     if let progress = row.validProgress {
                         Text("\(progress)%").monospacedDigit().font(.caption)
                         ProgressView(value: Double(progress), total: 100).tint(.accentColor)
+                    } else if row.progressNotApplicable {
+                        Text("N/A").font(.caption).accessibilityLabel("进度无有限完成范围")
                     } else { Text("—").accessibilityLabel("进度尚未评估") }
+                    dimensionStatus(row.progressAvailability)
                 }.frame(width: c.progress, alignment: .leading)
-                HStack(spacing: 3) {
-                    if let health = row.visibleHealth {
-                        Circle().fill(color(health)).frame(width: 5, height: 5)
-                        Text(health.rawValue).font(.caption2).lineLimit(2)
-                    } else { Text("—").accessibilityLabel("健康状态尚未评估") }
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 3) {
+                        if let health = row.visibleHealth {
+                            Circle().fill(color(health)).frame(width: 5, height: 5)
+                            Text(health.rawValue).font(.caption2).lineLimit(2)
+                        } else { Text("—").accessibilityLabel("健康状态尚未评估") }
+                    }
+                    dimensionStatus(row.healthAvailability)
                 }.frame(width: c.health, alignment: .leading)
                 Button {
                     if !expanded.insert(path).inserted { expanded.remove(path) }
@@ -109,15 +115,20 @@ struct GoalOverviewView: View {
             if expanded.contains(path) {
                 VStack(alignment: .leading, spacing: 5) {
                     Text(row.title).font(.subheadline)
-                    if let reason = row.explanation { Text(reasonText(reason)).font(.caption) }
-                    timestamp("资料覆盖", row.coverageAt)
-                    timestamp("判断时间", row.evaluatedAt)
-                    if !row.sourceNotes.isEmpty {
-                        DisclosureGroup("资料来源与覆盖") {
-                            ForEach(Array(row.sourceNotes.enumerated()), id: \.offset) { _, note in
-                                Text(note).font(.caption2).textSelection(.enabled)
-                            }
-                        }.font(.caption)
+                    if let progress = row.progressDimension, let health = row.healthDimension {
+                        dimensionDetails("Progress", progress)
+                        dimensionDetails("Health", health)
+                    } else {
+                        if let reason = row.explanation { Text(reasonText(reason)).font(.caption) }
+                        timestamp("资料覆盖", row.coverageAt)
+                        timestamp("判断时间", row.evaluatedAt)
+                        if !row.sourceNotes.isEmpty {
+                            DisclosureGroup("资料来源与覆盖") {
+                                ForEach(Array(row.sourceNotes.enumerated()), id: \.offset) { _, note in
+                                    Text(note).font(.caption2).textSelection(.enabled)
+                                }
+                            }.font(.caption)
+                        }
                     }
                 }.foregroundStyle(.secondary).padding(12)
                 if !row.obligations.isEmpty {
@@ -156,11 +167,36 @@ struct GoalOverviewView: View {
         }.font(.caption2)
     }
 
+    @ViewBuilder private func dimensionStatus(_ state: ObservationAvailability) -> some View {
+        if state == .lastKnown || state == .pending {
+            Text(availability(state)).font(.caption2).foregroundStyle(.secondary)
+        }
+    }
+
+    private func dimensionDetails(_ name: String, _ dimension: GoalOverviewDimension) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text([name, availability(dimension.availability)].filter { !$0.isEmpty }.joined(separator: " · "))
+                .font(.caption.bold())
+            if let reason = dimension.explanation { Text(reasonText(reason)).font(.caption) }
+            timestamp("资料覆盖", dimension.coverageAt)
+            timestamp("判断时间", dimension.evaluatedAt)
+            if !dimension.sourceNotes.isEmpty {
+                DisclosureGroup("资料来源与覆盖") {
+                    ForEach(Array(dimension.sourceNotes.enumerated()), id: \.offset) { _, note in
+                        Text(note).font(.caption2).textSelection(.enabled)
+                    }
+                }.font(.caption)
+            }
+        }
+    }
+
     private func availability(_ value: ObservationAvailability) -> String {
         switch value {
         case .current: return ""
         case .pending: return "待评估"
         case .lastKnown: return "上次观察"
+        case .partial: return "部分可用"
+        case .notApplicable: return "无有限完成范围"
         case .failed: return "刷新失败"
         }
     }
@@ -171,6 +207,7 @@ struct GoalOverviewView: View {
         case "evaluating": return "新判断正在生成，当前保留上次观察"
         case "evaluation_expired": return "上次判断已过期，等待重新评估"
         case "goal_changed", "input_changed": return "目标或资料已有变化，等待重新评估"
+        case "unbounded_goal": return "当前目标没有有限完成条件"
         default: return "本次观察暂不可用，等待更新"
         }
     }

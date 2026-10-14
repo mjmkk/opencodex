@@ -16,14 +16,33 @@ struct GoalOverviewRow: Identifiable, Equatable, Sendable {
     let obligations: [GoalOverviewRow]
     let workers: [GoalWorkerPresentation]
     var sourceNotes: [String] = []
+    var progressDimension: GoalOverviewDimension? = nil
+    var healthDimension: GoalOverviewDimension? = nil
+
+    var progressAvailability: ObservationAvailability { progressDimension?.availability ?? availability }
+    var healthAvailability: ObservationAvailability { healthDimension?.availability ?? availability }
+    var progressNotApplicable: Bool { progress == nil && progressDimension?.notApplicable == true }
 
     var validProgress: Int? {
-        guard availability == .current || availability == .lastKnown else { return nil }
+        guard progressAvailability == .current || progressAvailability == .lastKnown else { return nil }
         return progress.flatMap { (0...100).contains($0) ? $0 : nil }
     }
     var visibleHealth: GoalHealth? {
-        availability == .current || availability == .lastKnown ? health : nil
+        healthAvailability == .current || healthAvailability == .lastKnown ? health : nil
     }
+    var hasPendingAssessment: Bool { (validProgress == nil && !progressNotApplicable) || visibleHealth == nil }
+    var hasLastKnownAssessment: Bool { progressAvailability == .lastKnown || healthAvailability == .lastKnown }
+}
+
+/// Each adopted dimension keeps its complete, original provenance independently.
+struct GoalOverviewDimension: Equatable, Sendable {
+    let availability: ObservationAvailability
+    let observation: JSONValue?
+    let coverageAt: Date?
+    let evaluatedAt: Date?
+    let explanation: String?
+    let notApplicable: Bool
+    let sourceNotes: [String]
 }
 
 enum GoalHealth: String, Equatable, Sendable {
@@ -34,7 +53,7 @@ enum GoalHealth: String, Equatable, Sendable {
 
 /// Availability is separate from business health; missing observations have no score.
 enum ObservationAvailability: Equatable, Sendable {
-    case current, pending, lastKnown, failed
+    case current, pending, lastKnown, partial, notApplicable, failed
 }
 
 struct GoalWorkerPresentation: Identifiable, Equatable, Sendable {

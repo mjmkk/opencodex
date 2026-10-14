@@ -21,27 +21,50 @@ enum GoalOverviewDecoder {
               goal["goal_id"]?.stringValue == id,
               let title = goal["title"]?.stringValue, !title.isEmpty,
               let availability = goal["availability"]?.stringValue,
-              ["current", "pending", "last_known"].contains(availability)
+              ["current", "pending", "last_known", "partial"].contains(availability)
         else { throw CodexError.invalidState }
         guard let obligations = goal["closure_obligations"]?.arrayValue,
               let workers = goal["workers"]?.arrayValue else { throw CodexError.invalidState }
         let observation = goal["observation"]?.objectValue
-        let state: ObservationAvailability = availability == "pending" ? .pending :
-            (cached || availability == "last_known" ? .lastKnown : .current)
+        guard goal["observation"] == .null || observation != nil else { throw CodexError.invalidState }
         let progress = goal["progress"]?.intValue
         if let progress {
             guard (0...100).contains(progress) else { throw CodexError.invalidState }
         } else if goal["progress"] != .null { throw CodexError.invalidState }
         let health = goal["health"]?.stringValue.flatMap(GoalHealth.init(rawValue:))
         guard health != nil || goal["health"] == .null else { throw CodexError.invalidState }
-        if availability != "pending" {
-            guard let observation, date(observation["evaluated_at"]) != nil,
-                  observation["input_version"]?.stringValue != nil,
-                  observation["method_version"]?.stringValue != nil else { throw CodexError.invalidState }
-        }
-        if availability == "pending" {
-            guard goal["progress"] == .null, goal["health"] == .null,
-                  goal["observation"] == .null else { throw CodexError.invalidState }
+        let progressDimension: GoalOverviewDimension?
+        let healthDimension: GoalOverviewDimension?
+        let state: ObservationAvailability
+        // Presence is authoritative: a malformed new result must never use legacy values.
+        if let raw = goal["dimensions"] {
+            guard let dimensions = raw.objectValue, Set(dimensions.keys) == ["Progress", "Health"],
+                  validReason(goal["unavailability_reason"]) else { throw CodexError.invalidState }
+            let p = try dimension(dimensions["Progress"], value: goal["progress"], isProgress: true)
+            let h = try dimension(dimensions["Health"], value: goal["health"], isProgress: false)
+            let wireState = aggregate(p.availability, h.availability)
+            guard wireState == availabilityState(availability),
+                  (wireState == .current) == (goal["unavailability_reason"] == .null) else { throw CodexError.invalidState }
+            // The backend exposes a common observation only for identical full metadata.
+            let pMetadata = commonMetadata(p.observation)
+            let hMetadata = commonMetadata(h.observation)
+            let common: JSONValue = [.current, .lastKnown].contains(wireState) && pMetadata != nil && pMetadata == hMetadata
+                ? pMetadata! : .null
+            guard goal["observation"] == common else { throw CodexError.invalidState }
+            progressDimension = restored(p, cached: cached)
+            healthDimension = restored(h, cached: cached)
+            state = aggregate(progressDimension!.availability, healthDimension!.availability)
+        } else {
+            guard availability != "partial" else { throw CodexError.invalidState }
+            if availability == "pending" {
+                guard goal["progress"] == .null, goal["health"] == .null,
+                      goal["observation"] == .null else { throw CodexError.invalidState }
+            } else {
+                guard health != nil, let observation, date(observation["evaluated_at"]) != nil,
+                      nonempty(observation["input_version"]), nonempty(observation["method_version"]) else { throw CodexError.invalidState }
+            }
+            state = availability == "pending" ? .pending : (cached || availability == "last_known" ? .lastKnown : .current)
+            progressDimension = nil; healthDimension = nil
         }
         let url = goal["issue_url"]?.stringValue.flatMap(URL.init(string:))
         return GoalOverviewRow(id: id, issueIdentifier: id, title: title,
@@ -59,11 +82,91 @@ enum GoalOverviewDecoder {
                     title: fields["title"]?.stringValue ?? thread, host: host,
                     state: fields["native_status"]?.stringValue ?? "状态未知",
                     observedAt: date(fields["observed_at"]))
-            }, sourceNotes: (observation?["sources"]?.arrayValue ?? []).compactMap { source in
-                guard let fields = source.objectValue else { return nil }
-                return ["source_type", "source_id", "source_revision", "memory_revision", "coverage", "covered_at"]
-                    .map { key in key + ": " + description(fields[key]) }.joined(separator: " · ")
-            })
+            }, sourceNotes: sourceNotes(observation), progressDimension: progressDimension, healthDimension: healthDimension)
+    }
+
+    private static func dimension(_ raw: JSONValue?, value: JSONValue?, isProgress: Bool) throws -> GoalOverviewDimension {
+        guard let fields = raw?.objectValue,
+              Set(fields.keys) == ["availability", "value", "unavailability_reason", "observation"],
+              fields["value"] == value,
+              let availability = fields["availability"]?.stringValue,
+              ["current", "pending", "last_known", "not_applicable"].contains(availability),
+              validReason(fields["unavailability_reason"]) else { throw CodexError.invalidState }
+        let state = availabilityState(availability)
+        if state == .pending {
+            guard value == .null, fields["observation"] == .null,
+                  fields["unavailability_reason"] != .null else { throw CodexError.invalidState }
+            return GoalOverviewDimension(availability: state, observation: nil, coverageAt: nil, evaluatedAt: nil,
+                explanation: fields["unavailability_reason"]?.stringValue, notApplicable: false, sourceNotes: [])
+        }
+        guard let metadata = fields["observation"]?.objectValue,
+              metadata["value"] == nil,
+              ["input_version", "goal_version", "method_version"].allSatisfy({ nonempty(metadata[$0]) }),
+              let evaluatedAt = date(metadata["evaluated_at"]),
+              metadata["input_coverage_at"] == .null || date(metadata["input_coverage_at"]) != nil,
+              let sources = metadata["sources"]?.arrayValue, sources.allSatisfy({ $0.objectValue != nil }) else { throw CodexError.invalidState }
+        let notApplicable = metadata["not_applicable"] == .bool(true)
+        guard metadata["not_applicable"] == nil || notApplicable else { throw CodexError.invalidState }
+        if isProgress {
+            if value == .null {
+                guard notApplicable, metadata["completion_scope"] == .string("unbounded"),
+                      [.notApplicable, .lastKnown].contains(state) else { throw CodexError.invalidState }
+            } else {
+                guard let number = value?.intValue, (0...100).contains(number), !notApplicable,
+                      state != .notApplicable else { throw CodexError.invalidState }
+            }
+        } else {
+            guard let text = value?.stringValue, GoalHealth(rawValue: text) != nil,
+                  state != .notApplicable, !notApplicable else { throw CodexError.invalidState }
+        }
+        guard state != .current || fields["unavailability_reason"] == .null,
+              state != .lastKnown || fields["unavailability_reason"] != .null,
+              state != .notApplicable || fields["unavailability_reason"] == .string("unbounded_goal") else { throw CodexError.invalidState }
+        return GoalOverviewDimension(availability: state, observation: fields["observation"],
+            coverageAt: date(metadata["input_coverage_at"]), evaluatedAt: evaluatedAt,
+            explanation: fields["unavailability_reason"]?.stringValue, notApplicable: notApplicable,
+            sourceNotes: sourceNotes(metadata))
+    }
+
+    private static func aggregate(_ progress: ObservationAvailability, _ health: ObservationAvailability) -> ObservationAvailability {
+        if progress == .pending && health == .pending { return .pending }
+        if [.current, .notApplicable].contains(progress) && health == .current { return .current }
+        if progress == .lastKnown && health == .lastKnown { return .lastKnown }
+        return .partial
+    }
+
+    private static func availabilityState(_ value: String) -> ObservationAvailability {
+        switch value {
+        case "current": return .current
+        case "last_known": return .lastKnown
+        case "partial": return .partial
+        case "not_applicable": return .notApplicable
+        default: return .pending
+        }
+    }
+
+    private static func restored(_ dimension: GoalOverviewDimension, cached: Bool) -> GoalOverviewDimension {
+        guard cached, [.current, .notApplicable].contains(dimension.availability) else { return dimension }
+        return GoalOverviewDimension(availability: .lastKnown, observation: dimension.observation,
+            coverageAt: dimension.coverageAt, evaluatedAt: dimension.evaluatedAt, explanation: dimension.explanation,
+            notApplicable: dimension.notApplicable, sourceNotes: dimension.sourceNotes)
+    }
+
+    private static func commonMetadata(_ value: JSONValue?) -> JSONValue? {
+        guard var fields = value?.objectValue else { return nil }
+        fields.removeValue(forKey: "not_applicable")
+        return .object(fields)
+    }
+
+    private static func validReason(_ value: JSONValue?) -> Bool { value == .null || nonempty(value) }
+    private static func nonempty(_ value: JSONValue?) -> Bool { !(value?.stringValue?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true) }
+
+    private static func sourceNotes(_ observation: [String: JSONValue]?) -> [String] {
+        (observation?["sources"]?.arrayValue ?? []).compactMap { source in
+            guard let fields = source.objectValue else { return nil }
+            return ["source_type", "source_id", "source_revision", "memory_revision", "coverage", "covered_at"]
+                .map { key in key + ": " + description(fields[key]) }.joined(separator: " · ")
+        }
     }
 
     private static func description(_ value: JSONValue?) -> String {
