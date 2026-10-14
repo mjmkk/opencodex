@@ -1,0 +1,5 @@
+// AGT-12 development delivery for the original installed OpenCodex App.
+// Supply explicitly with xcodebuild -xcconfig; bundle suffixes use the existing prefix setting.
+OPENCODEX_BUNDLE_ID = chenken.CodexWorkerApp
+DEVELOPMENT_TEAM = Y9476K2DZJ
+APS_ENVIRONMENT = development
