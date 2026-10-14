@@ -18,6 +18,9 @@ struct GoalOverviewRow: Identifiable, Equatable, Sendable {
     var sourceNotes: [String] = []
     var progressDimension: GoalOverviewDimension? = nil
     var healthDimension: GoalOverviewDimension? = nil
+    var closureScopeDescription: String? = nil
+    var closureScopeSourceURL: URL? = nil
+    var closureScopeMetadata: JSONValue? = nil
 
     var progressAvailability: ObservationAvailability { progressDimension?.availability ?? availability }
     var healthAvailability: ObservationAvailability { healthDimension?.availability ?? availability }

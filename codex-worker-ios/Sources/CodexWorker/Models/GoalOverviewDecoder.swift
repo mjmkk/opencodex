@@ -25,6 +25,7 @@ enum GoalOverviewDecoder {
         else { throw CodexError.invalidState }
         guard let obligations = goal["closure_obligations"]?.arrayValue,
               let workers = goal["workers"]?.arrayValue else { throw CodexError.invalidState }
+        let scope = try closureScope(goal["closure_scope"], issueURL: goal["issue_url"])
         let observation = goal["observation"]?.objectValue
         guard goal["observation"] == .null || observation != nil else { throw CodexError.invalidState }
         let progress = goal["progress"]?.intValue
@@ -82,7 +83,61 @@ enum GoalOverviewDecoder {
                     title: fields["title"]?.stringValue ?? thread, host: host,
                     state: fields["native_status"]?.stringValue ?? "状态未知",
                     observedAt: date(fields["observed_at"]))
-            }, sourceNotes: sourceNotes(observation), progressDimension: progressDimension, healthDimension: healthDimension)
+            }, sourceNotes: sourceNotes(observation), progressDimension: progressDimension, healthDimension: healthDimension,
+            closureScopeDescription: scope?.description, closureScopeSourceURL: scope?.sourceURL,
+            closureScopeMetadata: scope?.metadata)
+    }
+
+    /// A supplied scope is a source projection, never an inferred Issue relationship.
+    private static func closureScope(_ raw: JSONValue?, issueURL: JSONValue?) throws -> (description: String, sourceURL: URL, metadata: JSONValue)? {
+        guard let raw else { return nil }
+        guard let fields = raw.objectValue,
+              Set(fields.keys) == ["description", "source_url", "call_id", "parent_call_id"],
+              fields.values.allSatisfy(nonempty),
+              let description = fields["description"]?.stringValue,
+              let call = fields["call_id"]?.stringValue.flatMap(UUID.init(uuidString:)),
+              let parent = fields["parent_call_id"]?.stringValue.flatMap(UUID.init(uuidString:)), call != parent,
+              let source = fields["source_url"]?.stringValue,
+              var components = scopeURLComponents(source),
+              components.scheme?.lowercased() == "https", let host = components.host, !host.isEmpty,
+              components.user == nil, components.password == nil, let url = components.url,
+              let fragment = components.percentEncodedFragment, fragment.hasPrefix("comment-"),
+              UUID(uuidString: String(fragment.dropFirst("comment-".count))) != nil,
+              let issue = issueURL?.stringValue,
+              var original = scopeURLComponents(issue),
+              original.scheme?.lowercased() == "https", let originalHost = original.host, !originalHost.isEmpty,
+              original.user == nil, original.password == nil
+        else { throw CodexError.invalidState }
+        components.fragment = nil; original.fragment = nil
+        components.scheme = "https"; original.scheme = "https"
+        components.host = host.lowercased(); original.host = originalHost.lowercased()
+        if components.port == 443 { components.port = nil }
+        if original.port == 443 { original.port = nil }
+        guard let base = components.url, let issueBase = original.url,
+              canonicalScopeBase(base) == canonicalScopeBase(issueBase) else { throw CodexError.invalidState }
+        return (description, url, raw)
+    }
+
+    private static func canonicalScopeBase(_ url: URL) -> String {
+        let source = url.absoluteString
+        var result = "", cursor = source.startIndex
+        while let range = source.range(of: "%[0-9A-Fa-f]{2}", options: .regularExpression, range: cursor..<source.endIndex) {
+            result += source[cursor..<range.lowerBound]
+            result += source[range].uppercased()
+            cursor = range.upperBound
+        }
+        result += source[cursor...]
+        return result
+    }
+
+    private static func scopeURLComponents(_ source: String) -> URLComponents? {
+        let ascii = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%")
+        guard source.rangeOfCharacter(from: .whitespacesAndNewlines.union(.controlCharacters)) == nil,
+              source.unicodeScalars.allSatisfy({ $0.value >= 128 || ascii.contains($0) }),
+              source.range(of: "%(?![0-9A-Fa-f]{2})", options: .regularExpression) == nil else { return nil }
+        // Source Issue URLs contain real Unicode slugs; Foundation normalizes those IRIs.
+        // Reject malformed ASCII before permitting that normalization.
+        return URLComponents(string: source)
     }
 
     private static func dimension(_ raw: JSONValue?, value: JSONValue?, isProgress: Bool) throws -> GoalOverviewDimension {

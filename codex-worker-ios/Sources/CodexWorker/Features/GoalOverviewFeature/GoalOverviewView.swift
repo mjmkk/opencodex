@@ -115,6 +115,11 @@ struct GoalOverviewView: View {
             if expanded.contains(path) {
                 VStack(alignment: .leading, spacing: 5) {
                     Text(row.title).font(.subheadline)
+                    if let description = row.closureScopeDescription, let source = row.closureScopeSourceURL {
+                        Text("承接范围").font(.caption.bold())
+                        Text(description).font(.caption).textSelection(.enabled)
+                        Link("范围依据", destination: source).font(.caption).foregroundStyle(.tint)
+                    }
                     if let progress = row.progressDimension, let health = row.healthDimension {
                         dimensionDetails("Progress", progress)
                         dimensionDetails("Health", health)
