@@ -10,9 +10,60 @@ enum GoalOverviewDecoder {
         guard let namespace = root["namespace"]?.stringValue, namespace.hasPrefix("openai:"),
               let revision = root["snapshot_revision"]?.intValue, revision > 0,
               date(root["inventory_observed_at"]) != nil else { throw CodexError.invalidState }
+        _ = try inventoryValidation(payload, cached: cached)
         let result = try goals.map { try row($0, cached: cached) }
         guard Set(result.map(\.id)).count == result.count else { throw CodexError.invalidState }
         return result
+    }
+
+    /// Absent legacy metadata is unknown. Presence never falls back to a success label.
+    static func inventoryValidation(_ payload: JSONValue, cached: Bool = false) throws -> GoalInventoryValidation {
+        guard let root = payload.objectValue else { throw CodexError.invalidState }
+        guard let raw = root["inventory_validation"] else { return .unknown }
+        guard let fields = raw.objectValue,
+              Set(fields.keys) == ["availability", "verified_at", "unavailability_reason"],
+              let text = fields["availability"]?.stringValue,
+              let state = GoalInventoryValidation.Availability(rawValue: text),
+              validReason(fields["unavailability_reason"]),
+              fields["verified_at"] == .null || inventoryDate(fields["verified_at"]) != nil
+        else { throw CodexError.invalidState }
+        let verifiedAt = inventoryDate(fields["verified_at"])
+        switch state {
+        case .current:
+            guard let verifiedAt, verifiedAt == date(root["inventory_observed_at"]),
+                  fields["unavailability_reason"] == .null else { throw CodexError.invalidState }
+        case .lastKnown:
+            if let verifiedAt {
+                guard let observedAt = date(root["inventory_observed_at"]), verifiedAt <= observedAt else { throw CodexError.invalidState }
+            }
+        case .unknown:
+            guard verifiedAt == nil else { throw CodexError.invalidState }
+        }
+        return GoalInventoryValidation(availability: cached && state == .current ? .lastKnown : state,
+            verifiedAt: verifiedAt, explanation: fields["unavailability_reason"]?.stringValue)
+    }
+
+    private static func inventoryDate(_ value: JSONValue?) -> Date? {
+        guard let text = value?.stringValue,
+              text.rangeOfCharacter(from: .whitespacesAndNewlines) == nil,
+              text.range(of: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$", options: .regularExpression) != nil
+        else { return nil }
+        guard let parsed = date(value) else { return nil }
+        var offset = 0
+        if !text.hasSuffix("Z") {
+            let zone = text.suffix(6)
+            let parts = zone.dropFirst().split(separator: ":").compactMap { Int($0) }
+            guard parts.count == 2, parts[0] <= 23, parts[1] <= 59 else { return nil }
+            offset = (parts[0] * 3600 + parts[1] * 60) * (zone.first == "+" ? 1 : -1)
+        }
+        let expected = text.prefix(19).split(whereSeparator: { "-T:".contains($0) }).compactMap { Int($0) }
+        var calendar = Calendar(identifier: .iso8601)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let actual = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second],
+            from: parsed.addingTimeInterval(TimeInterval(offset)))
+        // ISO8601DateFormatter normalizes impossible dates such as February 30.
+        guard [actual.year, actual.month, actual.day, actual.hour, actual.minute, actual.second].compactMap({ $0 }) == expected else { return nil }
+        return parsed
     }
 
     private static func row(_ value: JSONValue, cached: Bool) throws -> GoalOverviewRow {

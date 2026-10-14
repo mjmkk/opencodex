@@ -54,6 +54,7 @@ actor MobileSyncCache {
     }
 
     func saveGoalOverview(_ entry: GoalOverviewCacheEntry, scope: String) throws {
+        _ = try GoalOverviewDecoder.inventoryValidation(entry.payload)
         try db.write { db in
             guard let incoming = entry.payload.objectValue,
                   let namespace = incoming["namespace"]?.stringValue,

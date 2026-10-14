@@ -317,6 +317,116 @@ final class GoalOverviewDecoderTests: XCTestCase {
         XCTAssertEqual(rows.first?.visibleHealth, .atRisk)
     }
 
+    func testInventoryAbsentIsUnknownWithoutChangingGoalRows() throws {
+        let original = page(goal(progress: slot("current", .int(73)), health: slot("pending", .null)))
+        XCTAssertEqual(try GoalOverviewDecoder.inventoryValidation(original), .unknown)
+        XCTAssertEqual(try GoalOverviewDecoder.inventoryValidation(original, cached: true), .unknown)
+        XCTAssertEqual(try GoalOverviewDecoder.inventoryValidation(original).title, "任务列表尚未核对")
+        let withUnknown = inventoryPage(original, .object(["availability": .string("unknown"),
+            "verified_at": .null, "unavailability_reason": .string("not_verified")]))
+        XCTAssertEqual(try GoalOverviewDecoder.rows(withUnknown), try GoalOverviewDecoder.rows(original))
+        XCTAssertNil(try GoalOverviewDecoder.inventoryValidation(withUnknown).verifiedAt)
+    }
+
+    func testInventoryPresentMalformedMetadataRejectsWholePage() throws {
+        let original = page(goal(progress: slot("pending", .null), health: slot("pending", .null), availability: "pending"))
+        let valid: [String: JSONValue] = ["availability": .string("current"),
+            "verified_at": .string("2026-10-14T04:00:00Z"), "unavailability_reason": .null]
+        var malformed: [JSONValue] = [.null, .array([]), .bool(true), .object([:])]
+        for key in valid.keys { var bad = valid; bad.removeValue(forKey: key); malformed.append(.object(bad)) }
+        var extra = valid; extra["extra"] = .bool(true); malformed.append(.object(extra))
+        for (key, value): (String, JSONValue) in [("availability", .string("pending")), ("availability", .int(1)),
+            ("verified_at", .null), ("verified_at", .string("bad date")), ("verified_at", .int(1)),
+            ("verified_at", .string("2026-10-14T04:00:00")), ("verified_at", .string("2026-10-14T04:00:00Zjunk")),
+            ("verified_at", .string("2026-10-14T03:00:00Z")), ("unavailability_reason", .string("failed")),
+            ("unavailability_reason", .int(1))] {
+            var bad = valid; bad[key] = value; malformed.append(.object(bad))
+        }
+        malformed.append(.object(["availability": .string("unknown"), "verified_at": valid["verified_at"]!, "unavailability_reason": .null]))
+        malformed.append(.object(["availability": .string("last_known"), "verified_at": .string("2026-10-14T05:00:00Z"), "unavailability_reason": .null]))
+        malformed.append(.object(["availability": .string("last_known"), "verified_at": .string("2026-02-30T04:00:00Z"), "unavailability_reason": .string("read_failed")]))
+        malformed.append(.object(["availability": .string("last_known"), "verified_at": .null, "unavailability_reason": .string("  ")]))
+        for bad in malformed {
+            let incoming = inventoryPage(original, bad)
+            XCTAssertThrowsError(try GoalOverviewDecoder.rows(incoming))
+            XCTAssertThrowsError(try GoalOverviewDecoder.inventoryValidation(incoming))
+        }
+        for time in ["2026-10-14T04:00:00+00:00", "2026-10-14T12:00:00.000+08:00"] {
+            var fields = valid; fields["verified_at"] = .string(time)
+            XCTAssertEqual(try GoalOverviewDecoder.inventoryValidation(inventoryPage(original, .object(fields))).availability, .current)
+        }
+    }
+
+    func testInventoryRejectedRefreshRetainsCachePayloadAndOriginalTime() throws {
+        let original = inventoryPage(page(goal(progress: slot("current", .int(73)), health: slot("pending", .null))),
+            .object(["availability": .string("current"), "verified_at": .string("2026-10-14T04:00:00Z"), "unavailability_reason": .null]))
+        var published = GoalOverviewCacheEntry(payload: original, receivedAt: Date(timeIntervalSince1970: 1_800_000_000))
+        let originalValidation = try GoalOverviewDecoder.inventoryValidation(original)
+        let incoming = inventoryPage(original, .null)
+        // Exercise the decoder-before-publication gate, not an HTTP or live GRDB run.
+        do {
+            _ = try GoalOverviewDecoder.rows(incoming)
+            published = .init(payload: incoming, receivedAt: Date())
+            XCTFail("Malformed metadata must not replace the prior response")
+        } catch {}
+        let reopened = try JSONDecoder().decode(GoalOverviewCacheEntry.self, from: JSONEncoder().encode(published))
+        XCTAssertEqual(reopened.payload, original)
+        let restored = try GoalOverviewDecoder.inventoryValidation(reopened.payload, cached: true)
+        XCTAssertEqual(restored.availability, .lastKnown)
+        XCTAssertEqual(restored.verifiedAt, originalValidation.verifiedAt)
+        XCTAssertNotEqual(restored.verifiedAt, reopened.receivedAt)
+        XCTAssertEqual(restored.title, "上次任务列表")
+        XCTAssertEqual(try GoalOverviewDecoder.rows(reopened.payload, cached: true).first?.progressAvailability, .lastKnown)
+    }
+
+    func testInventoryPartialGoalSuccessDoesNotUpgradeList() throws {
+        let original = page(goal(progress: slot("current", .int(73)), health: slot("pending", .null)))
+        let partial = inventoryPage(original, .object(["availability": .string("last_known"),
+            "verified_at": .string("2026-10-12T03:00:00Z"), "unavailability_reason": .string("scope_read_failed")]))
+        let rows = try GoalOverviewDecoder.rows(partial)
+        XCTAssertEqual(rows.first?.availability, .partial)
+        XCTAssertEqual(rows.first?.progressAvailability, .current)
+        XCTAssertEqual(rows.first?.healthAvailability, .pending)
+        let validation = try GoalOverviewDecoder.inventoryValidation(partial)
+        XCTAssertEqual(validation.availability, .lastKnown)
+        XCTAssertEqual(validation.explanation, "scope_read_failed")
+        XCTAssertEqual(validation, try GoalOverviewDecoder.inventoryValidation(partial, cached: true))
+        let oldList = inventoryPage(original, .object(["availability": .string("last_known"), "verified_at": .null, "unavailability_reason": .null]))
+        XCTAssertEqual(try GoalOverviewDecoder.inventoryValidation(oldList).availability, .lastKnown)
+        XCTAssertNil(try GoalOverviewDecoder.inventoryValidation(oldList).verifiedAt)
+        XCTAssertEqual(try GoalOverviewDecoder.inventoryValidation(original).availability, .unknown)
+    }
+
+    func testInventoryFullRecoveryKeepsGoalAssessmentIndependent() throws {
+        var child = goal(progress: slot("pending", .null), health: slot("pending", .null), availability: "pending").objectValue!
+        child["closure_scope"] = closureScope()
+        var parent = goal(progress: slot("current", .int(73)), health: slot("pending", .null)).objectValue!
+        parent["issue_id"] = .string("AGT-12"); parent["goal_id"] = .string("AGT-12")
+        parent["closure_obligations"] = .array([.object(child)])
+        let original = page(.object(parent))
+        let stale = inventoryPage(original, .object(["availability": .string("last_known"),
+            "verified_at": .string("2026-10-12T03:00:00Z"), "unavailability_reason": .string("collection_read_failed")]))
+        var recovered = original.objectValue!; recovered["inventory_observed_at"] = .string("2026-10-14T04:10:00Z")
+        recovered["inventory_validation"] = .object(["availability": .string("current"),
+            "verified_at": .string("2026-10-14T04:10:00.000+00:00"), "unavailability_reason": .null])
+        let full = JSONValue.object(recovered)
+        let validation = try GoalOverviewDecoder.inventoryValidation(full)
+        XCTAssertEqual(validation.availability, .current)
+        XCTAssertEqual(validation.title, "任务列表已核对")
+        XCTAssertNil(validation.explanation)
+        XCTAssertNotEqual(validation.verifiedAt, try GoalOverviewDecoder.inventoryValidation(stale).verifiedAt)
+        XCTAssertEqual(try GoalOverviewDecoder.rows(full), try GoalOverviewDecoder.rows(stale))
+        let result = try GoalOverviewDecoder.rows(full).first!
+        XCTAssertEqual(result.availability, .partial)
+        XCTAssertEqual(result.obligations.first?.availability, .pending)
+        XCTAssertEqual(result.obligations.first?.closureScopeMetadata, closureScope())
+    }
+
+    private func inventoryPage(_ page: JSONValue, _ metadata: JSONValue) -> JSONValue {
+        var fields = page.objectValue!; fields["inventory_validation"] = metadata
+        return .object(fields)
+    }
+
     private func closureScope() -> JSONValue {
         .object(["description": .string("Fixture only：承接有限范围，不代整票完成。\n保留原始描述。"),
             "source_url": .string("https://linear.app/mjmk/issue/AGT-34#comment-fa000000-0000-4000-8000-000000000001"),

@@ -3,6 +3,7 @@ import SwiftUI
 struct GoalOverviewScreen: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var rows: [GoalOverviewRow] = []
+    @State private var inventoryValidation: GoalInventoryValidation = .unknown
     @State private var hasSnapshot = false
     @State private var isRefreshing = false
     @State private var failure: String?
@@ -12,7 +13,7 @@ struct GoalOverviewScreen: View {
     @State private var generation = UUID()
 
     var body: some View {
-        GoalOverviewView(rows: rows, hasSnapshot: hasSnapshot, isRefreshing: isRefreshing,
+        GoalOverviewView(rows: rows, inventoryValidation: inventoryValidation, hasSnapshot: hasSnapshot, isRefreshing: isRefreshing,
             failure: failure, refresh: refresh)
             .task { await refresh() }
             .onChange(of: scenePhase) { _, phase in
@@ -47,11 +48,12 @@ struct GoalOverviewScreen: View {
             guard accepts(request, scope: scope, namespace: namespace) else { return }
             try validate(payload, scope: scope, namespace: namespace)
             let updated = try GoalOverviewDecoder.rows(payload)
+            let validation = try GoalOverviewDecoder.inventoryValidation(payload)
             // Do not publish a response until persistence accepts its version.
             try await cache.saveGoalOverview(.init(payload: payload, receivedAt: Date()), scope: scope)
             guard accepts(request, scope: scope, namespace: namespace) else { return }
             try validate(payload, scope: scope, namespace: namespace)
-            snapshot = payload; rows = updated; hasSnapshot = true; failure = nil
+            snapshot = payload; rows = updated; inventoryValidation = validation; hasSnapshot = true; failure = nil
         } catch {
             guard generation == request else { return }
             if let scope = accountScope, let namespace = sourceNamespace {
@@ -62,6 +64,9 @@ struct GoalOverviewScreen: View {
                 guard accepts(request, scope: scope, namespace: namespace) else { return }
             }
             if let snapshot, let restored = try? GoalOverviewDecoder.rows(snapshot, cached: true) { rows = restored }
+            if let snapshot, let restored = try? GoalOverviewDecoder.inventoryValidation(snapshot, cached: true) {
+                inventoryValidation = restored
+            }
             failure = hasSnapshot ? "读取失败，保留上次观察；判断时间未更新。" : "目标观察暂不可用，请稍后刷新。"
         }
     }
@@ -70,8 +75,9 @@ struct GoalOverviewScreen: View {
         if let entry = try? await MobileSyncCache.shared?.goalOverview(scope: scope) {
             guard accepts(request, scope: scope, namespace: namespace) else { return }
             if (try? validate(entry.payload, scope: scope, namespace: namespace)) != nil,
-               let restored = try? GoalOverviewDecoder.rows(entry.payload, cached: true) {
-                rows = restored; snapshot = entry.payload; hasSnapshot = true
+               let restored = try? GoalOverviewDecoder.rows(entry.payload, cached: true),
+               let validation = try? GoalOverviewDecoder.inventoryValidation(entry.payload, cached: true) {
+                rows = restored; inventoryValidation = validation; snapshot = entry.payload; hasSnapshot = true
             }
         }
     }
@@ -96,7 +102,7 @@ struct GoalOverviewScreen: View {
     }
 
     private func clearSnapshot() {
-        rows = []; snapshot = nil; hasSnapshot = false; failure = nil
+        rows = []; inventoryValidation = .unknown; snapshot = nil; hasSnapshot = false; failure = nil
     }
 
     private func validate(_ payload: JSONValue, scope: String, namespace: String) throws {

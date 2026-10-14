@@ -6,6 +6,7 @@ struct GoalOverviewView: View {
     @State private var filter: GoalOverviewFilter = .all
     @State private var expanded: Set<String> = []
     let rows: [GoalOverviewRow]
+    let inventoryValidation: GoalInventoryValidation
     let hasSnapshot: Bool
     let isRefreshing: Bool
     let failure: String?
@@ -19,6 +20,15 @@ struct GoalOverviewView: View {
                     Picker("筛选目标", selection: $filter) {
                         ForEach(GoalOverviewFilter.allCases, id: \.self) { Text($0.rawValue).tag($0) }
                     }.pickerStyle(.segmented).padding(.horizontal, 12)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(inventoryValidation.title).font(.caption)
+                        if let verifiedAt = inventoryValidation.verifiedAt {
+                            timestamp("核对时间", verifiedAt)
+                        }
+                        Text("列表核对不代表评分已更新。")
+                            .font(.caption2)
+                    }.foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 12)
                     if hasSnapshot {
                         HStack {
                             Text("\(rows.count) active")

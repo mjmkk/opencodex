@@ -54,6 +54,24 @@ enum GoalHealth: String, Equatable, Sendable {
     case blocked = "Blocked"
 }
 
+/// Completeness of the task list and its scope sources, independent of every score.
+struct GoalInventoryValidation: Equatable, Sendable {
+    enum Availability: String, Sendable { case current, lastKnown = "last_known", unknown }
+    let availability: Availability
+    let verifiedAt: Date?
+    let explanation: String?
+
+    static let unknown = Self(availability: .unknown, verifiedAt: nil, explanation: nil)
+
+    var title: String {
+        switch availability {
+        case .current: return "任务列表已核对"
+        case .lastKnown: return "上次任务列表"
+        case .unknown: return "任务列表尚未核对"
+        }
+    }
+}
+
 /// Availability is separate from business health; missing observations have no score.
 enum ObservationAvailability: Equatable, Sendable {
     case current, pending, lastKnown, partial, notApplicable, failed
