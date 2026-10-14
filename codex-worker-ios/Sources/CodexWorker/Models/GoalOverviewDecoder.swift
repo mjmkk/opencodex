@@ -9,7 +9,7 @@ enum GoalOverviewDecoder {
               let goals = root["goals"]?.arrayValue else { throw CodexError.invalidState }
         guard let namespace = root["namespace"]?.stringValue, namespace.hasPrefix("openai:"),
               let revision = root["snapshot_revision"]?.intValue, revision > 0,
-              date(root["inventory_observed_at"]) != nil else { throw CodexError.invalidState }
+              inventoryInstant(root["inventory_observed_at"]) != nil else { throw CodexError.invalidState }
         _ = try inventoryValidation(payload, cached: cached)
         let result = try goals.map { try row($0, cached: cached) }
         guard Set(result.map(\.id)).count == result.count else { throw CodexError.invalidState }
@@ -18,52 +18,84 @@ enum GoalOverviewDecoder {
 
     /// Absent legacy metadata is unknown. Presence never falls back to a success label.
     static func inventoryValidation(_ payload: JSONValue, cached: Bool = false) throws -> GoalInventoryValidation {
-        guard let root = payload.objectValue else { throw CodexError.invalidState }
+        guard let root = payload.objectValue,
+              let observed = inventoryInstant(root["inventory_observed_at"]) else { throw CodexError.invalidState }
         guard let raw = root["inventory_validation"] else { return .unknown }
         guard let fields = raw.objectValue,
               Set(fields.keys) == ["availability", "verified_at", "unavailability_reason"],
               let text = fields["availability"]?.stringValue,
               let state = GoalInventoryValidation.Availability(rawValue: text),
               validReason(fields["unavailability_reason"]),
-              fields["verified_at"] == .null || inventoryDate(fields["verified_at"]) != nil
+              fields["verified_at"] == .null || inventoryInstant(fields["verified_at"]) != nil
         else { throw CodexError.invalidState }
-        let verifiedAt = inventoryDate(fields["verified_at"])
+        let verified = inventoryInstant(fields["verified_at"])
         switch state {
         case .current:
-            guard let verifiedAt, verifiedAt == date(root["inventory_observed_at"]),
+            guard let verified, verified == observed,
                   fields["unavailability_reason"] == .null else { throw CodexError.invalidState }
         case .lastKnown:
-            if let verifiedAt {
-                guard let observedAt = date(root["inventory_observed_at"]), verifiedAt <= observedAt else { throw CodexError.invalidState }
+            if let verified {
+                guard verified <= observed else { throw CodexError.invalidState }
             }
         case .unknown:
-            guard verifiedAt == nil else { throw CodexError.invalidState }
+            guard verified == nil else { throw CodexError.invalidState }
         }
         return GoalInventoryValidation(availability: cached && state == .current ? .lastKnown : state,
-            verifiedAt: verifiedAt, explanation: fields["unavailability_reason"]?.stringValue)
+            verifiedAt: verified?.displayDate, explanation: fields["unavailability_reason"]?.stringValue)
     }
 
-    private static func inventoryDate(_ value: JSONValue?) -> Date? {
+    /// Pair source timestamps exactly; Foundation Date is only a minute-precision display value.
+    private struct InventoryInstant: Equatable, Comparable {
+        let seconds: Int64
+        let fraction: String
+
+        // Keep fractions from rounding into the next displayed minute. Raw JSON retains full precision.
+        var displayDate: Date { Date(timeIntervalSince1970: Double(seconds)) }
+
+        static func < (lhs: Self, rhs: Self) -> Bool {
+            if lhs.seconds != rhs.seconds { return lhs.seconds < rhs.seconds }
+            let width = max(lhs.fraction.count, rhs.fraction.count)
+            let left = lhs.fraction + String(repeating: "0", count: width - lhs.fraction.count)
+            let right = rhs.fraction + String(repeating: "0", count: width - rhs.fraction.count)
+            return left < right
+        }
+    }
+
+    private static func inventoryInstant(_ value: JSONValue?) -> InventoryInstant? {
         guard let text = value?.stringValue,
-              text.rangeOfCharacter(from: .whitespacesAndNewlines) == nil,
-              text.range(of: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$", options: .regularExpression) != nil
+              text.range(of: "\\A[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?(?:Z|[+-][0-9]{2}:[0-9]{2})\\z", options: .regularExpression) != nil
         else { return nil }
-        guard let parsed = date(value) else { return nil }
+        let civil = text.prefix(19).split(whereSeparator: { "-T:".contains($0) }).compactMap { Int($0) }
+        guard civil.count == 6 else { return nil }
+        let year = civil[0], month = civil[1], day = civil[2]
+        let leap = year.isMultiple(of: 400) || (year.isMultiple(of: 4) && !year.isMultiple(of: 100))
+        let monthDays = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        guard (1...12).contains(month), (1...monthDays[month - 1]).contains(day),
+              (0...23).contains(civil[3]), (0...59).contains(civil[4]), (0...59).contains(civil[5]) else { return nil }
         var offset = 0
+        let zoneLength = text.hasSuffix("Z") ? 1 : 6
         if !text.hasSuffix("Z") {
             let zone = text.suffix(6)
             let parts = zone.dropFirst().split(separator: ":").compactMap { Int($0) }
             guard parts.count == 2, parts[0] <= 23, parts[1] <= 59 else { return nil }
             offset = (parts[0] * 3600 + parts[1] * 60) * (zone.first == "+" ? 1 : -1)
         }
-        let expected = text.prefix(19).split(whereSeparator: { "-T:".contains($0) }).compactMap { Int($0) }
-        var calendar = Calendar(identifier: .iso8601)
-        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
-        let actual = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second],
-            from: parsed.addingTimeInterval(TimeInterval(offset)))
-        // ISO8601DateFormatter normalizes impossible dates such as February 30.
-        guard [actual.year, actual.month, actual.day, actual.hour, actual.minute, actual.second].compactMap({ $0 }) == expected else { return nil }
-        return parsed
+        // The four-digit ISO year and bounded civil fields keep this integer arithmetic within Int64.
+        let days = daysBeforeInventoryYear(year) + Int64(monthDays.prefix(month - 1).reduce(0, +) + day - 1)
+            - daysBeforeInventoryYear(1970)
+        let seconds = days * 86_400 + Int64(civil[3] * 3600 + civil[4] * 60 + civil[5] - offset)
+        let rawFraction = text.dropFirst(19).dropLast(zoneLength).dropFirst()
+        let fraction = String(rawFraction.reversed().drop(while: { $0 == "0" }).reversed())
+        return InventoryInstant(seconds: seconds, fraction: fraction)
+    }
+
+    private static func daysBeforeInventoryYear(_ year: Int) -> Int64 {
+        let prior = Int64(year) - 1
+        func divided(by divisor: Int64) -> Int64 {
+            let quotient = prior / divisor
+            return prior % divisor < 0 ? quotient - 1 : quotient
+        }
+        return prior * 365 + divided(by: 4) - divided(by: 100) + divided(by: 400)
     }
 
     private static func row(_ value: JSONValue, cached: Bool) throws -> GoalOverviewRow {

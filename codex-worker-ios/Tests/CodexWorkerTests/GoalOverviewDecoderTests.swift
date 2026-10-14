@@ -422,6 +422,62 @@ final class GoalOverviewDecoderTests: XCTestCase {
         XCTAssertEqual(result.obligations.first?.closureScopeMetadata, closureScope())
     }
 
+    func testInventoryBothPairingTimesRequireStrictCalendar() throws {
+        let original = page(goal(progress: slot("pending", .null), health: slot("pending", .null), availability: "pending"))
+        for (observed, verified) in [("2026-02-30T04:00:00Z", "2026-03-02T04:00:00Z"),
+            ("2026-02-29T04:00:00Z", "2026-03-01T04:00:00Z"),
+            ("1900-02-29T04:00:00Z", "1900-03-01T04:00:00Z"),
+            ("2026-10-14T04:00:00Zjunk", "2026-10-14T04:00:00Z")] {
+            let incoming = pairedInventoryPage(original, observed: observed, verified: verified)
+            XCTAssertThrowsError(try GoalOverviewDecoder.rows(incoming))
+            XCTAssertThrowsError(try GoalOverviewDecoder.inventoryValidation(incoming))
+        }
+        let stale = pairedInventoryPage(original, observed: "2026-02-30T04:00:00Z", verified: "2026-03-01T04:00:00Z", state: "last_known")
+        XCTAssertThrowsError(try GoalOverviewDecoder.inventoryValidation(stale))
+        for legal in ["2024-02-29T04:00:00Z", "2000-02-29T04:00:00Z", "1970-01-01T00:00:00Z", "1969-12-31T23:59:59Z"] {
+            let validation = try GoalOverviewDecoder.inventoryValidation(pairedInventoryPage(original, observed: legal, verified: legal))
+            let formatter = ISO8601DateFormatter()
+            XCTAssertEqual(validation.verifiedAt, formatter.date(from: legal))
+            XCTAssertEqual(validation.availability, .current)
+        }
+    }
+
+    func testInventoryTimestampPairingPreservesCompleteFraction() throws {
+        let original = page(goal(progress: slot("pending", .null), health: slot("pending", .null), availability: "pending"))
+        for (observed, verified) in [("2026-10-14T04:00:00.123456Z", "2026-10-14T04:00:00.123457Z"),
+            ("2026-10-14T04:00:00.123456789Z", "2026-10-14T04:00:00.123456790Z"),
+            ("2026-10-14T04:00:00.12345678901234567891Z", "2026-10-14T04:00:00.12345678901234567892Z"),
+            ("2026-10-14T04:00:00.001Z", "2026-10-14T04:00:00.1Z")] {
+            let incoming = pairedInventoryPage(original, observed: observed, verified: verified)
+            XCTAssertThrowsError(try GoalOverviewDecoder.rows(incoming))
+            XCTAssertThrowsError(try GoalOverviewDecoder.inventoryValidation(incoming))
+        }
+        for (observed, verified) in [("2026-10-14T04:00:00.123456Z", "2026-10-14T12:00:00.123456+08:00"),
+            ("2026-10-14T04:00:00.123456Z", "2026-10-14T04:00:00.1234560000Z"),
+            ("2026-10-14T04:00:00Z", "2026-10-14T04:00:00.000Z"),
+            ("2026-10-14T04:00:00.0010Z", "2026-10-14T04:00:00.001Z"),
+            ("2026-01-01T00:15:00.123456789+00:30", "2025-12-31T23:45:00.123456789Z"),
+            ("1969-12-31T23:59:59.9Z", "1970-01-01T00:59:59.900000+01:00")] {
+            let payload = pairedInventoryPage(original, observed: observed, verified: verified)
+            XCTAssertEqual(try GoalOverviewDecoder.inventoryValidation(payload).availability, .current)
+            let entry = GoalOverviewCacheEntry(payload: payload, receivedAt: Date())
+            let reopened = try JSONDecoder().decode(GoalOverviewCacheEntry.self, from: JSONEncoder().encode(entry))
+            XCTAssertEqual(reopened.payload, payload)
+            XCTAssertEqual(reopened.payload.objectValue?["inventory_validation"]?.objectValue?["verified_at"]?.stringValue, verified)
+        }
+        let observed = "2026-10-14T04:00:00.123456789Z"
+        let earlier = pairedInventoryPage(original, observed: observed, verified: "2026-10-14T04:00:00.123456788Z", state: "last_known")
+        XCTAssertEqual(try GoalOverviewDecoder.inventoryValidation(earlier).availability, .lastKnown)
+        let later = pairedInventoryPage(original, observed: observed, verified: "2026-10-14T04:00:00.123456790Z", state: "last_known")
+        XCTAssertThrowsError(try GoalOverviewDecoder.inventoryValidation(later))
+    }
+
+    private func pairedInventoryPage(_ page: JSONValue, observed: String, verified: String, state: String = "current") -> JSONValue {
+        var fields = page.objectValue!; fields["inventory_observed_at"] = .string(observed)
+        return inventoryPage(.object(fields), .object(["availability": .string(state), "verified_at": .string(verified),
+            "unavailability_reason": state == "current" ? .null : .string("read_failed")]))
+    }
+
     private func inventoryPage(_ page: JSONValue, _ metadata: JSONValue) -> JSONValue {
         var fields = page.objectValue!; fields["inventory_validation"] = metadata
         return .object(fields)
