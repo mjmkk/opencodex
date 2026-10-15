@@ -484,6 +484,140 @@ final class GoalOverviewDecoderTests: XCTestCase {
         }
     }
 
+    func testWorkerAssociationRemainsUnknownAndIndependentThroughCache() throws {
+        let wire = associationGoal()
+        let resolved = try row(wire)
+        var legacy = wire.objectValue!; legacy.removeValue(forKey: "delegation_basis")
+        let original = try row(.object(legacy))
+        XCTAssertEqual(resolved.validProgress, original.validProgress)
+        XCTAssertEqual(resolved.visibleHealth, original.visibleHealth)
+        XCTAssertEqual(resolved.progressDimension, original.progressDimension)
+        XCTAssertEqual(resolved.healthDimension, original.healthDimension)
+        XCTAssertEqual(resolved.workers, original.workers)
+        XCTAssertEqual(resolved.workerAssociation?.limitations,
+            associationBasis().objectValue!["limitations"]!.arrayValue!.compactMap(\.stringValue))
+        XCTAssertNotNil(resolved.workerAssociation?.observedAt)
+        let payload = page(wire)
+        let entry = GoalOverviewCacheEntry(payload: payload, receivedAt: Date())
+        let restored = try JSONDecoder().decode(GoalOverviewCacheEntry.self, from: JSONEncoder().encode(entry))
+        XCTAssertEqual(restored.payload, payload)
+        let cached = try GoalOverviewDecoder.rows(restored.payload, cached: true).first!
+        XCTAssertEqual(cached.workerAssociation, resolved.workerAssociation)
+        XCTAssertEqual(cached.validProgress, resolved.validProgress)
+        XCTAssertEqual(cached.visibleHealth, resolved.visibleHealth)
+        var changed = associationBasis().objectValue!; changed["registry_revision"] = .int(0)
+        XCTAssertEqual(try row(associationGoal(basis: .object(changed))).workerAssociation, resolved.workerAssociation)
+    }
+
+    func testWorkerAssociationLegacyKindsKeepTheirFallback() throws {
+        for basis: JSONValue in [.null, .array([]), .object([:]),
+            .object(["kind": .string("formal_current_master_assignment")]),
+            .object(["kind": .string("current_worker_native_delegation")]),
+            .object(["kind": .string("future_kind")])] {
+            let resolved = try row(associationGoal(basis: basis))
+            XCTAssertNil(resolved.workerAssociation)
+            XCTAssertEqual(resolved.validProgress, 73)
+        }
+        var misplaced = associationBasis().objectValue!
+        let acceptance = misplaced.removeValue(forKey: "execution_acceptance")!
+        var goal = associationGoal(basis: .object(misplaced)).objectValue!
+        goal["execution_acceptance"] = acceptance
+        XCTAssertThrowsError(try row(.object(goal)))
+        goal.removeValue(forKey: "delegation_basis")
+        XCTAssertNil(try row(.object(goal)).workerAssociation)
+        for key in ["workers", "closure_obligations"] {
+            var missing = associationGoal().objectValue!; missing.removeValue(forKey: key)
+            XCTAssertThrowsError(try row(.object(missing)))
+        }
+    }
+
+    func testWorkerAssociationRejectsMalformedOrMismatchedMetadata() throws {
+        let basis = associationBasis().objectValue!
+        for key in ["namespace", "issue_id", "issue_uuid", "routing_source", "registry_revision", "workers", "execution_acceptance", "limitations"] {
+            var missing = basis; missing.removeValue(forKey: key)
+            XCTAssertThrowsError(try row(associationGoal(basis: .object(missing))), key)
+        }
+        let badFields: [(String, JSONValue)] = [
+            ("namespace", .string("openai:another")), ("issue_id", .string("AGT-12")),
+            ("issue_uuid", .string("invalid")), ("routing_source", .string("mirror")),
+            ("registry_revision", .bool(true)), ("registry_revision", .int(-1)),
+            ("registry_revision", .double(1.5)), ("workers", .array([])),
+            ("workers", .array([.object(["thread_id": .string("fixture-thread"), "host_id": .string("other-host")])])),
+            ("workers", .array([associationWorker(), associationWorker()])),
+            ("workers", .array([.object(["thread_id": .string("fixture-thread"), "host_id": .string("fixture-host"), "extra": .bool(true)])])),
+            ("limitations", .array([.string("only one")])),
+            ("limitations", .array([.string(" "), .string("not permission")]))
+        ]
+        for (key, value) in badFields {
+            var invalid = basis; invalid[key] = value
+            XCTAssertThrowsError(try row(associationGoal(basis: .object(invalid))), key)
+        }
+        for (key, value): (String, JSONValue) in [
+            ("availability", .string("accepted")), ("unavailability_reason", .string("not_evaluated")),
+            ("observed_at", .string("2026-10-15T15:51:47")),
+            ("observed_at", .string("2026-02-30T15:51:47Z")), ("extra", .bool(true))
+        ] {
+            var acceptance = basis["execution_acceptance"]!.objectValue!; acceptance[key] = value
+            var invalid = basis; invalid["execution_acceptance"] = .object(acceptance)
+            XCTAssertThrowsError(try row(associationGoal(basis: .object(invalid))), key)
+        }
+        var noHost = associationGoal().objectValue!
+        noHost["workers"] = .array([.object(["thread_id": .string("fixture-thread")])])
+        XCTAssertThrowsError(try row(.object(noHost)))
+    }
+
+    func testWorkerAssociationRecursesWithoutScopeAndComparesFullWorkerPairs() throws {
+        var parent = associationGoal().objectValue!
+        parent["goal_id"] = .string("AGT-12"); parent["issue_id"] = .string("AGT-12")
+        parent.removeValue(forKey: "delegation_basis"); parent["workers"] = .array([])
+        parent["closure_obligations"] = .array([associationGoal()])
+        let nested = try row(.object(parent))
+        XCTAssertNil(nested.workerAssociation)
+        XCTAssertNotNil(nested.obligations.first?.workerAssociation)
+        XCTAssertNil(nested.obligations.first?.closureScopeDescription)
+        var basis = associationBasis().objectValue!
+        basis["namespace"] = .string("openai:another")
+        parent["closure_obligations"] = .array([associationGoal(basis: .object(basis))])
+        XCTAssertThrowsError(try row(.object(parent)))
+        basis = associationBasis().objectValue!
+        basis["workers"] = .array([.object(["thread_id": .string("c"), "host_id": .string("a:b")])])
+        var collision = associationGoal(basis: .object(basis)).objectValue!
+        collision["workers"] = .array([.object(["thread_id": .string("b:c"), "host_id": .string("a")])])
+        XCTAssertThrowsError(try row(.object(collision)))
+        basis = associationBasis().objectValue!
+        let second: JSONValue = .object(["thread_id": .string("second-thread"), "host_id": .string("second-host")])
+        basis["workers"] = .array([second, associationWorker()])
+        var complete = associationGoal(basis: .object(basis)).objectValue!
+        complete["workers"] = .array([associationWorker(), second])
+        XCTAssertNotNil(try row(.object(complete)).workerAssociation)
+        complete["workers"] = .array([associationWorker()])
+        XCTAssertThrowsError(try row(.object(complete)))
+    }
+
+    private func associationWorker() -> JSONValue {
+        .object(["thread_id": .string("fixture-thread"), "host_id": .string("fixture-host")])
+    }
+
+    private func associationBasis() -> JSONValue {
+        .object(["kind": .string("formal_current_worker_association"), "namespace": .string("openai:fixture-only"),
+            "issue_id": .string("AGT-34"), "issue_uuid": .string("fa000000-0000-4000-8000-000000000034"),
+            "routing_source": .string("postgres_registry"), "registry_revision": .int(2),
+            "workers": .array([associationWorker()]),
+            "execution_acceptance": .object(["availability": .string("unknown"),
+                "unavailability_reason": .string("native_acceptance_unverified"),
+                "observed_at": .string("2026-10-15T15:51:47.786289+00:00")]),
+            "limitations": .array([.string("Source association only; native acceptance is unverified."),
+                .string("Grants no execution permission or active/completion status.")])])
+    }
+
+    private func associationGoal(basis: JSONValue? = nil) -> JSONValue {
+        var fields = goal(progress: slot("current", .int(73)), health: slot("current", .string("At risk")),
+            availability: "current", observation: metadata()).objectValue!
+        fields["workers"] = .array([associationWorker()])
+        fields["delegation_basis"] = basis ?? associationBasis()
+        return .object(fields)
+    }
+
     private func pairedInventoryPage(_ page: JSONValue, observed: String, verified: String, state: String = "current") -> JSONValue {
         var fields = page.objectValue!; fields["inventory_observed_at"] = .string(observed)
         return inventoryPage(.object(fields), .object(["availability": .string(state), "verified_at": .string(verified),

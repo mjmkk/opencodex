@@ -21,6 +21,7 @@ struct GoalOverviewRow: Identifiable, Equatable, Sendable {
     var closureScopeDescription: String? = nil
     var closureScopeSourceURL: URL? = nil
     var closureScopeMetadata: JSONValue? = nil
+    var workerAssociation: GoalWorkerAssociation? = nil
 
     var progressAvailability: ObservationAvailability { progressDimension?.availability ?? availability }
     var healthAvailability: ObservationAvailability { healthDimension?.availability ?? availability }
@@ -35,6 +36,12 @@ struct GoalOverviewRow: Identifiable, Equatable, Sendable {
     }
     var hasPendingAssessment: Bool { (validProgress == nil && !progressNotApplicable) || visibleHealth == nil }
     var hasLastKnownAssessment: Bool { progressAvailability == .lastKnown || healthAvailability == .lastKnown }
+}
+
+/// API source association only; it never establishes native execution acceptance.
+struct GoalWorkerAssociation: Equatable, Sendable {
+    let observedAt: Date
+    let limitations: [String]
 }
 
 /// Each adopted dimension keeps its complete, original provenance independently.

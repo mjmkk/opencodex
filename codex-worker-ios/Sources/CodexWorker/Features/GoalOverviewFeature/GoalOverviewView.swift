@@ -125,6 +125,11 @@ struct GoalOverviewView: View {
             if expanded.contains(path) {
                 VStack(alignment: .leading, spacing: 5) {
                     Text(row.title).font(.subheadline)
+                    if let association = row.workerAssociation {
+                        Text("承接未核验").font(.caption.bold()).foregroundStyle(.primary)
+                        Text("仅确认当前关联，尚未确认接手、运行或授权。").font(.caption)
+                        timestamp("关联观察", association.observedAt)
+                    }
                     if let description = row.closureScopeDescription, let source = row.closureScopeSourceURL {
                         Text("承接范围").font(.caption.bold())
                         Text(description).font(.caption).textSelection(.enabled)

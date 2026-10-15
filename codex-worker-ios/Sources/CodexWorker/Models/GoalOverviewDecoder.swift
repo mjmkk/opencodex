@@ -11,7 +11,7 @@ enum GoalOverviewDecoder {
               let revision = root["snapshot_revision"]?.intValue, revision > 0,
               inventoryInstant(root["inventory_observed_at"]) != nil else { throw CodexError.invalidState }
         _ = try inventoryValidation(payload, cached: cached)
-        let result = try goals.map { try row($0, cached: cached) }
+        let result = try goals.map { try row($0, namespace: namespace, cached: cached) }
         guard Set(result.map(\.id)).count == result.count else { throw CodexError.invalidState }
         return result
     }
@@ -98,7 +98,7 @@ enum GoalOverviewDecoder {
         return prior * 365 + divided(by: 4) - divided(by: 100) + divided(by: 400)
     }
 
-    private static func row(_ value: JSONValue, cached: Bool) throws -> GoalOverviewRow {
+    private static func row(_ value: JSONValue, namespace: String, cached: Bool) throws -> GoalOverviewRow {
         guard let goal = value.objectValue,
               let id = goal["issue_id"]?.stringValue, !id.isEmpty,
               goal["goal_id"]?.stringValue == id,
@@ -158,7 +158,7 @@ enum GoalOverviewDecoder {
             coverageAt: date(observation?["input_coverage_at"]),
             evaluatedAt: date(observation?["evaluated_at"]),
             explanation: goal["unavailability_reason"]?.stringValue,
-            obligations: try obligations.map { try row($0, cached: cached) },
+            obligations: try obligations.map { try row($0, namespace: namespace, cached: cached) },
             workers: try workers.map { worker in
                 guard let fields = worker.objectValue, let thread = fields["thread_id"]?.stringValue else { throw CodexError.invalidState }
                 let host = fields["host_id"]?.stringValue
@@ -168,7 +168,52 @@ enum GoalOverviewDecoder {
                     observedAt: date(fields["observed_at"]))
             }, sourceNotes: sourceNotes(observation), progressDimension: progressDimension, healthDimension: healthDimension,
             closureScopeDescription: scope?.description, closureScopeSourceURL: scope?.sourceURL,
-            closureScopeMetadata: scope?.metadata)
+            closureScopeMetadata: scope?.metadata,
+            workerAssociation: try workerAssociation(goal["delegation_basis"], namespace: namespace, issueID: id, workers: workers))
+    }
+
+    /// Only the frozen association kind has this contract. Legacy kinds retain their rendering.
+    private static func workerAssociation(_ raw: JSONValue?, namespace: String, issueID: String,
+                                          workers: [JSONValue]) throws -> GoalWorkerAssociation? {
+        guard let basis = raw?.objectValue,
+              basis["kind"]?.stringValue == "formal_current_worker_association" else { return nil }
+        guard basis["namespace"]?.stringValue == namespace,
+              basis["issue_id"]?.stringValue == issueID,
+              let issueUUID = basis["issue_uuid"]?.stringValue, UUID(uuidString: issueUUID) != nil,
+              basis["routing_source"]?.stringValue == "postgres_registry",
+              let revision = basis["registry_revision"]?.intValue, revision >= 0,
+              let references = basis["workers"]?.arrayValue, !references.isEmpty,
+              let acceptance = basis["execution_acceptance"]?.objectValue,
+              Set(acceptance.keys) == ["availability", "unavailability_reason", "observed_at"],
+              acceptance["availability"]?.stringValue == "unknown",
+              acceptance["unavailability_reason"]?.stringValue == "native_acceptance_unverified",
+              let observed = inventoryInstant(acceptance["observed_at"]),
+              let rawLimitations = basis["limitations"]?.arrayValue, rawLimitations.count == 2,
+              rawLimitations.allSatisfy(nonempty)
+        else { throw CodexError.invalidState }
+        // These are API identities, not an independent Registry/native-role verification.
+        guard try workerReferences(references, exactKeys: true) == workerReferences(workers, exactKeys: false)
+        else { throw CodexError.invalidState }
+        return GoalWorkerAssociation(observedAt: observed.displayDate,
+            limitations: rawLimitations.compactMap(\.stringValue))
+    }
+
+    private struct WorkerReference: Hashable {
+        let thread: String
+        let host: String
+    }
+
+    private static func workerReferences(_ values: [JSONValue], exactKeys: Bool) throws -> Set<WorkerReference> {
+        let references = try values.map { value -> WorkerReference in
+            guard let fields = value.objectValue,
+                  !exactKeys || Set(fields.keys) == ["thread_id", "host_id"],
+                  let thread = fields["thread_id"]?.stringValue, !thread.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  let host = fields["host_id"]?.stringValue, !host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            else { throw CodexError.invalidState }
+            return WorkerReference(thread: thread, host: host)
+        }
+        guard Set(references).count == references.count else { throw CodexError.invalidState }
+        return Set(references)
     }
 
     /// A supplied scope is a source projection, never an inferred Issue relationship.
