@@ -1,0 +1,80 @@
+{
+  "observed_at": "2026-10-22T19:30:04.363339+00:00",
+  "scope": "isolated_synthetic_child_lifecycle_and_frozen_adapter_guards",
+  "production_apply": false,
+  "git_origin": "unverified; frozen production bytes",
+  "native_thread_uuid": "unknown",
+  "harness_revision_id": "unknown",
+  "node_entry": "/home/spirit/.local/lib/opencodex-runtime/node-v22.23.2-linux-x64/bin/node",
+  "node_realpath": "/home/spirit/.local/lib/opencodex-runtime/node-v22.23.2-linux-x64/bin/node",
+  "node_version": "v22.23.2",
+  "python_entry": "/usr/bin/python3",
+  "python_version": "Python 3.12.3",
+  "changed_files": [
+    "src/desktop-relay-client.js",
+    "test/desktop-relay-client.test.js"
+  ],
+  "original_two_tests_unchanged": true,
+  "production_source_hashes_unchanged": true,
+  "source_sha256": {
+    "src/desktop-relay-client.js": "4b61fd1ed0dc97e46086fa41b9096766a62d2aa7792ecc99680628f6f13655a2",
+    "src/errors.js": "19c0881116f0d9e7f2ff5e714e2e7a0e552f4fad1defbf70d617ad6c5f421394",
+    "test/desktop-relay-client.test.js": "dd2188cc9dbcc9ae8e157abde58f21b66269a771ec94113bbb6422b38104e9a8",
+    "package.json": "3cda88b0b517ba7f6bbdd8124a01882837d1f93a7182d96275357aad7277548a",
+    "native/mobile_adapter.py": "02397a5de1b5602b8c51711c0d3b07e3fd511612104b913a56d60c4968c468ac",
+    "native/follower.py": "dae01a42a13ae32ea830f14e047641fa4dbe381552532389db7ae7e11695431c",
+    "native/test_mobile_adapter.py": "edf04e8abd969c93b36f6d5bd93303093b345851704fac49ed2d460ce12da759"
+  },
+  "candidate_sha256": {
+    "src/desktop-relay-client.js": "db34a0c8e65f57e7e88ed498e0a62f524305ee995956c9d33f6fe1dff7249783",
+    "src/errors.js": "19c0881116f0d9e7f2ff5e714e2e7a0e552f4fad1defbf70d617ad6c5f421394",
+    "test/desktop-relay-client.test.js": "524a0e635cdc766620b369099e026034a0ffcae13b3b6347e6582db9cc910a29",
+    "package.json": "3cda88b0b517ba7f6bbdd8124a01882837d1f93a7182d96275357aad7277548a",
+    "native/mobile_adapter.py": "02397a5de1b5602b8c51711c0d3b07e3fd511612104b913a56d60c4968c468ac",
+    "native/follower.py": "dae01a42a13ae32ea830f14e047641fa4dbe381552532389db7ae7e11695431c",
+    "native/test_mobile_adapter.py": "edf04e8abd969c93b36f6d5bd93303093b345851704fac49ed2d460ce12da759"
+  },
+  "results": {
+    "relay_tests": {
+      "pass": 13,
+      "fail": 0,
+      "log": "TEST-AFTER-2.log"
+    },
+    "existing_adapter_guard_tests": {
+      "pass": 9,
+      "fail": 0,
+      "log": "TEST-ADAPTER.log"
+    },
+    "initial_red_control": {
+      "pass": 5,
+      "fail": 6,
+      "log": "RED-BEFORE.log",
+      "note": "First new 11-test suite against the frozen original implementation; original two tests passed. Later two additional cases are in final 13-test suite."
+    },
+    "candidate_first_run": {
+      "pass": 11,
+      "fail": 0,
+      "log": "TEST-AFTER-1.log"
+    },
+    "node_check_source_and_test": "passed"
+  },
+  "no_production_service_or_real_native_calls": true,
+  "execution_binding": {
+    "cwd": "/home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate",
+    "relay_command": "/home/spirit/.local/lib/opencodex-runtime/node-v22.23.2-linux-x64/bin/node --test test/desktop-relay-client.test.js > ../TEST-AFTER-2.log 2>&1",
+    "adapter_command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s native -p test_mobile_adapter.py > ../TEST-ADAPTER.log 2>&1",
+    "syntax_commands": [
+      "/home/spirit/.local/lib/opencodex-runtime/node-v22.23.2-linux-x64/bin/node --check candidate/src/desktop-relay-client.js",
+      "/home/spirit/.local/lib/opencodex-runtime/node-v22.23.2-linux-x64/bin/node --check candidate/test/desktop-relay-client.test.js"
+    ],
+    "syntax_cwd": "/home/spirit/workspaces/agt12-native-relay-generation-20261023-1",
+    "production_frozen_source_sha256": "4b61fd1ed0dc97e46086fa41b9096766a62d2aa7792ecc99680628f6f13655a2",
+    "tested_candidate_source_sha256": "db34a0c8e65f57e7e88ed498e0a62f524305ee995956c9d33f6fe1dff7249783",
+    "tested_candidate_test_sha256": "524a0e635cdc766620b369099e026034a0ffcae13b3b6347e6582db9cc910a29",
+    "binding_note": "Source written before final run and unchanged thereafter; final frozen hash measured after run. No separate hash sampling at test start; no rerun added for metadata.",
+    "relay_log_sha256": "5147826108bfc907274690df9c396a397358be16c825cbc20c6271ec27e2aa24",
+    "adapter_log_sha256": "55df81c03b1fc09a739803668e8b10b1a1cd87ac7e716666dddb1c968f87bb76",
+    "relay_log_mtime_utc": "2026-10-22T19:26:47.643593+00:00",
+    "adapter_log_mtime_utc": "2026-10-22T19:26:47.800600+00:00"
+  }
+}

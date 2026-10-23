@@ -1,0 +1,141 @@
+{
+  "schema": "agt12-relay-closeout-archive-v1",
+  "created_at_utc": "2026-10-23T04:57:53.979029+00:00",
+  "hosting_base": "1d34372bb51372b7cd61b716021654c9019dfb94",
+  "branch": "codex/agt12-relay-closeout-20261023",
+  "source_git_origin_unverified": true,
+  "production_candidate_bytes_match": true,
+  "tests_rerun": false,
+  "payloads": [
+    {
+      "path": "BASELINE.json",
+      "bytes": 1746,
+      "sha256": "285bddd405992b150b70f7dbcbb28b7b694bad0c08db8ee6255ab8479aef1821"
+    },
+    {
+      "path": "SPEC.md",
+      "bytes": 1568,
+      "sha256": "0d1e73d37b48c18ecde7d8ff6df92b3924e422741dc248fc2da63578ce651000"
+    },
+    {
+      "path": "STATIC-REVIEW.md",
+      "bytes": 950,
+      "sha256": "c3d2be20de14a8baccac41fcea27ff5f6d16053016984a9d382df08ea43af7d0"
+    },
+    {
+      "path": "RESULT.md",
+      "bytes": 4340,
+      "sha256": "bf98b9ff61a45f51632853349369e857e1b22e5449a46d2dfc4f38a99f995137"
+    },
+    {
+      "path": "VERIFICATION.json",
+      "bytes": 4523,
+      "sha256": "b1afc7d42216aede066610f0c8e696863b7b4e810bc9b61c0e184ec8cf86f1ad"
+    },
+    {
+      "path": "candidate.patch",
+      "bytes": 18389,
+      "sha256": "ff56361b2845a3a5bc1a4eacd60ef31ea8e3ff96a42a45d716dafbf121419c7d"
+    },
+    {
+      "path": "RED-BEFORE.log",
+      "bytes": 7281,
+      "sha256": "205efbda42aa5e283ce4f80ecf88aaa1f068bc9cbafe96cd940db0f0aaace091"
+    },
+    {
+      "path": "TEST-AFTER-1.log",
+      "bytes": 2398,
+      "sha256": "abdad7c2692a5007b77d3296acf4c6b75986900d9784f184c7622070e94caea8"
+    },
+    {
+      "path": "TEST-AFTER-2.log",
+      "bytes": 2821,
+      "sha256": "5147826108bfc907274690df9c396a397358be16c825cbc20c6271ec27e2aa24"
+    },
+    {
+      "path": "TEST-ADAPTER.log",
+      "bytes": 107,
+      "sha256": "55df81c03b1fc09a739803668e8b10b1a1cd87ac7e716666dddb1c968f87bb76"
+    },
+    {
+      "path": "baseline/package.json",
+      "bytes": 498,
+      "sha256": "3cda88b0b517ba7f6bbdd8124a01882837d1f93a7182d96275357aad7277548a"
+    },
+    {
+      "path": "baseline/src/desktop-relay-client.js",
+      "bytes": 2993,
+      "sha256": "4b61fd1ed0dc97e46086fa41b9096766a62d2aa7792ecc99680628f6f13655a2"
+    },
+    {
+      "path": "baseline/src/errors.js",
+      "bytes": 2178,
+      "sha256": "19c0881116f0d9e7f2ff5e714e2e7a0e552f4fad1defbf70d617ad6c5f421394"
+    },
+    {
+      "path": "baseline/test/desktop-relay-client.test.js",
+      "bytes": 1243,
+      "sha256": "dd2188cc9dbcc9ae8e157abde58f21b66269a771ec94113bbb6422b38104e9a8"
+    },
+    {
+      "path": "baseline/native/follower.py",
+      "bytes": 14368,
+      "sha256": "dae01a42a13ae32ea830f14e047641fa4dbe381552532389db7ae7e11695431c"
+    },
+    {
+      "path": "baseline/native/mobile_adapter.py",
+      "bytes": 8259,
+      "sha256": "02397a5de1b5602b8c51711c0d3b07e3fd511612104b913a56d60c4968c468ac"
+    },
+    {
+      "path": "baseline/native/test_mobile_adapter.py",
+      "bytes": 4414,
+      "sha256": "edf04e8abd969c93b36f6d5bd93303093b345851704fac49ed2d460ce12da759"
+    },
+    {
+      "path": "candidate/package.json",
+      "bytes": 498,
+      "sha256": "3cda88b0b517ba7f6bbdd8124a01882837d1f93a7182d96275357aad7277548a"
+    },
+    {
+      "path": "candidate/src/desktop-relay-client.js",
+      "bytes": 4460,
+      "sha256": "db34a0c8e65f57e7e88ed498e0a62f524305ee995956c9d33f6fe1dff7249783"
+    },
+    {
+      "path": "candidate/src/errors.js",
+      "bytes": 2178,
+      "sha256": "19c0881116f0d9e7f2ff5e714e2e7a0e552f4fad1defbf70d617ad6c5f421394"
+    },
+    {
+      "path": "candidate/test/desktop-relay-client.test.js",
+      "bytes": 13242,
+      "sha256": "524a0e635cdc766620b369099e026034a0ffcae13b3b6347e6582db9cc910a29"
+    },
+    {
+      "path": "candidate/native/follower.py",
+      "bytes": 14368,
+      "sha256": "dae01a42a13ae32ea830f14e047641fa4dbe381552532389db7ae7e11695431c"
+    },
+    {
+      "path": "candidate/native/mobile_adapter.py",
+      "bytes": 8259,
+      "sha256": "02397a5de1b5602b8c51711c0d3b07e3fd511612104b913a56d60c4968c468ac"
+    },
+    {
+      "path": "candidate/native/test_mobile_adapter.py",
+      "bytes": 4414,
+      "sha256": "edf04e8abd969c93b36f6d5bd93303093b345851704fac49ed2d460ce12da759"
+    },
+    {
+      "path": "ROLLBACK-AT-ADOPTION.md",
+      "bytes": 1554,
+      "sha256": "1e8382d9b4753a00abfef5735b1402f72fe5f79cf3fbf2745bed5d3eea797172"
+    },
+    {
+      "path": "CLOSEOUT.md",
+      "bytes": 3668,
+      "sha256": "d18cb8f940241004242b9929c4ca39d45e1c9cb0f4d32df1c45bde62ba31e299"
+    }
+  ]
+}

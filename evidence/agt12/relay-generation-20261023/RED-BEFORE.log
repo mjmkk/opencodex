@@ -1,0 +1,148 @@
+TAP version 13
+# Subtest: transport preserves int64 request IDs without JavaScript reserialization
+ok 1 - transport preserves int64 request IDs without JavaScript reserialization
+  ---
+  duration_ms: 188.213969
+  type: 'test'
+  ...
+# Subtest: lost response reports unknown and never retries the write
+ok 2 - lost response reports unknown and never retries the write
+  ---
+  duration_ms: 190.456209
+  type: 'test'
+  ...
+# Subtest: initial spawn failure can recover only on a separate valid list
+not ok 3 - initial spawn failure can recover only on a separate valid list
+  ---
+  duration_ms: 39.386267
+  type: 'test'
+  location: '/home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/test/desktop-relay-client.test.js:73:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The validation function is expected to return "true". Received false
+    
+    Caught error:
+    
+    HttpError: The original owner is unavailable
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async TestContext.<anonymous> (file:///home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/test/desktop-relay-client.test.js:79:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: connection loss rejects every old pending operation; a new list does not replay them
+not ok 4 - connection loss rejects every old pending operation; a new list does not replay them
+  ---
+  duration_ms: 225.704121
+  type: 'test'
+  location: '/home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/test/desktop-relay-client.test.js:87:1'
+  failureType: 'testCodeFailure'
+  error: 'The original owner is unavailable'
+  code: 'NATIVE_OWNER_UNAVAILABLE'
+  name: 'HttpError'
+  stack: |-
+    DesktopRelayClient.call (file:///home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/src/desktop-relay-client.js:39:44)
+    TestContext.<anonymous> (file:///home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/test/desktop-relay-client.test.js:99:42)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: lost respond is written once across a later list recovery
+not ok 5 - lost respond is written once across a later list recovery
+  ---
+  duration_ms: 148.706163
+  type: 'test'
+  location: '/home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/test/desktop-relay-client.test.js:105:1'
+  failureType: 'testCodeFailure'
+  error: 'The original owner is unavailable'
+  code: 'NATIVE_OWNER_UNAVAILABLE'
+  name: 'HttpError'
+  stack: |-
+    DesktopRelayClient.call (file:///home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/src/desktop-relay-client.js:39:44)
+    TestContext.<anonymous> (file:///home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/test/desktop-relay-client.test.js:111:18)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: respond timeout remains unknown and is never automatically replayed
+ok 6 - respond timeout remains unknown and is never automatically replayed
+  ---
+  duration_ms: 301.041267
+  type: 'test'
+  ...
+# Subtest: concurrent new lists share one replacement child
+not ok 7 - concurrent new lists share one replacement child
+  ---
+  duration_ms: 83.069632
+  type: 'test'
+  location: '/home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/test/desktop-relay-client.test.js:123:1'
+  failureType: 'testCodeFailure'
+  error: 'The original owner is unavailable'
+  code: 'NATIVE_OWNER_UNAVAILABLE'
+  name: 'HttpError'
+  stack: |-
+    DesktopRelayClient.call (file:///home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/src/desktop-relay-client.js:39:44)
+    file:///home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/test/desktop-relay-client.test.js:127:71
+    Function.from (<anonymous>)
+    TestContext.<anonymous> (file:///home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/test/desktop-relay-client.test.js:127:41)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: old child late data/error/close/stdin errors cannot affect the replacement
+not ok 8 - old child late data/error/close/stdin errors cannot affect the replacement
+  ---
+  duration_ms: 278.885084
+  type: 'test'
+  location: '/home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/test/desktop-relay-client.test.js:134:1'
+  failureType: 'unhandledRejection'
+  error: 'The original owner is unavailable'
+  code: 'NATIVE_OWNER_UNAVAILABLE'
+  name: 'HttpError'
+  stack: |-
+    DesktopRelayClient.call (file:///home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/src/desktop-relay-client.js:39:44)
+    TestContext.<anonymous> (file:///home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/test/desktop-relay-client.test.js:138:23)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: explicit close is permanent, including when a request is pending
+ok 9 - explicit close is permanent, including when a request is pending
+  ---
+  duration_ms: 71.273223
+  type: 'test'
+  ...
+# Subtest: explicit close before child startup never enables recovery
+ok 10 - explicit close before child startup never enables recovery
+  ---
+  duration_ms: 33.383551
+  type: 'test'
+  ...
+# Subtest: real frozen Adapter rejects old-generation receipts and retains typed ID/full-request checks
+not ok 11 - real frozen Adapter rejects old-generation receipts and retains typed ID/full-request checks
+  ---
+  duration_ms: 119.126432
+  type: 'test'
+  location: '/home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/test/desktop-relay-client.test.js:175:1'
+  failureType: 'testCodeFailure'
+  error: 'The original owner is unavailable'
+  code: 'NATIVE_OWNER_UNAVAILABLE'
+  name: 'HttpError'
+  stack: |-
+    DesktopRelayClient.call (file:///home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/src/desktop-relay-client.js:39:44)
+    TestContext.<anonymous> (file:///home/spirit/workspaces/agt12-native-relay-generation-20261023-1/candidate/test/desktop-relay-client.test.js:200:41)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 5
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4788.853569

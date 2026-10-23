@@ -1,0 +1,88 @@
+TAP version 13
+# Subtest: transport preserves int64 request IDs without JavaScript reserialization
+ok 1 - transport preserves int64 request IDs without JavaScript reserialization
+  ---
+  duration_ms: 90.342621
+  type: 'test'
+  ...
+# Subtest: lost response reports unknown and never retries the write
+ok 2 - lost response reports unknown and never retries the write
+  ---
+  duration_ms: 98.607908
+  type: 'test'
+  ...
+# Subtest: initial spawn failure can recover only on a separate valid list
+ok 3 - initial spawn failure can recover only on a separate valid list
+  ---
+  duration_ms: 121.763477
+  type: 'test'
+  ...
+# Subtest: connection loss rejects every old pending operation; a new list does not replay them
+ok 4 - connection loss rejects every old pending operation; a new list does not replay them
+  ---
+  duration_ms: 124.457886
+  type: 'test'
+  ...
+# Subtest: lost respond is written once across a later list recovery
+ok 5 - lost respond is written once across a later list recovery
+  ---
+  duration_ms: 143.17042
+  type: 'test'
+  ...
+# Subtest: respond timeout remains unknown and is never automatically replayed
+ok 6 - respond timeout remains unknown and is never automatically replayed
+  ---
+  duration_ms: 276.056262
+  type: 'test'
+  ...
+# Subtest: concurrent new lists share one replacement child
+ok 7 - concurrent new lists share one replacement child
+  ---
+  duration_ms: 217.303394
+  type: 'test'
+  ...
+# Subtest: a failed but still-running child blocks additional followers until it exits
+ok 8 - a failed but still-running child blocks additional followers until it exits
+  ---
+  duration_ms: 212.885046
+  type: 'test'
+  ...
+# Subtest: replacement preserves the original raw body and typed numeric/string IDs
+ok 9 - replacement preserves the original raw body and typed numeric/string IDs
+  ---
+  duration_ms: 133.947315
+  type: 'test'
+  ...
+# Subtest: old child late data/error/close/stdin errors cannot affect the replacement
+ok 10 - old child late data/error/close/stdin errors cannot affect the replacement
+  ---
+  duration_ms: 727.367391
+  type: 'test'
+  ...
+# Subtest: explicit close is permanent, including when a request is pending
+ok 11 - explicit close is permanent, including when a request is pending
+  ---
+  duration_ms: 78.040561
+  type: 'test'
+  ...
+# Subtest: explicit close before child startup never enables recovery
+ok 12 - explicit close before child startup never enables recovery
+  ---
+  duration_ms: 26.959798
+  type: 'test'
+  ...
+# Subtest: real frozen Adapter rejects old-generation receipts, typed ID and version mismatches
+ok 13 - real frozen Adapter rejects old-generation receipts, typed ID and version mismatches
+  ---
+  duration_ms: 149.732748
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2593.240674

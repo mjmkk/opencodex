@@ -1,0 +1,42 @@
+{
+  "observed_at": "2026-10-22T19:20:42.374417+00:00",
+  "source_kind": "frozen_production_bytes_no_verified_git_origin",
+  "git_commit": null,
+  "files": {
+    "src/desktop-relay-client.js": {
+      "source_path": "/home/spirit/agt12-mobile/codex-worker-mvp/src/desktop-relay-client.js",
+      "sha256": "4b61fd1ed0dc97e46086fa41b9096766a62d2aa7792ecc99680628f6f13655a2",
+      "bytes": 2993
+    },
+    "src/errors.js": {
+      "source_path": "/home/spirit/agt12-mobile/codex-worker-mvp/src/errors.js",
+      "sha256": "19c0881116f0d9e7f2ff5e714e2e7a0e552f4fad1defbf70d617ad6c5f421394",
+      "bytes": 2178
+    },
+    "test/desktop-relay-client.test.js": {
+      "source_path": "/home/spirit/agt12-mobile/codex-worker-mvp/test/desktop-relay-client.test.js",
+      "sha256": "dd2188cc9dbcc9ae8e157abde58f21b66269a771ec94113bbb6422b38104e9a8",
+      "bytes": 1243
+    },
+    "package.json": {
+      "source_path": "/home/spirit/agt12-mobile/codex-worker-mvp/package.json",
+      "sha256": "3cda88b0b517ba7f6bbdd8124a01882837d1f93a7182d96275357aad7277548a",
+      "bytes": 498
+    },
+    "native/mobile_adapter.py": {
+      "source_path": "/home/spirit/agt12-mobile/native/mobile_adapter.py",
+      "sha256": "02397a5de1b5602b8c51711c0d3b07e3fd511612104b913a56d60c4968c468ac",
+      "bytes": 8259
+    },
+    "native/follower.py": {
+      "source_path": "/home/spirit/agt12-mobile/native/follower.py",
+      "sha256": "dae01a42a13ae32ea830f14e047641fa4dbe381552532389db7ae7e11695431c",
+      "bytes": 14368
+    },
+    "native/test_mobile_adapter.py": {
+      "source_path": "/home/spirit/agt12-mobile/native/test_mobile_adapter.py",
+      "sha256": "edf04e8abd969c93b36f6d5bd93303093b345851704fac49ed2d460ce12da759",
+      "bytes": 4414
+    }
+  }
+}

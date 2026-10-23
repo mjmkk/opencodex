@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: transport preserves int64 request IDs without JavaScript reserialization
+ok 1 - transport preserves int64 request IDs without JavaScript reserialization
+  ---
+  duration_ms: 146.157362
+  type: 'test'
+  ...
+# Subtest: lost response reports unknown and never retries the write
+ok 2 - lost response reports unknown and never retries the write
+  ---
+  duration_ms: 110.073977
+  type: 'test'
+  ...
+# Subtest: initial spawn failure can recover only on a separate valid list
+ok 3 - initial spawn failure can recover only on a separate valid list
+  ---
+  duration_ms: 124.102132
+  type: 'test'
+  ...
+# Subtest: connection loss rejects every old pending operation; a new list does not replay them
+ok 4 - connection loss rejects every old pending operation; a new list does not replay them
+  ---
+  duration_ms: 331.270576
+  type: 'test'
+  ...
+# Subtest: lost respond is written once across a later list recovery
+ok 5 - lost respond is written once across a later list recovery
+  ---
+  duration_ms: 220.483943
+  type: 'test'
+  ...
+# Subtest: respond timeout remains unknown and is never automatically replayed
+ok 6 - respond timeout remains unknown and is never automatically replayed
+  ---
+  duration_ms: 335.045398
+  type: 'test'
+  ...
+# Subtest: concurrent new lists share one replacement child
+ok 7 - concurrent new lists share one replacement child
+  ---
+  duration_ms: 340.699959
+  type: 'test'
+  ...
+# Subtest: old child late data/error/close/stdin errors cannot affect the replacement
+ok 8 - old child late data/error/close/stdin errors cannot affect the replacement
+  ---
+  duration_ms: 909.590887
+  type: 'test'
+  ...
+# Subtest: explicit close is permanent, including when a request is pending
+ok 9 - explicit close is permanent, including when a request is pending
+  ---
+  duration_ms: 89.370575
+  type: 'test'
+  ...
+# Subtest: explicit close before child startup never enables recovery
+ok 10 - explicit close before child startup never enables recovery
+  ---
+  duration_ms: 26.619789
+  type: 'test'
+  ...
+# Subtest: real frozen Adapter rejects old-generation receipts and retains typed ID/full-request checks
+ok 11 - real frozen Adapter rejects old-generation receipts and retains typed ID/full-request checks
+  ---
+  duration_ms: 188.039051
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3159.647279
