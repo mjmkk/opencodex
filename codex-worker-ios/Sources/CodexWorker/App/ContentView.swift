@@ -53,7 +53,7 @@ public struct ContentView: View {
     public var body: some View {
         WithViewStore(store, observe: ViewState.init) { viewStore in
             GeometryReader { geometry in
-                let drawerWidth = min(geometry.size.width * 0.84, 360)
+                let drawerWidth = geometry.size.width < 600 ? geometry.size.width : min(geometry.size.width * 0.4, 380)
                 let rawTerminalHeight = geometry.size.height * viewStore.terminalHeightRatio
                 let terminalHeight = min(max(rawTerminalHeight, 220), geometry.size.height * 0.72)
 

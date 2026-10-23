@@ -16,6 +16,7 @@ public struct ThreadsView: View {
     let onDismiss: (() -> Void)?
     let executionAccessMode: ExecutionAccessMode
     let onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)?
+    @State private var informationThread: Thread?
 
     public init(
         store: StoreOf<ThreadsFeature>,
@@ -79,11 +80,7 @@ public struct ThreadsView: View {
                             ForEach(viewStore.cwdGroups) { group in
                                 Section {
                                     ForEach(group.threads, id: \.threadId) { thread in
-                                        threadButton(
-                                            viewStore: viewStore,
-                                            thread: thread,
-                                            showCwd: false
-                                        )
+                                        threadButton(viewStore: viewStore, thread: thread)
                                     }
                                 } header: {
                                     CwdGroupHeader(group: group)
@@ -95,7 +92,7 @@ public struct ThreadsView: View {
                             if !attention.isEmpty {
                                 Section {
                                     ForEach(attention, id: \.threadId) { thread in
-                                        threadButton(viewStore: viewStore, thread: thread, showCwd: true)
+                                        threadButton(viewStore: viewStore, thread: thread)
                                     }
                                 } header: {
                                     sectionHeading("需要关注")
@@ -107,7 +104,7 @@ public struct ThreadsView: View {
                             if !recent.isEmpty {
                                 Section {
                                     ForEach(recent, id: \.threadId) { thread in
-                                        threadButton(viewStore: viewStore, thread: thread, showCwd: true)
+                                        threadButton(viewStore: viewStore, thread: thread)
                                     }
                                 } header: {
                                     sectionHeading("最近任务")
@@ -126,6 +123,12 @@ public struct ThreadsView: View {
             }
             .onAppear { viewStore.send(.onAppear) }
             .background(Color(uiColor: .systemBackground))
+            .sheet(item: $informationThread) { thread in
+                ThreadInformationView(
+                    thread: thread,
+                    metadata: viewStore.syncMetadata[thread.threadId]
+                )
+            }
         }
     }
 
@@ -197,67 +200,59 @@ public struct ThreadsView: View {
             .padding(.vertical, 4)
     }
 
-    @ViewBuilder
     private func threadButton(
         viewStore: ViewStoreOf<ThreadsFeature>,
-        thread: Thread,
-        showCwd: Bool
+        thread: Thread
     ) -> some View {
         let isArchiving = viewStore.archivingThreadIds.contains(thread.threadId)
         let isSelected = viewStore.selectedThreadId == thread.threadId
         let metadata = viewStore.syncMetadata[thread.threadId]
 
-        Button {
-            dismissKeyboard()
-            viewStore.send(.threadTapped(thread.threadId))
-        } label: {
-            VStack(alignment: .leading, spacing: 8) {
+        return HStack(alignment: .top, spacing: 0) {
+            Button {
+                dismissKeyboard()
+                viewStore.send(.threadTapped(thread.threadId))
+            } label: {
                 ThreadRow(
                     thread: thread,
+                    metadata: metadata,
                     isSelected: isSelected,
                     isArchiving: isArchiving
                 )
-
-                VStack(alignment: .leading, spacing: 4) {
-                    if showCwd, let cwd = thread.cwd, !cwd.isEmpty {
-                        Label(cwd, systemImage: "folder")
-                    }
-                    if let activityAt = thread.lastActiveAt {
-                        Text("最后活动 · \(activityAt.formatted(date: .abbreviated, time: .shortened))")
-                    }
-                    if let syncedAt = metadata?.lastSyncedAt {
-                        Text("上次同步 · \(syncedAt.formatted(date: .abbreviated, time: .shortened))")
-                    } else {
-                        Text("本地内容 · 等待同步")
-                    }
-                    if metadata?.pinned == true {
-                        Label("持续展示", systemImage: "pin.fill")
-                    }
-                    if (metadata?.unreadMessages ?? 0) > 0 {
-                        Label("有新内容", systemImage: "circle.fill")
-                            .foregroundStyle(Color.accentColor)
-                    }
-                    if metadata?.isPartial == true {
-                        Label("部分历史", systemImage: "text.alignleft")
-                    }
-                }
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .contentShape(Rectangle())
             }
-            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-            .contentShape(Rectangle())
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(isSelected ? .isSelected : [])
+            .accessibilityHint("打开此任务")
+            .accessibilityIdentifier("thread-" + thread.threadId)
+            .accessibilityAction(named: Text("任务信息")) {
+                informationThread = thread
+            }
+
+            Button {
+                informationThread = thread
+            } label: {
+                Image(systemName: "info.circle")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel("任务信息：" + thread.listTitle)
+            .accessibilityIdentifier("thread-info-" + thread.threadId)
         }
         .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-        .accessibilityHint("打开此任务")
-        .accessibilityIdentifier("thread-" + thread.threadId)
         .disabled(isArchiving)
-        .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
+        .listRowInsets(EdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 16))
         .listRowSeparator(.visible)
-        .listRowBackground(isSelected ? Color.accentColor.opacity(0.08) : Color(uiColor: .systemBackground))
+        .listRowBackground(isSelected ? Color.accentColor.opacity(0.06) : Color(uiColor: .systemBackground))
         .contextMenu {
+            Button {
+                informationThread = thread
+            } label: {
+                Label("任务信息", systemImage: "info.circle")
+            }
             Button {
                 viewStore.send(.pinTapped(thread.threadId))
             } label: {
@@ -295,11 +290,12 @@ private struct ThreadRow: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     let thread: Thread
+    let metadata: ThreadSyncMetadata?
     let isSelected: Bool
     let isArchiving: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(thread.listTitle)
                     .font(.body.weight(.semibold))
@@ -309,13 +305,24 @@ private struct ThreadRow: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .layoutPriority(1)
 
+                if (metadata?.unreadMessages ?? 0) > 0 {
+                    Circle()
+                        .fill(Color.accentColor)
+                        .frame(width: 7, height: 7)
+                        .accessibilityLabel("\(metadata?.unreadMessages ?? 0) 条未读内容")
+                }
+                if metadata?.pinned == true {
+                    Image(systemName: "pin.fill")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel("已启用持续展示")
+                }
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.body.weight(.semibold))
+                        .font(.footnote.weight(.semibold))
                         .foregroundStyle(Color.accentColor)
                         .accessibilityHidden(true)
                 }
-
                 if isArchiving {
                     ProgressView()
                         .controlSize(.small)
@@ -323,31 +330,49 @@ private struct ThreadRow: View {
                 }
             }
 
-            if let reason = thread.attentionReason {
-                Label(reason, systemImage: attentionIcon)
-                    .font(.footnote.weight(.medium))
-                    .foregroundStyle(attentionColor)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
             if let subtitle = thread.listSubtitle {
                 Text(subtitle)
-                    .font(.subheadline)
+                    .font(.body)
                     .foregroundStyle(.secondary)
                     .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
                     .fixedSize(horizontal: false, vertical: true)
             }
+
+            if let summary {
+                summary
+                    .font(.footnote)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityLabel(summaryAccessibilityLabel)
+            }
         }
     }
 
-    private var attentionIcon: String {
-        if thread.pendingRequestCount > 0 { return "exclamationmark.circle" }
-        switch thread.executionState {
-        case "WAITING_APPROVAL": return "bubble.left.and.bubble.right"
-        case "FAILED": return "exclamationmark.triangle"
-        case "RUNNING": return "arrow.triangle.2.circlepath"
-        case "QUEUED": return "clock"
-        default: return "info.circle"
+    private var summary: Text? {
+        var parts: [Text] = []
+        if let reason = thread.attentionReason {
+            parts.append(Text(reason).foregroundColor(attentionColor))
         }
+        if metadata?.lastSyncedAt == nil {
+            parts.append(Text("待同步").foregroundColor(.secondary))
+        }
+        if metadata?.isPartial == true {
+            parts.append(Text("部分历史").foregroundColor(.secondary))
+        }
+        if let activityAt = thread.lastActiveAt {
+            parts.append(Text("活动 · " + ThreadListDate.shortActivity(activityAt)).foregroundColor(.secondary))
+        }
+        guard let first = parts.first else { return nil }
+        return parts.dropFirst().reduce(first) { $0 + Text(" · ").foregroundColor(.secondary) + $1 }
+    }
+
+    private var summaryAccessibilityLabel: String {
+        var parts = [thread.attentionReason].compactMap { $0 }
+        if metadata?.lastSyncedAt == nil { parts.append("本地内容，等待同步") }
+        if metadata?.isPartial == true { parts.append("部分历史") }
+        if let activityAt = thread.lastActiveAt {
+            parts.append("最后活动：" + ThreadListDate.full(activityAt))
+        }
+        return parts.joined(separator: "，")
     }
 
     private var attentionColor: Color {
@@ -359,29 +384,121 @@ private struct CwdGroupHeader: View {
     let group: ThreadsFeature.State.CwdGroup
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Label(group.title, systemImage: "folder")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.primary)
-                    .fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: 0)
-                Text("\(group.threads.count)")
-                    .font(.footnote)
-                    .monospacedDigit()
-                    .foregroundStyle(.secondary)
-            }
-
-            if let fullPath = group.fullPath {
-                Text(fullPath)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Label(group.title, systemImage: "folder")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+            Text("\(group.threads.count)")
+                .font(.footnote)
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
         }
         .textCase(nil)
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
         .accessibilityElement(children: .combine)
+    }
+}
+
+private struct ThreadInformationView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let thread: Thread
+    let metadata: ThreadSyncMetadata?
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("任务") {
+                    Text(thread.listTitle)
+                        .font(.body.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                    if let reason = thread.attentionReason {
+                        Text(reason)
+                            .font(.body)
+                    }
+                }
+
+                Section {
+                    informationField("最后活动", value: thread.lastActiveAt.map(ThreadListDate.full) ?? "时间未知")
+                    informationField("上次同步", value: metadata?.lastSyncedAt.map(ThreadListDate.full) ?? "本地内容 · 等待同步")
+                    if metadata?.isPartial == true {
+                        Label("部分历史", systemImage: "text.alignleft")
+                            .font(.body)
+                    }
+                } header: {
+                    Text("时间与同步")
+                } footer: {
+                    Text("活动时间来自任务本身；同步时间只表示本地内容的同步记录，两者不同。")
+                }
+
+                Section("工作目录") {
+                    Text(thread.cwd.flatMap { $0.isEmpty ? nil : $0 } ?? "未设置目录")
+                        .font(.body)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                }
+
+                Section("本地记录") {
+                    informationField("未读内容", value: metadata.map { String($0.unreadMessages) } ?? "未知")
+                    informationField("持续展示", value: metadata.map { $0.pinned ? "已启用" : "未启用" } ?? "状态未知")
+                }
+
+                if let preview = thread.preview?.trimmingCharacters(in: .whitespacesAndNewlines), !preview.isEmpty {
+                    Section("内容预览") {
+                        Text(preview)
+                            .font(.body)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
+                    }
+                }
+            }
+            .navigationTitle("任务信息")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("完成") { dismiss() }
+                        .frame(minWidth: 44, minHeight: 44)
+                        .accessibilityLabel("关闭任务信息")
+                }
+            }
+        }
+    }
+
+    private func informationField(_ title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.body)
+                .fixedSize(horizontal: false, vertical: true)
+                .textSelection(.enabled)
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+private enum ThreadListDate {
+    private static let locale = Locale(identifier: "zh_CN")
+
+    static func shortActivity(_ date: Date) -> String {
+        let calendar = Calendar.current
+        if calendar.isDateInToday(date) {
+            return "今天 " + date.formatted(.dateTime.locale(locale).hour().minute())
+        }
+        if calendar.isDateInYesterday(date) { return "昨天" }
+        if calendar.isDate(date, equalTo: Date(), toGranularity: .year) {
+            return date.formatted(.dateTime.locale(locale).month().day())
+        }
+        return date.formatted(.dateTime.locale(locale).year().month().day())
+    }
+
+    static func full(_ date: Date) -> String {
+        date.formatted(.dateTime.locale(locale).year().month(.twoDigits).day(.twoDigits).hour().minute().second())
+            + "（" + TimeZone.current.identifier + "）"
     }
 }
 
@@ -402,10 +519,12 @@ private extension Thread {
     var listSubtitle: String? {
         let normalized = preview?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         guard !normalized.isEmpty else { return nil }
+        guard normalized != listTitle else { return nil }
         let lines = normalized.split(whereSeparator: \.isNewline).map(String.init)
-        if lines.count > 1 {
-            return lines.dropFirst().joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines)
+        if name == nil || name?.isEmpty == true {
+            let remainder = lines.dropFirst().joined(separator: " ")
+            return remainder.isEmpty ? nil : remainder
         }
-        return normalized == listTitle ? nil : normalized
+        return lines.joined(separator: " ")
     }
 }
