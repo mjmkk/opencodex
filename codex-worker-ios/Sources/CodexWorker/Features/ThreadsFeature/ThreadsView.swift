@@ -16,7 +16,7 @@ public struct ThreadsView: View {
     let onDismiss: (() -> Void)?
     let executionAccessMode: ExecutionAccessMode
     let onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)?
-    @State private var informationThread: Thread?
+    @State private var informationSelection: ThreadInformationSelection?
 
     public init(
         store: StoreOf<ThreadsFeature>,
@@ -123,11 +123,26 @@ public struct ThreadsView: View {
             }
             .onAppear { viewStore.send(.onAppear) }
             .background(Color(uiColor: .systemBackground))
-            .sheet(item: $informationThread) { thread in
-                ThreadInformationView(
-                    thread: thread,
-                    metadata: viewStore.syncMetadata[thread.threadId]
-                )
+            .sheet(item: $informationSelection) { selection in
+                WithViewStore(store, observe: {
+                    ThreadInformationSnapshot(state: $0, id: selection.id)
+                }) { snapshot in
+                    if let thread = snapshot.thread {
+                        ThreadInformationView(thread: thread, metadata: snapshot.metadata)
+                    } else {
+                        NavigationStack {
+                            ContentUnavailableView("任务已不在当前列表", systemImage: "doc.text.magnifyingglass",
+                                description: Text("返回任务目录后重新选择。当前信息已失效。"))
+                                .navigationTitle("任务信息")
+                                .navigationBarTitleDisplayMode(.inline)
+                                .toolbar {
+                                    ToolbarItem(placement: .topBarTrailing) {
+                                        Button("关闭") { informationSelection = nil }
+                                    }
+                                }
+                        }
+                    }
+                }
             }
         }
     }
@@ -227,11 +242,11 @@ public struct ThreadsView: View {
             .accessibilityHint("打开此任务")
             .accessibilityIdentifier("thread-" + thread.threadId)
             .accessibilityAction(named: Text("任务信息")) {
-                informationThread = thread
+                informationSelection = ThreadInformationSelection(id: thread.id)
             }
 
             Button {
-                informationThread = thread
+                informationSelection = ThreadInformationSelection(id: thread.id)
             } label: {
                 Image(systemName: "info.circle")
                     .font(.body)
@@ -249,7 +264,7 @@ public struct ThreadsView: View {
         .listRowBackground(isSelected ? Color.accentColor.opacity(0.06) : Color(uiColor: .systemBackground))
         .contextMenu {
             Button {
-                informationThread = thread
+                informationSelection = ThreadInformationSelection(id: thread.id)
             } label: {
                 Label("任务信息", systemImage: "info.circle")
             }
@@ -272,6 +287,22 @@ public struct ThreadsView: View {
             }
             .disabled(isArchiving)
         }
+    }
+}
+
+private struct ThreadInformationSelection: Identifiable {
+    let id: String
+}
+
+/// Resolve both pieces from the same current State, including while the sheet is open.
+private struct ThreadInformationSnapshot: Equatable {
+    let thread: Thread?
+    let metadata: ThreadSyncMetadata?
+
+    init(state: ThreadsFeature.State, id: String) {
+        let current = state.items.first { $0.id == id }
+        thread = current
+        metadata = current.flatMap { state.syncMetadata[$0.threadId] }
     }
 }
 
@@ -300,7 +331,7 @@ private struct ThreadRow: View {
                 Text(thread.listTitle)
                     .font(.body.weight(.semibold))
                     .foregroundStyle(.primary)
-                    .lineLimit(nil)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .layoutPriority(1)
@@ -334,7 +365,7 @@ private struct ThreadRow: View {
                 Text(subtitle)
                     .font(.body)
                     .foregroundStyle(.secondary)
-                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
