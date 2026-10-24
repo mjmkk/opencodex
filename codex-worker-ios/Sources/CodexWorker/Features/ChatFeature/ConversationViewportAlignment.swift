@@ -71,8 +71,10 @@ struct ConversationViewportAlignment: UIViewRepresentable {
                 var inset = table.contentInset
                 inset.top = baselineTop
                 table.contentInset = inset
+                let minimumY = -table.adjustedContentInset.top
+                let maximumY = max(minimumY, table.contentSize.height - table.bounds.height + table.adjustedContentInset.bottom)
                 table.setContentOffset(CGPoint(x: oldOffset.x,
-                    y: max(-table.adjustedContentInset.top, oldOffset.y + extraTop)), animated: false)
+                    y: min(maximumY, max(minimumY, oldOffset.y + extraTop))), animated: false)
             }
             table = nil
             host = nil
