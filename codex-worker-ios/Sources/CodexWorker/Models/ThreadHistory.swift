@@ -2,6 +2,10 @@ import Foundation
 
 /// A readable projection of one native Thread, independent of transport and storage.
 public struct ThreadHistory: Equatable, Sendable {
+    public struct Pagination: Equatable, Sendable {
+        public var snapshot: String
+        public var nextOffset: Int?
+    }
     public struct Message: Equatable, Sendable {
         public var id: String
         public var role: String?
@@ -27,4 +31,6 @@ public struct ThreadHistory: Equatable, Sendable {
     public var hasMore: Bool
     public var availableMessageCount: Int
     public var refreshRequested: Bool
+    // Retain the immutable source checkpoint when asynchronous readers publish history.
+    public var pagination: Pagination? = nil
 }

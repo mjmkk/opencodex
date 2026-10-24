@@ -64,13 +64,20 @@ public struct ChatFeature {
                 if !cached { state.isHistorySyncing = false }
                 switch result {
                 case .success(let history):
+                    if !cached { state.errorMessage = nil }
+                    // An earlier cached read may arrive after a later page was displayed.
+                    // Compare checkpoints only within one immutable source snapshot.
+                    if let current = state.history?.pagination, let incoming = history.pagination,
+                       current.snapshot == incoming.snapshot,
+                       (current.nextOffset ?? Int.max) > (incoming.nextOffset ?? Int.max) {
+                        return .none
+                    }
                     state.history = history; state.lastSyncedAt = history.downloadedAt
                     state.messages = history.messages.map {
                         ChatMessageAdapter.makeMessage(id: $0.id,
                             sender: $0.role == "user" ? .user : ($0.role == "assistant" ? .assistant : .system),
                             text: $0.text, status: nil, createdAt: $0.sentAt ?? .distantPast)
                     }
-                    if !cached { state.errorMessage = nil }
                 case .failure(let error):
                     state.errorMessage = "保留上次可读历史。" + error.localizedDescription
                 }

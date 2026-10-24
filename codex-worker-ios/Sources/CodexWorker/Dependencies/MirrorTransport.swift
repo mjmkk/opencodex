@@ -126,6 +126,7 @@ extension MirrorCachedBody {
             records: body.items.map { .init(id: $0.native_id, title: $0.type ?? "原始记录", observedAt: $0.last_seen_at) },
             attachments: body.attachments.map { .init(id: $0.native_id, filename: $0.filename ?? $0.native_id, availability: $0.state ?? "状态未知") },
             downloadedAt: downloadedAt, isPartial: body.isPartial, hasMore: body.page.next_offset != nil,
-            availableMessageCount: body.page.local_total, refreshRequested: body.refresh_requested == true)
+            availableMessageCount: body.page.local_total, refreshRequested: body.refresh_requested == true,
+            pagination: .init(snapshot: body.page.snapshot, nextOffset: body.page.next_offset))
     }
 }
