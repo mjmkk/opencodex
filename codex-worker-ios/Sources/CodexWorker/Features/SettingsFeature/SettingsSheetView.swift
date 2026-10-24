@@ -75,7 +75,8 @@ public struct SettingsSheetView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("服务地址").font(.footnote).foregroundStyle(.secondary)
                             TextField("https://你的服务地址:端口", text: Binding(
-                                get: { viewStore.baseURL }, set: { viewStore.send(.baseURLChanged($0)) }))
+                                get: { viewStore.baseURL }, set: { viewStore.send(.baseURLChanged($0)) }), axis: .vertical)
+                                .lineLimit(1...4)
                                 .textInputAutocapitalization(.never).disableAutocorrection(true).keyboardType(.URL)
                                 .accessibilityLabel("服务地址")
                                 .frame(minHeight: 44)
