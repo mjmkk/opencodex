@@ -121,9 +121,10 @@ public struct SettingsSheetView: View {
                         }
 
                         if let modelLoadError = viewStore.modelLoadError, !modelLoadError.isEmpty {
-                            Text("模型列表加载失败：\(modelLoadError)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                            DisclosureGroup("查看模型读取原因") {
+                                Text(modelLoadError).font(.footnote).foregroundStyle(.secondary)
+                                    .textSelection(.enabled)
+                            }.font(.footnote).frame(minHeight: 44)
                         }
                     }
 
@@ -160,9 +161,10 @@ public struct SettingsSheetView: View {
                         if let archivedThreadsLoadError = viewStore.archivedThreadsLoadError,
                            !archivedThreadsLoadError.isEmpty
                         {
-                            Text("归档线程加载/恢复失败：\(archivedThreadsLoadError)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                            DisclosureGroup("查看归档读取或恢复原因") {
+                                Text(archivedThreadsLoadError).font(.footnote).foregroundStyle(.secondary)
+                                    .textSelection(.enabled)
+                            }.font(.footnote).frame(minHeight: 44)
                         }
                     }
 

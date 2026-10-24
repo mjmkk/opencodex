@@ -64,7 +64,7 @@ public struct AppFeature {
         case healthCheckResponse(Result<HealthCheckResponse, CodexError>)
         case syncNow
         case syncResponse(Result<MobileSyncResult, CodexError>)
-        case syncCached(MobileSyncResult)
+        case syncCached(generation: UInt64, MobileSyncResult)
         case openNotificationThread(String)
     }
 
@@ -84,7 +84,7 @@ public struct AppFeature {
                     state.isDrawerPresented = true
                 }
                 return .merge(
-                    syncLoop(),
+                    syncLoop(generation: state.threads.catalogGeneration),
                     .run { send in
                         @Dependency(\.workerConfigurationStore) var workerConfigurationStore
                         @Dependency(\.executionAccessStore) var executionAccessStore
@@ -111,7 +111,7 @@ public struct AppFeature {
                 switch lifecycle {
                 case .active:
                     return .merge(
-                        syncLoop(),
+                        syncLoop(generation: state.threads.catalogGeneration),
                         .send(.healthCheckNow),
                         .send(.chat(.appDidBecomeActive))
                     )
@@ -180,8 +180,9 @@ public struct AppFeature {
                         }
                     })
 
-            case .syncCached(let result):
-                return .send(.threads(.cacheLoaded(result)))
+            case .syncCached(let generation, let result):
+                guard generation == state.threads.catalogGeneration else { return .none }
+                return .send(.threads(.initialCacheResponse(generation: generation, .success(result))))
 
             case .openNotificationThread(let id):
                 if state.threads.items.contains(where: { $0.threadId == id }) {
@@ -223,7 +224,9 @@ public struct AppFeature {
                     executionAccessStore.save(mode)
                 }
 
-            case .threads(.delegate(.didActivateThread(let thread))):
+            case .threads(.delegate(.didActivateThread(let candidate))):
+                guard state.threads.selectedThreadId == candidate.threadId,
+                      let thread = state.threads.items.first(where: { $0.id == candidate.id }) else { return .none }
                 state.activeThread = thread
                 state.isDrawerPresented = false
                 return .merge(
@@ -239,6 +242,7 @@ public struct AppFeature {
                 )
 
             case .threads(.delegate(.didClearActiveThread)):
+                guard state.threads.selectedThreadId == nil, state.threads.items.isEmpty else { return .none }
                 state.activeThread = nil
                 state.isDrawerPresented = true
                 state.isFileBrowserPresented = false
@@ -279,11 +283,11 @@ public struct AppFeature {
         }
     }
 
-    private func syncLoop() -> Effect<Action> {
+    private func syncLoop(generation: UInt64) -> Effect<Action> {
         .run { send in
             @Dependency(\.threadSyncClient) var sync
             @Dependency(\.continuousClock) var clock
-            if let cached = try? await sync.cached() { await send(.syncCached(cached)) }
+            if let cached = try? await sync.cached() { await send(.syncCached(generation: generation, cached)) }
             while !Task.isCancelled {
                 await send(.syncNow)
                 try await clock.sleep(for: .seconds(20))

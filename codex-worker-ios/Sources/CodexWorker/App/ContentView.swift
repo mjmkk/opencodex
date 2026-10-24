@@ -168,7 +168,7 @@ public struct ContentView: View {
                     .shadow(color: drawerShadowColor, radius: 12, x: 4, y: 0)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .animation(reduceMotion ? .easeOut(duration: 0.12) : .spring(response: 0.28, dampingFraction: 1), value: viewStore.isDrawerPresented)
+                .animation(reduceMotion ? nil : .spring(response: 0.28, dampingFraction: 1), value: viewStore.isDrawerPresented)
             }
             .onChange(of: viewStore.isTerminalPresented) { _, isPresented in
                 if isPresented {

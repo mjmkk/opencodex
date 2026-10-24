@@ -35,6 +35,7 @@ public struct ThreadsFeature {
         }
 
         public var items: [Thread] = []
+        public var catalogGeneration: UInt64 = 0
         public var isLoading = false
         public var isCreating = false
         public var archivingThreadIds: Set<String> = []
@@ -117,6 +118,7 @@ public struct ThreadsFeature {
         case onAppear
         case refresh
         case cacheLoaded(MobileSyncResult)
+        case initialCacheResponse(generation: UInt64, Result<MobileSyncResult, CodexError>)
         case createTapped(cwd: String?)
         case archiveTapped(String)
         case groupingModeChanged(GroupingMode)
@@ -142,29 +144,29 @@ public struct ThreadsFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                return .run { send in
+                return .run { [generation = state.catalogGeneration] send in
                     @Dependency(\.threadSyncClient) var sync
-                    do { await send(.cacheLoaded(try await sync.cached())) }
-                    catch { await send(.loadResponse(.failure(CodexError.from(error)))) }
+                    do { await send(.initialCacheResponse(generation: generation, .success(try await sync.cached()))) }
+                    catch { await send(.initialCacheResponse(generation: generation, .failure(CodexError.from(error)))) }
                 }
 
             case .refresh:
                 return .send(.delegate(.refreshRequested))
 
             case .cacheLoaded(let cache):
-                // Publish the matching identity and metadata in the same state update.
-                state.items = cache.threads
-                state.syncMetadata = cache.metadata
-                if state.selectedThreadId == nil,
-                   let id = cache.selectedThreadId,
-                   let thread = cache.threads.first(where: { $0.threadId == id }) {
-                    state.selectedThreadId = id
-                    return .concatenate(
-                        .send(.loadResponse(.success(ThreadsListResponse(data: cache.threads, nextCursor: nil)))),
-                        .send(.delegate(.didActivateThread(thread)))
-                    )
+                return Self.publish(cache, into: &state)
+
+            case .initialCacheResponse(let generation, let result):
+                // A cold read cannot roll back any snapshot or selection published
+                // after that read began, including a newer empty catalog.
+                guard generation == state.catalogGeneration else { return .none }
+                switch result {
+                case .success(let cache): return Self.publish(cache, into: &state)
+                case .failure(let error):
+                    state.isLoading = false
+                    state.errorMessage = error.localizedDescription
+                    return .none
                 }
-                return .send(.loadResponse(.success(ThreadsListResponse(data: cache.threads, nextCursor: nil))))
 
             case .groupingModeChanged(let mode):
                 state.groupingMode = mode
@@ -217,24 +219,7 @@ public struct ThreadsFeature {
                 }
 
             case .loadResponse(.success(let response)):
-                state.isLoading = false
-                state.items = response.data
-                let validThreadIds = Set(state.items.map(\.threadId))
-                state.archivingThreadIds = state.archivingThreadIds.intersection(validThreadIds)
-                if let selectedThreadId = state.selectedThreadId,
-                   !state.items.contains(where: { $0.threadId == selectedThreadId })
-                {
-                    state.selectedThreadId = nil
-                }
-
-                let sortedByRecency = state.sortedItems
-                let shouldAutoActivate = state.selectedThreadId == nil
-                let autoActivateTarget = shouldAutoActivate ? sortedByRecency.first : nil
-                if let autoActivateTarget {
-                    state.selectedThreadId = autoActivateTarget.threadId
-                }
-
-                return autoActivateTarget.map { .send(.delegate(.didActivateThread($0))) } ?? .none
+                return Self.publishThreads(response.data, preferredSelection: nil, into: &state)
 
             case .loadResponse(.failure(let error)):
                 state.isLoading = false
@@ -242,6 +227,7 @@ public struct ThreadsFeature {
                 return .none
 
             case .createResponse(.success(let thread)):
+                state.catalogGeneration &+= 1
                 state.isCreating = false
                 if let index = state.items.firstIndex(where: { $0.threadId == thread.threadId }) {
                     state.items[index] = thread
@@ -257,6 +243,7 @@ public struct ThreadsFeature {
                 return .none
 
             case .archiveResponse(let threadId, .success):
+                state.catalogGeneration &+= 1
                 state.archivingThreadIds.remove(threadId)
                 let wasSelected = state.selectedThreadId == threadId
                 state.items.removeAll { $0.threadId == threadId }
@@ -285,6 +272,7 @@ public struct ThreadsFeature {
                 }
                 // 切线程优先本地生效，避免等待网络导致“点击后卡顿”。
                 // 后端在发送 turn 时会懒加载线程（startTurn -> ensureThreadLoaded）。
+                state.catalogGeneration &+= 1
                 state.selectedThreadId = threadId
                 state.errorMessage = nil
                 return .send(.delegate(.didActivateThread(thread)))
@@ -299,6 +287,7 @@ public struct ThreadsFeature {
                     } catch { await send(.pinResponse(id, .failure(CodexError.from(error)))) }
                 }
             case .pinResponse(let id, .success(let pinned)):
+                state.catalogGeneration &+= 1
                 state.syncMetadata[id]?.pinned = pinned
                 return .none
             case .pinResponse(_, .failure(let error)):
@@ -313,6 +302,25 @@ public struct ThreadsFeature {
                 return .none
             }
         }
+    }
+
+    private static func publish(_ cache: MobileSyncResult, into state: inout State) -> Effect<Action> {
+        let preferred = state.selectedThreadId == nil ? cache.selectedThreadId : nil
+        state.syncMetadata = cache.metadata
+        return publishThreads(cache.threads, preferredSelection: preferred, into: &state)
+    }
+
+    private static func publishThreads(_ threads: [Thread], preferredSelection: String?, into state: inout State) -> Effect<Action> {
+        state.catalogGeneration &+= 1
+        state.isLoading = false
+        state.items = threads
+        let validIDs = Set(threads.map(\.threadId))
+        state.archivingThreadIds.formIntersection(validIDs)
+        if let selected = state.selectedThreadId, !validIDs.contains(selected) { state.selectedThreadId = nil }
+        guard state.selectedThreadId == nil else { return .none }
+        let target = preferredSelection.flatMap { id in threads.first(where: { $0.threadId == id }) } ?? state.sortedItems.first
+        state.selectedThreadId = target?.threadId
+        return target.map { .send(.delegate(.didActivateThread($0))) } ?? .none
     }
 
 }

@@ -11,11 +11,11 @@ struct NativeRequestsSection: View {
     var body: some View {
         Section("当前请求") {
             if let error {
-                CodexNotice(title: "暂时无法核对当前请求", detail: "上次查看的内容仍保留，请稍后刷新。", symbol: "exclamationmark.arrow.triangle.2.circlepath", tone: .warning)
+                CodexNotice(title: "暂时无法核对当前请求", detail: records.isEmpty ? "无法确认是否有待处理事项，请稍后刷新。" : "上次查看的内容仍保留，请稍后刷新。", symbol: "exclamationmark.arrow.triangle.2.circlepath", tone: .warning)
                     .listRowBackground(Color.clear)
                 DisclosureGroup("查看失败原因") { Text(error).font(.footnote).textSelection(.enabled) }
             }
-            if currentIDs.isEmpty {
+            if currentIDs.isEmpty && error == nil {
                 HStack(spacing: 10) {
                     if !loaded { ProgressView() }
                     Text(!loaded ? "正在核对请求…" : (error == nil ? "当前没有可读取的待处理请求" : "当前请求状态尚未确认"))

@@ -77,7 +77,7 @@ public enum ChatMessageAdapter {
         id: String,
         sender: MessageSender,
         text: String,
-        status: Message.Status = .sent,
+        status: Message.Status? = .sent,
         createdAt: Date = Date()
     ) -> Message {
         let user = ChatUsers.user(for: sender)

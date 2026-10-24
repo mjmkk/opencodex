@@ -68,7 +68,7 @@ public struct ChatFeature {
                     state.messages = history.messages.map {
                         ChatMessageAdapter.makeMessage(id: $0.id,
                             sender: $0.role == "user" ? .user : ($0.role == "assistant" ? .assistant : .system),
-                            text: $0.text, createdAt: $0.sentAt ?? .distantPast)
+                            text: $0.text, status: nil, createdAt: $0.sentAt ?? .distantPast)
                     }
                     if !cached { state.errorMessage = nil }
                 case .failure(let error):

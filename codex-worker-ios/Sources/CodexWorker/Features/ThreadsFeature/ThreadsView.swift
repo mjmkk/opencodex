@@ -40,14 +40,16 @@ public struct ThreadsView: View {
                 List {
                     if let errorMessage = viewStore.errorMessage {
                         Section {
-                            CodexNotice(title: "任务目录未能更新", detail: viewStore.items.isEmpty ? "当前任务尚未确认，请稍后刷新。" : "已保留上次任务列表。", symbol: "exclamationmark.arrow.triangle.2.circlepath", tone: .warning)
-                            Button("重新读取", systemImage: "arrow.clockwise") { viewStore.send(.refresh) }
-                                .font(.subheadline.weight(.medium)).frame(minHeight: 44)
-                                .disabled(viewStore.isLoading || viewStore.isSyncing)
+                            VStack(alignment: .leading, spacing: 16) {
+                                CodexNotice(title: "任务目录未能更新", detail: viewStore.items.isEmpty ? "当前任务尚未确认，请稍后刷新。" : "已保留上次任务列表。", symbol: "exclamationmark.arrow.triangle.2.circlepath", tone: .warning)
+                                Button("重新读取", systemImage: "arrow.clockwise") { viewStore.send(.refresh) }
+                                    .buttonStyle(CodexPrimaryButtonStyle())
+                                    .disabled(viewStore.isLoading || viewStore.isSyncing)
+                            }.padding(.vertical, 4).listRowSeparator(.hidden)
                             DisclosureGroup("查看失败原因") {
                                 Text(errorMessage).font(.footnote).textSelection(.enabled)
                                     .fixedSize(horizontal: false, vertical: true)
-                            }
+                            }.font(.footnote).frame(minHeight: 44)
 
                         }
                     }
@@ -162,9 +164,10 @@ public struct ThreadsView: View {
 
             Spacer(minLength: 8)
 
-            Button {
+            if viewStore.errorMessage == nil {
+              Button {
                 viewStore.send(.refresh)
-            } label: {
+              } label: {
                 ZStack {
                     if isRefreshing {
                         ProgressView()
@@ -179,6 +182,7 @@ public struct ThreadsView: View {
             .buttonStyle(.plain)
             .disabled(viewStore.isCreating || isRefreshing)
             .accessibilityLabel(isRefreshing ? "正在刷新任务列表" : "刷新任务列表")
+            }
 
             Menu {
                 Picker("任务分组", selection: Binding(

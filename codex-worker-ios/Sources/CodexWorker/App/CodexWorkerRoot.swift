@@ -18,7 +18,7 @@ public enum CodexWorkerRoot {
         if let path = ProcessInfo.processInfo.environment["AGT12_CHAT_REPLAY_PATH"] {
             AGT12HistoricalChatReplay(path: path)
         } else {
-            liveRoot
+            CodexEmptyState(title: "未指定历史原件", detail: "工程回放不会进入真实任务入口。")
         }
 #else
         liveRoot

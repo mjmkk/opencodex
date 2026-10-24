@@ -87,7 +87,7 @@ struct ThreadsFeatureTests {
         #expect(state.selectedThreadId == "current")
     }
 
-    private func thread(_ id: String, namespace: String) -> Thread {
+    private func thread(_ id: String, namespace: String) -> CodexWorker.Thread {
         var value = Thread(threadId: id, preview: nil, cwd: nil, createdAt: nil, updatedAt: nil, modelProvider: nil)
         value.origin = .init(namespace: namespace, hostID: nil)
         return value

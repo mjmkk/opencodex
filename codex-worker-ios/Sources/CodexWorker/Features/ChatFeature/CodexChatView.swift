@@ -220,6 +220,11 @@ public struct CodexChatView: View {
                         inputSignaturePlaceholderText: chatSecondaryTextColor,
                         menuBG: chatSecondaryBackgroundColor,
                         sendButtonBackground: .accentColor
+                    ),
+                    images: ChatTheme.Images(
+                        read: Image(systemName: "checkmark.circle.fill"),
+                        delivered: Image(systemName: "checkmark.circle"),
+                        sent: Image(systemName: "checkmark")
                     )
                 )
             }
@@ -233,7 +238,7 @@ public struct CodexChatView: View {
                 NavigationStack {
                     Form {
                         Section("当前任务") { Text(viewStore.activeThreadTitle).textSelection(.enabled) }
-                        Section("身份") { Text(viewStore.activeThreadId ?? "未选择任务").font(.footnote.monospaced()).textSelection(.enabled) }
+                        Section("完整身份") { Text(viewStore.identity ?? "未选择任务").font(.footnote.monospaced()).textSelection(.enabled) }
                         if let device = viewStore.sourceDevice {
                             Section("来源设备") { Text(device).textSelection(.enabled) }
                         }
@@ -260,7 +265,7 @@ public struct CodexChatView: View {
                             else { Text("本地记录，尚未完成同步") }
                         }
                     }
-                    .navigationTitle("任务信息")
+                    .navigationTitle("任务信息").navigationBarTitleDisplayMode(.inline)
                     .toolbar { Button("完成") { showIdentity = false } }
                 }
             }
@@ -273,7 +278,7 @@ public struct CodexChatView: View {
                             Text("此记录索引未提供执行正文或结果；请在原任务核对。").font(.caption).foregroundStyle(.secondary)
                         }
                     }
-                    .navigationTitle("来源记录")
+                    .navigationTitle("来源记录").navigationBarTitleDisplayMode(.inline)
                     .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { showActivities = false } } }
                 }
             }
@@ -467,45 +472,6 @@ private struct CodexMessageBubble: View {
                         .markdownTheme(messageTheme)
                         .relativeLineSpacing(.em(0.25))
                         .tint(markdownLinkColor)
-                        .markdownTextStyle(\.text) {
-                            ForegroundColor(.primary)
-                            FontSize(bodySize)
-                            BackgroundColor(nil)
-                        }
-                        .markdownTextStyle(\.link) {
-                            ForegroundColor(markdownLinkColor)
-                            UnderlineStyle(.single)
-                        }
-                        .markdownTextStyle(\.code) {
-                            FontFamilyVariant(.monospaced)
-                            FontSize(.em(0.85))
-                            BackgroundColor(assistantInnerCodeColor)
-                        }
-                        .markdownBlockStyle(\.codeBlock) { configuration in
-                            ScrollView(.horizontal) {
-                                configuration.label
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .relativeLineSpacing(.em(0.225))
-                                    .markdownTextStyle {
-                                        FontFamilyVariant(.monospaced)
-                                        FontSize(.em(0.85))
-                                    }
-                                    .padding(12)
-                            }
-                            .background(assistantInnerCodeColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                            .markdownMargin(top: 0, bottom: 12)
-                        }
-                        .markdownBlockStyle(\.table) { configuration in
-                            ScrollView(.horizontal) {
-                                configuration.label
-                                .fixedSize(horizontal: true, vertical: false)
-                                .markdownTableBorderStyle(.init(color: assistantBorderColor))
-                                .markdownTableBackgroundStyle(
-                                    .alternatingRows(assistantTableEvenRowColor, assistantTableOddRowColor)
-                                )
-                            }.markdownMargin(top: 0, bottom: 12)
-                        }
                         .markdownCodeSyntaxHighlighter(codeSyntaxHighlighter)
                         .environment(\.openURL, OpenURLAction { url in
                             if let ref = parseCodexFileReference(from: url) {
@@ -558,6 +524,20 @@ private struct CodexMessageBubble: View {
 
     private var messageTheme: Theme {
         Theme.gitHub
+            .text {
+                ForegroundColor(.primary)
+                FontSize(bodySize)
+                BackgroundColor(nil)
+            }
+            .link {
+                ForegroundColor(markdownLinkColor)
+                UnderlineStyle(.single)
+            }
+            .code {
+                FontFamilyVariant(.monospaced)
+                FontSize(.em(0.85))
+                BackgroundColor(assistantInnerCodeColor)
+            }
             .heading1 { configuration in
                 configuration.label.markdownTextStyle { FontWeight(.semibold); FontSize(.em(1.3)) }
                     .markdownMargin(top: 12, bottom: 8)
@@ -571,6 +551,31 @@ private struct CodexMessageBubble: View {
                     .markdownMargin(top: 12, bottom: 8)
             }
             .paragraph { configuration in configuration.label.markdownMargin(top: 0, bottom: 12) }
+            .codeBlock { configuration in
+                            ScrollView(.horizontal) {
+                                configuration.label
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .relativeLineSpacing(.em(0.225))
+                                    .markdownTextStyle {
+                                        FontFamilyVariant(.monospaced)
+                                        FontSize(.em(0.85))
+                                    }
+                                    .padding(12)
+                            }
+                            .background(assistantInnerCodeColor)
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .markdownMargin(top: 0, bottom: 12)
+                        }
+            .table { configuration in
+                            ScrollView(.horizontal) {
+                                configuration.label
+                                .fixedSize(horizontal: true, vertical: false)
+                                .markdownTableBorderStyle(.init(color: assistantBorderColor))
+                                .markdownTableBackgroundStyle(
+                                    .alternatingRows(assistantTableEvenRowColor, assistantTableOddRowColor)
+                                )
+                            }.markdownMargin(top: 0, bottom: 12)
+                        }
     }
 
     private var userBubbleMaxWidth: CGFloat {
