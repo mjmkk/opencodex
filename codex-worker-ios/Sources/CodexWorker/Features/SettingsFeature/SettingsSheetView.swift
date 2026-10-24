@@ -69,7 +69,7 @@ public struct SettingsSheetView: View {
                             }.disabled(isCheckingConnection).font(.footnote)
                         }
                     } footer: {
-                        Text("保存只更新连接配置。")
+                        Text("保存后会重新检查连接，结果以上方状态为准。")
                     }
                     Section {
                         VStack(alignment: .leading, spacing: 8) {
