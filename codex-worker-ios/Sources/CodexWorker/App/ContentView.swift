@@ -18,6 +18,7 @@ public struct ContentView: View {
 
     private struct ViewState: Equatable {
         let connectionState: ConnectionState
+        let isCheckingConnection: Bool
         let executionAccessMode: ExecutionAccessMode
         let isDrawerPresented: Bool
         let isTerminalPresented: Bool
@@ -29,6 +30,7 @@ public struct ContentView: View {
 
         init(_ state: AppFeature.State) {
             self.connectionState = state.connectionState
+            self.isCheckingConnection = state.isCheckingConnection
             self.executionAccessMode = state.executionAccessMode
             self.isDrawerPresented = state.isDrawerPresented
             self.isTerminalPresented = state.terminal.isPresented
@@ -227,6 +229,7 @@ public struct ContentView: View {
                         action: \.settings
                     ),
                     connectionState: viewStore.connectionState,
+                    isCheckingConnection: viewStore.isCheckingConnection,
                     lastSyncedAt: viewStore.lastSyncedAt,
                     onCheckConnection: { viewStore.send(.healthCheckNow) },
                     onClose: {

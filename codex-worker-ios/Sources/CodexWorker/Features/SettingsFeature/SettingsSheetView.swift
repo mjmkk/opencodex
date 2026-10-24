@@ -16,6 +16,7 @@ public struct SettingsSheetView: View {
 
     let store: StoreOf<SettingsFeature>
     let connectionState: ConnectionState
+    let isCheckingConnection: Bool
     let lastSyncedAt: Date?
     let onCheckConnection: (() -> Void)?
     let onClose: (() -> Void)?
@@ -23,12 +24,14 @@ public struct SettingsSheetView: View {
     public init(
         store: StoreOf<SettingsFeature>,
         connectionState: ConnectionState,
+        isCheckingConnection: Bool = false,
         lastSyncedAt: Date? = nil,
         onCheckConnection: (() -> Void)? = nil,
         onClose: (() -> Void)? = nil
     ) {
         self.store = store
         self.connectionState = connectionState
+        self.isCheckingConnection = isCheckingConnection
         self.lastSyncedAt = lastSyncedAt
         self.onCheckConnection = onCheckConnection
         self.onClose = onClose
@@ -45,7 +48,8 @@ public struct SettingsSheetView: View {
             NavigationStack {
                 Form {
                     Section {
-                        statusRow("服务可达性", value: reachability.text, tint: reachability.tint)
+                        statusRow("服务可达性", value: isCheckingConnection ? "正在检查…" : reachability.text,
+                                  tint: isCheckingConnection ? .secondary : reachability.tint)
                         statusRow("访问验证", value: viewStore.authenticatedResponseAt != nil ? "已收到有效响应" : "尚未确认")
                         statusRow("任务同步", value: lastSyncedAt.map(MobileTime.timestamp) ?? "尚未同步")
                         if case let .failed(message) = connectionState {
@@ -54,15 +58,15 @@ public struct SettingsSheetView: View {
                                     .fixedSize(horizontal: false, vertical: true)
                                 Text("请核对服务地址、网络和访问凭据。保存配置后，连接结果仍需单独核对。")
                                     .font(.footnote).foregroundStyle(.secondary)
-                            }.font(.footnote).frame(minHeight: 44)
+                            }.font(.footnote)
                         }
                         if let onCheckConnection {
                             Button(action: onCheckConnection) {
                                 HStack(spacing: 8) {
-                                    if connectionState.isConnecting { ProgressView().controlSize(.small) }
-                                    Text(connectionState.isConnecting ? "正在检查…" : "重新检查连接")
-                                }.frame(minHeight: 44)
-                            }.disabled(connectionState.isConnecting).font(.footnote)
+                                    if isCheckingConnection { ProgressView().controlSize(.small) }
+                                    Text(isCheckingConnection ? "正在检查…" : "重新检查连接")
+                                }
+                            }.disabled(isCheckingConnection).font(.footnote)
                         }
                     } footer: {
                         Text("保存只更新连接配置。")
@@ -241,7 +245,7 @@ public struct SettingsSheetView: View {
                 Text(value).font(.body).foregroundStyle(tint)
                     .fixedSize(horizontal: false, vertical: true)
             }
-        }.frame(minHeight: 44).accessibilityElement(children: .combine)
+        }.accessibilityElement(children: .combine)
     }
 
     @ViewBuilder

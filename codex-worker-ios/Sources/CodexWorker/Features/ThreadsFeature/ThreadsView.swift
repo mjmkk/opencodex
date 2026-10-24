@@ -429,7 +429,9 @@ private struct ThreadRow: View {
         if let reason = thread.attentionReason {
             parts.append(Text(reason).foregroundColor(attentionColor))
         }
-        if metadata?.lastSyncedAt == nil {
+        if metadata == nil {
+            parts.append(Text("同步未知").foregroundColor(.secondary))
+        } else if metadata?.lastSyncedAt == nil {
             parts.append(Text("待同步").foregroundColor(.secondary))
         }
         if metadata?.isPartial == true {
@@ -444,7 +446,8 @@ private struct ThreadRow: View {
 
     private var summaryAccessibilityLabel: String {
         var parts = [thread.attentionReason].compactMap { $0 }
-        if metadata?.lastSyncedAt == nil { parts.append("本地内容，等待同步") }
+        if metadata == nil { parts.append("同步记录未知") }
+        else if metadata?.lastSyncedAt == nil { parts.append("本地内容，等待同步") }
         if metadata?.isPartial == true { parts.append("部分历史") }
         if let activityAt = thread.lastActiveAt {
             parts.append("最后活动：" + ThreadListDate.full(activityAt))
@@ -500,7 +503,7 @@ private struct ThreadInformationView: View {
 
                 Section {
                     informationField("最后活动", value: thread.lastActiveAt.map(ThreadListDate.full) ?? "时间未知")
-                    informationField("上次同步", value: metadata?.lastSyncedAt.map(ThreadListDate.full) ?? "本地内容 · 等待同步")
+                    informationField("上次同步", value: metadata == nil ? "同步记录未知" : (metadata?.lastSyncedAt.map(ThreadListDate.full) ?? "本地内容 · 等待同步"))
                     if metadata?.isPartial == true {
                         Label("部分历史", systemImage: "text.alignleft")
                             .font(.body)
@@ -512,7 +515,7 @@ private struct ThreadInformationView: View {
                 }
 
                 Section("工作目录") {
-                    Text(thread.cwd.flatMap { $0.isEmpty ? nil : $0 } ?? "未设置目录")
+                    Text(thread.cwd.flatMap { $0.isEmpty ? nil : $0 } ?? "未提供目录")
                         .font(.body)
                         .fixedSize(horizontal: false, vertical: true)
                         .textSelection(.enabled)

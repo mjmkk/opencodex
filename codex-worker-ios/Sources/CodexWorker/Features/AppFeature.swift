@@ -33,6 +33,8 @@ public struct AppFeature {
     public struct State: Equatable {
         public var connectionState: ConnectionState = .disconnected
         public var workerReachability: WorkerReachability = .unknown
+        public var pendingHealthChecks = 0
+        public var isCheckingConnection: Bool { pendingHealthChecks > 0 }
         public var executionAccessMode: ExecutionAccessMode = .defaultPermissions
         public var threads = ThreadsFeature.State()
         public var chat = ChatFeature.State()
@@ -124,6 +126,7 @@ public struct AppFeature {
                 }
 
             case .healthCheckNow:
+                state.pendingHealthChecks += 1
                 if shouldEnterCheckingState(state.workerReachability) {
                     state.workerReachability = .checking
                     recalculateConnectionState(state: &state)
@@ -195,11 +198,13 @@ public struct AppFeature {
                 return .send(.syncNow)
 
             case .healthCheckResponse(.success):
+                state.pendingHealthChecks = max(0, state.pendingHealthChecks - 1)
                 state.workerReachability = .reachable
                 recalculateConnectionState(state: &state)
                 return .none
 
             case .healthCheckResponse(.failure(let error)):
+                state.pendingHealthChecks = max(0, state.pendingHealthChecks - 1)
                 state.workerReachability = .unreachable(error.localizedDescription)
                 recalculateConnectionState(state: &state)
                 return .none
@@ -309,9 +314,9 @@ public struct AppFeature {
 
     private func shouldEnterCheckingState(_ reachability: WorkerReachability) -> Bool {
         switch reachability {
-        case .unknown, .unreachable:
+        case .unknown:
             return true
-        case .checking, .reachable:
+        case .checking, .reachable, .unreachable:
             return false
         }
     }
