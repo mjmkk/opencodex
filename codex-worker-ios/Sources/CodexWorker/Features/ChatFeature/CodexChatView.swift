@@ -436,7 +436,6 @@ public struct CodexChatView: View {
 }
 
 private struct CodexMessageBubble: View {
-    @ScaledMetric(relativeTo: .body) private var bodySize = 17
     let message: Message
     let renderPipeline: MessageRenderPipeline
     let codeSyntaxHighlighter: CodeSyntaxHighlighter
@@ -527,7 +526,8 @@ private struct CodexMessageBubble: View {
         Theme.gitHub
             .text {
                 ForegroundColor(.primary)
-                FontSize(bodySize)
+                // MarkdownUI applies Dynamic Type to this unscaled baseline.
+                FontSize(17)
                 BackgroundColor(nil)
             }
             .link {
