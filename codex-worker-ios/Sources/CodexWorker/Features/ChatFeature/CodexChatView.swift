@@ -146,10 +146,14 @@ public struct CodexChatView: View {
                             HStack(alignment: .bottom, spacing: 8) {
                                 Menu {
                                     Button("浏览文件", systemImage: "folder") { onFileBrowserTap?() }
+                                        .disabled(onFileBrowserTap == nil)
                                     Button("终端", systemImage: "terminal") { onTerminalToggle?() }
+                                        .disabled(onTerminalToggle == nil)
                                 } label: {
-                                    Image(systemName: "plus").frame(width: 44, height: 44)
-                                }.accessibilityLabel("添加工具")
+                                    Image(systemName: "square.grid.2x2").frame(width: 44, height: 44)
+                                }
+                                .disabled(onFileBrowserTap == nil && onTerminalToggle == nil)
+                                .accessibilityLabel("文件与终端工具")
                                 TextField(viewStore.canInput ? "继续这个任务…" : "记录回复草稿…", text: text, axis: .vertical)
                                     .font(.body).lineLimit(1...6).padding(.vertical, 11)
                                     .disabled(!viewStore.canEdit)
@@ -179,11 +183,14 @@ public struct CodexChatView: View {
                                 .accessibilityLabel(viewStore.isSending ? "正在发送回复" : "发送回复")
                                 .disabled(viewStore.isSending || text.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                                 } else {
-                                    Text("草稿")
-                                        .font(.caption.weight(.medium)).foregroundStyle(.secondary)
-                                        .padding(.horizontal, 10).frame(minHeight: 36)
-                                        .background(Color(uiColor: .tertiarySystemFill), in: Capsule())
-                                        .fixedSize(horizontal: true, vertical: false)
+                                    VStack(alignment: .trailing, spacing: 2) {
+                                        Text("仅草稿")
+                                        Text("不可发送")
+                                    }
+                                        .font(.caption2).foregroundStyle(.secondary)
+                                        .padding(.trailing, 8).padding(.bottom, 6)
+                                        .fixedSize(horizontal: true, vertical: true)
+                                        .accessibilityElement(children: .ignore)
                                         .accessibilityLabel("仅可记录回复草稿，当前来源暂不支持发送")
                                 }
                             }
@@ -341,7 +348,7 @@ public struct CodexChatView: View {
                         if viewStore.activeThreadId != nil {
                             HStack(alignment: .firstTextBaseline, spacing: 6) {
                                 if isPinned { Image(systemName: "pin.fill") }
-                                Text(sourceAndSyncSummary(viewStore))
+                                sourceAndSyncStatus(viewStore)
                             }
                             .font(.footnote).foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -361,7 +368,9 @@ public struct CodexChatView: View {
                         Button("来源记录（\(viewStore.history?.records.count ?? 0)）", systemImage: "list.bullet.rectangle") { showActivities = true }
                         Button("刷新来源历史", systemImage: "arrow.clockwise") { viewStore.send(.refreshHistory) }.disabled(viewStore.isHistorySyncing)
                         Button("浏览文件", systemImage: "folder") { onFileBrowserTap?() }
+                            .disabled(onFileBrowserTap == nil)
                         Button("终端", systemImage: "terminal") { onTerminalToggle?() }
+                            .disabled(onTerminalToggle == nil)
                     }
                     Button("连接与设置", systemImage: "network") { onSettingsTap?() }
                 } label: { Image(systemName: "ellipsis") }
@@ -399,15 +408,42 @@ public struct CodexChatView: View {
     }
 
     private func sourceAndSyncSummary(_ state: ViewStore<ViewState, ChatFeature.Action>) -> String {
+        let parts = sourceAndSyncParts(state)
+        return ([parts.source] + parts.sync).joined(separator: " · ")
+    }
+
+    private func sourceAndSyncStatus(_ state: ViewStore<ViewState, ChatFeature.Action>) -> some View {
+        let parts = sourceAndSyncParts(state)
+        return ViewThatFits(in: .horizontal) {
+            HStack(spacing: 4) {
+                Text(parts.source).fixedSize()
+                Text("·")
+                Text(parts.sync.joined(separator: " · ")).fixedSize()
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(parts.source).fixedSize()
+                Text(parts.sync.joined(separator: " · ")).fixedSize()
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(parts.source)
+                ForEach(Array(parts.sync.enumerated()), id: \.offset) { _, fact in
+                    Text(fact)
+                }
+            }
+            .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func sourceAndSyncParts(_ state: ViewStore<ViewState, ChatFeature.Action>) -> (source: String, sync: [String]) {
         let source = state.hasCachedSource
             ? (state.history?.isPartial == true ? "部分已保存历史" : "上次可读历史")
             : taskStatus(state)
-        let sync: String
-        if state.isHistorySyncing { sync = "正在同步" }
+        let sync: [String]
+        if state.isHistorySyncing { sync = ["正在同步"] }
         else if let date = state.lastSyncedAt {
-            sync = state.errorMessage == nil ? "上次同步 " + MobileTime.ago(date) : "同步失败 · 上次 " + MobileTime.ago(date)
-        } else { sync = "本地内容 · 尚未同步" }
-        return source + " · " + sync
+            sync = state.errorMessage == nil ? ["上次同步 " + MobileTime.ago(date)] : ["同步失败", "上次 " + MobileTime.ago(date)]
+        } else { sync = ["本地内容", "尚未同步"] }
+        return (source, sync)
     }
 
     private func accessModeIconName(for mode: ExecutionAccessMode) -> String {

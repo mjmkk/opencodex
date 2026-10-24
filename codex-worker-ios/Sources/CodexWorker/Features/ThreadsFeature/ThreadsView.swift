@@ -508,17 +508,11 @@ private struct ThreadInformationView: View {
                         Label("部分历史", systemImage: "text.alignleft")
                             .font(.body)
                     }
+                    informationField("工作目录", value: thread.cwd.flatMap { $0.isEmpty ? nil : $0 } ?? "未提供目录")
                 } header: {
-                    Text("时间与同步")
+                    Text("任务记录")
                 } footer: {
                     Text("活动时间来自任务本身；同步时间只表示本地内容的同步记录，两者不同。")
-                }
-
-                Section("工作目录") {
-                    Text(thread.cwd.flatMap { $0.isEmpty ? nil : $0 } ?? "未提供目录")
-                        .font(.body)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .textSelection(.enabled)
                 }
 
                 Section {

@@ -246,12 +246,15 @@ struct GoalOverviewView: View {
                 ProgressView(value: Double(progress), total: 100).tint(.primary)
                     .accessibilityLabel("进度 \(progress)%")
             }
-            Text(observationText(state, dimension == nil ? row.evaluatedAt : dimension?.evaluatedAt))
-                .font(.footnote).foregroundStyle(.secondary)
             if let reason = dimension?.explanation ?? (dimension == nil ? row.explanation : nil) {
                 Text(reasonText(reason)).font(.body).lineSpacing(3)
             }
-            timestamp("资料覆盖至", dimension == nil ? row.coverageAt : dimension?.coverageAt)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(observationText(state, dimension == nil ? row.evaluatedAt : dimension?.evaluatedAt))
+                    .font(.footnote).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                timestamp("资料覆盖至", dimension == nil ? row.coverageAt : dimension?.coverageAt)
+            }
             sourceDetails(dimension?.sourceNotes ?? row.sourceNotes, observation: dimension?.observation)
         }
     }
