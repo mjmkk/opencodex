@@ -557,9 +557,8 @@ public struct CodexChatView: View {
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(parts.source)
-                ForEach(Array(parts.sync.enumerated()), id: \.offset) { _, fact in
-                    Text(fact)
-                }
+                Text(parts.sync.joined(separator: "\n"))
+                    .lineSpacing(2)
             }
             .fixedSize(horizontal: false, vertical: true)
         }
