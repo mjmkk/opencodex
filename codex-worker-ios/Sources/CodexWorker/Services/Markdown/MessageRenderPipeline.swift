@@ -33,7 +33,7 @@ public struct MessageRenderContent: Equatable {
 
 public struct MessageRenderPipeline: Sendable {
     public static let live = MessageRenderPipeline()
-    private static let cacheVersion = "v4"
+    private static let cacheVersion = "v5"
 
     private let parser: MarkdownParserService
     private let semanticExtractor: MessageSemanticExtractor
@@ -80,7 +80,7 @@ private enum ChineseMarkdownLabels {
     private static let labelPattern = try? NSRegularExpression(
         pattern: #"^\*\*([\p{L}\p{N} ]{1,64})：\*\*(?=\p{Han})"#
     )
-    private static let fencePattern = try? NSRegularExpression(pattern: #"^ {0,3}(`{3,}|~{3,})(.*)$"#)
+    private static let fencePattern = try? NSRegularExpression(pattern: #"\A {0,3}(`{3,}|~{3,})([^\r\n]*)\z"#)
 
     static func normalize(_ raw: String) -> String {
         // Only repair plain paragraph labels in the display copy. Be conservative
@@ -108,7 +108,12 @@ private enum ChineseMarkdownLabels {
             paragraph.removeAll(keepingCapacity: true)
         }
 
-        for line in raw.components(separatedBy: "\n") {
+        // cmark normalizes CRLF/CR to LF. Match those real line endings in the
+        // display copy; Unicode whitespace is not a structural blank or fence tail.
+        let lines = raw.replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+            .components(separatedBy: "\n")
+        for line in lines {
             let match = fencePattern.firstMatch(in: line, range: NSRange(line.startIndex..., in: line))
             if let active = fence {
                 output.append(line)
@@ -116,14 +121,14 @@ private enum ChineseMarkdownLabels {
                    let tailRange = Range(match.range(at: 2), in: line) {
                     let marker = line[markerRange]
                     if marker.first == active.marker, marker.count >= active.count,
-                       line[tailRange].allSatisfy(\.isWhitespace) { fence = nil }
+                       line[tailRange].utf8.allSatisfy({ $0 == 0x20 || $0 == 0x09 }) { fence = nil }
                 }
             } else if let match, let markerRange = Range(match.range(at: 1), in: line),
                       let marker = line[markerRange].first {
                 appendParagraph()
                 output.append(line)
                 fence = (marker, line[markerRange].count)
-            } else if line.allSatisfy(\.isWhitespace) {
+            } else if line.utf8.allSatisfy({ $0 == 0x20 || $0 == 0x09 }) {
                 appendParagraph()
                 output.append(line)
             } else {
