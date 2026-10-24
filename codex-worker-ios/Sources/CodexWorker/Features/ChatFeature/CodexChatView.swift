@@ -362,7 +362,7 @@ public struct CodexChatView: View {
                      : viewStore.isSending ? (viewStore.pendingControlOperation == .interrupt ? "正在请求停止…" : "正在提交…")
                      : viewStore.isControlLoading ? "正在核对…"
                      : viewStore.controlStatus == "running" ? "正在执行"
-                     : viewStore.controlStatus == "idle" ? "可发送" : "状态未确认")
+                     : viewStore.controlStatus == "idle" ? "当前空闲" : "状态未确认")
                     .foregroundStyle(.secondary)
                 Spacer(minLength: 0)
                 Button("刷新执行状态") { viewStore.send(.refreshControl) }
@@ -375,7 +375,7 @@ public struct CodexChatView: View {
             .font(.footnote)
             .buttonStyle(.plain)
             if let observedAt = viewStore.controlObservedAt {
-                Text("上次确认 \(observedAt.formatted(date: .omitted, time: .standard))")
+                Text("上次确认 \(observedAt.formatted(date: Calendar.current.isDateInToday(observedAt) ? .omitted : .abbreviated, time: .standard))")
                     .font(.caption).foregroundStyle(.secondary)
             }
             if viewStore.canStop {
