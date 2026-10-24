@@ -227,6 +227,7 @@ public struct CodexChatView: View {
                         sent: Image(systemName: "checkmark")
                     )
                 )
+                .background(ConversationViewportAlignment())
             }
             .background(pageBackgroundColor)
             .onAppear {
