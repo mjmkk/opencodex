@@ -272,20 +272,23 @@ public struct CodexChatView: View {
                         }
                         Section {
                             informationHeading("阅读范围")
-                            Text("已显示 \(viewStore.messages.count) 条消息")
-                            if let body = viewStore.history {
-                                Text("来源本地共 \(body.availableMessageCount) 条；按来源顺序显示")
-                                let missingTimes = viewStore.messages.filter { $0.createdAt <= Date(timeIntervalSince1970: 0) }.count
-                                if missingTimes > 0 {
-                                    Text("其中 \(missingTimes) 条消息未提供发送时间。观察时间不代表发送时间。")
+                            Group {
+                                Text("已显示 \(viewStore.messages.count) 条消息")
+                                if let body = viewStore.history {
+                                    Text("来源本地共 \(body.availableMessageCount) 条；按来源顺序显示")
+                                    let missingTimes = viewStore.messages.filter { $0.createdAt <= Date(timeIntervalSince1970: 0) }.count
+                                    if missingTimes > 0 {
+                                        Text("其中 \(missingTimes) 条消息未提供发送时间。观察时间不代表发送时间。")
+                                    }
+                                    if body.refreshRequested { Text("已请求来源刷新；当前仍显示上次可读历史。") }
                                 }
-                                if body.refreshRequested { Text("已请求来源刷新；当前仍显示上次可读历史。") }
+                                if let first = viewStore.messages.first, first.createdAt > Date(timeIntervalSince1970: 0) {
+                                    Text("此页最早：" + MobileTime.timestamp(first.createdAt))
+                                }
+                                if let date = viewStore.lastSyncedAt { Text("上次同步观察：" + MobileTime.timestamp(date)) }
+                                else { Text("本地记录，尚未完成同步") }
                             }
-                            if let first = viewStore.messages.first, first.createdAt > Date(timeIntervalSince1970: 0) {
-                                Text("此页最早：" + MobileTime.timestamp(first.createdAt))
-                            }
-                            if let date = viewStore.lastSyncedAt { Text("上次同步观察：" + MobileTime.timestamp(date)) }
-                            else { Text("本地记录，尚未完成同步") }
+                            .listRowInsets(informationInsets)
                         }
                         if let attachments = viewStore.history?.attachments, !attachments.isEmpty {
                             Section {
@@ -298,12 +301,12 @@ public struct CodexChatView: View {
                                             .font(.footnote).foregroundStyle(.secondary)
                                     }
                                     .textSelection(.enabled)
+                                    .listRowInsets(informationInsets)
                                 }
                             }
                         }
                     }
                     .listStyle(.plain)
-                    .listRowInsets(EdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20))
                     .scrollContentBackground(.hidden)
                     .background(CodexAppearance.canvas)
                     .tint(.primary)
@@ -346,6 +349,10 @@ public struct CodexChatView: View {
             .listRowSeparator(.hidden)
     }
 
+    private var informationInsets: EdgeInsets {
+        EdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20)
+    }
+
     private func informationField(_ title: String, value: String, monospaced: Bool = false) -> some View {
         ViewThatFits(in: .horizontal) {
             HStack(alignment: .firstTextBaseline, spacing: 12) {
@@ -361,6 +368,7 @@ public struct CodexChatView: View {
                     .textSelection(.enabled)
             }
         }
+        .listRowInsets(informationInsets)
         .accessibilityElement(children: .combine)
     }
 
