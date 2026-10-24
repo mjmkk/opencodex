@@ -544,6 +544,7 @@ private struct ThreadInformationView: View {
                 }
 
                 Section {
+                    informationHeading("任务记录")
                     informationField("最后活动", value: thread.lastActiveAt.map(ThreadListDate.full) ?? "时间未知")
                     informationField("上次同步", value: metadata == nil ? "同步记录未知" : (metadata?.lastSyncedAt.map(ThreadListDate.full) ?? "本地内容 · 等待同步"))
                     if metadata?.isPartial == true {
@@ -558,29 +559,25 @@ private struct ThreadInformationView: View {
                         if let device = thread.sourceDevice { sourceField("来源设备", value: device) }
                     }
                     .listRowInsets(informationInsets)
-                } header: {
-                    Text("任务记录").font(.footnote.weight(.medium)).textCase(nil)
                 } footer: {
                     Text("活动时间来自任务本身；同步时间只表示本地内容的同步记录，两者不同。")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
 
                 Section {
+                    informationHeading("本地记录")
                     informationField("未读内容", value: metadata.map { String($0.unreadMessages) } ?? "未知")
                     informationField("持续展示", value: metadata.map { $0.pinned ? "已启用" : "未启用" } ?? "状态未知")
-                } header: {
-                    Text("本地记录").font(.footnote.weight(.medium)).textCase(nil)
                 }
 
                 if let preview = thread.preview?.trimmingCharacters(in: .whitespacesAndNewlines), !preview.isEmpty {
                     Section {
+                        informationHeading("内容预览")
                         Text(preview)
                             .font(.body)
                             .fixedSize(horizontal: false, vertical: true)
                             .textSelection(.enabled)
                             .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 20, trailing: 20))
-                    } header: {
-                        Text("内容预览").font(.footnote.weight(.medium)).textCase(nil)
                     }
                 }
             }
@@ -602,6 +599,15 @@ private struct ThreadInformationView: View {
 
     private var informationInsets: EdgeInsets {
         EdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20)
+    }
+
+    private func informationHeading(_ title: String) -> some View {
+        Text(title)
+            .font(.footnote.weight(.medium))
+            .foregroundStyle(.secondary)
+            .accessibilityAddTraits(.isHeader)
+            .listRowInsets(EdgeInsets(top: 20, leading: 20, bottom: 8, trailing: 20))
+            .listRowSeparator(.hidden)
     }
 
     private func informationField(_ title: String, value: String) -> some View {

@@ -253,13 +253,25 @@ public struct CodexChatView: View {
             .onDisappear { viewStore.send(.onDisappear) }
             .sheet(isPresented: $showIdentity) {
                 NavigationStack {
-                    Form {
-                        Section("当前任务") { Text(viewStore.activeThreadTitle).textSelection(.enabled) }
-                        Section("完整身份") { Text(viewStore.identity ?? "未选择任务").font(.footnote.monospaced()).textSelection(.enabled) }
-                        if let device = viewStore.sourceDevice {
-                            Section("来源设备") { Text(device).textSelection(.enabled) }
+                    List {
+                        Section {
+                            Text(viewStore.activeThreadTitle)
+                                .font(.title2.weight(.semibold))
+                                .fixedSize(horizontal: false, vertical: true)
+                                .textSelection(.enabled)
+                                .accessibilityAddTraits(.isHeader)
+                                .listRowInsets(EdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20))
+                                .listRowSeparator(.hidden)
                         }
-                        Section("阅读范围") {
+                        Section {
+                            informationHeading("身份与来源")
+                            informationField("完整身份", value: viewStore.identity ?? "未选择任务", monospaced: true)
+                            if let device = viewStore.sourceDevice {
+                                informationField("来源设备", value: device)
+                            }
+                        }
+                        Section {
+                            informationHeading("阅读范围")
                             Text("已显示 \(viewStore.messages.count) 条消息")
                             if let body = viewStore.history {
                                 Text("来源本地共 \(body.availableMessageCount) 条；按来源顺序显示")
@@ -268,12 +280,6 @@ public struct CodexChatView: View {
                                     Text("其中 \(missingTimes) 条消息未提供发送时间。观察时间不代表发送时间。")
                                 }
                                 if body.refreshRequested { Text("已请求来源刷新；当前仍显示上次可读历史。") }
-                                if !body.attachments.isEmpty {
-                                    ForEach(body.attachments) { item in
-                                        Label(item.filename + " · " + item.availability, systemImage: "paperclip")
-                                            .font(.footnote)
-                                    }
-                                }
                             }
                             if let first = viewStore.messages.first, first.createdAt > Date(timeIntervalSince1970: 0) {
                                 Text("此页最早：" + MobileTime.timestamp(first.createdAt))
@@ -281,9 +287,34 @@ public struct CodexChatView: View {
                             if let date = viewStore.lastSyncedAt { Text("上次同步观察：" + MobileTime.timestamp(date)) }
                             else { Text("本地记录，尚未完成同步") }
                         }
+                        if let attachments = viewStore.history?.attachments, !attachments.isEmpty {
+                            Section {
+                                informationHeading("附件")
+                                ForEach(attachments) { item in
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Label(item.filename, systemImage: "paperclip")
+                                            .fixedSize(horizontal: false, vertical: true)
+                                        Text(item.availability)
+                                            .font(.footnote).foregroundStyle(.secondary)
+                                    }
+                                    .textSelection(.enabled)
+                                }
+                            }
+                        }
                     }
+                    .listStyle(.plain)
+                    .listRowInsets(EdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20))
+                    .scrollContentBackground(.hidden)
+                    .background(CodexAppearance.canvas)
+                    .tint(.primary)
                     .navigationTitle("任务信息").navigationBarTitleDisplayMode(.inline)
-                    .toolbar { Button("完成") { showIdentity = false } }
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("完成") { showIdentity = false }
+                                .frame(minWidth: 44, minHeight: 44)
+                                .accessibilityLabel("关闭聊天任务信息")
+                        }
+                    }
                 }
             }
             .sheet(isPresented: $showActivities) {
@@ -304,6 +335,33 @@ public struct CodexChatView: View {
 
     private var pageBackgroundColor: Color {
         Color(uiColor: .systemBackground)
+    }
+
+    private func informationHeading(_ title: String) -> some View {
+        Text(title)
+            .font(.footnote.weight(.medium))
+            .foregroundStyle(.secondary)
+            .accessibilityAddTraits(.isHeader)
+            .listRowInsets(EdgeInsets(top: 20, leading: 20, bottom: 8, trailing: 20))
+            .listRowSeparator(.hidden)
+    }
+
+    private func informationField(_ title: String, value: String, monospaced: Bool = false) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text(title).font(.footnote).foregroundStyle(.secondary).fixedSize()
+                Spacer(minLength: 8)
+                Text(value).font(monospaced ? .footnote.monospaced() : .body)
+                    .fixedSize().textSelection(.enabled)
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title).font(.footnote).foregroundStyle(.secondary)
+                Text(value).font(monospaced ? .footnote.monospaced() : .body)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 
     private var chatMainBackgroundColor: Color {
