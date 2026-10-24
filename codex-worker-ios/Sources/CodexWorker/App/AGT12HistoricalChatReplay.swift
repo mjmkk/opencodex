@@ -63,7 +63,7 @@ struct AGT12HistoricalChatReplay: View {
             .frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 20).padding(.vertical, 8)
             .background(Color(uiColor: .secondarySystemBackground))
             if let store {
-                CodexChatView(store: store, showsComposer: false)
+                CodexChatView(store: store, showsComposer: ProcessInfo.processInfo.environment["AGT12_CHAT_REPLAY_SHOWS_COMPOSER"] == "1")
                     .markdownImageProvider(HistoricalReplayImages())
                     .markdownInlineImageProvider(HistoricalReplayImages())
             } else {

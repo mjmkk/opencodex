@@ -100,7 +100,15 @@ struct ConversationViewportAlignment: UIViewRepresentable {
                             match.observe(\.bounds, options: [.old, .new]) { [weak self] _, change in
                                 if change.oldValue?.size != change.newValue?.size { self?.scheduleUpdate() }
                             },
-                            match.observe(\.contentInset) { [weak self] _, _ in self?.scheduleUpdate() }
+                            match.observe(\.contentInset) { [weak self] table, _ in
+                                guard let self else { return }
+                                // A different owner explicitly changed the raw top inset.
+                                // Keep its value and stop adapting this view rather than
+                                // guessing how much of that new value belongs to us.
+                                if abs(table.contentInset.top - self.baselineTop - self.extraTop) > 0.5 {
+                                    self.detach()
+                                } else { self.scheduleUpdate() }
+                            }
                         ]
                         break
                     }
