@@ -115,7 +115,7 @@ struct GoalOverviewView: View {
             } label: {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text(row.title).font(.headline).foregroundStyle(.primary)
+                        Text(row.title).font(.body.weight(.medium)).foregroundStyle(.primary)
                             .fixedSize(horizontal: false, vertical: true)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .layoutPriority(1)
