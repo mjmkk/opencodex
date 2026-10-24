@@ -43,7 +43,15 @@ public struct ThreadsFeature {
         public var isSyncing = false
         public var selectedThreadId: String?
         public var errorMessage: String?
+        public var failure: CodexError?
         public var groupingMode: GroupingMode = .byTime
+
+        var needsConnectionSettings: Bool {
+            switch failure {
+            case .secureConnectionRequired, .unauthorized, .notConfigured: return true
+            default: return false
+            }
+        }
 
         /// 按更新时间倒序展示线程，保证最近活跃优先
         public var sortedItems: [Thread] {
@@ -164,6 +172,7 @@ public struct ThreadsFeature {
                 case .success(let cache): return Self.publish(cache, into: &state)
                 case .failure(let error):
                     state.isLoading = false
+                    state.failure = error
                     state.errorMessage = error.localizedDescription
                     return .none
                 }
@@ -175,6 +184,7 @@ public struct ThreadsFeature {
             case .createTapped(let cwd):
                 state.isCreating = true
                 state.errorMessage = nil
+                state.failure = nil
                 return .run { send in
                     @Dependency(\.apiClient) var apiClient
                     @Dependency(\.executionAccessStore) var executionAccessStore
@@ -207,6 +217,7 @@ public struct ThreadsFeature {
                 }
                 state.archivingThreadIds.insert(threadId)
                 state.errorMessage = nil
+                state.failure = nil
                 return .run { send in
                     @Dependency(\.apiClient) var apiClient
                     do {
@@ -219,10 +230,13 @@ public struct ThreadsFeature {
                 }
 
             case .loadResponse(.success(let response)):
+                state.errorMessage = nil
+                state.failure = nil
                 return Self.publishThreads(response.data, preferredSelection: nil, into: &state)
 
             case .loadResponse(.failure(let error)):
                 state.isLoading = false
+                state.failure = error
                 state.errorMessage = error.localizedDescription
                 return .none
 
@@ -239,6 +253,7 @@ public struct ThreadsFeature {
 
             case .createResponse(.failure(let error)):
                 state.isCreating = false
+                state.failure = error
                 state.errorMessage = error.localizedDescription
                 return .none
 
@@ -259,6 +274,7 @@ public struct ThreadsFeature {
 
             case .archiveResponse(let threadId, .failure(let error)):
                 state.archivingThreadIds.remove(threadId)
+                state.failure = error
                 state.errorMessage = error.localizedDescription
                 return .none
 
@@ -268,6 +284,7 @@ public struct ThreadsFeature {
                 }
                 guard let thread = state.items.first(where: { $0.threadId == threadId }) else {
                     state.errorMessage = "线程不存在：\(threadId)"
+                    state.failure = .threadNotFound(threadId)
                     return .none
                 }
                 // 切线程优先本地生效，避免等待网络导致“点击后卡顿”。
@@ -275,6 +292,7 @@ public struct ThreadsFeature {
                 state.catalogGeneration &+= 1
                 state.selectedThreadId = threadId
                 state.errorMessage = nil
+                state.failure = nil
                 return .send(.delegate(.didActivateThread(thread)))
 
             case .pinTapped(let id):
@@ -292,10 +310,12 @@ public struct ThreadsFeature {
                 return .none
             case .pinResponse(_, .failure(let error)):
                 state.errorMessage = "持续展示未能更新：" + error.localizedDescription
+                state.failure = error
                 return .none
 
             case .clearError:
                 state.errorMessage = nil
+                state.failure = nil
                 return .none
 
             case .delegate:

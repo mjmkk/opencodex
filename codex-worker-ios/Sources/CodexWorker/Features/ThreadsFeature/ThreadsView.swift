@@ -14,6 +14,7 @@ import UIKit
 public struct ThreadsView: View {
     let store: StoreOf<ThreadsFeature>
     let onDismiss: (() -> Void)?
+    let onSettingsTap: (() -> Void)?
     let executionAccessMode: ExecutionAccessMode
     let onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)?
     @State private var informationSelection: ThreadInformationSelection?
@@ -21,11 +22,13 @@ public struct ThreadsView: View {
     public init(
         store: StoreOf<ThreadsFeature>,
         onDismiss: (() -> Void)? = nil,
+        onSettingsTap: (() -> Void)? = nil,
         executionAccessMode: ExecutionAccessMode = .defaultPermissions,
         onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)? = nil
     ) {
         self.store = store
         self.onDismiss = onDismiss
+        self.onSettingsTap = onSettingsTap
         self.executionAccessMode = executionAccessMode
         self.onExecutionAccessModeChanged = onExecutionAccessModeChanged
     }
@@ -40,21 +43,13 @@ public struct ThreadsView: View {
                 List {
                     if let errorMessage = viewStore.errorMessage {
                         Section {
-                            VStack(alignment: .leading, spacing: 16) {
-                                CodexNotice(title: "任务目录未能更新", detail: viewStore.items.isEmpty ? "当前任务尚未确认，请稍后刷新。" : "已保留上次任务列表。", symbol: "exclamationmark.arrow.triangle.2.circlepath", tone: .warning)
-                                Button("重新读取", systemImage: "arrow.clockwise") { viewStore.send(.refresh) }
-                                    .buttonStyle(CodexPrimaryButtonStyle())
-                                    .disabled(viewStore.isLoading || viewStore.isSyncing)
-                            }.padding(.vertical, 4).listRowSeparator(.hidden)
-                            DisclosureGroup("查看失败原因") {
-                                Text(errorMessage).font(.footnote).textSelection(.enabled)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }.font(.footnote).frame(minHeight: 44)
-
+                            failureContent(viewStore: viewStore, errorMessage: errorMessage)
+                                .listRowInsets(EdgeInsets(top: 16, leading: 20, bottom: 8, trailing: 20))
+                                .listRowSeparator(.hidden)
                         }
                     }
 
-                    if (viewStore.isLoading || viewStore.isSyncing) && viewStore.items.isEmpty {
+                    if (viewStore.isLoading || viewStore.isSyncing) && viewStore.items.isEmpty && viewStore.errorMessage == nil {
                         Section {
                             HStack(spacing: 8) {
                                 ProgressView()
@@ -140,6 +135,59 @@ public struct ThreadsView: View {
                     }
                 }
             }
+        }
+    }
+
+    private func failureContent(viewStore: ViewStoreOf<ThreadsFeature>, errorMessage: String) -> some View {
+        let isRefreshing = viewStore.isLoading || viewStore.isSyncing
+        let needsSettings = viewStore.needsConnectionSettings && onSettingsTap != nil
+        return VStack(alignment: .leading, spacing: 12) {
+            Label("任务目录未能更新", systemImage: "exclamationmark.circle")
+                .font(.headline)
+            Text(recoveryHint(viewStore))
+                .font(.footnote).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if needsSettings, let onSettingsTap {
+                Button("连接与设置", action: onSettingsTap)
+                    .buttonStyle(CodexPrimaryButtonStyle())
+                Button { viewStore.send(.refresh) } label: { retryLabel(isRefreshing: isRefreshing) }
+                    .buttonStyle(.plain).font(.footnote)
+                    .disabled(isRefreshing)
+            } else {
+                Button { viewStore.send(.refresh) } label: { retryLabel(isRefreshing: isRefreshing) }
+                    .buttonStyle(CodexPrimaryButtonStyle()).disabled(isRefreshing)
+                if let onSettingsTap {
+                    Button("连接与设置", action: onSettingsTap)
+                        .buttonStyle(.plain).font(.footnote).frame(minHeight: 44)
+                }
+            }
+            DisclosureGroup("查看失败原因") {
+                Text(errorMessage).font(.footnote).textSelection(.enabled)
+                    .fixedSize(horizontal: false, vertical: true)
+            }.font(.footnote).frame(minHeight: 44)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading).padding(16)
+        .background(CodexAppearance.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private func retryLabel(isRefreshing: Bool) -> some View {
+        HStack(spacing: 8) {
+            if isRefreshing { ProgressView().controlSize(.small) }
+            else { Image(systemName: "arrow.clockwise") }
+            Text(isRefreshing ? "正在读取…" : "重新读取")
+        }.frame(minHeight: 44)
+    }
+
+    private func recoveryHint(_ viewStore: ViewStoreOf<ThreadsFeature>) -> String {
+        switch viewStore.failure {
+        case .secureConnectionRequired:
+            return "系统已阻止 HTTP 连接，请在设置中核对服务的 HTTPS 地址。"
+        case .unauthorized:
+            return "访问验证未通过，请核对连接凭据。已有内容会保留。"
+        case .notConfigured:
+            return "先填写服务地址，再读取任务目录。"
+        default:
+            return viewStore.items.isEmpty ? "当前任务尚未确认，可以重新读取或检查连接。" : "已保留上次任务列表，可以重新读取。"
         }
     }
 

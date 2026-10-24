@@ -17,17 +17,20 @@ public struct SettingsSheetView: View {
     let store: StoreOf<SettingsFeature>
     let connectionState: ConnectionState
     let lastSyncedAt: Date?
+    let onCheckConnection: (() -> Void)?
     let onClose: (() -> Void)?
 
     public init(
         store: StoreOf<SettingsFeature>,
         connectionState: ConnectionState,
         lastSyncedAt: Date? = nil,
+        onCheckConnection: (() -> Void)? = nil,
         onClose: (() -> Void)? = nil
     ) {
         self.store = store
         self.connectionState = connectionState
         self.lastSyncedAt = lastSyncedAt
+        self.onCheckConnection = onCheckConnection
         self.onClose = onClose
     }
 
@@ -42,14 +45,27 @@ public struct SettingsSheetView: View {
             NavigationStack {
                 Form {
                     Section {
-                        LabeledContent("服务可达性") { reachabilityBadge(connectionState) }
-                        LabeledContent("访问验证", value: viewStore.authenticatedResponseAt != nil ? "已收到有效响应" : "尚未确认")
-                        LabeledContent("当前任务同步") {
-                            if let lastSyncedAt { Text(MobileTime.timestamp(lastSyncedAt)) }
-                            else { Text("尚未同步") }
+                        statusRow("服务可达性", value: reachability.text, tint: reachability.tint)
+                        statusRow("访问验证", value: viewStore.authenticatedResponseAt != nil ? "已收到有效响应" : "尚未确认")
+                        statusRow("任务同步", value: lastSyncedAt.map(MobileTime.timestamp) ?? "尚未同步")
+                        if case let .failed(message) = connectionState {
+                            DisclosureGroup("连接原因与建议") {
+                                Text(message).font(.footnote).textSelection(.enabled)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Text("请核对服务地址、网络和访问凭据。保存配置后，连接结果仍需单独核对。")
+                                    .font(.footnote).foregroundStyle(.secondary)
+                            }.font(.footnote).frame(minHeight: 44)
                         }
-                    } header: { Text("连接状态") } footer: {
-                        Text("服务可达、访问验证和内容同步分别核对。保存配置不代表连接成功。")
+                        if let onCheckConnection {
+                            Button(action: onCheckConnection) {
+                                HStack(spacing: 8) {
+                                    if connectionState.isConnecting { ProgressView().controlSize(.small) }
+                                    Text(connectionState.isConnecting ? "正在检查…" : "重新检查连接")
+                                }.frame(minHeight: 44)
+                            }.disabled(connectionState.isConnecting).font(.footnote)
+                        }
+                    } footer: {
+                        Text("保存只更新连接配置。")
                     }
                     Section {
                         VStack(alignment: .leading, spacing: 8) {
@@ -76,8 +92,8 @@ public struct SettingsSheetView: View {
                             Label("配置已保存；连接结果请查看上方状态", systemImage: "checkmark.circle")
                                 .font(.footnote).foregroundStyle(.secondary)
                         }
-                    } header: { Text("连接信息") }
-                    footer: { Text("地址需包含协议和端口。Token 按服务要求填写，始终隐藏显示。") }
+                    } header: { Text("连接信息").font(.footnote) }
+                    footer: { Text("使用服务提供的地址和凭据；Token 始终隐藏显示。") }
                     Section("通知与持续展示") {
                         LabeledContent("系统通知", value: notificationStatus)
                         LabeledContent("实时活动", value: ActivityAuthorizationInfo().areActivitiesEnabled ? "系统允许" : "系统未开启")
@@ -200,8 +216,8 @@ public struct SettingsSheetView: View {
         }
     }
 
-    private func reachabilityBadge(_ state: ConnectionState) -> some View {
-        let style: (text: String, tint: Color) = switch state {
+    private var reachability: (text: String, tint: Color) {
+        switch connectionState {
         case .connected:
             ("服务可达", .secondary)
         case .connecting, .reconnecting:
@@ -211,14 +227,21 @@ public struct SettingsSheetView: View {
         case .disconnected:
             ("服务未连接", .secondary)
         }
+    }
 
-        return Text(style.text)
-            .font(.footnote.weight(.medium))
-            .foregroundStyle(style.tint)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(style.tint.opacity(0.14))
-            .clipShape(Capsule())
+    private func statusRow(_ title: String, value: String, tint: Color = .primary) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text(title).font(.footnote).foregroundStyle(.secondary).fixedSize()
+                Spacer(minLength: 8)
+                Text(value).font(.body).foregroundStyle(tint).fixedSize()
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title).font(.footnote).foregroundStyle(.secondary)
+                Text(value).font(.body).foregroundStyle(tint)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }.frame(minHeight: 44).accessibilityElement(children: .combine)
     }
 
     @ViewBuilder

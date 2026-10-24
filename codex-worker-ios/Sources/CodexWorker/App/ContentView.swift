@@ -155,6 +155,7 @@ public struct ContentView: View {
                         onDismiss: {
                             viewStore.send(.setDrawerPresented(false))
                         },
+                        onSettingsTap: { isSettingsPresented = true },
                         executionAccessMode: viewStore.executionAccessMode,
                         onExecutionAccessModeChanged: { mode in
                             viewStore.send(.setExecutionAccessMode(mode))
@@ -227,6 +228,7 @@ public struct ContentView: View {
                     ),
                     connectionState: viewStore.connectionState,
                     lastSyncedAt: viewStore.lastSyncedAt,
+                    onCheckConnection: { viewStore.send(.healthCheckNow) },
                     onClose: {
                         isSettingsPresented = false
                     }

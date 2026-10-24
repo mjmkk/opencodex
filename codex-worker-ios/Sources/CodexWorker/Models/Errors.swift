@@ -15,6 +15,8 @@ public enum CodexError: Error, Equatable, Sendable {
 
     /// 连接失败
     case connectionFailed(String)
+    /// The system rejected an insecure connection; retrying cannot repair the address.
+    case secureConnectionRequired(String)
     /// 请求超时
     case timeout
     /// 未授权（Token 无效）
@@ -62,6 +64,8 @@ extension CodexError: LocalizedError {
         // 网络错误
         case let .connectionFailed(msg):
             return "连接失败: \(msg)"
+        case let .secureConnectionRequired(msg):
+            return "系统要求 HTTPS 安全连接。请使用服务提供的 HTTPS 地址。\n\(msg)"
         case .timeout:
             return "请求超时"
         case .unauthorized:
@@ -183,6 +187,8 @@ extension CodexError {
             switch nsError.code {
             case NSURLErrorTimedOut, NSURLErrorNetworkConnectionLost:
                 return .timeout
+            case NSURLErrorAppTransportSecurityRequiresSecureConnection:
+                return .secureConnectionRequired(error.localizedDescription)
             case NSURLErrorNotConnectedToInternet, NSURLErrorCannotConnectToHost:
                 return .connectionFailed(error.localizedDescription)
             default:
@@ -226,7 +232,7 @@ extension CodexError: RecoverableError {
         switch self {
         case .connectionFailed, .timeout, .cursorExpired:
             return true
-        case .unauthorized, .notConfigured:
+        case .unauthorized, .notConfigured, .secureConnectionRequired:
             return true
         default:
             return false
@@ -239,7 +245,7 @@ extension CodexError: RecoverableError {
             return .reconnect
         case .cursorExpired:
             return .fetchSnapshot
-        case .unauthorized, .notConfigured:
+        case .unauthorized, .notConfigured, .secureConnectionRequired:
             return .reconfigure
         default:
             return .none

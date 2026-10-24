@@ -456,7 +456,7 @@ private struct CodexMessageBubble: View {
                         .padding(.vertical, 12)
                         .background(Color(uiColor: .secondarySystemBackground))
                         .clipShape(RoundedRectangle(cornerRadius: 14))
-                        .frame(maxWidth: userBubbleMaxWidth, alignment: .trailing)
+                        .fixedSize(horizontal: false, vertical: true)
 
                     if let style = statusStyle(message.status) {
                         Image(systemName: style.icon)
@@ -576,15 +576,6 @@ private struct CodexMessageBubble: View {
                                 )
                             }.markdownMargin(top: 0, bottom: 12)
                         }
-    }
-
-    private var userBubbleMaxWidth: CGFloat {
-#if canImport(UIKit)
-        let width = UIScreen.main.bounds.width
-        return min(max(width * 0.74, 240), 460)
-#else
-        return 320
-#endif
     }
 
     private var assistantBubbleColor: Color {

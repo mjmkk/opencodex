@@ -153,11 +153,13 @@ public struct AppFeature {
 
             case .syncResponse(.failure(let error)):
                 state.threads.isSyncing = false
+                state.threads.failure = error
                 state.threads.errorMessage = "同步未完成，保留本地内容：" + error.localizedDescription
                 return .none
 
             case .syncResponse(.success(let result)):
                 state.threads.isSyncing = false
+                state.threads.failure = nil
                 state.threads.errorMessage = result.failures.isEmpty ? nil : "部分任务尚未同步，已保留本地内容。"
                 var changedIdentity: Thread?
                 if let id = state.activeThread?.threadId {
