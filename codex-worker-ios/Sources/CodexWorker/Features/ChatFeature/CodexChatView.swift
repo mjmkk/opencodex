@@ -321,17 +321,7 @@ public struct CodexChatView: View {
                 }
             }
             .sheet(isPresented: $showActivities) {
-                NavigationStack {
-                    List(viewStore.history?.records ?? []) { item in
-                        DisclosureGroup(item.title) {
-                            Text(item.id).font(.caption.monospaced()).textSelection(.enabled)
-                            if let observed = item.observedAt { Text("来源观察于 " + observed).font(.caption) }
-                            Text("此记录索引未提供执行正文或结果；请在原任务核对。").font(.caption).foregroundStyle(.secondary)
-                        }
-                    }
-                    .navigationTitle("来源记录").navigationBarTitleDisplayMode(.inline)
-                    .toolbar { ToolbarItem(placement: .confirmationAction) { Button("完成") { showActivities = false } } }
-                }
+                SourceRecordsView(records: viewStore.history?.records ?? [])
             }
         }
     }
