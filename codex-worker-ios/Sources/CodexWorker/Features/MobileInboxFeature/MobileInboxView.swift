@@ -9,6 +9,9 @@ public struct MobileInboxView: View {
     public var body: some View {
         NavigationStack {
             List { NativeRequestsSection(refreshing: refreshID, onOpenThread: onOpenThread) }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .background(CodexAppearance.canvas)
                 .navigationTitle("待你处理")
                 .navigationBarTitleDisplayMode(.inline)
                 .tint(.primary)

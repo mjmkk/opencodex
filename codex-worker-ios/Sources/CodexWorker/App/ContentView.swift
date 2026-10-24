@@ -69,6 +69,7 @@ public struct ContentView: View {
                             ),
                             connectionState: viewStore.connectionState,
                             onSidebarTap: {
+                                dismissKeyboard()
                                 viewStore.send(.setDrawerPresented(true))
                             },
                             onFileBrowserTap: {
@@ -158,6 +159,8 @@ public struct ContentView: View {
                             viewStore.send(.setDrawerPresented(false))
                         },
                         onSettingsTap: { isSettingsPresented = true },
+                        onOverviewTap: { isOverviewPresented = true },
+                        onInboxTap: { nativeRequestRoute = nil; isInboxPresented = true },
                         executionAccessMode: viewStore.executionAccessMode,
                         onExecutionAccessModeChanged: { mode in
                             viewStore.send(.setExecutionAccessMode(mode))

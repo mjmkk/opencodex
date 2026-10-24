@@ -164,6 +164,14 @@ actor MobileSyncCache {
         try db.write { db in
             let old = try Data.fetchOne(db, sql: "SELECT value FROM mobile_mirror_bodies WHERE scope=? AND threadId=?", arguments: [scope,id])
                 .map { try JSONDecoder().decode(MirrorCachedBody.self, from: $0) }
+            let staged = try Data.fetchOne(db, sql: "SELECT value FROM mobile_mirror_staging WHERE scope=? AND threadId=?", arguments: [scope,id])
+                .map { try JSONDecoder().decode(MirrorBody.self, from: $0) }
+            // Foreground and background reads may finish out of order. A shorter
+            // checkpoint of the same immutable snapshot must not erase readable work.
+            let incomingOffset = body.page.next_offset ?? Int.max
+            if [old?.body, staged].compactMap({ $0 }).contains(where: {
+                $0.page.snapshot == body.page.snapshot && ($0.page.next_offset ?? Int.max) > incomingOffset
+            }) { return }
             if body.page.next_offset != nil {
                 try db.execute(sql: "INSERT INTO mobile_mirror_staging(scope,threadId,value) VALUES(?,?,?) ON CONFLICT(scope,threadId) DO UPDATE SET value=excluded.value",
                     arguments: [scope,id,try JSONEncoder().encode(body)])

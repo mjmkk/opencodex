@@ -6,7 +6,7 @@ enum CodexAppearance {
     static let sectionSpacing: CGFloat = 24
     static let surface = Color(uiColor: .secondarySystemBackground)
     static let canvas = Color(uiColor: .systemBackground)
-    static let separator = Color(uiColor: .separator).opacity(0.35)
+    static let separator = Color(uiColor: .separator)
 }
 
 struct CodexPrimaryButtonStyle: ButtonStyle {
@@ -15,11 +15,11 @@ struct CodexPrimaryButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.body.weight(.semibold))
+            .font(.body.weight(.medium))
             .frame(minHeight: 44)
             .padding(.horizontal, 18)
             .foregroundStyle(CodexAppearance.canvas)
-            .background(Color.primary, in: Capsule())
+            .background(Color.primary, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             .opacity(isEnabled ? (configuration.isPressed ? 0.76 : 1) : 0.35)
             .scaleEffect(configuration.isPressed && !reduceMotion ? 0.98 : 1)
             .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: configuration.isPressed)
@@ -65,8 +65,7 @@ struct CodexNotice: View {
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(14)
-        .background(tint.opacity(0.07), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .padding(.vertical, 12)
         .accessibilityElement(children: .combine)
     }
 }
@@ -84,7 +83,7 @@ struct CodexEmptyState: View {
                 .font(.system(size: 28, weight: .regular))
                 .foregroundStyle(.secondary)
                 .accessibilityHidden(true)
-            Text(title).font(.title2.weight(.semibold))
+            Text(title).font(.title2.weight(.medium))
                 .foregroundStyle(.primary)
             Text(detail).font(.body).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -94,6 +93,7 @@ struct CodexEmptyState: View {
             }
         }
         .frame(maxWidth: 440, alignment: .leading)
-        .padding(28)
+        .padding(.horizontal, CodexAppearance.pageInset)
+        .padding(.vertical, CodexAppearance.sectionSpacing)
     }
 }

@@ -144,6 +144,8 @@ public struct CodexChatView: View {
                           if showsComposer && viewStore.activeThreadId != nil {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack(alignment: .bottom, spacing: 8) {
+                                // Mirrored history has no verified owner route for these tools.
+                                if !viewStore.hasCachedSource {
                                 Menu {
                                     Button("浏览文件", systemImage: "folder") { onFileBrowserTap?() }
                                         .disabled(onFileBrowserTap == nil)
@@ -154,6 +156,7 @@ public struct CodexChatView: View {
                                 }
                                 .disabled(onFileBrowserTap == nil && onTerminalToggle == nil)
                                 .accessibilityLabel("文件与终端工具")
+                                }
                                 TextField(viewStore.canInput ? "继续这个任务…" : "记录回复草稿…", text: text, axis: .vertical)
                                     .font(.body).lineLimit(1...6).padding(.vertical, 11)
                                     .disabled(!viewStore.canEdit)
@@ -176,7 +179,7 @@ public struct CodexChatView: View {
                                     }
                                     .frame(width: 36, height: 36)
                                     .foregroundStyle(CodexAppearance.canvas)
-                                    .background(Color.primary, in: Circle())
+                                    .background(Color.primary, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                                     .frame(width: 44, height: 44)
                                 }
                                 .buttonStyle(.plain)
@@ -184,17 +187,16 @@ public struct CodexChatView: View {
                                 .disabled(viewStore.isSending || text.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                                 }
                             }
-                            .padding(.horizontal, 6).padding(.vertical, 5)
-                            .background(CodexAppearance.surface, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-                            .overlay(RoundedRectangle(cornerRadius: 26).strokeBorder(CodexAppearance.separator, lineWidth: 0.5))
+                            .padding(.horizontal, 12).padding(.vertical, 5)
+                            .background(CodexAppearance.canvas, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(CodexAppearance.separator, lineWidth: 0.5))
                             if !viewStore.canInput {
                                 Text("仅草稿 · 当前来源不支持发送")
                                     .font(.footnote).foregroundStyle(.secondary)
                                     .fixedSize(horizontal: false, vertical: true)
-                                    .padding(.horizontal, 8)
                             }
                         }
-                        .padding(.horizontal, 16).padding(.top, 10).padding(.bottom, 8)
+                        .padding(.horizontal, CodexAppearance.pageInset).padding(.top, 10).padding(.bottom, 8)
 
                           }
                         }
@@ -210,6 +212,14 @@ public struct CodexChatView: View {
                 .overlay(alignment: .center) {
                     if viewStore.activeThreadId == nil {
                         emptyStateOverlay
+                    } else if viewStore.history == nil && viewStore.isHistorySyncing {
+                        ProgressView("正在读取任务内容…")
+                            .font(.subheadline).foregroundStyle(.secondary)
+                    } else if viewStore.history == nil && viewStore.errorMessage != nil {
+                        CodexEmptyState(title: "暂时无法读取内容", detail: "重新读取，或在连接与设置中检查服务。",
+                            symbol: "doc.text.magnifyingglass", actionTitle: "重新读取") {
+                                viewStore.send(.refreshHistory)
+                            }
                     }
                 }
                 .chatTheme(
@@ -357,10 +367,12 @@ public struct CodexChatView: View {
                         Button(isPinned ? "取消持续展示" : "持续展示此任务", systemImage: isPinned ? "pin.slash" : "pin") { onPinTap?() }
                         Button("来源记录（\(viewStore.history?.records.count ?? 0)）", systemImage: "list.bullet.rectangle") { showActivities = true }
                         Button("刷新来源历史", systemImage: "arrow.clockwise") { viewStore.send(.refreshHistory) }.disabled(viewStore.isHistorySyncing)
-                        Button("浏览文件", systemImage: "folder") { onFileBrowserTap?() }
-                            .disabled(onFileBrowserTap == nil)
-                        Button("终端", systemImage: "terminal") { onTerminalToggle?() }
-                            .disabled(onTerminalToggle == nil)
+                        if !viewStore.hasCachedSource {
+                            Button("浏览文件", systemImage: "folder") { onFileBrowserTap?() }
+                                .disabled(onFileBrowserTap == nil)
+                            Button("终端", systemImage: "terminal") { onTerminalToggle?() }
+                                .disabled(onTerminalToggle == nil)
+                        }
                     }
                     Button("连接与设置", systemImage: "network") { onSettingsTap?() }
                 } label: { Image(systemName: "ellipsis") }
@@ -426,7 +438,7 @@ public struct CodexChatView: View {
 
     private func sourceAndSyncParts(_ state: ViewStore<ViewState, ChatFeature.Action>) -> (source: String, sync: [String]) {
         let source = state.hasCachedSource
-            ? (state.history?.isPartial == true ? "部分已保存历史" : "上次可读历史")
+            ? (state.history == nil ? "尚无本地历史" : (state.history?.isPartial == true ? "部分已保存历史" : "上次可读历史"))
             : taskStatus(state)
         let sync: [String]
         if state.isHistorySyncing { sync = ["正在同步"] }

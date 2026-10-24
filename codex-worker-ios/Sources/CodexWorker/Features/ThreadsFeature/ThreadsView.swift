@@ -15,6 +15,8 @@ public struct ThreadsView: View {
     let store: StoreOf<ThreadsFeature>
     let onDismiss: (() -> Void)?
     let onSettingsTap: (() -> Void)?
+    let onOverviewTap: (() -> Void)?
+    let onInboxTap: (() -> Void)?
     let executionAccessMode: ExecutionAccessMode
     let onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)?
     @State private var informationSelection: ThreadInformationSelection?
@@ -23,12 +25,16 @@ public struct ThreadsView: View {
         store: StoreOf<ThreadsFeature>,
         onDismiss: (() -> Void)? = nil,
         onSettingsTap: (() -> Void)? = nil,
+        onOverviewTap: (() -> Void)? = nil,
+        onInboxTap: (() -> Void)? = nil,
         executionAccessMode: ExecutionAccessMode = .defaultPermissions,
         onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)? = nil
     ) {
         self.store = store
         self.onDismiss = onDismiss
         self.onSettingsTap = onSettingsTap
+        self.onOverviewTap = onOverviewTap
+        self.onInboxTap = onInboxTap
         self.executionAccessMode = executionAccessMode
         self.onExecutionAccessModeChanged = onExecutionAccessModeChanged
     }
@@ -113,6 +119,18 @@ public struct ThreadsView: View {
                     viewStore.send(.refresh)
                 }
             }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                if onOverviewTap != nil || onInboxTap != nil {
+                    VStack(spacing: 0) {
+                        Divider()
+                        HStack(spacing: 0) {
+                            if let onOverviewTap { destinationButton("目标总览", action: onOverviewTap) }
+                            if let onInboxTap { destinationButton("待你处理", action: onInboxTap) }
+                            if let onSettingsTap { destinationButton("连接设置", action: onSettingsTap) }
+                        }.padding(.horizontal, 8)
+                    }.background(CodexAppearance.canvas)
+                }
+            }
             .onAppear { viewStore.send(.onAppear) }
             .background(Color(uiColor: .systemBackground))
             .sheet(item: $informationSelection) { selection in
@@ -139,14 +157,21 @@ public struct ThreadsView: View {
         }
     }
 
+    private func destinationButton(_ title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title).font(.subheadline.weight(.medium))
+                .frame(maxWidth: .infinity, minHeight: 52).contentShape(Rectangle())
+        }.buttonStyle(.plain).foregroundStyle(.primary)
+    }
+
     private func failureContent(viewStore: ViewStoreOf<ThreadsFeature>, errorMessage: String) -> some View {
         let isRefreshing = viewStore.isLoading || viewStore.isSyncing
         let needsSettings = viewStore.needsConnectionSettings && onSettingsTap != nil
         return VStack(alignment: .leading, spacing: 12) {
             Label("任务目录未能更新", systemImage: "exclamationmark.circle")
-                .font(.headline)
+                .font(.body.weight(.medium))
             Text(recoveryHint(viewStore))
-                .font(.footnote).foregroundStyle(.secondary)
+                .font(.subheadline).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             if needsSettings, let onSettingsTap {
                 Button("连接与设置", action: onSettingsTap)
@@ -167,8 +192,8 @@ public struct ThreadsView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }.font(.footnote).frame(minHeight: 44)
         }
-        .frame(maxWidth: .infinity, alignment: .leading).padding(16)
-        .background(CodexAppearance.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 8)
     }
 
     private func retryLabel(isRefreshing: Bool) -> some View {
@@ -323,6 +348,8 @@ public struct ThreadsView: View {
             }
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            // The mirror reader does not declare an archive capability for its owner.
+            if !thread.hasCachedSource {
             Button(role: .destructive) {
                 viewStore.send(.archiveTapped(thread.threadId))
             } label: {
@@ -333,6 +360,7 @@ public struct ThreadsView: View {
                 }
             }
             .disabled(isArchiving)
+            }
         }
     }
 }
@@ -411,7 +439,7 @@ private struct ThreadRow: View {
 
             if let subtitle = thread.listSubtitle {
                 Text(subtitle)
-                    .font(.body)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
                     .fixedSize(horizontal: false, vertical: true)
@@ -440,15 +468,15 @@ private struct ThreadRow: View {
             parts.append(Text(reason).foregroundColor(attentionColor))
         }
         if metadata == nil {
-            parts.append(Text("同步未知").foregroundColor(.secondary))
+            parts.append(Text("同步未知").foregroundColor(Color(uiColor: .secondaryLabel)))
         } else if metadata?.lastSyncedAt == nil {
-            parts.append(Text("待同步").foregroundColor(.secondary))
+            parts.append(Text("待同步").foregroundColor(Color(uiColor: .secondaryLabel)))
         }
         if metadata?.isPartial == true {
-            parts.append(Text("部分历史").foregroundColor(.secondary))
+            parts.append(Text("部分历史").foregroundColor(Color(uiColor: .secondaryLabel)))
         }
         guard let first = parts.first else { return nil }
-        return parts.dropFirst().reduce(first) { $0 + Text(" · ").foregroundColor(.secondary) + $1 }
+        return parts.dropFirst().reduce(first) { $0 + Text(" · ").foregroundColor(Color(uiColor: .secondaryLabel)) + $1 }
     }
 
     private var summaryAccessibilityLabel: String {
@@ -463,7 +491,7 @@ private struct ThreadRow: View {
     }
 
     private var attentionColor: Color {
-        thread.pendingRequestCount > 0 || thread.executionState == "FAILED" ? .orange : .secondary
+        thread.pendingRequestCount > 0 || thread.executionState == "FAILED" ? .orange : Color(uiColor: .secondaryLabel)
     }
 }
 
@@ -622,8 +650,19 @@ private extension Thread {
     }
 
     var listSubtitle: String? {
-        let normalized = preview?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        var normalized = preview?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         guard !normalized.isEmpty else { return nil }
+        // Preview only: preserve the full source body in the conversation.
+        if normalized.hasPrefix("<heartbeat>"),
+           let range = normalized.range(of: "(?s)(?<=<message>).*?(?=</message>)", options: .regularExpression) {
+            normalized = String(normalized[range])
+        }
+        normalized = normalized.replacingOccurrences(of: "::chatgpt-content-reference\\{[^}]*\\}",
+            with: "引用内容", options: .regularExpression)
+        if let text = try? AttributedString(markdown: normalized,
+            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
+            normalized = String(text.characters)
+        }
         guard normalized != listTitle else { return nil }
         let lines = normalized.split(whereSeparator: \.isNewline).map(String.init)
         if name == nil || name?.isEmpty == true {

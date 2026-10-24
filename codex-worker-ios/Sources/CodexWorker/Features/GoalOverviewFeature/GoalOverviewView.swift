@@ -99,11 +99,13 @@ struct GoalOverviewView: View {
         ForEach(GoalOverviewFilter.allCases, id: \.self) { value in
             Button { filter = value } label: {
                 Text(filterTitle(value) + (hasSnapshot ? " \(rows.filter(value.includes).count)" : ""))
-                    .font(.subheadline.weight(filter == value ? .semibold : .regular))
-                    .foregroundStyle(filter == value ? CodexAppearance.canvas : Color.secondary)
+                    .font(.subheadline.weight(filter == value ? .medium : .regular))
+                    .foregroundStyle(filter == value ? Color.primary : Color.secondary)
                     .frame(maxWidth: .infinity, minHeight: 44).padding(.horizontal, 4)
-                    .background(filter == value ? Color.primary : Color.clear, in: Capsule())
-                    .contentShape(Capsule())
+                    .overlay(alignment: .bottom) {
+                        Rectangle().fill(filter == value ? Color.primary : Color.clear).frame(height: 2)
+                    }
+                    .contentShape(Rectangle())
             }.buttonStyle(.plain).accessibilityAddTraits(filter == value ? .isSelected : [])
         }
     }
@@ -187,7 +189,7 @@ struct GoalOverviewView: View {
         AnyView(ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(row.title).font(.title2.weight(.semibold))
+                    Text(row.title).font(.title2.weight(.medium))
                         .fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
                     metadata(row, includeIdentifier: false)
                     if let url = row.issueURL { sourceAction("查看原始任务", url: url) }

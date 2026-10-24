@@ -10,7 +10,7 @@ import Foundation
 /// Worker 连接配置
 ///
 /// 说明：
-/// - `baseURL` 示例：`http://192.168.1.10:8787`
+/// - `baseURL` 使用服务提供的 HTTPS 地址
 /// - `token` 对应后端 Bearer Token，可为空（后端未开启鉴权时）
 /// - `model` 为可选模型 ID，留空表示跟随后端默认模型
 public struct WorkerConfiguration: Codable, Equatable, Sendable {
@@ -18,9 +18,9 @@ public struct WorkerConfiguration: Codable, Equatable, Sendable {
     public var token: String?
     public var model: String?
 
-    /// 默认配置（开发态）
+    /// 当前手机服务入口；已保存的自定义配置仍优先使用。
     public static let `default` = WorkerConfiguration(
-        baseURL: "http://100.83.35.124:8787",
+        baseURL: "https://spirit-master.tail3c834b.ts.net:8443",
         token: nil,
         model: nil
     )

@@ -27,7 +27,11 @@ public struct ThreadSyncClient: DependencyKey, Sendable {
         syncHistory: { thread, refresh in
             @Dependency(\.apiClient) var api
             guard let namespace = thread.origin?.namespace else { throw CodexError.invalidState }
-            _ = try await MobileSyncEngine.shared.syncMirrorThread(thread.threadId, namespace: namespace, offline: !refresh, api: api)
+            let existing = try await MobileSyncCache.shared?.mirrorBody(thread.threadId, scope: MobileSyncEngine.threadScope(for: thread))
+            // Publish the genuine first page before filling a large uncached conversation.
+            // Existing history is already visible while its original continuation budget runs.
+            _ = try await MobileSyncEngine.shared.syncMirrorThread(thread.threadId, namespace: namespace,
+                offline: !refresh, api: api, maxPages: existing == nil ? 1 : 20)
             guard let cached = try await MobileSyncCache.shared?.mirrorBody(thread.threadId, scope: MobileSyncEngine.threadScope(for: thread)) else { throw CodexError.invalidState }
             return cached.history
         },

@@ -46,7 +46,7 @@ public struct SettingsSheetView: View {
                 : Array(viewStore.archivedThreads.prefix(archivedCollapsedLimit))
 
             NavigationStack {
-                Form {
+                List {
                     Section {
                         statusRow("服务可达性", value: isCheckingConnection ? "正在检查…" : reachability.text,
                                   tint: isCheckingConnection ? .secondary : reachability.tint)
@@ -68,8 +68,6 @@ public struct SettingsSheetView: View {
                                 }
                             }.disabled(isCheckingConnection).font(.footnote)
                         }
-                    } footer: {
-                        Text("保存后会重新检查连接，结果以上方状态为准。")
                     }
                     Section {
                         VStack(alignment: .leading, spacing: 8) {
@@ -92,13 +90,16 @@ public struct SettingsSheetView: View {
                             Text("保存连接配置").frame(maxWidth: .infinity)
                         }.buttonStyle(CodexPrimaryButtonStyle())
                             .disabled(viewStore.baseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                            .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
+                            .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
                         if viewStore.saveSucceeded {
                             Label("配置已保存；连接结果请查看上方状态", systemImage: "checkmark.circle")
                                 .font(.footnote).foregroundStyle(.secondary)
                         }
                     } header: { Text("连接信息").font(.footnote) }
-                    footer: { Text("使用服务提供的地址和凭据；Token 始终隐藏显示。") }
+                    footer: {
+                        Text("保存后自动检查连接；访问凭据始终隐藏显示。")
+                            .font(.footnote).foregroundStyle(.secondary)
+                    }
                     Section("通知与持续展示") {
                         LabeledContent("系统通知", value: notificationStatus)
                         LabeledContent("实时活动", value: ActivityAuthorizationInfo().areActivitiesEnabled ? "系统允许" : "系统未开启")
@@ -194,6 +195,9 @@ public struct SettingsSheetView: View {
                         LabeledContent("构建", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "未知")
                     }
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .background(CodexAppearance.canvas)
                 .navigationTitle("连接与设置")
                 .navigationBarTitleDisplayMode(.inline)
                 .tint(.primary)
