@@ -191,7 +191,7 @@ public struct CodexChatView: View {
                             .background(CodexAppearance.canvas, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(CodexAppearance.separator, lineWidth: 0.5))
                             if !viewStore.canInput {
-                                Text("仅草稿 · 当前来源不支持发送")
+                                Text("仅保存草稿 · 回复尚未接通")
                                     .font(.footnote).foregroundStyle(.secondary)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
