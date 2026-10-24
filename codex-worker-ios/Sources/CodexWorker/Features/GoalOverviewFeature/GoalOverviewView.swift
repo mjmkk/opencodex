@@ -100,9 +100,9 @@ struct GoalOverviewView: View {
             Button { filter = value } label: {
                 Text(filterTitle(value) + (hasSnapshot ? " \(rows.filter(value.includes).count)" : ""))
                     .font(.subheadline.weight(filter == value ? .semibold : .regular))
-                    .foregroundStyle(filter == value ? Color.primary : Color.secondary)
+                    .foregroundStyle(filter == value ? CodexAppearance.canvas : Color.secondary)
                     .frame(maxWidth: .infinity, minHeight: 44).padding(.horizontal, 4)
-                    .background(filter == value ? Color(uiColor: .secondarySystemFill) : Color.clear, in: Capsule())
+                    .background(filter == value ? Color.primary : Color.clear, in: Capsule())
                     .contentShape(Capsule())
             }.buttonStyle(.plain).accessibilityAddTraits(filter == value ? .isSelected : [])
         }
@@ -115,19 +115,21 @@ struct GoalOverviewView: View {
             } label: {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        metadata(row)
+                        Text(row.title).font(.headline).foregroundStyle(.primary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .layoutPriority(1)
                         Spacer(minLength: 0)
                         Image(systemName: "chevron.right").font(.caption.weight(.semibold))
                             .foregroundStyle(.tertiary).accessibilityHidden(true)
                     }
-                    Text(row.title).font(.headline).foregroundStyle(.primary)
-                        .fixedSize(horizontal: false, vertical: true)
                     if dynamicTypeSize.isAccessibilitySize {
                         VStack(alignment: .leading, spacing: 8) { summaryValues(row) }
                     } else {
                         HStack(alignment: .firstTextBaseline, spacing: 16) { summaryValues(row) }
                     }
                     observationCaption(row)
+                    metadata(row)
                 }
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                 .padding(.horizontal, inset).padding(.vertical, 18).contentShape(Rectangle())
@@ -138,10 +140,13 @@ struct GoalOverviewView: View {
         }
     }
 
-    private func metadata(_ row: GoalOverviewRow) -> some View {
-        Text([row.issueIdentifier, row.project].compactMap { $0 }.joined(separator: " · "))
-            .font(.footnote).foregroundStyle(.secondary)
-            .fixedSize(horizontal: false, vertical: true)
+    @ViewBuilder private func metadata(_ row: GoalOverviewRow, includeIdentifier: Bool = true) -> some View {
+        let values = [includeIdentifier ? row.issueIdentifier : nil, row.project].compactMap { $0 }
+        if !values.isEmpty {
+            Text(values.joined(separator: " · "))
+                .font(.footnote).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     @ViewBuilder private func summaryValues(_ row: GoalOverviewRow) -> some View {
@@ -167,14 +172,14 @@ struct GoalOverviewView: View {
             // No judgment exists to date; both pending values are already visible above.
             EmptyView()
         } else if row.progressAvailability == row.healthAvailability, let progressAt, progressAt == healthAt {
-            Text(observationText(row.progressAvailability, progressAt))
-                .font(.footnote).foregroundStyle(.secondary)
+            observationLine(row.progressAvailability, progressAt)
+                .font(.footnote)
                 .fixedSize(horizontal: false, vertical: true)
         } else {
             VStack(alignment: .leading, spacing: 3) {
-                Text("进度 · " + observationText(row.progressAvailability, progressAt))
-                Text("状态 · " + observationText(row.healthAvailability, healthAt))
-            }.font(.footnote).foregroundStyle(.secondary)
+                Text("进度 · ").foregroundColor(.secondary) + observationLine(row.progressAvailability, progressAt)
+                Text("状态 · ").foregroundColor(.secondary) + observationLine(row.healthAvailability, healthAt)
+            }.font(.footnote)
         }
     }
 
@@ -182,9 +187,9 @@ struct GoalOverviewView: View {
         AnyView(ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 VStack(alignment: .leading, spacing: 10) {
-                    metadata(row)
                     Text(row.title).font(.title2.weight(.semibold))
                         .fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
+                    metadata(row, includeIdentifier: false)
                     if let url = row.issueURL { sourceAction("查看原始任务", url: url) }
                 }
                 if let scope = row.closureScopeDescription {
@@ -222,24 +227,25 @@ struct GoalOverviewView: View {
                        dimension: row.progressDimension, row: row, progress: row.validProgress)
             Divider()
             assessment("健康状态", value: row.visibleHealth.map(healthTitle) ?? "尚无判断",
-                       state: row.healthAvailability, dimension: row.healthDimension, row: row)
+                       state: row.healthAvailability, dimension: row.healthDimension, row: row,
+                       health: row.visibleHealth)
         }
     }
 
     private func assessment(_ name: String, value: String, state: ObservationAvailability,
                             dimension: GoalOverviewDimension?, row: GoalOverviewRow,
-                            progress: Int? = nil) -> some View {
+                            progress: Int? = nil, health: GoalHealth? = nil) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             if dynamicTypeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: 6) {
-                    sectionTitle(name)
-                    Text(value).font(.headline)
+                    Text(name).font(.subheadline).foregroundStyle(.secondary)
+                    assessmentValue(value, health: health)
                 }
             } else {
                 HStack(alignment: .firstTextBaseline) {
-                    sectionTitle(name)
+                    Text(name).font(.subheadline).foregroundStyle(.secondary)
                     Spacer(minLength: 12)
-                    Text(value).font(.headline).multilineTextAlignment(.trailing)
+                    assessmentValue(value, health: health).multilineTextAlignment(.trailing)
                 }
             }
             if let progress {
@@ -250,12 +256,24 @@ struct GoalOverviewView: View {
                 Text(reasonText(reason)).font(.body).lineSpacing(3)
             }
             VStack(alignment: .leading, spacing: 4) {
-                Text(observationText(state, dimension == nil ? row.evaluatedAt : dimension?.evaluatedAt))
-                    .font(.footnote).foregroundStyle(.secondary)
+                observationLine(state, dimension == nil ? row.evaluatedAt : dimension?.evaluatedAt)
+                    .font(.footnote)
                     .fixedSize(horizontal: false, vertical: true)
                 timestamp("资料覆盖至", dimension == nil ? row.coverageAt : dimension?.coverageAt)
             }
             sourceDetails(dimension?.sourceNotes ?? row.sourceNotes, observation: dimension?.observation)
+        }
+    }
+
+    private func assessmentValue(_ value: String, health: GoalHealth?) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            if let health {
+                Image(systemName: healthSymbol(health))
+                    .font(.body.weight(.medium)).foregroundStyle(color(health))
+                    .accessibilityHidden(true)
+            }
+            Text(value).font(.title3.weight(.semibold)).monospacedDigit()
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -288,8 +306,8 @@ struct GoalOverviewView: View {
                 }.padding(.top, 8)
             } label: {
                 Label("判断依据 · \(max(notes.count, sources.count)) 项记录", systemImage: "doc.text")
-                    .font(.subheadline).frame(minHeight: 44)
-            }.tint(.primary)
+                    .font(.subheadline).foregroundStyle(.secondary).frame(minHeight: 44)
+            }.tint(.secondary)
         }
     }
 
@@ -332,7 +350,12 @@ struct GoalOverviewView: View {
             .fixedSize(horizontal: false, vertical: true)
     }
 
-    private func observationText(_ availability: ObservationAvailability, _ date: Date?) -> String {
+    private func observationLine(_ availability: ObservationAvailability, _ date: Date?) -> Text {
+        Text(observationState(availability)).fontWeight(.medium).foregroundColor(.primary)
+            + Text(" · " + (date.map(shortDate) ?? "判断时间未知")).foregroundColor(.secondary)
+    }
+
+    private func observationState(_ availability: ObservationAvailability) -> String {
         let state: String
         switch availability {
         case .current: state = "当前观察"
@@ -342,7 +365,7 @@ struct GoalOverviewView: View {
         case .notApplicable: state = "不适用"
         case .failed: state = "刷新失败"
         }
-        return state + " · " + (date.map(shortDate) ?? "判断时间未知")
+        return state
     }
 
     private func shortDate(_ date: Date) -> String {

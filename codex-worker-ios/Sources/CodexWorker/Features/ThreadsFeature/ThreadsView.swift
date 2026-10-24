@@ -106,6 +106,7 @@ public struct ThreadsView: View {
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
+                .contentMargins(.top, 0, for: .scrollContent)
                 .listRowSpacing(0)
                 .refreshable {
                     guard !viewStore.isLoading && !viewStore.isSyncing else { return }
@@ -375,8 +376,9 @@ private struct ThreadRow: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(thread.listTitle)
-                    .font(.body.weight(.semibold))
+                    .font(.body.weight(.medium))
                     .foregroundStyle(.primary)
+                    .lineSpacing(2)
                     .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -415,11 +417,19 @@ private struct ThreadRow: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            if let summary {
-                summary
-                    .font(.footnote)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .accessibilityLabel(summaryAccessibilityLabel)
+            if summary != nil || thread.lastActiveAt != nil {
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    if let summary { summary.fixedSize(horizontal: false, vertical: true) }
+                    Spacer(minLength: 0)
+                    if let activityAt = thread.lastActiveAt {
+                        Text(ThreadListDate.shortActivity(activityAt))
+                            .foregroundStyle(.secondary).monospacedDigit()
+                            .fixedSize()
+                    }
+                }
+                .font(.footnote)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(summaryAccessibilityLabel)
             }
         }
     }
@@ -436,9 +446,6 @@ private struct ThreadRow: View {
         }
         if metadata?.isPartial == true {
             parts.append(Text("部分历史").foregroundColor(.secondary))
-        }
-        if let activityAt = thread.lastActiveAt {
-            parts.append(Text("活动 · " + ThreadListDate.shortActivity(activityAt)).foregroundColor(.secondary))
         }
         guard let first = parts.first else { return nil }
         return parts.dropFirst().reduce(first) { $0 + Text(" · ").foregroundColor(.secondary) + $1 }
@@ -490,15 +497,22 @@ private struct ThreadInformationView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("任务") {
-                    Text(thread.listTitle)
-                        .font(.body.weight(.semibold))
-                        .fixedSize(horizontal: false, vertical: true)
-                        .textSelection(.enabled)
-                    if let reason = thread.attentionReason {
-                        Text(reason)
-                            .font(.body)
+                Section {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(thread.listTitle)
+                            .font(.title2.weight(.semibold))
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
+                            .accessibilityAddTraits(.isHeader)
+                        if let reason = thread.attentionReason {
+                            Text(reason)
+                                .font(.body)
+                                .foregroundStyle(.secondary)
+                        }
                     }
+                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 0, trailing: 16))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
                 }
 
                 Section {
@@ -517,9 +531,9 @@ private struct ThreadInformationView: View {
 
                 Section {
                     DisclosureGroup("任务身份与来源") {
-                        Text(thread.threadId).font(.footnote.monospaced()).textSelection(.enabled)
-                        Text(thread.origin?.namespace ?? "原始任务来源未提供").font(.footnote).textSelection(.enabled)
-                        if let device = thread.sourceDevice { Text(device).font(.footnote).textSelection(.enabled) }
+                        sourceField("任务标识", value: thread.threadId)
+                        sourceField("来源命名空间", value: thread.origin?.namespace ?? "原始任务来源未提供")
+                        if let device = thread.sourceDevice { sourceField("来源设备", value: device) }
                     }
                 }
 
@@ -560,6 +574,15 @@ private struct ThreadInformationView: View {
                 .textSelection(.enabled)
         }
         .padding(.vertical, 4)
+    }
+
+    private func sourceField(_ title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(title).font(.footnote).foregroundStyle(.secondary)
+            Text(value).font(.footnote.monospaced())
+                .fixedSize(horizontal: false, vertical: true)
+                .textSelection(.enabled)
+        }.padding(.vertical, 4)
     }
 }
 

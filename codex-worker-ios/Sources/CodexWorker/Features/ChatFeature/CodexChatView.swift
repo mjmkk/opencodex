@@ -182,23 +182,13 @@ public struct CodexChatView: View {
                                 .buttonStyle(.plain)
                                 .accessibilityLabel(viewStore.isSending ? "正在发送回复" : "发送回复")
                                 .disabled(viewStore.isSending || text.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                                } else {
-                                    VStack(alignment: .trailing, spacing: 2) {
-                                        Text("仅草稿")
-                                        Text("不可发送")
-                                    }
-                                        .font(.caption2).foregroundStyle(.secondary)
-                                        .padding(.trailing, 8).padding(.bottom, 6)
-                                        .fixedSize(horizontal: true, vertical: true)
-                                        .accessibilityElement(children: .ignore)
-                                        .accessibilityLabel("仅可记录回复草稿，当前来源暂不支持发送")
                                 }
                             }
                             .padding(.horizontal, 6).padding(.vertical, 5)
                             .background(CodexAppearance.surface, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
                             .overlay(RoundedRectangle(cornerRadius: 26).strokeBorder(CodexAppearance.separator, lineWidth: 0.5))
                             if !viewStore.canInput {
-                                Text("当前来源暂不支持发送。")
+                                Text("仅草稿 · 当前来源不支持发送")
                                     .font(.footnote).foregroundStyle(.secondary)
                                     .fixedSize(horizontal: false, vertical: true)
                                     .padding(.horizontal, 8)
