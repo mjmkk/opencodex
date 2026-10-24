@@ -137,9 +137,20 @@ actor MobileSyncCache {
         try db.write { db in
             try db.execute(sql: "INSERT INTO mobile_mirror_bodies(scope,threadId,value) VALUES(?,?,?) ON CONFLICT(scope,threadId) DO UPDATE SET value=excluded.value",
                 arguments: [scope,thread.threadId,try JSONEncoder().encode(value)])
-            try db.execute(sql: "INSERT INTO mobile_threads(scope,threadId,value) VALUES(?,?,?) ON CONFLICT(scope,threadId) DO UPDATE SET value=excluded.value",
-                arguments: [scope,thread.threadId,try JSONEncoder().encode(thread)])
+            try Self.saveHistoryPreview(thread, scope: scope, in: db)
         }
+    }
+
+    private static func saveHistoryPreview(_ fallback: Thread, scope: String, in db: Database) throws {
+        // A readable snapshot may predate the current task catalog. Preserve saved
+        // task fields (including nil); only an absent task uses history metadata.
+        var thread = try Data.fetchOne(db,
+            sql: "SELECT value FROM mobile_threads WHERE scope=? AND threadId=?",
+            arguments: [scope, fallback.threadId])
+            .map { try JSONDecoder().decode(Thread.self, from: $0) } ?? fallback
+        thread.preview = fallback.preview
+        try db.execute(sql: "INSERT INTO mobile_threads(scope,threadId,value) VALUES(?,?,?) ON CONFLICT(scope,threadId) DO UPDATE SET value=excluded.value",
+            arguments: [scope, thread.threadId, try JSONEncoder().encode(thread)])
     }
 
     func mirrorStaging(_ id: String, scope: String) throws -> MirrorBody? {
@@ -181,8 +192,7 @@ actor MobileSyncCache {
             if body.page.next_offset == nil || old == nil || old?.body.page.snapshot == body.page.snapshot {
                 try db.execute(sql: "INSERT INTO mobile_mirror_bodies(scope,threadId,value) VALUES(?,?,?) ON CONFLICT(scope,threadId) DO UPDATE SET value=excluded.value",
                     arguments: [scope,id,try JSONEncoder().encode(value)])
-                try db.execute(sql: "INSERT INTO mobile_threads(scope,threadId,value) VALUES(?,?,?) ON CONFLICT(scope,threadId) DO UPDATE SET value=excluded.value",
-                    arguments: [scope,id,try JSONEncoder().encode(thread)])
+                try Self.saveHistoryPreview(thread, scope: scope, in: db)
             }
         }
     }
