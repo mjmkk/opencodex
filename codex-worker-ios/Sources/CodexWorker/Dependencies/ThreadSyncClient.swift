@@ -55,8 +55,16 @@ actor MobileSyncEngine {
     static let shared = MobileSyncEngine()
     static func scope() throws -> String {
         guard let configuration = WorkerConfiguration.load() else { throw CodexError.notConfigured }
+        return scope(configuration: configuration)
+    }
+    static func scope(configuration: WorkerConfiguration) -> String {
         return SHA256.hash(data: Data((configuration.baseURL + "\n" + (configuration.token ?? "")).utf8))
             .map { String(format: "%02x", $0) }.joined()
+    }
+    static func threadScope(for thread: Thread, configuration: WorkerConfiguration) -> String {
+        let account = scope(configuration: configuration)
+        guard let namespace = thread.origin?.namespace ?? UserDefaults.standard.string(forKey: "codex.mirror.namespace." + account) else { return account + ":no-current-source" }
+        return account + ":mirror:" + namespace
     }
     static func threadScope(for thread: Thread) throws -> String { try threadScope(namespace: thread.origin?.namespace) }
     static func threadScope(namespace: String? = nil) throws -> String {

@@ -78,8 +78,73 @@ actor MobileSyncCache {
     }
     func saveComposer(_ draft: ComposerDraft, threadId: String, scope: String) throws {
         try db.write { db in
+            var draft = draft
+            draft.controlAttempt = nil
+            if let data = try Data.fetchOne(db, sql: "SELECT value FROM mobile_composer_drafts WHERE scope=? AND threadId=?", arguments: [scope,threadId]) {
+                let previous = try JSONDecoder().decode(ComposerDraft.self, from: data)
+                guard (draft.editedAt ?? .distantPast) >= (previous.editedAt ?? .distantPast) else { return }
+                guard draft.editedAt != previous.editedAt || draft.textRevision == previous.textRevision else { return }
+                guard draft.textRevision != previous.textRevision || draft.text == previous.text else { return }
+                // Delayed ordinary draft saves cannot clear or downgrade a sealed
+                // control attempt. Only the dedicated methods below change it.
+                draft.controlAttempt = previous.controlAttempt
+                // An accepted input consumed this exact editing revision. A
+                // delayed save of it must not restore the submitted body. A
+                // genuinely newer edit has its own revision and remains valid.
+                if previous.controlAttempt?.operation == .input,
+                   previous.controlAttempt?.receipt?.status == "accepted",
+                   let consumed = previous.controlAttempt?.draftTextRevision,
+                   draft.textRevision == consumed {
+                    draft.text = previous.text; draft.textRevision = previous.textRevision
+                    draft.editedAt = previous.editedAt
+                }
+            }
             try db.execute(sql: "INSERT INTO mobile_composer_drafts(scope,threadId,value) VALUES(?,?,?) ON CONFLICT(scope,threadId) DO UPDATE SET value=excluded.value",
                 arguments: [scope,threadId,try JSONEncoder().encode(draft)])
+        }
+    }
+
+    func beginControlAttempt(_ attempt: NativeControlAttempt, text: String,
+                             textRevision: String? = nil, editedAt: Date? = nil,
+                             threadId: String, scope: String) throws -> ComposerDraft {
+        try db.write { db in
+            var draft = try Data.fetchOne(db, sql: "SELECT value FROM mobile_composer_drafts WHERE scope=? AND threadId=?", arguments: [scope,threadId])
+                .map { try JSONDecoder().decode(ComposerDraft.self, from: $0) } ?? ComposerDraft(editedAt: nil)
+            guard draft.controlAttempt?.isUncertain != true,
+                  attempt.operation != .input || draft.outgoing == nil || draft.outgoing?.acknowledgedReceiptID != nil else { throw CodexError.invalidState }
+            let revision = textRevision ?? (draft.text == text ? draft.textRevision : nil) ?? UUID().uuidString
+            let editTime = editedAt ?? (draft.text == text ? draft.editedAt : nil) ?? attempt.attemptedAt
+            var sealed = attempt; sealed.draftTextRevision = revision
+            let sameRevision = draft.textRevision == revision
+            let bindsLegacyRevision = draft.textRevision == nil && draft.text == text && draft.editedAt == editedAt
+            if bindsLegacyRevision || (sameRevision ? text == draft.text && editTime >= (draft.editedAt ?? .distantPast)
+                : editTime > (draft.editedAt ?? .distantPast)) {
+                draft.text = text; draft.textRevision = revision; draft.editedAt = editTime
+            }
+            draft.controlAttempt = sealed
+            try db.execute(sql: "INSERT INTO mobile_composer_drafts(scope,threadId,value) VALUES(?,?,?) ON CONFLICT(scope,threadId) DO UPDATE SET value=excluded.value",
+                arguments: [scope,threadId,try JSONEncoder().encode(draft)])
+            return draft
+        }
+    }
+
+    func reconcileControlAttempt(id: String, receipt: NativeControlReceipt? = nil, localRejection: String? = nil,
+                                 threadId: String, scope: String) throws -> ComposerDraft {
+        try db.write { db in
+            guard let data = try Data.fetchOne(db, sql: "SELECT value FROM mobile_composer_drafts WHERE scope=? AND threadId=?", arguments: [scope,threadId]) else { throw CodexError.invalidState }
+            var draft = try JSONDecoder().decode(ComposerDraft.self, from: data)
+            guard let previous = draft.controlAttempt, previous.request.submission_id == id else { return draft }
+            let attempt = try previous.reconciled(receipt: receipt, localRejection: localRejection, threadID: threadId)
+            if attempt.operation == .input, attempt.receipt?.status == "accepted", draft.text == attempt.request.text,
+               let revision = attempt.draftTextRevision, draft.textRevision == revision {
+                draft.text = ""; draft.textRevision = UUID().uuidString
+            }
+            // Receipt metadata is not a user edit. Advancing editedAt here
+            // would discard a newer edit whose ordinary save is still queued.
+            draft.controlAttempt = attempt
+            try db.execute(sql: "UPDATE mobile_composer_drafts SET value=? WHERE scope=? AND threadId=?",
+                arguments: [try JSONEncoder().encode(draft),scope,threadId])
+            return draft
         }
     }
 

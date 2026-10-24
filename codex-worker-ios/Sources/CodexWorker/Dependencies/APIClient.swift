@@ -45,6 +45,9 @@ public struct APIClient: DependencyKey, Sendable {
     public var goalOverview: @Sendable () async throws -> JSONValue = { throw CodexError.invalidState }
     public var readNativeRequest: @Sendable (NativeRequestSelection) async throws -> NativeRemoteRequest = { _ in throw CodexError.invalidState }
     public var respondNativeRequest: @Sendable (NativeRequestSelection) async throws -> NativeRemoteRequest = { _ in throw CodexError.invalidState }
+    public var nativeControl: @Sendable (String, WorkerConfiguration) async throws -> NativeControlObservation = { _, _ in throw CodexError.invalidState }
+    public var submitNativeControl: @Sendable (String, NativeControlOperation, NativeControlWriteBody, WorkerConfiguration) async throws -> NativeControlReceipt = { _, _, _, _ in throw CodexError.invalidState }
+    public var nativeControlReceipt: @Sendable (String, String, WorkerConfiguration) async throws -> NativeControlReceipt = { _, _, _ in throw CodexError.invalidState }
 
     /// 查询线程终端状态
     public var getThreadTerminal: @Sendable (_ threadId: String) async throws -> ThreadTerminalStatusResponse
@@ -136,6 +139,9 @@ extension APIClient {
             goalOverview: { try await impl.goalOverview() },
             readNativeRequest: { try await impl.nativeRequest($0, operation: "read") },
             respondNativeRequest: { try await impl.nativeRequest($0, operation: "respond") },
+            nativeControl: { try await impl.nativeControl($0, configuration: $1) },
+            submitNativeControl: { try await impl.submitNativeControl($0, operation: $1, body: $2, configuration: $3) },
+            nativeControlReceipt: { try await impl.nativeControlReceipt($0, submissionID: $1, configuration: $2) },
             getThreadTerminal: { try await impl.getThreadTerminal(threadId: $0) },
             openThreadTerminal: { try await impl.openThreadTerminal(threadId: $0, request: $1) },
             resizeTerminal: { try await impl.resizeTerminal(sessionId: $0, request: $1) },
@@ -473,6 +479,45 @@ actor LiveAPIClient {
     func nativeRequest(_ selection: NativeRequestSelection, operation: String) async throws -> NativeRemoteRequest {
         let body = try JSONEncoder().encode(selection)
         return try await performRequest(buildRequest(url: buildURL(path: "/v1/native-requests/" + operation), method: "POST", body: body), preservingKeys: true)
+    }
+
+    /// Freeze the endpoint and authorization together for one native operation.
+    /// A later settings change must never move an in-flight write to another server.
+    private func nativeControlRequest(_ threadID: String, suffix: String, configuration: WorkerConfiguration,
+                                      method: String = "GET", body: Data? = nil) throws -> URLRequest {
+        guard UUID(uuidString: threadID) != nil,
+              let base = URL(string: configuration.baseURL), base.scheme == "https",
+              let url = URL(string: configuration.baseURL + "/v1/native-threads/" + threadID + "/" + suffix)
+        else { throw CodexError.invalidState }
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        if let token = configuration.token, !token.isEmpty {
+            request.setValue("Bearer " + token, forHTTPHeaderField: "Authorization")
+        }
+        request.httpBody = body
+        return request
+    }
+
+    func nativeControl(_ threadID: String, configuration: WorkerConfiguration) async throws -> NativeControlObservation {
+        let observation: NativeControlObservation = try await performRequest(
+            nativeControlRequest(threadID, suffix: "control", configuration: configuration), preservingKeys: true)
+        guard observation.validates(threadID: threadID) else { throw CodexError.invalidState }
+        return observation
+    }
+
+    func submitNativeControl(_ threadID: String, operation: NativeControlOperation,
+                             body: NativeControlWriteBody, configuration: WorkerConfiguration) async throws -> NativeControlReceipt {
+        try await performRequest(nativeControlRequest(threadID, suffix: operation.rawValue,
+            configuration: configuration, method: "POST", body: JSONEncoder().encode(body)), preservingKeys: true)
+    }
+
+    func nativeControlReceipt(_ threadID: String, submissionID: String,
+                             configuration: WorkerConfiguration) async throws -> NativeControlReceipt {
+        guard UUID(uuidString: submissionID) != nil else { throw CodexError.invalidState }
+        return try await performRequest(nativeControlRequest(threadID, suffix: "submissions/" + submissionID,
+            configuration: configuration), preservingKeys: true)
     }
 
     func healthCheck() async throws -> HealthCheckResponse {

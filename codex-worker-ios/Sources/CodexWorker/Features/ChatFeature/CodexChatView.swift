@@ -29,6 +29,15 @@ public struct CodexChatView: View {
         let errorMessage: String?
         let isSending: Bool
         let canInput: Bool
+        let canSubmit: Bool
+        let canStop: Bool
+        let isControlLoading: Bool
+        let controlStatus: String
+        let controlObservedAt: Date?
+        let controlMessage: String?
+        let controlAttempt: NativeControlAttempt?
+        let isReceiptChecking: Bool
+        let pendingControlOperation: NativeControlOperation?
         let canEdit: Bool
         let hasCachedSource: Bool
         let sourceDevice: String?
@@ -41,7 +50,12 @@ public struct CodexChatView: View {
             activeThreadTitle = state.activeThread?.displayName ?? "未选择任务"
             inputText = state.inputText; hasUnconfirmedReply = state.hasUnconfirmedReply
             messages = state.messages; errorMessage = state.errorMessage; isSending = state.isSending
-            canInput = state.canSend; canEdit = state.activeThread != nil && !state.isSending && !state.hasUnconfirmedReply
+            canInput = state.isInputConnected; canSubmit = state.canSend; canStop = state.canStop
+            canEdit = state.currentComposerScope != nil && !state.isSending && !state.hasUnconfirmedReply
+            isControlLoading = state.isControlLoading; controlStatus = state.controlObservation?.status ?? "unknown"
+            controlObservedAt = state.controlObservedAt
+            controlMessage = state.controlMessage; controlAttempt = state.controlAttempt
+            isReceiptChecking = state.isReceiptChecking; pendingControlOperation = state.pendingControlOperation
             hasCachedSource = state.activeThread?.hasCachedSource == true; sourceDevice = state.activeThread?.sourceDevice
             history = state.history; lastSyncedAt = state.lastSyncedAt
             isHistorySyncing = state.isHistorySyncing; hasNativeReviewWait = state.hasNativeReviewWait
@@ -143,6 +157,7 @@ public struct CodexChatView: View {
                         Group {
                           if showsComposer && viewStore.activeThreadId != nil {
                         VStack(alignment: .leading, spacing: 8) {
+                            nativeControlRow(viewStore)
                             HStack(alignment: .bottom, spacing: 8) {
                                 // Mirrored history has no verified owner route for these tools.
                                 if !viewStore.hasCachedSource {
@@ -172,7 +187,7 @@ public struct CodexChatView: View {
                                         if let id = viewStore.activeThreadId { viewStore.send(.composerChanged(threadId: id, text: value)) }
                                     }
                                 if viewStore.canInput {
-                                  Button { action(.send) } label: {
+                                  Button { viewStore.send(.sendReply) } label: {
                                     Group {
                                         if viewStore.isSending { ProgressView().tint(CodexAppearance.canvas) }
                                         else { Image(systemName: "arrow.up").font(.body.weight(.semibold)) }
@@ -184,13 +199,26 @@ public struct CodexChatView: View {
                                 }
                                 .buttonStyle(.plain)
                                 .accessibilityLabel(viewStore.isSending ? "正在发送回复" : "发送回复")
-                                .disabled(viewStore.isSending || text.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                                .disabled(!viewStore.canSubmit || text.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                                 }
                             }
                             .padding(.horizontal, 12).padding(.vertical, 5)
                             .background(CodexAppearance.canvas, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(CodexAppearance.separator, lineWidth: 0.5))
-                            if !viewStore.canInput {
+                            if let attempt = viewStore.controlAttempt, attempt.isUncertain {
+                                Text(attempt.operation == .interrupt ? "停止结果未确认，不会自动重试。" : "发送结果未确认，原文已保留，不会自动重试。")
+                                    .font(.footnote).foregroundStyle(.secondary)
+                                Button("核对提交结果") { viewStore.send(.checkControlReceipt) }
+                                    .font(.footnote.weight(.medium)).frame(minHeight: 44)
+                                    .disabled(viewStore.isSending)
+                            } else if let message = controlReceiptMessage(viewStore.controlAttempt) {
+                                Text(message).font(.footnote).foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            if let message = viewStore.controlMessage {
+                                Text(message).font(.footnote).foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            } else if !viewStore.canInput && viewStore.controlAttempt?.isUncertain != true {
                                 Text("仅保存草稿 · 回复尚未接通")
                                     .font(.footnote).foregroundStyle(.secondary)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -323,6 +351,51 @@ public struct CodexChatView: View {
             .sheet(isPresented: $showActivities) {
                 SourceRecordsView(records: viewStore.history?.records ?? [])
             }
+        }
+    }
+
+    private func nativeControlRow(_ viewStore: ViewStore<ViewState, ChatFeature.Action>) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 12) {
+                if viewStore.isControlLoading || viewStore.isSending { ProgressView().controlSize(.small) }
+                Text(viewStore.isReceiptChecking ? "正在核对提交结果…"
+                     : viewStore.isSending ? (viewStore.pendingControlOperation == .interrupt ? "正在请求停止…" : "正在提交…")
+                     : viewStore.isControlLoading ? "正在核对…"
+                     : viewStore.controlStatus == "running" ? "正在执行"
+                     : viewStore.controlStatus == "idle" ? "可发送" : "状态未确认")
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+                Button("刷新执行状态") { viewStore.send(.refreshControl) }
+                    .frame(minHeight: 44).disabled(viewStore.isControlLoading || viewStore.isSending)
+                if viewStore.canStop {
+                    Button("停止本轮", role: .destructive) { viewStore.send(.stopCurrentTurn) }
+                        .frame(minHeight: 44).accessibilityIdentifier("stop-current-native-turn")
+                }
+            }
+            .font(.footnote)
+            .buttonStyle(.plain)
+            if let observedAt = viewStore.controlObservedAt {
+                Text("上次确认 \(observedAt.formatted(date: .omitted, time: .standard))")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            if viewStore.canStop {
+                Text("这会停止当前一轮，也可能结束本任务的活跃子任务。目标仍保持原状态。")
+                    .font(.footnote).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private func controlReceiptMessage(_ attempt: NativeControlAttempt?) -> String? {
+        guard let attempt else { return nil }
+        if attempt.localRejection != nil || attempt.receipt?.status == "rejected" {
+            return attempt.operation == .interrupt ? "停止未执行，请刷新状态。" : "本次未发送，原文已保留。"
+        }
+        switch attempt.receipt?.status {
+        case "accepted": return "回复已提交。"
+        case "interrupted": return attempt.receipt?.goal_pause_error == nil ? "本轮已停止；子任务清理结果尚未确认。" : "本轮已停止；还有原生处理结果未确认。"
+        case "not_interrupted": return "未停止任何执行，请刷新状态。"
+        default: return nil
         }
     }
 
