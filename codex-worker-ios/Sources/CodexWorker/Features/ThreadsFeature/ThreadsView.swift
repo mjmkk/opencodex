@@ -524,7 +524,7 @@ private struct ThreadInformationView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
+            List {
                 Section {
                     VStack(alignment: .leading, spacing: 10) {
                         Text(thread.listTitle)
@@ -538,7 +538,7 @@ private struct ThreadInformationView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
-                    .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 0, trailing: 16))
+                    .listRowInsets(EdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20))
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
                 }
@@ -549,36 +549,45 @@ private struct ThreadInformationView: View {
                     if metadata?.isPartial == true {
                         Label("部分历史", systemImage: "text.alignleft")
                             .font(.body)
+                            .listRowInsets(informationInsets)
                     }
                     informationField("工作目录", value: thread.cwd.flatMap { $0.isEmpty ? nil : $0 } ?? "未提供目录")
-                } header: {
-                    Text("任务记录")
-                } footer: {
-                    Text("活动时间来自任务本身；同步时间只表示本地内容的同步记录，两者不同。")
-                }
-
-                Section {
                     DisclosureGroup("任务身份与来源") {
                         sourceField("任务标识", value: thread.threadId)
                         sourceField("来源命名空间", value: thread.origin?.namespace ?? "原始任务来源未提供")
                         if let device = thread.sourceDevice { sourceField("来源设备", value: device) }
                     }
+                    .listRowInsets(informationInsets)
+                } header: {
+                    Text("任务记录").font(.footnote.weight(.medium)).textCase(nil)
+                } footer: {
+                    Text("活动时间来自任务本身；同步时间只表示本地内容的同步记录，两者不同。")
+                        .font(.footnote).foregroundStyle(.secondary)
                 }
 
-                Section("本地记录") {
+                Section {
                     informationField("未读内容", value: metadata.map { String($0.unreadMessages) } ?? "未知")
                     informationField("持续展示", value: metadata.map { $0.pinned ? "已启用" : "未启用" } ?? "状态未知")
+                } header: {
+                    Text("本地记录").font(.footnote.weight(.medium)).textCase(nil)
                 }
 
                 if let preview = thread.preview?.trimmingCharacters(in: .whitespacesAndNewlines), !preview.isEmpty {
-                    Section("内容预览") {
+                    Section {
                         Text(preview)
                             .font(.body)
                             .fixedSize(horizontal: false, vertical: true)
                             .textSelection(.enabled)
+                            .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 20, trailing: 20))
+                    } header: {
+                        Text("内容预览").font(.footnote.weight(.medium)).textCase(nil)
                     }
                 }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(CodexAppearance.canvas)
+            .tint(.primary)
             .navigationTitle("任务信息")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -591,17 +600,26 @@ private struct ThreadInformationView: View {
         }
     }
 
+    private var informationInsets: EdgeInsets {
+        EdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20)
+    }
+
     private func informationField(_ title: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.body)
-                .fixedSize(horizontal: false, vertical: true)
-                .textSelection(.enabled)
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text(title).font(.footnote).foregroundStyle(.secondary).fixedSize()
+                Spacer(minLength: 8)
+                Text(value).font(.body).fixedSize().textSelection(.enabled)
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title).font(.footnote).foregroundStyle(.secondary)
+                Text(value).font(.body)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
+            }
         }
-        .padding(.vertical, 4)
+        .listRowInsets(informationInsets)
+        .accessibilityElement(children: .combine)
     }
 
     private func sourceField(_ title: String, value: String) -> some View {
