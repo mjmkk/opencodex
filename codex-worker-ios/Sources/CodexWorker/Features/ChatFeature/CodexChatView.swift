@@ -17,6 +17,7 @@ public struct CodexChatView: View {
     @State private var showActivities = false
     @State private var showIdentity = false
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private struct ViewState: Equatable {
         let activeThreadId: String?
@@ -61,6 +62,7 @@ public struct CodexChatView: View {
     let isPinned: Bool
     let onInboxTap: (() -> Void)?
     let onOverviewTap: (() -> Void)?
+    let showsComposer: Bool
     private let renderPipeline: MessageRenderPipeline
     private let codeSyntaxHighlighter: CodeSyntaxHighlighter
 
@@ -79,6 +81,7 @@ public struct CodexChatView: View {
         isPinned: Bool = false,
         onInboxTap: (() -> Void)? = nil,
         onOverviewTap: (() -> Void)? = nil,
+        showsComposer: Bool = true,
         renderPipeline: MessageRenderPipeline = .live,
         codeSyntaxHighlighter: CodeSyntaxHighlighter = CodexCodeSyntaxHighlighter()
     ) {
@@ -96,6 +99,7 @@ public struct CodexChatView: View {
         self.isPinned = isPinned
         self.onInboxTap = onInboxTap
         self.onOverviewTap = onOverviewTap
+        self.showsComposer = showsComposer
         self.renderPipeline = renderPipeline
         self.codeSyntaxHighlighter = codeSyntaxHighlighter
     }
@@ -104,20 +108,21 @@ public struct CodexChatView: View {
         WithViewStore(store, observe: ViewState.init) { viewStore in
             VStack(spacing: 0) {
                 header(viewStore: viewStore)
-                if viewStore.hasCachedSource {
-                    HStack(alignment: .top, spacing: 8) {
-                        Image(systemName: "internaldrive")
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(viewStore.history?.isPartial == false ? "上次可读历史" : "部分历史已保存").font(.caption.weight(.medium))
-                            Text(viewStore.history?.refreshRequested == true ? "已请求来源刷新；当前显示上次可读历史" : "上次可读历史 · 可先保存回复草稿")
-                                .font(.caption2).foregroundStyle(.secondary)
-                            if let body = viewStore.history, body.hasMore {
-                                Button("继续读取已缓存历史（\(body.messages.count)/\(body.availableMessageCount)）") { viewStore.send(.appDidBecomeActive) }
-                                    .font(.caption)
-                            }
-                        }
-                        Spacer(minLength: 0)
-                    }.padding(.horizontal, 16).padding(.vertical, 6)
+                if viewStore.hasUnconfirmedReply && !viewStore.isSending {
+                    VStack(alignment: .leading, spacing: 4) {
+                        CodexNotice(title: "上次发送结果未确认", detail: "原文已保留，不会自动重发。", symbol: "questionmark.circle", tone: .warning)
+                        Button("我已核对原任务，继续编辑") { viewStore.send(.acknowledgeUnknownReply) }
+                            .font(.footnote.weight(.medium)).frame(minHeight: 44)
+                    }.padding(.horizontal, 16)
+                }
+                if viewStore.hasCachedSource, viewStore.history?.hasMore == true {
+                    Button {
+                        viewStore.send(.appDidBecomeActive)
+                    } label: {
+                        Label("继续读取已保存历史（\(viewStore.history?.messages.count ?? 0)/\(viewStore.history?.availableMessageCount ?? 0)）", systemImage: "text.badge.plus")
+                            .font(.footnote)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    }.buttonStyle(.plain)
                 }
 
                 ChatView(
@@ -135,37 +140,58 @@ public struct CodexChatView: View {
                         )
                     },
                     inputViewBuilder: { text, _, _, _, action, _ in
-                        HStack(alignment: .bottom, spacing: 8) {
-                            Menu {
-                                Button("浏览文件", systemImage: "folder") { onFileBrowserTap?() }
-                                Button("终端", systemImage: "terminal") { onTerminalToggle?() }
-                            } label: {
-                                Image(systemName: "plus").frame(width: 44, height: 44)
-                            }.accessibilityLabel("添加工具")
-                            TextField("继续这个任务…", text: text, axis: .vertical)
-                                .lineLimit(1...5).padding(.vertical, 12)
-                                .disabled(!viewStore.canEdit)
-                                .accessibilityIdentifier("task-composer")
-                                .onAppear { text.wrappedValue = viewStore.inputText }
-                                .onChange(of: viewStore.inputText) { _, value in
-                                    if text.wrappedValue != value { text.wrappedValue = value }
-                                }
-                                .onChange(of: viewStore.isSending) { _, sending in
-                                    if !sending { text.wrappedValue = viewStore.inputText }
-                                }
-                                .onChange(of: text.wrappedValue) { _, value in
-                                    if let id = viewStore.activeThreadId { viewStore.send(.composerChanged(threadId: id, text: value)) }
-                                }
-                            Button { action(.send) } label: {
-                                Image(systemName: "arrow.up.circle.fill")
-                                    .font(.system(size: 30)).frame(width: 44, height: 44)
+                        Group {
+                          if showsComposer && viewStore.activeThreadId != nil {
+                        VStack(alignment: .leading, spacing: 8) {
+                            if !viewStore.canInput && viewStore.activeThreadId != nil {
+                                Label("回复草稿 · 当前来源暂不支持发送", systemImage: "square.and.pencil")
+                                    .font(.footnote).foregroundStyle(.secondary)
+                                    .padding(.horizontal, 8)
                             }
-                            .accessibilityLabel("发送回复")
-                            .disabled(!viewStore.canInput || viewStore.isSending || text.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                            HStack(alignment: .bottom, spacing: 8) {
+                                Menu {
+                                    Button("浏览文件", systemImage: "folder") { onFileBrowserTap?() }
+                                    Button("终端", systemImage: "terminal") { onTerminalToggle?() }
+                                } label: {
+                                    Image(systemName: "plus").frame(width: 44, height: 44)
+                                }.accessibilityLabel("添加工具")
+                                TextField(viewStore.canInput ? "继续这个任务…" : "记录回复草稿…", text: text, axis: .vertical)
+                                    .font(.body).lineLimit(1...6).padding(.vertical, 11)
+                                    .disabled(!viewStore.canEdit)
+                                    .accessibilityIdentifier("task-composer")
+                                    .onAppear { text.wrappedValue = viewStore.inputText }
+                                    .onChange(of: viewStore.inputText) { _, value in
+                                        if text.wrappedValue != value { text.wrappedValue = value }
+                                    }
+                                    .onChange(of: viewStore.isSending) { _, sending in
+                                        if !sending { text.wrappedValue = viewStore.inputText }
+                                    }
+                                    .onChange(of: text.wrappedValue) { _, value in
+                                        if let id = viewStore.activeThreadId { viewStore.send(.composerChanged(threadId: id, text: value)) }
+                                    }
+                                Button { action(.send) } label: {
+                                    Group {
+                                        if viewStore.isSending { ProgressView().tint(CodexAppearance.canvas) }
+                                        else { Image(systemName: "arrow.up").font(.body.weight(.semibold)) }
+                                    }
+                                    .frame(width: 36, height: 36)
+                                    .foregroundStyle(CodexAppearance.canvas)
+                                    .background(Color.primary, in: Circle())
+                                    .frame(width: 44, height: 44)
+                                }
+                                .buttonStyle(.plain)
+                                .opacity(viewStore.canInput ? 1 : 0.35)
+                                .accessibilityLabel(viewStore.isSending ? "正在发送回复" : "发送回复")
+                                .disabled(!viewStore.canInput || viewStore.isSending || text.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                            }
+                            .padding(.horizontal, 6).padding(.vertical, 5)
+                            .background(CodexAppearance.surface, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 26).strokeBorder(CodexAppearance.separator, lineWidth: 0.5))
                         }
-                        .padding(.horizontal, 8).padding(.vertical, 6)
-                        .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
-                        .padding(.horizontal, 16).padding(.vertical, 8)
+                        .padding(.horizontal, 16).padding(.top, 10).padding(.bottom, 8)
+
+                          }
+                        }
                     }
                 )
                 .showDateHeaders(viewStore.messages.allSatisfy { $0.createdAt > Date(timeIntervalSince1970: 0) })
@@ -215,7 +241,11 @@ public struct CodexChatView: View {
                             Text("已显示 \(viewStore.messages.count) 条消息")
                             if let body = viewStore.history {
                                 Text("来源本地共 \(body.availableMessageCount) 条；按来源顺序显示")
-                                Text("来源未提供消息发送时间，观察时间不代表发送时间。")
+                                let missingTimes = viewStore.messages.filter { $0.createdAt <= Date(timeIntervalSince1970: 0) }.count
+                                if missingTimes > 0 {
+                                    Text("其中 \(missingTimes) 条消息未提供发送时间。观察时间不代表发送时间。")
+                                }
+                                if body.refreshRequested { Text("已请求来源刷新；当前仍显示上次可读历史。") }
                                 if !body.attachments.isEmpty {
                                     ForEach(body.attachments) { item in
                                         Label(item.filename + " · " + item.availability, systemImage: "paperclip")
@@ -278,86 +308,76 @@ public struct CodexChatView: View {
 
     @ViewBuilder
     private var emptyStateOverlay: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "bubble.left.and.bubble.right.fill")
-                .font(.system(size: 26, weight: .semibold))
-                .foregroundStyle(.secondary)
-            Text("选择线程后即可开始对话")
-                .font(.headline)
-            Text("从任务列表打开已有工作，继续查看或回复。")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-            Button("打开线程列表") {
-                onSidebarTap?()
-            }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 18)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color(uiColor: .separator).opacity(0.28), lineWidth: 1)
-        )
-        .padding(.horizontal, 24)
+        CodexEmptyState(title: "继续已有的工作", detail: "从任务列表打开一项工作，查看内容、进展和需要你处理的事项。", actionTitle: "打开任务列表", action: { onSidebarTap?() })
     }
 
     @ViewBuilder
     private func header(viewStore: ViewStore<ViewState, ChatFeature.Action>) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 4) {
                 Button { onSidebarTap?() } label: {
-                    Image(systemName: "chevron.left").frame(width: 44, height: 44)
-                }.accessibilityLabel("打开线程列表")
+                    Image(systemName: "sidebar.leading")
+                }.buttonStyle(CodexIconButtonStyle()).accessibilityLabel("打开任务列表")
                 Button { showIdentity = true } label: {
-                    Text(viewStore.activeThreadTitle).font(.headline).lineLimit(2)
-                        .frame(maxWidth: .infinity, alignment: .leading).foregroundStyle(.primary)
-                }.accessibilityLabel("任务信息：" + viewStore.activeThreadTitle)
+                    Text(viewStore.activeThreadId == nil ? "OpenCodex" : viewStore.activeThreadTitle)
+                        .font(.headline).lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .foregroundStyle(.primary)
+                }.buttonStyle(.plain).accessibilityLabel("任务信息：" + viewStore.activeThreadTitle)
                 Menu {
-                    Button("Goal Overview", systemImage: "chart.bar.xaxis") { onOverviewTap?() }
+                    Button("目标总览", systemImage: "chart.bar.xaxis") { onOverviewTap?() }
                     Button("待你处理", systemImage: "tray") { onInboxTap?() }
                     if viewStore.activeThreadId != nil {
-                        Button(isPinned ? "取消持续展示" : "Pin 持续展示", systemImage: isPinned ? "pin.slash" : "pin") { onPinTap?() }
+                        Button(isPinned ? "取消持续展示" : "持续展示此任务", systemImage: isPinned ? "pin.slash" : "pin") { onPinTap?() }
                         Button("来源记录（\(viewStore.history?.records.count ?? 0)）", systemImage: "list.bullet.rectangle") { showActivities = true }
                         Button("刷新来源历史", systemImage: "arrow.clockwise") { viewStore.send(.refreshHistory) }.disabled(viewStore.isHistorySyncing)
                         Button("浏览文件", systemImage: "folder") { onFileBrowserTap?() }
                         Button("终端", systemImage: "terminal") { onTerminalToggle?() }
                     }
-                    Button("连接", systemImage: "network") { onSettingsTap?() }
-                } label: {
-                    Image(systemName: "ellipsis").frame(width: 44, height: 44)
-                }.accessibilityLabel("任务更多选项")
+                    Button("连接与设置", systemImage: "network") { onSettingsTap?() }
+                } label: { Image(systemName: "ellipsis") }
+                    .buttonStyle(CodexIconButtonStyle()).accessibilityLabel("任务更多选项")
             }
             if viewStore.activeThreadId != nil {
-                HStack(spacing: 5) {
-                    if isPinned { Image(systemName: "pin.fill").accessibilityLabel("已持续展示") }
-                    Text(taskStatus(viewStore))
-                    if viewStore.isHistorySyncing { Text("· 正在同步") }
-                    else if let date = viewStore.lastSyncedAt {
-                        Text(viewStore.errorMessage == nil ? "· 上次同步 " + MobileTime.ago(date) : "· 同步失败，上次 " + MobileTime.timestamp(date))
+                Button { showIdentity = true } label: {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        if isPinned { Image(systemName: "pin.fill").accessibilityLabel("已持续展示") }
+                        Text(viewStore.hasCachedSource ? (viewStore.history?.isPartial == true ? "部分已保存历史" : "上次可读历史") : taskStatus(viewStore))
+                        Text("·")
+                        if viewStore.isHistorySyncing { Text("正在同步") }
+                        else if let date = viewStore.lastSyncedAt {
+                            Text(viewStore.errorMessage == nil ? "上次同步 " + MobileTime.ago(date) : "同步失败 · 上次 " + MobileTime.ago(date))
+                        } else { Text("本地内容 · 尚未同步") }
                     }
-                    else { Text("· 本地内容") }
-                }.font(.caption).foregroundStyle(.secondary).padding(.leading, 52)
+                    .font(.footnote).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                }.buttonStyle(.plain).padding(.horizontal, 12)
+                if viewStore.history?.refreshRequested == true {
+                    Text("已请求来源刷新，当前内容尚未更新")
+                        .font(.footnote).foregroundStyle(.secondary).padding(.horizontal, 12)
+                }
             }
             if viewStore.hasNativeReviewWait {
                 Button { onInboxTap?() } label: {
                     Label("查看需要你处理的请求", systemImage: "hand.raised")
-                }.font(.footnote).tint(.orange).padding(.horizontal, 12).padding(.top, 6)
-            }
-            if viewStore.hasUnconfirmedReply && !viewStore.isSending {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("上次发送结果未确认，原文已保留，不会自动重发。")
-                    Button("我已核对原任务，继续编辑") { viewStore.send(.acknowledgeUnknownReply) }
-                }.font(.footnote).padding(.horizontal, 12)
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                }.font(.subheadline.weight(.medium)).tint(.orange).padding(.horizontal, 12)
             }
             if let error = viewStore.errorMessage {
-                Text(error).font(.footnote).foregroundStyle(.red).lineLimit(3).padding(.horizontal, 12)
+                DisclosureGroup {
+                    Text(error).font(.footnote).foregroundStyle(.secondary).textSelection(.enabled)
+                        .fixedSize(horizontal: false, vertical: true).padding(.top, 6)
+                } label: {
+                    Label("同步或操作未完成 · 查看原因", systemImage: "exclamationmark.circle")
+                        .font(.footnote.weight(.medium)).foregroundStyle(.red).frame(minHeight: 44)
+                }
+                .padding(.horizontal, 12).padding(.bottom, 4)
             }
         }
-        .padding(.horizontal, 8).padding(.bottom, 10)
-        .background(Color(uiColor: .systemBackground))
+        .padding(.horizontal, 8).padding(.bottom, 8)
+        .background(CodexAppearance.canvas)
     }
 
     private func taskStatus(_ state: ViewStore<ViewState, ChatFeature.Action>) -> String {
@@ -410,6 +430,7 @@ public struct CodexChatView: View {
 }
 
 private struct CodexMessageBubble: View {
+    @ScaledMetric(relativeTo: .body) private var bodySize = 17
     let message: Message
     let renderPipeline: MessageRenderPipeline
     let codeSyntaxHighlighter: CodeSyntaxHighlighter
@@ -423,6 +444,7 @@ private struct CodexMessageBubble: View {
                 VStack(alignment: .trailing, spacing: 4) {
                     messageIdentity
                     Text(message.text)
+                        .textSelection(.enabled)
                         .font(.body)
                         .foregroundStyle(.primary)
                         .padding(.horizontal, 14)
@@ -442,10 +464,12 @@ private struct CodexMessageBubble: View {
                 VStack(alignment: .leading, spacing: 0) {
                     messageIdentity.padding(.horizontal, 12).padding(.bottom, 2)
                     Markdown(rendered.markdownContent)
-                        .markdownTheme(.gitHub)
+                        .markdownTheme(messageTheme)
+                        .relativeLineSpacing(.em(0.25))
                         .tint(markdownLinkColor)
                         .markdownTextStyle(\.text) {
                             ForegroundColor(.primary)
+                            FontSize(bodySize)
                             BackgroundColor(nil)
                         }
                         .markdownTextStyle(\.link) {
@@ -473,13 +497,14 @@ private struct CodexMessageBubble: View {
                             .markdownMargin(top: 0, bottom: 12)
                         }
                         .markdownBlockStyle(\.table) { configuration in
-                            configuration.label
-                                .fixedSize(horizontal: false, vertical: true)
+                            ScrollView(.horizontal) {
+                                configuration.label
+                                .fixedSize(horizontal: true, vertical: false)
                                 .markdownTableBorderStyle(.init(color: assistantBorderColor))
                                 .markdownTableBackgroundStyle(
                                     .alternatingRows(assistantTableEvenRowColor, assistantTableOddRowColor)
                                 )
-                                .markdownMargin(top: 0, bottom: 12)
+                            }.markdownMargin(top: 0, bottom: 12)
                         }
                         .markdownCodeSyntaxHighlighter(codeSyntaxHighlighter)
                         .environment(\.openURL, OpenURLAction { url in
@@ -525,8 +550,27 @@ private struct CodexMessageBubble: View {
     private var messageIdentity: some View {
         HStack(spacing: 6) {
             Text(message.user.isCurrentUser ? "你" : message.user.name)
-            Text(message.createdAt > Date(timeIntervalSince1970: 0) ? MobileTime.timestamp(message.createdAt) : "原文未提供时间")
+            if message.createdAt > Date(timeIntervalSince1970: 0) {
+                Text(MobileTime.timestamp(message.createdAt))
+            }
         }.font(.caption2).foregroundStyle(.secondary)
+    }
+
+    private var messageTheme: Theme {
+        Theme.gitHub
+            .heading1 { configuration in
+                configuration.label.markdownTextStyle { FontWeight(.semibold); FontSize(.em(1.3)) }
+                    .markdownMargin(top: 12, bottom: 8)
+            }
+            .heading2 { configuration in
+                configuration.label.markdownTextStyle { FontWeight(.semibold); FontSize(.em(1.18)) }
+                    .markdownMargin(top: 12, bottom: 8)
+            }
+            .heading3 { configuration in
+                configuration.label.markdownTextStyle { FontWeight(.semibold); FontSize(.em(1.06)) }
+                    .markdownMargin(top: 12, bottom: 8)
+            }
+            .paragraph { configuration in configuration.label.markdownMargin(top: 0, bottom: 12) }
     }
 
     private var userBubbleMaxWidth: CGFloat {

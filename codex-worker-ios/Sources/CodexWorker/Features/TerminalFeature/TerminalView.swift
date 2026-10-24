@@ -53,71 +53,26 @@ public struct TerminalView: View {
             VStack(spacing: 0) {
                 header(viewStore: viewStore)
 
-                Divider()
-                    .background(Color(uiColor: .separator))
-
-                terminalOutput(viewStore: viewStore)
-            }
-            .background(Color(uiColor: .secondarySystemBackground))
-            .overlay(alignment: .topLeading) {
-                if let error = viewStore.errorMessage {
-                    Text(error)
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(Color(uiColor: .systemBackground).opacity(0.95))
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                        .padding(.top, 8)
-                        .padding(.leading, 8)
-                }
-            }
-            .overlay(alignment: .topTrailing) {
                 if viewStore.showRiskNotice {
                     HStack(alignment: .top, spacing: 8) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.orange)
-                        Text("该终端直接执行 Mac 命令，不经过审批。")
-                            .font(.caption)
-                            .foregroundStyle(Color(uiColor: .label))
-                            .fixedSize(horizontal: false, vertical: true)
-                        Button {
-                            viewStore.send(.dismissRiskNotice)
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(.secondary)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 8)
-                    .background(Color.orange.opacity(colorScheme == .dark ? 0.20 : 0.12))
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    .padding(.top, 8)
-                    .padding(.trailing, 8)
+                        CodexNotice(title: "此终端会直接执行 Mac 命令", detail: "终端输入不经过审批。", symbol: "exclamationmark.triangle", tone: .warning)
+                        Button { viewStore.send(.dismissRiskNotice) } label: { Image(systemName: "xmark") }
+                            .buttonStyle(CodexIconButtonStyle()).accessibilityLabel("关闭终端提示")
+                    }.padding(.horizontal, 12).padding(.bottom, 8)
                 }
+                if let error = viewStore.errorMessage {
+                    DisclosureGroup {
+                        Text(error).font(.footnote).textSelection(.enabled)
+                    } label: {
+                        Label("终端连接或操作失败", systemImage: "exclamationmark.circle")
+                            .font(.footnote).foregroundStyle(.red).frame(minHeight: 44)
+                    }.padding(.horizontal, 16)
+                }
+                Divider()
+                terminalOutput(viewStore: viewStore)
             }
-            .background(
-                GeometryReader { proxy in
-                    Color.clear
-                        .onAppear {
-                            viewStore.send(
-                                .viewportChanged(
-                                    width: proxy.size.width,
-                                    height: proxy.size.height
-                                )
-                            )
-                        }
-                        .onChange(of: proxy.size) { _, newSize in
-                            viewStore.send(
-                                .viewportChanged(
-                                    width: newSize.width,
-                                    height: newSize.height
-                                )
-                            )
-                        }
-                }
-            )
+            .background(CodexAppearance.canvas)
+
         }
     }
 
@@ -129,17 +84,17 @@ public struct TerminalView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(viewStore.cwd)
-                    .font(.caption.monospaced())
+                    .font(.footnote.monospaced())
                     .foregroundStyle(Color(uiColor: .label))
-                    .lineLimit(1)
+                    .lineLimit(2)
 
                 HStack(spacing: 6) {
                     Text(connectionLabel(for: viewStore.connectionState))
-                        .font(.caption2)
+                        .font(.footnote)
                         .foregroundStyle(connectionColor(for: viewStore.connectionState))
 
                     Text(viewStore.transportMode == "pipe" ? "兼容模式" : "终端模式")
-                        .font(.caption2.weight(.semibold))
+                        .font(.footnote.weight(.medium))
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(Color(uiColor: .tertiarySystemFill))
@@ -155,7 +110,7 @@ public struct TerminalView: View {
                 Image(systemName: "trash")
                     .font(.subheadline)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(CodexIconButtonStyle())
             .foregroundStyle(.secondary)
             .accessibilityLabel("清空终端显示")
 
@@ -169,7 +124,7 @@ public struct TerminalView: View {
                     Image(systemName: "xmark.circle.fill")
                 }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(CodexIconButtonStyle())
             .foregroundStyle(.secondary)
             .accessibilityLabel("关闭终端会话")
         }
@@ -186,6 +141,9 @@ public struct TerminalView: View {
             placeholder: "终端连接后会在此显示输出。",
             onInput: { payload in
                 viewStore.send(.sendRawInput(payload))
+            },
+            onSizeChanged: { cols, rows in
+                viewStore.send(.measuredSizeChanged(cols: cols, rows: rows))
             }
         )
         .padding(.horizontal, 8)
@@ -220,11 +178,13 @@ public struct TerminalView: View {
 }
 
 private struct TerminalOutputSurface: View {
+    @ScaledMetric(relativeTo: .footnote) private var fontSize = 14
     let text: String
     let canSendInput: Bool
     let isDarkMode: Bool
     let placeholder: String
     let onInput: (String) -> Void
+    let onSizeChanged: (Int, Int) -> Void
 
     var body: some View {
 #if canImport(SwiftTerm) && canImport(UIKit)
@@ -232,12 +192,14 @@ private struct TerminalOutputSurface: View {
             text: text,
             canSendInput: canSendInput,
             isDarkMode: isDarkMode,
-            onInput: onInput
+            fontSize: fontSize,
+            onInput: onInput,
+            onSizeChanged: onSizeChanged
         )
 #else
         ScrollView {
             Text(text.isEmpty ? placeholder : text)
-                .font(.system(size: 13, weight: .regular, design: .monospaced))
+                .font(.system(.footnote, design: .monospaced))
                 .foregroundStyle(text.isEmpty ? .secondary : Color(uiColor: .label))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .textSelection(.enabled)
@@ -252,7 +214,20 @@ private struct TerminalOutputSurface: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(Color(uiColor: .separator).opacity(0.35), lineWidth: 1)
         )
+        .background {
+            GeometryReader { proxy in
+                Color.clear
+                    .onAppear { reportApproximateSize(proxy.size) }
+                    .onChange(of: proxy.size) { _, size in reportApproximateSize(size) }
+                    .onChange(of: fontSize) { _, _ in reportApproximateSize(proxy.size) }
+            }
+        }
 #endif
+    }
+
+    private func reportApproximateSize(_ size: CGSize) {
+        guard size.width > 0, size.height > 0 else { return }
+        onSizeChanged(max(1, Int(size.width / (fontSize * 0.62))), max(1, Int(size.height / (fontSize * 1.3))))
     }
 }
 
@@ -266,13 +241,15 @@ private struct TerminalSurfaceRepresentable: UIViewRepresentable {
     let text: String
     let canSendInput: Bool
     let isDarkMode: Bool
+    let fontSize: CGFloat
     let onInput: (String) -> Void
+    let onSizeChanged: (Int, Int) -> Void
 
     func makeUIView(context: Context) -> SwiftTerm.TerminalView {
         let view = SwiftTerm.TerminalView(frame: .zero)
         view.terminalDelegate = context.coordinator
         context.coordinator.applyTheme(isDarkMode: isDarkMode, to: view)
-        view.font = UIFont.monospacedSystemFont(ofSize: 13, weight: .regular)
+        view.font = UIFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
         view.optionAsMetaKey = true
         view.allowMouseReporting = true
         view.notifyUpdateChanges = false
@@ -292,20 +269,35 @@ private struct TerminalSurfaceRepresentable: UIViewRepresentable {
 
     func updateUIView(_ uiView: SwiftTerm.TerminalView, context: Context) {
         context.coordinator.applyTheme(isDarkMode: isDarkMode, to: uiView)
+        if uiView.font.pointSize != fontSize { uiView.font = UIFont.monospacedSystemFont(ofSize: fontSize, weight: .regular) }
         context.coordinator.updateInputHandler(onInput)
+        context.coordinator.onSizeChanged = onSizeChanged
+        context.coordinator.reportSize(from: uiView)
         context.coordinator.apply(content: text, to: uiView)
         context.coordinator.updateFocus(enabled: canSendInput, on: uiView)
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator()
+        Coordinator(onSizeChanged: onSizeChanged)
     }
 
-    final class Coordinator: NSObject, SwiftTerm.TerminalViewDelegate {
+    @MainActor
+    final class Coordinator: NSObject, @preconcurrency SwiftTerm.TerminalViewDelegate {
         private var lastRendered = ""
         private var onInput: ((String) -> Void)?
         private var autoFocused = false
         private var appliedPalette: TerminalPalette?
+        var onSizeChanged: (Int, Int) -> Void
+        private var lastSize: (cols: Int, rows: Int)?
+
+        init(onSizeChanged: @escaping (Int, Int) -> Void) {
+            self.onSizeChanged = onSizeChanged
+        }
+
+        func reportSize(from view: SwiftTerm.TerminalView) {
+            let terminal = view.getTerminal()
+            sizeChanged(source: view, newCols: terminal.cols, newRows: terminal.rows)
+        }
 
         func updateInputHandler(_ handler: @escaping (String) -> Void) {
             onInput = handler
@@ -355,7 +347,12 @@ private struct TerminalSurfaceRepresentable: UIViewRepresentable {
             }
         }
 
-        func sizeChanged(source: SwiftTerm.TerminalView, newCols: Int, newRows: Int) {}
+        func sizeChanged(source: SwiftTerm.TerminalView, newCols: Int, newRows: Int) {
+            guard source.bounds.width > 0, source.bounds.height > 0, newCols > 0, newRows > 0 else { return }
+            guard lastSize?.cols != newCols || lastSize?.rows != newRows else { return }
+            lastSize = (newCols, newRows)
+            DispatchQueue.main.async { [weak self] in self?.onSizeChanged(newCols, newRows) }
+        }
         func setTerminalTitle(source: SwiftTerm.TerminalView, title: String) {}
         func hostCurrentDirectoryUpdate(source: SwiftTerm.TerminalView, directory: String?) {}
         func send(source: SwiftTerm.TerminalView, data: ArraySlice<UInt8>) {

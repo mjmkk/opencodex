@@ -87,6 +87,7 @@ public struct TerminalFeature {
         case streamFailed(CodexError)
         case reconnectNow
         case viewportChanged(width: Double, height: Double)
+        case measuredSizeChanged(cols: Int, rows: Int)
         case resizeDebounced
         case sendResize
         case sendResizeFailed(CodexError)
@@ -348,6 +349,10 @@ public struct TerminalFeature {
                 let usableHeight = max(80.0, height - 86.0)
                 let nextRows = max(8, Int(floor(usableHeight / 17.2)))
 
+                return .send(.measuredSizeChanged(cols: nextCols, rows: nextRows))
+
+            case .measuredSizeChanged(let nextCols, let nextRows):
+                guard nextCols > 0, nextRows > 0 else { return .none }
                 guard nextCols != state.viewportCols || nextRows != state.viewportRows else {
                     return .none
                 }

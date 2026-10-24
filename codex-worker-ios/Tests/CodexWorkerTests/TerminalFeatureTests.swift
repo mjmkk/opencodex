@@ -201,7 +201,7 @@ struct TerminalFeatureTests {
         }
         store.exhaustivity = .off
 
-        await store.send(.viewportChanged(width: 1000, height: 500)) {
+        await store.send(.measuredSizeChanged(cols: 121, rows: 24)) {
             $0.viewportCols = 121
             $0.viewportRows = 24
         }

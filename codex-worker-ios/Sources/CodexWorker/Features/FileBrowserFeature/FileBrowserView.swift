@@ -25,24 +25,21 @@ public struct FileBrowserView: View {
     public var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
             NavigationStack {
-                VStack(spacing: 12) {
-                    browserHeader(viewStore)
-                    searchPanel(viewStore)
-
-                    if let error = viewStore.errorMessage {
-                        errorBanner(error) {
-                            viewStore.send(.clearError)
-                        }
-                        .padding(.horizontal, 14)
-                    }
-
+                VStack(spacing: 0) {
                     List {
+                        Section {
+                            browserHeader(viewStore)
+                            searchPanel(viewStore)
+                            if let error = viewStore.errorMessage {
+                                errorBanner(error) { viewStore.send(.clearError) }
+                            }
+                        }.listRowBackground(Color.clear)
                         Section {
                             if viewStore.entries.isEmpty, !viewStore.isLoadingTree {
                                 ContentUnavailableView(
-                                    "目录为空",
+                                    viewStore.activeThread == nil ? "先选择一项任务" : (viewStore.treeSnapshotIsCurrent ? "目录为空" : "目录尚未核对"),
                                     systemImage: "folder",
-                                    description: Text("该目录下暂无可浏览文件")
+                                    description: Text(viewStore.activeThread == nil ? "文件浏览跟随当前任务。" : (viewStore.treeSnapshotIsCurrent ? "本次读取没有目录项。" : "刷新后核对当前目录；上次内容与读取失败不代表目录为空。"))
                                 )
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .listRowBackground(Color.clear)
@@ -54,26 +51,26 @@ public struct FileBrowserView: View {
                                         HStack(alignment: .top, spacing: 10) {
                                             Image(systemName: entry.isDirectory ? "folder.fill" : "doc.text")
                                                 .font(.body.weight(.semibold))
-                                                .foregroundStyle(entry.isDirectory ? .blue : .secondary)
+                                                .foregroundStyle(.secondary)
                                                 .frame(width: 24)
                                                 .padding(.top, 2)
 
                                             VStack(alignment: .leading, spacing: 4) {
                                                 Text(entry.name)
                                                     .font(.subheadline.weight(entry.isDirectory ? .semibold : .regular))
-                                                    .lineLimit(1)
+                                                    .lineLimit(2)
 
                                                 HStack(spacing: 8) {
                                                     if let modifiedAt = entry.modifiedAt {
                                                         Text(modifiedAt)
-                                                            .font(.caption2)
+                                                            .font(.footnote)
                                                             .foregroundStyle(.secondary)
-                                                            .lineLimit(1)
+                                                            .lineLimit(2)
                                                     }
 
                                                     if let size = entry.size, !entry.isDirectory {
                                                         Text(humanReadableFileSize(size))
-                                                            .font(.caption2.monospacedDigit())
+                                                            .font(.footnote.monospacedDigit())
                                                             .foregroundStyle(.secondary)
                                                     }
                                                 }
@@ -107,7 +104,7 @@ public struct FileBrowserView: View {
                             HStack {
                                 Text("目录")
                                 Spacer()
-                                Text("\(viewStore.entries.count) 项")
+                                Text(viewStore.hasTreeSnapshot ? "\(viewStore.entries.count) 项" + (viewStore.treeSnapshotIsCurrent ? "" : " · 上次内容") : "尚未读取")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -117,9 +114,9 @@ public struct FileBrowserView: View {
                             Section {
                                 if viewStore.searchResults.isEmpty, !viewStore.isSearching {
                                     ContentUnavailableView(
-                                        "暂无匹配",
+                                        viewStore.errorMessage == nil ? "尚无显示的结果" : "搜索尚未完成",
                                         systemImage: "magnifyingglass",
-                                        description: Text("尝试更换关键词或搜索范围")
+                                        description: Text("点击搜索以核对当前关键词，读取失败时不会当作成功的空结果。")
                                     )
                                     .frame(maxWidth: .infinity, alignment: .center)
                                     .listRowBackground(Color.clear)
@@ -136,7 +133,7 @@ public struct FileBrowserView: View {
                                                 Text("\(match.path):\(match.line)")
                                                     .font(.caption.monospaced())
                                                     .foregroundStyle(.secondary)
-                                                    .lineLimit(1)
+                                                    .lineLimit(2)
                                             }
                                             Text(match.snippet)
                                                 .font(.subheadline)
@@ -175,7 +172,8 @@ public struct FileBrowserView: View {
                         viewStore.send(.refresh)
                     }
                 }
-                .navigationTitle("文件系统")
+                .navigationTitle("文件")
+                .tint(.primary)
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
@@ -241,16 +239,16 @@ public struct FileBrowserView: View {
                             Text(crumb.title)
                                 .font(.caption.weight(.semibold))
                                 .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
+                                .padding(.vertical, 12)
                                 .foregroundStyle(
-                                    crumb.fullPath == viewStore.currentPath ? Color.white : Color.accentColor
+                                    crumb.fullPath == viewStore.currentPath ? CodexAppearance.canvas : Color.primary
                                 )
                                 .background(
                                     Capsule()
                                         .fill(
                                             crumb.fullPath == viewStore.currentPath
-                                                ? Color.accentColor
-                                                : Color.accentColor.opacity(0.15)
+                                                ? Color.primary
+                                                : CodexAppearance.surface
                                         )
                                 )
                         }
@@ -263,7 +261,7 @@ public struct FileBrowserView: View {
             Text(viewStore.currentPath)
                 .font(.caption.monospaced())
                 .foregroundStyle(.secondary)
-                .lineLimit(1)
+                .lineLimit(2)
         }
         .padding(.horizontal, 14)
     }
@@ -440,6 +438,8 @@ public struct FileViewerView: View {
                                     .padding(12)
                             }
                             .background(Color(uiColor: .secondarySystemBackground))
+                        } else if !viewStore.hasContentSnapshot && !viewStore.isLoading {
+                            CodexEmptyState(title: "文件尚未读取", detail: "读取完成后显示内容。失败或未知不代表文件为空。", symbol: "doc.text.magnifyingglass")
                         } else if viewStore.isEditing {
                             RunestoneCodeView(
                                 content: viewStore.content,
@@ -501,9 +501,12 @@ public struct FileViewerView: View {
                 }
             }
 
-            HStack(spacing: 8) {
+            ScrollView(.horizontal, showsIndicators: false) {
+              HStack(spacing: 8) {
                 MetaChip(title: viewStore.language.uppercased(), icon: "chevron.left.forwardslash.chevron.right")
-                MetaChip(title: "\(viewStore.totalLines) 行", icon: "number")
+                if viewStore.hasContentSnapshot {
+                    MetaChip(title: "\(viewStore.totalLines) 行", icon: "number")
+                } else { MetaChip(title: "内容尚未读取", icon: "questionmark.circle") }
                 if viewStore.isDirty {
                     MetaChip(title: "未保存", icon: "circle.fill", tint: .orange)
                 }
@@ -517,6 +520,8 @@ public struct FileViewerView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("复制文件路径")
+                .frame(minWidth: 44, minHeight: 44)
+              }
             }
         }
         .padding(.horizontal, 12)
@@ -532,7 +537,8 @@ public struct FileViewerView: View {
                     Label("取消", systemImage: "xmark")
                 }
                 .buttonStyle(.bordered)
-                .controlSize(.small)
+                .controlSize(.regular)
+                .frame(minHeight: 44)
 
                 Button {
                     viewStore.send(.saveAndExitTapped)
@@ -544,7 +550,8 @@ public struct FileViewerView: View {
                     }
                 }
                 .buttonStyle(.borderedProminent)
-                .controlSize(.small)
+                .controlSize(.regular)
+                .frame(minHeight: 44)
                 .disabled(viewStore.isSaving)
             } else {
                 Button {
@@ -553,7 +560,9 @@ public struct FileViewerView: View {
                     Label("编辑", systemImage: "pencil")
                 }
                 .buttonStyle(.bordered)
-                .controlSize(.small)
+                .controlSize(.regular)
+                .frame(minHeight: 44)
+                .disabled(!viewStore.hasContentSnapshot || viewStore.isLoading)
 
                 Menu {
                     Button {
@@ -571,7 +580,8 @@ public struct FileViewerView: View {
                     Label("更多", systemImage: "ellipsis.circle")
                 }
                 .buttonStyle(.bordered)
-                .controlSize(.small)
+                .controlSize(.regular)
+                .frame(minHeight: 44)
             }
 
             Spacer(minLength: 0)
@@ -720,7 +730,7 @@ public struct FileViewerView: View {
                     .font(.caption2.weight(.semibold))
                 Text(title)
                     .font(.caption2.weight(.semibold))
-                    .lineLimit(1)
+                    .lineLimit(2)
             }
             .foregroundStyle(tint)
             .padding(.horizontal, 8)

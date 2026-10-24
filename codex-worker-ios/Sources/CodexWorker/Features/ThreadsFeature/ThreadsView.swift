@@ -40,20 +40,15 @@ public struct ThreadsView: View {
                 List {
                     if let errorMessage = viewStore.errorMessage {
                         Section {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Label("操作未完成", systemImage: "exclamationmark.triangle")
-                                    .font(.subheadline.weight(.semibold))
-                                Text(errorMessage)
-                                    .font(.footnote)
+                            CodexNotice(title: "任务目录未能更新", detail: viewStore.items.isEmpty ? "当前任务尚未确认，请稍后刷新。" : "已保留上次任务列表。", symbol: "exclamationmark.arrow.triangle.2.circlepath", tone: .warning)
+                            Button("重新读取", systemImage: "arrow.clockwise") { viewStore.send(.refresh) }
+                                .font(.subheadline.weight(.medium)).frame(minHeight: 44)
+                                .disabled(viewStore.isLoading || viewStore.isSyncing)
+                            DisclosureGroup("查看失败原因") {
+                                Text(errorMessage).font(.footnote).textSelection(.enabled)
                                     .fixedSize(horizontal: false, vertical: true)
-                                if !viewStore.items.isEmpty {
-                                    Text("已保留当前任务列表")
-                                        .font(.footnote)
-                                        .foregroundStyle(.secondary)
-                                }
                             }
-                            .foregroundStyle(.primary)
-                            .accessibilityElement(children: .combine)
+
                         }
                     }
 
@@ -67,12 +62,11 @@ public struct ThreadsView: View {
                             }
                             .frame(minHeight: 44, alignment: .leading)
                         }
-                    } else if viewStore.items.isEmpty {
+                    } else if viewStore.items.isEmpty && viewStore.errorMessage == nil {
                         Section {
-                            Text(viewStore.errorMessage == nil ? "暂无任务" : "任务暂不可用，请刷新重试")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .frame(minHeight: 44, alignment: .leading)
+                            CodexEmptyState(title: "尚无显示的任务", detail: viewStore.errorMessage == nil ? "刷新任务目录，核对已有工作的当前内容。" : "读取暂未完成；这不代表你的任务为空。", symbol: "rectangle.stack")
+                                .listRowSeparator(.hidden)
+
                         }
                     } else {
                         switch viewStore.groupingMode {
@@ -470,6 +464,14 @@ private struct ThreadInformationView: View {
                         .font(.body)
                         .fixedSize(horizontal: false, vertical: true)
                         .textSelection(.enabled)
+                }
+
+                Section {
+                    DisclosureGroup("任务身份与来源") {
+                        Text(thread.threadId).font(.footnote.monospaced()).textSelection(.enabled)
+                        Text(thread.origin?.namespace ?? "原始任务来源未提供").font(.footnote).textSelection(.enabled)
+                        if let device = thread.sourceDevice { Text(device).font(.footnote).textSelection(.enabled) }
+                    }
                 }
 
                 Section("本地记录") {

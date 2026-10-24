@@ -42,4 +42,55 @@ struct ThreadsFeatureTests {
         #expect(groups[2].id == "/repo/A")
     }
 
+    @Test
+    func cacheReplacesIdentityAndMetadataInOneStateUpdate() {
+        var old = thread("shared", namespace: "old-scope")
+        old.name = "Previous identity"
+        let current = thread("shared", namespace: "current-scope")
+        var state = ThreadsFeature.State()
+        state.items = [old]
+        state.syncMetadata = ["shared": .init(lastSyncedAt: .distantPast, unreadMessages: 9, pinned: true)]
+        let metadata = ThreadSyncMetadata(lastSyncedAt: .distantFuture, unreadMessages: 0, pinned: false)
+        let cache = MobileSyncResult(threads: [current], metadata: ["shared": metadata], changedThreadIds: [], failures: [:])
+        _ = ThreadsFeature().reduce(into: &state, action: .cacheLoaded(cache))
+        #expect(state.items == [current])
+        #expect(state.items.first?.id != old.id)
+        #expect(state.syncMetadata == ["shared": metadata])
+    }
+
+    @Test
+    func cacheRestoresSelectionAndRetainsExistingValidSelection() {
+        let first = thread("first", namespace: "scope")
+        let second = thread("second", namespace: "scope")
+        let cache = MobileSyncResult(threads: [first, second], metadata: [:], changedThreadIds: [], failures: [:], selectedThreadId: "second")
+        var state = ThreadsFeature.State()
+        _ = ThreadsFeature().reduce(into: &state, action: .cacheLoaded(cache))
+        #expect(state.selectedThreadId == "second")
+        _ = ThreadsFeature().reduce(into: &state, action: .loadResponse(.success(.init(data: cache.threads, nextCursor: nil))))
+        #expect(state.selectedThreadId == "second")
+        state.selectedThreadId = "first"
+        _ = ThreadsFeature().reduce(into: &state, action: .cacheLoaded(cache))
+        _ = ThreadsFeature().reduce(into: &state, action: .loadResponse(.success(.init(data: cache.threads, nextCursor: nil))))
+        #expect(state.selectedThreadId == "first")
+    }
+
+    @Test
+    func removedSelectionFallsBackAfterCacheAndMetadataDoesNotLinger() {
+        let current = thread("current", namespace: "scope")
+        var state = ThreadsFeature.State()
+        state.selectedThreadId = "removed"
+        state.syncMetadata = ["removed": .init(lastSyncedAt: .distantPast, unreadMessages: 1, pinned: true)]
+        let cache = MobileSyncResult(threads: [current], metadata: [:], changedThreadIds: [], failures: [:])
+        _ = ThreadsFeature().reduce(into: &state, action: .cacheLoaded(cache))
+        #expect(state.syncMetadata.isEmpty)
+        _ = ThreadsFeature().reduce(into: &state, action: .loadResponse(.success(.init(data: [current], nextCursor: nil))))
+        #expect(state.selectedThreadId == "current")
+    }
+
+    private func thread(_ id: String, namespace: String) -> Thread {
+        var value = Thread(threadId: id, preview: nil, cwd: nil, createdAt: nil, updatedAt: nil, modelProvider: nil)
+        value.origin = .init(namespace: namespace, hostID: nil)
+        return value
+    }
+
 }

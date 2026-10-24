@@ -9,13 +9,18 @@ struct NativeRequestsSection: View {
     @State private var error: String?
     @State private var loaded = false
     var body: some View {
-        Section("原生请求") {
+        Section("当前请求") {
             if let error {
-                Text("原生请求暂不可用，已保留上次查看内容。请稍后刷新。").font(.footnote).foregroundStyle(.secondary)
-                DisclosureGroup("诊断信息") { Text(error).font(.caption).textSelection(.enabled) }
+                CodexNotice(title: "暂时无法核对当前请求", detail: "上次查看的内容仍保留，请稍后刷新。", symbol: "exclamationmark.arrow.triangle.2.circlepath", tone: .warning)
+                    .listRowBackground(Color.clear)
+                DisclosureGroup("查看失败原因") { Text(error).font(.footnote).textSelection(.enabled) }
             }
             if currentIDs.isEmpty {
-                Text(!loaded ? "正在核对原生请求…" : (error == nil ? "当前没有可读取的原生待处理请求" : "暂时无法确认当前待处理请求")).foregroundStyle(.secondary)
+                HStack(spacing: 10) {
+                    if !loaded { ProgressView() }
+                    Text(!loaded ? "正在核对请求…" : (error == nil ? "当前没有可读取的待处理请求" : "当前请求状态尚未确认"))
+                        .font(.body).foregroundStyle(.secondary)
+                }.frame(minHeight: 44)
             }
             ForEach(records.filter { currentIDs.contains($0.id) }) { record in row(record, current: true) }
         }
@@ -46,12 +51,12 @@ struct NativeRequestsSection: View {
             NativeRequestView(item: record.item, onOpenThread: onOpenThread)
         } label: {
             VStack(alignment: .leading, spacing: 6) {
-                Text(record.item.issue ?? "原任务").font(.caption).foregroundStyle(.secondary)
-                Text(record.item.title).lineLimit(3)
+                Text(record.item.issue ?? "原任务").font(.footnote).foregroundStyle(.secondary)
+                Text(record.item.title).font(.body.weight(.semibold)).foregroundStyle(.primary).lineLimit(3)
                 Text(current ? record.item.statusText : "上次查看 · " + MobileTime.timestamp(record.observedAt))
-                    .font(.caption).foregroundStyle(.secondary)
-                if !current { Text("打开后核对当前状态").font(.caption2).foregroundStyle(.secondary) }
-            }.padding(.vertical, 6)
+                    .font(.footnote).foregroundStyle(.secondary)
+                if !current { Text("打开后核对当前状态").font(.footnote).foregroundStyle(.secondary) }
+            }.padding(.vertical, 10)
         }
         .accessibilityIdentifier("native-request-" + record.id)
     }
@@ -79,6 +84,14 @@ struct NativeRequestView: View {
     private var canRespond: Bool { restored && fresh && item.canSubmitResponse && !attempted && !busy }
 
     var body: some View {
+        requestForm
+            .onChange(of: content) { _, _ in Task { await persistDraft() } }
+            .onChange(of: answers) { _, _ in Task { await persistDraft() } }
+            .onChange(of: proposed) { _, _ in Task { await persistDraft() } }
+            .task { await monitorRequest() }
+    }
+
+    private var requestForm: some View {
         Form {
             requestSummary
             if item.native_resolution == nil && item.native_terminal == nil && !item.response_submitted && !attempted {
@@ -89,26 +102,28 @@ struct NativeRequestView: View {
             if let error { Section { Text(error).foregroundStyle(.red) } }
             requestDetails
         }
-        .navigationTitle("原生请求").navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("请求详情").navigationBarTitleDisplayMode(.inline)
+        .tint(.primary)
+        .listSectionSpacing(24)
         .toolbar { Button("刷新") { Task { await refresh() } }.disabled(busy) }
-        .onChange(of: content) { _, _ in Task { await persistDraft() } }
-        .onChange(of: answers) { _, _ in Task { await persistDraft() } }
-        .onChange(of: proposed) { _, _ in Task { await persistDraft() } }
-        .task {
-            await restoreDraft()
-            await refresh()
-            while !Task.isCancelled {
-                do { try await Task.sleep(for: .seconds(3)) } catch { return }
-                if attempted || item.response_submitted { await refresh() }
-            }
+    }
+
+    private func monitorRequest() async {
+        await restoreDraft()
+        await refresh()
+        while !Task.isCancelled {
+            do { try await Task.sleep(for: .seconds(3)) } catch { return }
+            if attempted || item.response_submitted { await refresh() }
         }
     }
 
     @ViewBuilder private var requestSummary: some View {
         Section {
-            Text(item.issue ?? "原任务").font(.caption).foregroundStyle(.secondary)
-            Text(item.title).font(.headline).textSelection(.enabled)
-            Text(fresh ? item.statusText : "正在核对原请求，缓存不能用于提交")
+            Text(item.issue ?? "原任务").font(.footnote).foregroundStyle(.secondary)
+            Text(item.title).font(.title2.weight(.semibold)).fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
+                .padding(.vertical, 4)
+            Label(fresh ? item.statusText : "正在核对原请求，缓存不能用于提交", systemImage: fresh ? "info.circle" : "arrow.clockwise")
+                .font(.subheadline).foregroundStyle(.secondary)
             if let observation = item.observation { Text(observation).font(.footnote).foregroundStyle(.secondary) }
             if item.native_resolution == nil && item.native_terminal == nil && !item.response_submitted && !attempted {
                 if let message = item.params["message"]?.stringValue ?? item.params["reason"]?.stringValue {
@@ -128,7 +143,8 @@ struct NativeRequestView: View {
             Section("核对你的选择") {
                 Text(responseText(proposed)).font(.footnote.monospaced()).textSelection(.enabled)
                 Button("确认发送这次选择") { Task { await submit(proposed) } }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(CodexPrimaryButtonStyle())
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
             }
         }
     }
@@ -166,8 +182,8 @@ struct NativeRequestView: View {
     @ViewBuilder private func forContext(_ key: String, title: String) -> some View {
         if let value = item.params[key], value != .null {
             VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(.caption).foregroundStyle(.secondary)
-                Text(value.stringValue ?? value.nativeJSON).font(.footnote).textSelection(.enabled)
+                Text(title).font(.footnote).foregroundStyle(.secondary)
+                Text(value.stringValue ?? value.nativeJSON).font(.body.monospaced()).fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
             }
         }
     }
@@ -179,9 +195,11 @@ struct NativeRequestView: View {
                 ForEach(Array(item.decisions.enumerated()), id: \.offset) { _, decision in
                     Button { proposed = .object(["decision": decision]) } label: {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(NativeRemoteRequest.decisionLabel(decision))
-                            Text(decision.nativeJSON).font(.caption.monospaced()).foregroundStyle(.secondary)
-                        }
+                            Label(NativeRemoteRequest.decisionLabel(decision), systemImage: proposed == .object(["decision": decision]) ? "checkmark.circle.fill" : "circle")
+                                .font(.body.weight(.medium)).foregroundStyle(.primary)
+                            Text(decision.nativeJSON).font(.footnote.monospaced()).foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }.padding(.vertical, 6).frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                     }
                 }
             }
@@ -210,7 +228,7 @@ struct NativeRequestView: View {
             Section("原生问题") {
                 ForEach(Array(questions.enumerated()), id: \.offset) { _, question in
                     if let id = question["id"]?.stringValue {
-                        Text(question["question"]?.stringValue ?? id)
+                        Text(question["question"]?.stringValue ?? id).font(.headline).fixedSize(horizontal: false, vertical: true).padding(.vertical, 8)
                         ForEach(Array((question["options"]?.arrayValue ?? []).enumerated()), id: \.offset) { _, option in
                             if let label = option.objectValue?["label"]?.stringValue {
                                 Button { answers[id] = label; proposed = nil } label: {

@@ -152,6 +152,8 @@ public struct ThreadsFeature {
                 return .send(.delegate(.refreshRequested))
 
             case .cacheLoaded(let cache):
+                // Publish the matching identity and metadata in the same state update.
+                state.items = cache.threads
                 state.syncMetadata = cache.metadata
                 if state.selectedThreadId == nil,
                    let id = cache.selectedThreadId,

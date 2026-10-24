@@ -10,6 +10,9 @@ public struct MobileInboxView: View {
         NavigationStack {
             List { NativeRequestsSection(refreshing: refreshID, onOpenThread: onOpenThread) }
                 .navigationTitle("待你处理")
+                .navigationBarTitleDisplayMode(.inline)
+                .tint(.primary)
+                .listSectionSpacing(24)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) { Button("关闭") { dismiss() } }
                     ToolbarItem(placement: .topBarTrailing) { Button("刷新", systemImage: "arrow.clockwise") { refreshID += 1 } }

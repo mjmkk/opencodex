@@ -19,6 +19,9 @@ public struct FileBrowserFeature {
         public var treeNextCursor: Int?
         public var treeHasMore = false
         public var isLoadingTree = false
+        public var hasTreeSnapshot = false
+        public var treeSnapshotIsCurrent = false
+        public var treeRequestID = 0
 
         public var searchQuery = ""
         public var searchResults: [FileSearchMatch] = []
@@ -60,8 +63,8 @@ public struct FileBrowserFeature {
         case refresh
 
         case loadTree(path: String, cursor: Int?)
-        case loadTreeCacheResponse(path: String, response: FileTreeResponse?)
-        case loadTreeResponse(path: String, cursor: Int?, Result<FileTreeResponse, CodexError>)
+        case loadTreeCacheResponse(requestID: Int, threadIdentity: String, rootPath: String, path: String, response: FileTreeResponse?)
+        case loadTreeResponse(requestID: Int, threadIdentity: String, rootPath: String, path: String, cursor: Int?, Result<FileTreeResponse, CodexError>)
         case loadNextTreePage
 
         case goToParentDirectory
@@ -89,6 +92,7 @@ public struct FileBrowserFeature {
 
     private enum CancelID {
         case treeCache
+        case treeLoad
     }
 
     public init() {}
@@ -101,10 +105,14 @@ public struct FileBrowserFeature {
                 return .send(.refresh)
 
             case .setActiveThread(let thread):
+                state.treeRequestID &+= 1
                 state.activeThread = thread
                 state.viewer = nil
                 state.errorMessage = nil
                 state.entries = []
+                state.isLoadingTree = false
+                state.hasTreeSnapshot = false
+                state.treeSnapshotIsCurrent = false
                 state.searchQuery = ""
                 state.searchResults = []
                 state.treeNextCursor = nil
@@ -117,16 +125,27 @@ public struct FileBrowserFeature {
                 } else {
                     state.currentPath = "."
                 }
-                return .none
+                return .merge(.cancel(id: CancelID.treeLoad), .cancel(id: CancelID.treeCache))
 
             case .refresh:
                 guard state.activeThread != nil else { return .none }
                 return .send(.loadTree(path: state.currentPath, cursor: nil))
 
             case .loadTree(let path, let cursor):
-                guard let threadId = state.activeThread?.threadId else { return .none }
+                guard let thread = state.activeThread else { return .none }
+                let threadId = thread.threadId
+                let threadIdentity = thread.id
+                state.treeRequestID &+= 1
+                let requestID = state.treeRequestID
+                state.isLoadingTree = true
                 if cursor == nil {
-                    state.isLoadingTree = true
+                    state.treeSnapshotIsCurrent = false
+                    if state.currentPath != path {
+                        state.entries = []
+                        state.hasTreeSnapshot = false
+                        state.treeNextCursor = nil
+                        state.treeHasMore = false
+                    }
                     state.currentPath = path
                 }
                 let rootPath = state.effectiveRootPath
@@ -137,7 +156,7 @@ public struct FileBrowserFeature {
                         .run { send in
                             @Dependency(\.fileSystemStore) var fileSystemStore
                             let cached = try? await fileSystemStore.loadTreeCache(rootPath, path)
-                            await send(.loadTreeCacheResponse(path: path, response: cached))
+                            await send(.loadTreeCacheResponse(requestID: requestID, threadIdentity: threadIdentity, rootPath: rootPath, path: path, response: cached))
                         }
                     )
                 }
@@ -147,6 +166,7 @@ public struct FileBrowserFeature {
                         @Dependency(\.apiClient) var apiClient
                         await send(
                             .loadTreeResponse(
+                                requestID: requestID, threadIdentity: threadIdentity, rootPath: rootPath,
                                 path: path,
                                 cursor: cursor,
                                 Result {
@@ -157,21 +177,27 @@ public struct FileBrowserFeature {
                     }
                 )
 
-                return .merge(effects)
+                return .merge(effects).cancellable(id: CancelID.treeLoad, cancelInFlight: true)
 
-            case .loadTreeCacheResponse(let path, let response):
-                guard path == state.currentPath else { return .none }
+            case .loadTreeCacheResponse(let requestID, let identity, let root, let path, let response):
+                guard requestID == state.treeRequestID, identity == state.activeThread?.id,
+                      root == state.effectiveRootPath, path == state.currentPath else { return .none }
                 guard let response else { return .none }
-                if !state.isLoadingTree {
-                    return .none
-                }
+                guard !state.treeSnapshotIsCurrent else { return .none }
                 state.entries = response.data
+                state.hasTreeSnapshot = true
+                state.treeSnapshotIsCurrent = false
                 state.treeNextCursor = response.nextCursor
                 state.treeHasMore = response.hasMore
                 return .none
 
-            case .loadTreeResponse(let path, let cursor, .success(let response)):
+            case .loadTreeResponse(let requestID, let identity, let root, let path, let cursor, .success(let response)):
+                guard requestID == state.treeRequestID, identity == state.activeThread?.id,
+                      root == state.effectiveRootPath, path == state.currentPath else { return .none }
                 state.errorMessage = nil
+                state.hasTreeSnapshot = true
+                state.treeSnapshotIsCurrent = true
+                state.isLoadingTree = false
                 if cursor == nil {
                     state.currentPath = path
                     state.entries = response.data
@@ -192,8 +218,11 @@ public struct FileBrowserFeature {
                 }
                 .cancellable(id: CancelID.treeCache, cancelInFlight: true)
 
-            case .loadTreeResponse(_, _, .failure(let error)):
+            case .loadTreeResponse(let requestID, let identity, let root, let path, _, .failure(let error)):
+                guard requestID == state.treeRequestID, identity == state.activeThread?.id,
+                      root == state.effectiveRootPath, path == state.currentPath else { return .none }
                 state.isLoadingTree = false
+                state.treeSnapshotIsCurrent = false
                 state.errorMessage = error.localizedDescription
                 return .none
 

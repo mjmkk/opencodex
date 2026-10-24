@@ -14,6 +14,7 @@ import UIKit
 public struct ContentView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private struct ViewState: Equatable {
         let connectionState: ConnectionState
@@ -129,13 +130,14 @@ public struct ContentView: View {
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .frame(height: terminalHeight)
                             .transition(
-                                .move(edge: .bottom)
+                                (reduceMotion ? AnyTransition.opacity : .move(edge: .bottom))
                                 .combined(with: .opacity)
                             )
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .allowsHitTesting(!viewStore.isDrawerPresented)
+                    .accessibilityHidden(viewStore.isDrawerPresented)
 
                     if viewStore.isDrawerPresented {
                         Color.black.opacity(drawerMaskOpacity)
@@ -166,7 +168,7 @@ public struct ContentView: View {
                     .shadow(color: drawerShadowColor, radius: 12, x: 4, y: 0)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .animation(.spring(response: 0.28, dampingFraction: 0.9), value: viewStore.isDrawerPresented)
+                .animation(reduceMotion ? .easeOut(duration: 0.12) : .spring(response: 0.28, dampingFraction: 1), value: viewStore.isDrawerPresented)
             }
             .onChange(of: viewStore.isTerminalPresented) { _, isPresented in
                 if isPresented {
@@ -253,6 +255,7 @@ public struct ContentView: View {
                     }
                 )
             }
+            .tint(.primary)
         }
     }
 

@@ -12,7 +12,21 @@ import SwiftUI
 public enum CodexWorkerRoot {
     /// 创建根视图
     @MainActor
+    @ViewBuilder
     public static func makeRootView() -> some View {
+#if AGT12_UI_REPLAY
+        if let path = ProcessInfo.processInfo.environment["AGT12_CHAT_REPLAY_PATH"] {
+            AGT12HistoricalChatReplay(path: path)
+        } else {
+            liveRoot
+        }
+#else
+        liveRoot
+#endif
+    }
+
+    @MainActor
+    private static var liveRoot: some View {
         ContentView(
             store: Store(
                 initialState: AppFeature.State(),

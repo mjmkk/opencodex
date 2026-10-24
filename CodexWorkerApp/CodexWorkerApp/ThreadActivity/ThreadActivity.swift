@@ -13,20 +13,26 @@ struct PinnedThreadWidget: Widget {
         ActivityConfiguration(for: PinnedThreadAttributes.self) { context in
             HStack(alignment: .top, spacing: 14) {
                 Image(systemName: symbol(context))
-                    .font(.title2).foregroundStyle(tint(context))
-                    .frame(width: 36, height: 44)
+                    .font(.title2.weight(.medium)).foregroundStyle(tint(context))
+                    .frame(minWidth: 32, minHeight: 44)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 6) {
                     Text(status(context)).font(.headline)
                     Text(context.attributes.title).font(.subheadline).lineLimit(2).privacySensitive()
-                    HStack(spacing: 4) {
-                        Text(context.isStale ? "内容可能已变化" : "更新于")
-                        if !context.isStale { Text(context.state.updatedAt, style: .time) }
-                        Spacer()
-                        Text(actionTitle(context)).fontWeight(.medium)
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 8) {
+                            observationTime(context)
+                            Spacer(minLength: 8)
+                            Text(actionTitle(context)).fontWeight(.medium)
+                        }
+                        VStack(alignment: .leading, spacing: 4) {
+                            observationTime(context)
+                            Text(actionTitle(context)).fontWeight(.medium)
+                        }
                     }.font(.caption).foregroundStyle(.secondary)
                 }
             }
-            .padding(16)
+            .padding(18)
             .activityBackgroundTint(Color(uiColor: .secondarySystemBackground))
             .widgetURL(destination(context))
         } dynamicIsland: { context in
@@ -59,6 +65,13 @@ struct PinnedThreadWidget: Widget {
             .widgetURL(destination(context))
             .keylineTint(tint(context))
         }
+    }
+
+    private func observationTime(_ context: ActivityViewContext<PinnedThreadAttributes>) -> some View {
+        HStack(spacing: 4) {
+            Text(context.isStale ? "内容可能已变化" : "更新于")
+            if !context.isStale { Text(context.state.updatedAt, style: .time) }
+        }.fixedSize(horizontal: true, vertical: false)
     }
 
     private func status(_ context: ActivityViewContext<PinnedThreadAttributes>) -> String {

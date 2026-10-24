@@ -230,10 +230,17 @@ struct GoalOverviewView: View {
                             dimension: GoalOverviewDimension?, row: GoalOverviewRow,
                             progress: Int? = nil) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .firstTextBaseline) {
-                sectionTitle(name)
-                Spacer(minLength: 12)
-                Text(value).font(.headline).multilineTextAlignment(.trailing)
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 6) {
+                    sectionTitle(name)
+                    Text(value).font(.headline)
+                }
+            } else {
+                HStack(alignment: .firstTextBaseline) {
+                    sectionTitle(name)
+                    Spacer(minLength: 12)
+                    Text(value).font(.headline).multilineTextAlignment(.trailing)
+                }
             }
             if let progress {
                 ProgressView(value: Double(progress), total: 100).tint(.primary)

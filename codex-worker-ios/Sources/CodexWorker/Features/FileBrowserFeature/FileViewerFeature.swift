@@ -22,6 +22,7 @@ public struct FileViewerFeature {
         public var language = "text"
         public var etag = ""
         public var totalLines = 0
+        public var hasContentSnapshot = false
 
         public var content = ""
         public var originalContent = ""
@@ -137,6 +138,10 @@ public struct FileViewerFeature {
 
             case .loadCacheResponse(.success(let payload)):
                 guard let payload else { return .none }
+                // Cache bootstraps unread content; it cannot roll back a remote
+                // result, an adopted revision, or an editing buffer.
+                guard !state.hasContentSnapshot, !state.isEditing else { return .none }
+                state.hasContentSnapshot = true
                 state.language = payload.language
                 state.etag = payload.etag
                 state.totalLines = payload.totalLines
@@ -149,6 +154,7 @@ public struct FileViewerFeature {
 
             case .loadResponse(.success(let response)):
                 state.isLoading = false
+                state.hasContentSnapshot = true
                 state.language = response.data.language
                 state.etag = response.data.etag
                 state.totalLines = response.data.totalLines
@@ -172,7 +178,7 @@ public struct FileViewerFeature {
 
             case .loadResponse(.failure(let error)):
                 state.isLoading = false
-                if state.content.isEmpty {
+                if !state.hasContentSnapshot {
                     state.errorMessage = error.localizedDescription
                 } else {
                     state.errorMessage = "远端刷新失败，已展示本地缓存：\(error.localizedDescription)"
@@ -181,7 +187,9 @@ public struct FileViewerFeature {
 
             case .revisionsResponse(.success(let revisions)):
                 state.revisions = revisions
-                if state.content.isEmpty, let revision = revisions.first {
+                if !state.hasContentSnapshot, let revision = revisions.first {
+                    state.hasContentSnapshot = true
+                    state.totalLines = revision.content.isEmpty ? 0 : revision.content.split(separator: "\n", omittingEmptySubsequences: false).count
                     state.content = revision.content
                     state.originalContent = revision.content
                     state.etag = revision.etag

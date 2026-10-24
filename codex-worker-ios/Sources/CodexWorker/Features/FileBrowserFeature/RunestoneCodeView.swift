@@ -26,6 +26,7 @@ import UIKit
 
 @MainActor
 public struct RunestoneCodeView: UIViewRepresentable {
+    @ScaledMetric(relativeTo: .footnote) private var editorFontSize = 14
     public let content: String
     public let language: String
     public let focusLine: Int?
@@ -94,6 +95,8 @@ public struct RunestoneCodeView: UIViewRepresentable {
             context.coordinator.isApplyingExternalState = false
         }
 
+        if uiView.theme.font.pointSize != editorFontSize { uiView.theme = CodexEditorTheme(size: editorFontSize) }
+
         guard !isEditable else { return }
         guard focusLine != context.coordinator.lastFocusLine else {
             return
@@ -110,7 +113,7 @@ public struct RunestoneCodeView: UIViewRepresentable {
     }
 
     private func makeTextViewState(content: String, languageKey: String) -> TextViewState {
-        let theme = DefaultTheme()
+        let theme = CodexEditorTheme(size: editorFontSize)
         if let treeLanguage = treeSitterLanguage(for: languageKey) {
             return TextViewState(text: content, theme: theme, language: treeLanguage)
         }
@@ -197,4 +200,25 @@ public struct RunestoneCodeView: UIViewRepresentable {
             onContentChanged?(latestText)
         }
     }
+}
+
+/// Preserve the installed syntax palette while scaling text without replacing editor contents.
+private final class CodexEditorTheme: Runestone.Theme {
+    private let base = DefaultTheme()
+    let font: UIFont
+    var lineNumberFont: UIFont { font }
+    init(size: CGFloat) { font = .monospacedSystemFont(ofSize: size, weight: .regular) }
+    var textColor: UIColor { base.textColor }
+    var gutterBackgroundColor: UIColor { base.gutterBackgroundColor }
+    var gutterHairlineColor: UIColor { base.gutterHairlineColor }
+    var lineNumberColor: UIColor { base.lineNumberColor }
+    var selectedLineBackgroundColor: UIColor { base.selectedLineBackgroundColor }
+    var selectedLinesLineNumberColor: UIColor { base.selectedLinesLineNumberColor }
+    var selectedLinesGutterBackgroundColor: UIColor { base.selectedLinesGutterBackgroundColor }
+    var invisibleCharactersColor: UIColor { base.invisibleCharactersColor }
+    var pageGuideHairlineColor: UIColor { base.pageGuideHairlineColor }
+    var pageGuideBackgroundColor: UIColor { base.pageGuideBackgroundColor }
+    var markedTextBackgroundColor: UIColor { base.markedTextBackgroundColor }
+    func textColor(for highlightName: String) -> UIColor? { base.textColor(for: highlightName) }
+    func fontTraits(for highlightName: String) -> FontTraits { base.fontTraits(for: highlightName) }
 }

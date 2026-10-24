@@ -41,73 +41,49 @@ public struct SettingsSheetView: View {
 
             NavigationStack {
                 Form {
-                    Section("当前连接") {
+                    Section {
                         LabeledContent("服务可达性") { reachabilityBadge(connectionState) }
-                        LabeledContent("鉴权接口", value: viewStore.authenticatedResponseAt != nil ? "已收到有效响应" : "尚未确认")
+                        LabeledContent("访问验证", value: viewStore.authenticatedResponseAt != nil ? "已收到有效响应" : "尚未确认")
                         LabeledContent("当前任务同步") {
-                            if let lastSyncedAt { Text(lastSyncedAt, style: .relative) }
+                            if let lastSyncedAt { Text(MobileTime.timestamp(lastSyncedAt)) }
                             else { Text("尚未同步") }
                         }
-                        Text("服务可达、鉴权通过和内容已同步分别核对。保存配置不会代表连接成功。")
-                            .font(.footnote).foregroundStyle(.secondary)
+                    } header: { Text("连接状态") } footer: {
+                        Text("服务可达、访问验证和内容同步分别核对。保存配置不代表连接成功。")
                     }
+                    Section {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("服务地址").font(.footnote).foregroundStyle(.secondary)
+                            TextField("https://你的服务地址:端口", text: Binding(
+                                get: { viewStore.baseURL }, set: { viewStore.send(.baseURLChanged($0)) }))
+                                .textInputAutocapitalization(.never).disableAutocorrection(true).keyboardType(.URL)
+                                .accessibilityLabel("服务地址")
+                                .frame(minHeight: 44)
+                        }
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("访问 Token").font(.footnote).foregroundStyle(.secondary)
+                            SecureField("需要鉴权时填写", text: Binding(
+                                get: { viewStore.token }, set: { viewStore.send(.tokenChanged($0)) }))
+                                .textInputAutocapitalization(.never).disableAutocorrection(true)
+                                .accessibilityLabel("访问 Token").frame(minHeight: 44)
+                        }
+                        Button { viewStore.send(.saveTapped) } label: {
+                            Text("保存连接配置").frame(maxWidth: .infinity)
+                        }.buttonStyle(CodexPrimaryButtonStyle())
+                            .disabled(viewStore.baseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                            .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
+                        if viewStore.saveSucceeded {
+                            Label("配置已保存；连接结果请查看上方状态", systemImage: "checkmark.circle")
+                                .font(.footnote).foregroundStyle(.secondary)
+                        }
+                    } header: { Text("连接信息") }
+                    footer: { Text("地址需包含协议和端口。Token 按服务要求填写，始终隐藏显示。") }
                     Section("通知与持续展示") {
                         LabeledContent("系统通知", value: notificationStatus)
                         LabeledContent("实时活动", value: ActivityAuthorizationInfo().areActivitiesEnabled ? "系统允许" : "系统未开启")
-                        Text("只有你 Pin 的任务会持续展示。系统允许通知不代表远程通知已送达。")
+                        Text("只有你持续展示的任务会显示实时活动。系统允许通知不代表远程通知已送达。")
                             .font(.footnote).foregroundStyle(.secondary)
                     }
-                    Section("后端地址") {
-                        HStack(spacing: 8) {
-                            TextField(
-                                "http://192.168.1.10:8787",
-                                text: Binding(
-                                    get: { viewStore.baseURL },
-                                    set: { viewStore.send(.baseURLChanged($0)) }
-                                )
-                            )
-                            .textInputAutocapitalization(.never)
-                            .disableAutocorrection(true)
-                            .keyboardType(.URL)
-
-                            reachabilityBadge(connectionState)
-                        }
-
-                        Text("请输入可访问的 Worker 地址（包含端口）")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Section {
-                        Button("保存并检测连通性") {
-                            viewStore.send(.saveTapped)
-                            onClose?()
-                        }
-                        .disabled(
-                            viewStore.baseURL
-                                .trimmingCharacters(in: .whitespacesAndNewlines)
-                                .isEmpty
-                        )
-
-                        if viewStore.saveSucceeded {
-                            Label("配置已保存", systemImage: "checkmark.circle.fill")
-                                .font(.footnote)
-                                .foregroundStyle(.green)
-                        }
-                    }
-
-                    Section("鉴权 Token（可选）") {
-                        SecureField(
-                            "Bearer Token",
-                            text: Binding(
-                                get: { viewStore.token },
-                                set: { viewStore.send(.tokenChanged($0)) }
-                            )
-                        )
-                        .textInputAutocapitalization(.never)
-                        .disableAutocorrection(true)
-                    }
-
                     Section("模型（可选）") {
                         if viewStore.isLoadingModels {
                             HStack(spacing: 8) {
@@ -139,7 +115,7 @@ public struct SettingsSheetView: View {
                         .disabled(viewStore.isLoadingModels)
 
                         if !viewStore.isLoadingModels && viewStore.availableModels.isEmpty {
-                            Text("未获取到可用模型（可能是 app-server 不支持 models/list），将使用后端默认模型")
+                            Text(viewStore.modelLoadError == nil ? "服务尚未提供可选模型，将跟随后端默认值。" : "模型列表未能读取，当前选择已保留。")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -160,7 +136,7 @@ public struct SettingsSheetView: View {
                                     .foregroundStyle(.secondary)
                             }
                         } else if viewStore.archivedThreads.isEmpty {
-                            Text("暂无已归档线程")
+                            Text(viewStore.archivedThreadsLoadError == nil ? "暂无已归档任务" : "暂时无法读取已归档任务")
                                 .foregroundStyle(.secondary)
                         } else {
                             ForEach(displayedArchivedThreads, id: \.threadId) { thread in
@@ -195,7 +171,9 @@ public struct SettingsSheetView: View {
                         LabeledContent("构建", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "未知")
                     }
                 }
-                .navigationTitle("连接")
+                .navigationTitle("连接与设置")
+                .navigationBarTitleDisplayMode(.inline)
+                .tint(.primary)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button("关闭") {
@@ -223,15 +201,17 @@ public struct SettingsSheetView: View {
     private func reachabilityBadge(_ state: ConnectionState) -> some View {
         let style: (text: String, tint: Color) = switch state {
         case .connected:
-            ("可达", .green)
+            ("服务可达", .secondary)
         case .connecting, .reconnecting:
             ("检测中", .orange)
-        case .failed, .disconnected:
-            ("不可达", .red)
+        case .failed:
+            ("连接失败", .red)
+        case .disconnected:
+            ("服务未连接", .secondary)
         }
 
         return Text(style.text)
-            .font(.caption2.weight(.semibold))
+            .font(.footnote.weight(.medium))
             .foregroundStyle(style.tint)
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
@@ -250,7 +230,8 @@ public struct SettingsSheetView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(thread.settingsListTitle)
                     .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
+                    .lineLimit(3)
+                    .foregroundStyle(.primary)
                 if let subtitle = thread.settingsListSubtitle {
                     Text(subtitle)
                         .font(.caption)
@@ -269,6 +250,7 @@ public struct SettingsSheetView: View {
                     viewStore.send(.restoreArchivedTapped(thread.threadId))
                 }
                 .buttonStyle(.bordered)
+                .frame(minWidth: 44, minHeight: 44)
             }
         }
         .padding(.vertical, 4)
@@ -277,6 +259,7 @@ public struct SettingsSheetView: View {
 
 private extension Thread {
     var settingsListTitle: String {
+        if let name, !name.isEmpty { return name }
         let normalized = preview?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         if !normalized.isEmpty {
             return normalized

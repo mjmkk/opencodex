@@ -11,7 +11,7 @@ enum MobileTime {
     }
 
     static func timestamp(_ date: Date) -> String {
-        date.formatted(.dateTime.locale(Locale(identifier: "zh_CN")).month().day().hour().minute())
+        date.formatted(.dateTime.locale(Locale(identifier: "zh_CN")).year().month(.twoDigits).day(.twoDigits).hour().minute())
     }
 }
 
