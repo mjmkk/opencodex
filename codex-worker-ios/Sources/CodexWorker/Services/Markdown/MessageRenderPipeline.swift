@@ -33,7 +33,7 @@ public struct MessageRenderContent: Equatable {
 
 public struct MessageRenderPipeline: Sendable {
     public static let live = MessageRenderPipeline()
-    private static let cacheVersion = "v3"
+    private static let cacheVersion = "v4"
 
     private let parser: MarkdownParserService
     private let semanticExtractor: MessageSemanticExtractor
@@ -58,7 +58,7 @@ public struct MessageRenderPipeline: Sendable {
             return cached
         }
 
-        let normalized = linkNormalizer.normalize(raw)
+        let normalized = linkNormalizer.normalize(ChineseMarkdownLabels.normalize(raw))
         let parseResult = parser.parse(normalized)
         let semantics = semanticExtractor.extract(from: raw)
         let content = MessageRenderContent(
@@ -73,6 +73,65 @@ public struct MessageRenderPipeline: Sendable {
 
     func clearCache() {
         cache.clear()
+    }
+}
+
+private enum ChineseMarkdownLabels {
+    private static let labelPattern = try? NSRegularExpression(
+        pattern: #"^\*\*([\p{L}\p{N} ]{1,64})：\*\*(?=\p{Han})"#
+    )
+    private static let fencePattern = try? NSRegularExpression(pattern: #"^ {0,3}(`{3,}|~{3,})(.*)$"#)
+
+    static func normalize(_ raw: String) -> String {
+        // Only repair plain paragraph labels in the display copy. Be conservative
+        // around code, escapes, links and HTML; history and semantic input stay raw.
+        guard raw.contains("：**"),
+              raw.range(of: #"(?m)^ {0,3}<"#, options: .regularExpression) == nil,
+              let labelPattern, let fencePattern else { return raw }
+        var output: [String] = []
+        var paragraph: [String] = []
+        var fence: (marker: Character, count: Int)?
+
+        func appendParagraph() {
+            let text = paragraph.joined(separator: "\n")
+            let protected = text.contains { "`\\[]<>".contains($0) }
+            output.append(contentsOf: paragraph.map { line in
+                guard !protected,
+                      let match = labelPattern.firstMatch(in: line, range: NSRange(line.startIndex..., in: line)),
+                      let labelRange = Range(match.range(at: 1), in: line),
+                      let fullRange = Range(match.range, in: line) else { return line }
+                let label = line[labelRange]
+                guard label.first?.isWhitespace == false, label.last?.isWhitespace == false,
+                      label.range(of: #"\p{Han}"#, options: .regularExpression) != nil else { return line }
+                return line.replacingCharacters(in: fullRange, with: "**\(label)**：")
+            })
+            paragraph.removeAll(keepingCapacity: true)
+        }
+
+        for line in raw.components(separatedBy: "\n") {
+            let match = fencePattern.firstMatch(in: line, range: NSRange(line.startIndex..., in: line))
+            if let active = fence {
+                output.append(line)
+                if let match, let markerRange = Range(match.range(at: 1), in: line),
+                   let tailRange = Range(match.range(at: 2), in: line) {
+                    let marker = line[markerRange]
+                    if marker.first == active.marker, marker.count >= active.count,
+                       line[tailRange].allSatisfy(\.isWhitespace) { fence = nil }
+                }
+            } else if let match, let markerRange = Range(match.range(at: 1), in: line),
+                      let marker = line[markerRange].first {
+                appendParagraph()
+                output.append(line)
+                fence = (marker, line[markerRange].count)
+            } else if line.allSatisfy(\.isWhitespace) {
+                appendParagraph()
+                output.append(line)
+            } else {
+                paragraph.append(line)
+            }
+        }
+        appendParagraph()
+        return output.joined(separator: "\n")
     }
 }
 

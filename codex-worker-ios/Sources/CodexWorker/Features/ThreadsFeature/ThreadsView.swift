@@ -407,7 +407,7 @@ private struct ThreadRow: View {
                     .font(.body.weight(.medium))
                     .foregroundStyle(.primary)
                     .lineSpacing(2)
-                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
+                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .layoutPriority(1)
