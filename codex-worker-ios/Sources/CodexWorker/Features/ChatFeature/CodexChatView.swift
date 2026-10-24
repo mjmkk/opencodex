@@ -143,11 +143,6 @@ public struct CodexChatView: View {
                         Group {
                           if showsComposer && viewStore.activeThreadId != nil {
                         VStack(alignment: .leading, spacing: 8) {
-                            if !viewStore.canInput && viewStore.activeThreadId != nil {
-                                Label("回复草稿 · 当前来源暂不支持发送", systemImage: "square.and.pencil")
-                                    .font(.footnote).foregroundStyle(.secondary)
-                                    .padding(.horizontal, 8)
-                            }
                             HStack(alignment: .bottom, spacing: 8) {
                                 Menu {
                                     Button("浏览文件", systemImage: "folder") { onFileBrowserTap?() }
@@ -169,7 +164,8 @@ public struct CodexChatView: View {
                                     .onChange(of: text.wrappedValue) { _, value in
                                         if let id = viewStore.activeThreadId { viewStore.send(.composerChanged(threadId: id, text: value)) }
                                     }
-                                Button { action(.send) } label: {
+                                if viewStore.canInput {
+                                  Button { action(.send) } label: {
                                     Group {
                                         if viewStore.isSending { ProgressView().tint(CodexAppearance.canvas) }
                                         else { Image(systemName: "arrow.up").font(.body.weight(.semibold)) }
@@ -180,13 +176,26 @@ public struct CodexChatView: View {
                                     .frame(width: 44, height: 44)
                                 }
                                 .buttonStyle(.plain)
-                                .opacity(viewStore.canInput ? 1 : 0.35)
                                 .accessibilityLabel(viewStore.isSending ? "正在发送回复" : "发送回复")
-                                .disabled(!viewStore.canInput || viewStore.isSending || text.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                                .disabled(viewStore.isSending || text.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                                } else {
+                                    Text("草稿")
+                                        .font(.caption.weight(.medium)).foregroundStyle(.secondary)
+                                        .padding(.horizontal, 10).frame(minHeight: 36)
+                                        .background(Color(uiColor: .tertiarySystemFill), in: Capsule())
+                                        .fixedSize(horizontal: true, vertical: false)
+                                        .accessibilityLabel("仅可记录回复草稿，当前来源暂不支持发送")
+                                }
                             }
                             .padding(.horizontal, 6).padding(.vertical, 5)
                             .background(CodexAppearance.surface, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
                             .overlay(RoundedRectangle(cornerRadius: 26).strokeBorder(CodexAppearance.separator, lineWidth: 0.5))
+                            if !viewStore.canInput {
+                                Text("当前来源暂不支持发送。")
+                                    .font(.footnote).foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .padding(.horizontal, 8)
+                            }
                         }
                         .padding(.horizontal, 16).padding(.top, 10).padding(.bottom, 8)
 
@@ -325,12 +334,25 @@ public struct CodexChatView: View {
                     Image(systemName: "sidebar.leading")
                 }.buttonStyle(CodexIconButtonStyle()).accessibilityLabel("打开任务列表")
                 Button { showIdentity = true } label: {
-                    Text(viewStore.activeThreadId == nil ? "OpenCodex" : viewStore.activeThreadTitle)
-                        .font(.headline).lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                        .foregroundStyle(.primary)
-                }.buttonStyle(.plain).accessibilityLabel("任务信息：" + viewStore.activeThreadTitle)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(viewStore.activeThreadId == nil ? "OpenCodex" : viewStore.activeThreadTitle)
+                            .font(.headline).lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 2)
+                            .multilineTextAlignment(.leading).foregroundStyle(.primary)
+                        if viewStore.activeThreadId != nil {
+                            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                if isPinned { Image(systemName: "pin.fill") }
+                                Text(sourceAndSyncSummary(viewStore))
+                            }
+                            .font(.footnote).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .contentShape(Rectangle())
+                }.buttonStyle(.plain)
+                    .accessibilityLabel("任务信息：" + viewStore.activeThreadTitle)
+                    .accessibilityValue(viewStore.activeThreadId == nil ? "" : (isPinned ? "已持续展示。" : "") + sourceAndSyncSummary(viewStore))
+                    .accessibilityHint("查看完整标题、来源和阅读范围")
                 Menu {
                     Button("目标总览", systemImage: "chart.bar.xaxis") { onOverviewTap?() }
                     Button("待你处理", systemImage: "tray") { onInboxTap?() }
@@ -346,20 +368,6 @@ public struct CodexChatView: View {
                     .buttonStyle(CodexIconButtonStyle()).accessibilityLabel("任务更多选项")
             }
             if viewStore.activeThreadId != nil {
-                Button { showIdentity = true } label: {
-                    HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        if isPinned { Image(systemName: "pin.fill").accessibilityLabel("已持续展示") }
-                        Text(viewStore.hasCachedSource ? (viewStore.history?.isPartial == true ? "部分已保存历史" : "上次可读历史") : taskStatus(viewStore))
-                        Text("·")
-                        if viewStore.isHistorySyncing { Text("正在同步") }
-                        else if let date = viewStore.lastSyncedAt {
-                            Text(viewStore.errorMessage == nil ? "上次同步 " + MobileTime.ago(date) : "同步失败 · 上次 " + MobileTime.ago(date))
-                        } else { Text("本地内容 · 尚未同步") }
-                    }
-                    .font(.footnote).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                }.buttonStyle(.plain).padding(.horizontal, 12)
                 if viewStore.history?.refreshRequested == true {
                     Text("已请求来源刷新，当前内容尚未更新")
                         .font(.footnote).foregroundStyle(.secondary).padding(.horizontal, 12)
@@ -388,6 +396,18 @@ public struct CodexChatView: View {
 
     private func taskStatus(_ state: ViewStore<ViewState, ChatFeature.Action>) -> String {
         state.hasNativeReviewWait ? "有请求待处理" : "任务对话"
+    }
+
+    private func sourceAndSyncSummary(_ state: ViewStore<ViewState, ChatFeature.Action>) -> String {
+        let source = state.hasCachedSource
+            ? (state.history?.isPartial == true ? "部分已保存历史" : "上次可读历史")
+            : taskStatus(state)
+        let sync: String
+        if state.isHistorySyncing { sync = "正在同步" }
+        else if let date = state.lastSyncedAt {
+            sync = state.errorMessage == nil ? "上次同步 " + MobileTime.ago(date) : "同步失败 · 上次 " + MobileTime.ago(date)
+        } else { sync = "本地内容 · 尚未同步" }
+        return source + " · " + sync
     }
 
     private func accessModeIconName(for mode: ExecutionAccessMode) -> String {
