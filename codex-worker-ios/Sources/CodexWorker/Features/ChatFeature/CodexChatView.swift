@@ -313,8 +313,13 @@ public struct CodexChatView: View {
                                 if let first = viewStore.messages.first, first.createdAt > Date(timeIntervalSince1970: 0) {
                                     Text("此页最早：" + MobileTime.timestamp(first.createdAt))
                                 }
-                                if let date = viewStore.lastSyncedAt { Text("上次同步观察：" + MobileTime.timestamp(date)) }
-                                else { Text("本地记录，尚未完成同步") }
+                                if let date = viewStore.lastSyncedAt {
+                                    Text("上次读取：" + MobileTime.timestamp(date))
+                                    if viewStore.hasCachedSource {
+                                        Text("此时间表示读取已保存历史，不代表来源内容已更新。")
+                                            .font(.footnote).foregroundStyle(.secondary)
+                                    }
+                                } else { Text("尚无历史读取时间") }
                             }
                             .listRowInsets(informationInsets)
                         }
@@ -572,8 +577,8 @@ public struct CodexChatView: View {
         let sync: [String]
         if state.isHistorySyncing { sync = ["正在同步"] }
         else if let date = state.lastSyncedAt {
-            sync = state.errorMessage == nil ? ["上次同步 " + MobileTime.ago(date)] : ["同步失败", "上次 " + MobileTime.ago(date)]
-        } else { sync = ["本地内容", "尚未同步"] }
+            sync = state.errorMessage == nil ? ["上次读取 " + MobileTime.ago(date)] : ["同步失败", "上次读取 " + MobileTime.ago(date)]
+        } else { sync = ["本地内容", "读取时间未知"] }
         return (source, sync)
     }
 
