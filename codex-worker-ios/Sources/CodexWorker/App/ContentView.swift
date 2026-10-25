@@ -155,6 +155,7 @@ public struct ContentView: View {
                             state: \.threads,
                             action: \.threads
                         ),
+                        isPresented: viewStore.isDrawerPresented,
                         onDismiss: {
                             viewStore.send(.setDrawerPresented(false))
                         },

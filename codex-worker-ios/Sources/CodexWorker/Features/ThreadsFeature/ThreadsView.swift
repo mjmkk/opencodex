@@ -13,6 +13,7 @@ import UIKit
 
 public struct ThreadsView: View {
     let store: StoreOf<ThreadsFeature>
+    let isPresented: Bool
     let onDismiss: (() -> Void)?
     let onSettingsTap: (() -> Void)?
     let onOverviewTap: (() -> Void)?
@@ -21,9 +22,14 @@ public struct ThreadsView: View {
     let onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)?
     @State private var informationSelection: ThreadInformationSelection?
     @State private var showsReadFailure = false
+    @State private var searchText = ""
+    @State private var isSearching = false
+    @State private var searchScope = try? MobileSyncEngine.threadScope()
+    @FocusState private var isSearchFocused: Bool
 
     public init(
         store: StoreOf<ThreadsFeature>,
+        isPresented: Bool = true,
         onDismiss: (() -> Void)? = nil,
         onSettingsTap: (() -> Void)? = nil,
         onOverviewTap: (() -> Void)? = nil,
@@ -32,6 +38,7 @@ public struct ThreadsView: View {
         onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)? = nil
     ) {
         self.store = store
+        self.isPresented = isPresented
         self.onDismiss = onDismiss
         self.onSettingsTap = onSettingsTap
         self.onOverviewTap = onOverviewTap
@@ -42,8 +49,13 @@ public struct ThreadsView: View {
 
     public var body: some View {
         WithViewStore(store, observe: { $0 }) { viewStore in
+            let matchingIDs = matchingThreadIDs(in: viewStore.items)
             VStack(spacing: 0) {
                 header(viewStore: viewStore)
+
+                if isSearching {
+                    searchField(matchCount: matchingIDs?.count, total: viewStore.items.count)
+                }
 
                 Divider()
 
@@ -72,10 +84,20 @@ public struct ThreadsView: View {
                                 .listRowSeparator(.hidden)
 
                         }
+                    } else if matchingIDs?.isEmpty == true && !viewStore.items.isEmpty {
+                        Section {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("未找到匹配的本地任务")
+                                    .font(.body.weight(.medium))
+                                Button("清除搜索") { searchText = "" }
+                                    .font(.subheadline).frame(minHeight: 44)
+                            }
+                            .listRowSeparator(.hidden)
+                        }
                     } else {
                         switch viewStore.groupingMode {
                         case .byCwd:
-                            ForEach(viewStore.cwdGroups) { group in
+                            ForEach(matchingGroups(viewStore.cwdGroups, ids: matchingIDs)) { group in
                                 Section {
                                     ForEach(group.threads, id: \.threadId) { thread in
                                         threadButton(viewStore: viewStore, thread: thread)
@@ -86,7 +108,8 @@ public struct ThreadsView: View {
                             }
 
                         case .byTime:
-                            let attention = viewStore.sortedItems.filter { $0.attentionReason != nil || viewStore.syncMetadata[$0.threadId]?.pinned == true }
+                            let visibleItems = viewStore.sortedItems.filter { matchingIDs?.contains($0.id) ?? true }
+                            let attention = visibleItems.filter { $0.attentionReason != nil || viewStore.syncMetadata[$0.threadId]?.pinned == true }
                             if !attention.isEmpty {
                                 Section {
                                     ForEach(attention, id: \.threadId) { thread in
@@ -96,7 +119,7 @@ public struct ThreadsView: View {
                                     sectionHeading("需要关注")
                                 }
                             }
-                            let recent = viewStore.sortedItems.filter { thread in
+                            let recent = visibleItems.filter { thread in
                                 !attention.contains(where: { $0.threadId == thread.threadId })
                             }
                             if !recent.isEmpty {
@@ -119,6 +142,7 @@ public struct ThreadsView: View {
                 .listRowSpacing(0)
                 .listSectionSpacing(8)
                 .environment(\.defaultMinListHeaderHeight, 0)
+                .scrollDismissesKeyboard(.interactively)
                 .refreshable {
                     guard !viewStore.isLoading && !viewStore.isSyncing else { return }
                     viewStore.send(.refresh)
@@ -137,6 +161,18 @@ public struct ThreadsView: View {
                 }
             }
             .onAppear { viewStore.send(.onAppear) }
+            .onChange(of: isPresented) { _, presented in
+                if !presented { isSearchFocused = false }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
+                .receive(on: DispatchQueue.main)) { _ in
+                let currentScope = try? MobileSyncEngine.threadScope()
+                guard currentScope != searchScope else { return }
+                searchScope = currentScope
+                isSearchFocused = false
+                searchText = ""
+                isSearching = false
+            }
             .background(Color(uiColor: .systemBackground))
             .sheet(item: $informationSelection) { selection in
                 WithViewStore(store, observe: {
@@ -162,8 +198,67 @@ public struct ThreadsView: View {
         }
     }
 
+    private func matchingThreadIDs(in threads: [Thread]) -> Set<String>? {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return nil }
+        return Set(threads.lazy.filter { thread in
+            let fields: [String?] = [thread.name, thread.preview, thread.cwd, thread.threadId, thread.id]
+            return fields.compactMap { $0 }.contains { $0.localizedStandardContains(query) }
+        }.map(\.id))
+    }
+
+    private func matchingGroups(
+        _ groups: [ThreadsFeature.State.CwdGroup],
+        ids: Set<String>?
+    ) -> [ThreadsFeature.State.CwdGroup] {
+        guard let ids else { return groups }
+        return groups.compactMap { group in
+            let threads = group.threads.filter { ids.contains($0.id) }
+            guard !threads.isEmpty else { return nil }
+            return .init(id: group.id, title: group.title, fullPath: group.fullPath,
+                         threads: threads, latestActivityAt: group.latestActivityAt)
+        }
+    }
+
+    private func searchField(matchCount: Int?, total: Int) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                TextField("搜索本地任务", text: $searchText)
+                    .font(.body)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .submitLabel(.search)
+                    .focused($isSearchFocused)
+                    .onSubmit { isSearchFocused = false }
+                    .onAppear { isSearchFocused = true }
+                    .accessibilityIdentifier("thread-search-field")
+                if !searchText.isEmpty {
+                    Button { searchText = "" } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.secondary)
+                            .frame(width: 44, height: 44)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("清除任务搜索")
+                    .accessibilityIdentifier("thread-search-clear")
+                }
+            }
+            .padding(.leading, 12).padding(.trailing, searchText.isEmpty ? 12 : 0)
+            .frame(minHeight: 44)
+            .background(Color(uiColor: .secondarySystemBackground), in: RoundedRectangle(cornerRadius: 8))
+            Text(matchCount.map { "\($0) 个匹配 · \(total) 个本地任务" } ?? "\(total) 个本地任务")
+                .font(.footnote).foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 20).padding(.bottom, 8)
+    }
+
     private func destinationButton(_ title: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+        Button {
+            isSearchFocused = false
+            dismissKeyboard()
+            action()
+        } label: {
             Text(title).font(.subheadline.weight(.medium))
                 .frame(maxWidth: .infinity, minHeight: 52).contentShape(Rectangle())
         }.buttonStyle(.plain).foregroundStyle(.primary)
@@ -267,7 +362,10 @@ public struct ThreadsView: View {
 
         return HStack(spacing: 0) {
             if let onDismiss {
-                Button(action: onDismiss) {
+                Button {
+                    isSearchFocused = false
+                    onDismiss()
+                } label: {
                     Image(systemName: "sidebar.leading")
                         .font(.body.weight(.medium))
                         .frame(minWidth: 44, minHeight: 44)
@@ -282,6 +380,24 @@ public struct ThreadsView: View {
                 .padding(.horizontal, 8)
 
             Spacer(minLength: 8)
+
+            Button {
+                if isSearching {
+                    isSearchFocused = false
+                    searchText = ""
+                    isSearching = false
+                } else {
+                    isSearching = true
+                }
+            } label: {
+                Image(systemName: isSearching ? "xmark" : "magnifyingglass")
+                    .font(.body.weight(.medium))
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(isSearching ? "关闭任务搜索" : "搜索本地任务")
+            .accessibilityIdentifier("thread-search-toggle")
 
             if viewStore.errorMessage == nil {
               Button {
@@ -342,6 +458,7 @@ public struct ThreadsView: View {
 
         return HStack(alignment: .top, spacing: 0) {
             Button {
+                isSearchFocused = false
                 dismissKeyboard()
                 viewStore.send(.threadTapped(thread.threadId))
             } label: {
