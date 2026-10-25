@@ -554,29 +554,18 @@ private struct ThreadInformationView: View {
 
                 Section {
                     informationHeading("任务记录")
-                    informationField("最后活动", value: thread.lastActiveAt.map(ThreadListDate.full) ?? "时间未知")
-                    informationField("上次同步", value: metadata == nil ? "同步记录未知" : (metadata?.lastSyncedAt.map(ThreadListDate.full) ?? "本地内容 · 等待同步"))
+                    informationField("最后活动", value: thread.lastActiveAt.map(ThreadListDate.minute) ?? "时间未知")
+                        .accessibilityLabel("最后活动：" + (thread.lastActiveAt.map(ThreadListDate.full) ?? "时间未知"))
+                    informationField("上次同步", value: metadata == nil ? "同步记录未知" : (metadata?.lastSyncedAt.map(ThreadListDate.minute) ?? "本地内容 · 等待同步"))
+                        .accessibilityLabel("上次同步：" + (metadata == nil ? "同步记录未知" : (metadata?.lastSyncedAt.map(ThreadListDate.full) ?? "本地内容 · 等待同步")))
                     if metadata?.isPartial == true {
                         Label("部分历史", systemImage: "text.alignleft")
                             .font(.body)
                             .listRowInsets(informationInsets)
                     }
-                    informationField("工作目录", value: thread.cwd.flatMap { $0.isEmpty ? nil : $0 } ?? "未提供目录")
-                    DisclosureGroup("任务身份与来源") {
-                        sourceField("任务标识", value: thread.threadId)
-                        sourceField("来源命名空间", value: thread.origin?.namespace ?? "原始任务来源未提供")
-                        if let device = thread.sourceDevice { sourceField("来源设备", value: device) }
+                    if let cwd = thread.cwd, !cwd.isEmpty {
+                        informationField("工作目录", value: cwd)
                     }
-                    .listRowInsets(informationInsets)
-                } footer: {
-                    Text("活动时间来自任务本身；同步时间只表示本地内容的同步记录，两者不同。")
-                        .font(.footnote).foregroundStyle(.secondary)
-                }
-
-                Section {
-                    informationHeading("本地记录")
-                    informationField("未读内容", value: metadata.map { String($0.unreadMessages) } ?? "未知")
-                    informationField("持续展示", value: metadata.map { $0.pinned ? "已启用" : "未启用" } ?? "状态未知")
                 }
 
                 if let preview = thread.preview?.trimmingCharacters(in: .whitespacesAndNewlines), !preview.isEmpty {
@@ -588,6 +577,23 @@ private struct ThreadInformationView: View {
                             .textSelection(.enabled)
                             .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 20, trailing: 20))
                     }
+                }
+
+                Section {
+                    DisclosureGroup("完整记录与来源") {
+                        sourceField("最后活动", value: thread.lastActiveAt.map(ThreadListDate.full) ?? "时间未知")
+                        sourceField("上次同步", value: metadata == nil ? "同步记录未知" : (metadata?.lastSyncedAt.map(ThreadListDate.full) ?? "本地内容 · 等待同步"))
+                        sourceField("任务标识", value: thread.threadId)
+                        sourceField("来源命名空间", value: thread.origin?.namespace ?? "原始任务来源未提供")
+                        if let device = thread.sourceDevice { sourceField("来源设备", value: device) }
+                        sourceField("工作目录", value: thread.cwd.flatMap { $0.isEmpty ? nil : $0 } ?? "未提供目录")
+                        sourceField("未读内容", value: metadata.map { String($0.unreadMessages) } ?? "未知")
+                        sourceField("持续展示", value: metadata.map { $0.pinned ? "已启用" : "未启用" } ?? "状态未知")
+                        Text("活动时间来自任务本身；同步时间只表示本地内容的同步记录，两者不同。")
+                            .font(.footnote).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .listRowInsets(informationInsets)
                 }
             }
             .listStyle(.plain)
@@ -665,6 +671,10 @@ private enum ThreadListDate {
     static func full(_ date: Date) -> String {
         date.formatted(.dateTime.locale(locale).year().month(.twoDigits).day(.twoDigits).hour().minute().second())
             + "（" + TimeZone.current.identifier + "）"
+    }
+
+    static func minute(_ date: Date) -> String {
+        date.formatted(.dateTime.locale(locale).year().month(.twoDigits).day(.twoDigits).hour().minute())
     }
 }
 

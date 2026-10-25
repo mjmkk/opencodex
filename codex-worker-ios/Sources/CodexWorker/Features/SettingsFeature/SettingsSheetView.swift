@@ -48,39 +48,46 @@ public struct SettingsSheetView: View {
             NavigationStack {
                 List {
                     Section {
-                        statusRow("服务可达性", value: isCheckingConnection ? "正在检查…" : reachability.text,
-                                  tint: isCheckingConnection ? .secondary : reachability.tint)
+                        HStack(spacing: 12) {
+                            statusRow("服务可达性", value: isCheckingConnection ? "正在检查…" : reachability.text,
+                                      tint: isCheckingConnection ? .secondary : reachability.tint)
+                            if let onCheckConnection {
+                                Button(action: onCheckConnection) {
+                                    Group {
+                                        if isCheckingConnection { ProgressView().controlSize(.small) }
+                                        else { Image(systemName: "arrow.clockwise") }
+                                    }.frame(width: 44, height: 44)
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel("重新检查连接")
+                                .disabled(isCheckingConnection)
+                            }
+                        }
                         statusRow("访问验证", value: viewStore.authenticatedResponseAt != nil ? "已收到有效响应" : "尚未确认")
                         statusRow("任务同步", value: lastSyncedAt.map(MobileTime.timestamp) ?? "尚未同步")
                         if case let .failed(message) = connectionState {
-                            DisclosureGroup("连接原因与建议") {
+                            DisclosureGroup(isCheckingConnection ? "上次连接原因与建议" : "连接原因与建议") {
                                 Text(message).font(.footnote).textSelection(.enabled)
                                     .fixedSize(horizontal: false, vertical: true)
                                 Text("请核对服务地址、网络和访问凭据。保存配置后，连接结果仍需单独核对。")
                                     .font(.footnote).foregroundStyle(.secondary)
                             }.font(.footnote)
                         }
-                        if let onCheckConnection {
-                            Button(action: onCheckConnection) {
-                                HStack(spacing: 8) {
-                                    if isCheckingConnection { ProgressView().controlSize(.small) }
-                                    Text(isCheckingConnection ? "正在检查…" : "重新检查连接")
-                                }
-                            }.disabled(isCheckingConnection).font(.footnote)
-                        }
                     }
                     Section {
-                        VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .firstTextBaseline, spacing: 12) {
                             Text("服务地址").font(.footnote).foregroundStyle(.secondary)
+                                .frame(width: 76, alignment: .leading)
                             TextField("https://你的服务地址:端口", text: Binding(
                                 get: { viewStore.baseURL }, set: { viewStore.send(.baseURLChanged($0)) }), axis: .vertical)
                                 .lineLimit(1...4)
                                 .textInputAutocapitalization(.never).disableAutocorrection(true).keyboardType(.URL)
                                 .accessibilityLabel("服务地址")
-                                .frame(minHeight: 44)
+                                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                         }
-                        VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .firstTextBaseline, spacing: 12) {
                             Text("访问 Token").font(.footnote).foregroundStyle(.secondary)
+                                .frame(width: 76, alignment: .leading)
                             SecureField("需要鉴权时填写", text: Binding(
                                 get: { viewStore.token }, set: { viewStore.send(.tokenChanged($0)) }))
                                 .textInputAutocapitalization(.never).disableAutocorrection(true)
@@ -92,12 +99,12 @@ public struct SettingsSheetView: View {
                             .disabled(viewStore.baseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                             .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
                         if viewStore.saveSucceeded {
-                            Label("配置已保存；连接结果请查看上方状态", systemImage: "checkmark.circle")
+                            Label("配置已保存", systemImage: "checkmark.circle")
                                 .font(.footnote).foregroundStyle(.secondary)
                         }
                     } header: { Text("连接信息").font(.footnote) }
                     footer: {
-                        Text("保存后自动检查连接；访问凭据始终隐藏显示。")
+                        Text("保存后自动检查连接。")
                             .font(.footnote).foregroundStyle(.secondary)
                     }
                     Section("通知与持续展示") {
