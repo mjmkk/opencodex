@@ -105,7 +105,9 @@ public struct ThreadsView: View {
                                         threadButton(viewStore: viewStore, thread: thread)
                                     }
                                 } header: {
-                                    sectionHeading("最近任务")
+                                    if !attention.isEmpty {
+                                        sectionHeading("最近任务")
+                                    }
                                 }
                             }
                         }
