@@ -196,7 +196,6 @@ public struct SettingsSheetView: View {
                     }
                 }
                 .listStyle(.plain)
-                .scrollContentBackground(.hidden)
                 .background(CodexAppearance.canvas)
                 .navigationTitle("连接与设置")
                 .navigationBarTitleDisplayMode(.inline)
