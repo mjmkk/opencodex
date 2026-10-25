@@ -165,7 +165,7 @@ struct GoalOverviewView: View {
                     Image(systemName: healthSymbol(health)).foregroundStyle(color(health))
                     Text(healthTitle(health))
                 } else {
-                    Text(row.healthAvailability == .pending ? "状态待评估" : "状态暂无判断")
+                    Text(healthPlaceholder(row.healthAvailability))
                 }
                 if row.healthAvailability == .lastKnown {
                     Text("上次").font(.footnote).foregroundStyle(.secondary)
@@ -372,7 +372,18 @@ struct GoalOverviewView: View {
         switch row.progressAvailability {
         case .pending: return "待评估"
         case .failed: return "暂不可用"
+        case .partial: return "资料不全"
         default: return "暂无评分"
+        }
+    }
+
+    private func healthPlaceholder(_ availability: ObservationAvailability) -> String {
+        switch availability {
+        case .pending: return "状态待评估"
+        case .partial: return "状态资料不全"
+        case .notApplicable: return "状态不适用"
+        case .failed: return "状态读取失败"
+        case .current, .lastKnown: return "状态暂无判断"
         }
     }
 
