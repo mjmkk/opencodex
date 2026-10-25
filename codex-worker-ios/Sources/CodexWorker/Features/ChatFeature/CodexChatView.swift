@@ -653,7 +653,7 @@ private struct CodexMessageBubble: View {
                         .font(.body)
                         .foregroundStyle(.primary)
                         .padding(.horizontal, 14)
-                        .padding(.vertical, 12)
+                        .padding(.vertical, 8)
                         .background(Color(uiColor: .secondarySystemBackground))
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                         .fixedSize(horizontal: false, vertical: true)
@@ -714,7 +714,7 @@ private struct CodexMessageBubble: View {
             }
         }
         .padding(.horizontal, 8)
-        .padding(.vertical, 10)
+        .padding(.vertical, 6)
     }
 
     @ViewBuilder
