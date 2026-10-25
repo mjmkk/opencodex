@@ -42,6 +42,10 @@ public struct MirrorThread: Codable, Equatable, Sendable {
         default: return "历史覆盖范围待核对"
         }
     }
+
+    var sourceObservation: ThreadHistory.SourceObservation {
+        .init(lastSyncedAt: last_synced_at, lastCheckedAt: last_checked_at, upstreamState: upstream_state)
+    }
 }
 
 public struct MirrorIndex: Codable, Equatable, Sendable {
@@ -128,6 +132,7 @@ extension MirrorCachedBody {
             attachments: body.attachments.map { .init(id: $0.native_id, filename: $0.filename ?? $0.native_id, availability: $0.state ?? "状态未知") },
             downloadedAt: downloadedAt, isPartial: body.isPartial, hasMore: body.page.next_offset != nil,
             availableMessageCount: body.page.local_total, refreshRequested: body.refreshRequested,
-            pagination: .init(snapshot: body.page.snapshot, nextOffset: body.page.next_offset))
+            pagination: .init(snapshot: body.page.snapshot, nextOffset: body.page.next_offset),
+            sourceObservation: body.thread.sourceObservation)
     }
 }

@@ -299,7 +299,7 @@ public struct CodexChatView: View {
                                     Text("此页最早：" + MobileTime.timestamp(first.createdAt))
                                 }
                                 if let date = viewStore.lastSyncedAt {
-                                    Text("上次读取：" + MobileTime.timestamp(date))
+                                    Text("本机读取：" + MobileTime.timestamp(date))
                                     if viewStore.hasCachedSource {
                                         Text("此时间表示读取已保存历史，不代表来源内容已更新。")
                                             .font(.footnote).foregroundStyle(.secondary)
@@ -307,6 +307,15 @@ public struct CodexChatView: View {
                                 } else { Text("尚无历史读取时间") }
                             }
                             .listRowInsets(informationInsets)
+                        }
+                        if viewStore.hasCachedSource {
+                            Section {
+                                informationHeading("来源上次观察")
+                                let source = viewStore.history?.sourceObservation
+                                informationField("来源状态", value: source?.statusDescription ?? "未提供")
+                                informationField("来源同步", value: source?.lastSyncedDate.map(MobileTime.timestamp) ?? source?.lastSyncedAt ?? "未提供")
+                                informationField("来源核对", value: source?.lastCheckedDate.map(MobileTime.timestamp) ?? source?.lastCheckedAt ?? "未提供")
+                            }
                         }
                         if let attachments = viewStore.history?.attachments, !attachments.isEmpty {
                             Section {
@@ -597,9 +606,10 @@ public struct CodexChatView: View {
             ? (state.history == nil ? "尚无本地历史" : (state.history?.isPartial == true ? "部分已保存历史" : "上次可读历史"))
             : taskStatus(state)
         let sync: [String]
-        if state.isHistorySyncing { sync = ["正在同步"] }
+        if state.isHistorySyncing { sync = ["正在读取历史"] }
+        else if state.history?.sourceObservation?.isUnreachable == true { sync = ["来源上次未连通"] }
         else if let date = state.lastSyncedAt {
-            sync = state.errorMessage == nil ? ["上次读取 " + MobileTime.ago(date)] : ["同步失败", "上次读取 " + MobileTime.ago(date)]
+            sync = state.errorMessage == nil ? ["本机读取 " + MobileTime.ago(date)] : ["读取失败", "本机读取 " + MobileTime.ago(date)]
         } else { sync = ["本地内容", "读取时间未知"] }
         return (source, sync)
     }

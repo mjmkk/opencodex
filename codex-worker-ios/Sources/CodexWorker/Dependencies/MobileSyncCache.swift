@@ -6,6 +6,7 @@ public struct ThreadSyncMetadata: Equatable, Sendable {
     public var unreadMessages: Int
     public var pinned: Bool
     public var isPartial: Bool = false
+    public var sourceObservation: ThreadHistory.SourceObservation? = nil
 }
 
 /// Persists readable Thread history and local drafts. No execution or approval lifecycle.
@@ -363,7 +364,8 @@ actor MobileSyncCache {
                 let read: Int = row["readCursor"]
                 return (row["threadId"], ThreadSyncMetadata(lastSyncedAt: cached?.downloadedAt,
                     unreadMessages: max(0, (cached?.body.messages.count ?? 0) - read - 1),
-                    pinned: row["pinned"], isPartial: cached?.body.isPartial ?? true))
+                    pinned: row["pinned"], isPartial: cached?.body.isPartial ?? true,
+                    sourceObservation: cached?.body.thread.sourceObservation))
             })
         }
     }
