@@ -20,6 +20,7 @@ public struct ThreadsView: View {
     let executionAccessMode: ExecutionAccessMode
     let onExecutionAccessModeChanged: ((ExecutionAccessMode) -> Void)?
     @State private var informationSelection: ThreadInformationSelection?
+    @State private var showsReadFailure = false
 
     public init(
         store: StoreOf<ThreadsFeature>,
@@ -172,8 +173,27 @@ public struct ThreadsView: View {
         let title = viewStore.failure == nil ? "部分内容未更新"
             : (viewStore.needsConnectionSettings ? "连接需要检查" : "操作未完成")
         if !viewStore.items.isEmpty {
-            HStack(alignment: .top, spacing: 20) {
-                DisclosureGroup {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .center, spacing: 16) {
+                    Button { showsReadFailure.toggle() } label: {
+                        HStack(spacing: 8) {
+                            Text(isRefreshing ? "正在更新…" : title)
+                                .font(.subheadline.weight(.medium))
+                            Text("本地任务").font(.footnote).foregroundStyle(.secondary)
+                            Spacer(minLength: 0)
+                            Image(systemName: showsReadFailure ? "chevron.down" : "chevron.right")
+                                .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint(showsReadFailure ? "收起上次原因" : "展开上次原因")
+                    Button { viewStore.send(.refresh) } label: { retryLabel(isRefreshing: isRefreshing) }
+                        .buttonStyle(.plain).font(.subheadline.weight(.medium))
+                        .disabled(isRefreshing)
+                }
+                if showsReadFailure {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(isRefreshing ? "上次读取或操作的原因" : "读取或操作未完成的原因")
                             .font(.footnote.weight(.medium))
@@ -187,18 +207,8 @@ public struct ThreadsView: View {
                         }
                     }
                     .fixedSize(horizontal: false, vertical: true)
-                } label: {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(isRefreshing ? "正在更新列表…" : title)
-                            .font(.subheadline.weight(.medium))
-                        Text("已保存的任务仍可查看")
-                            .font(.footnote).foregroundStyle(.secondary)
-                    }
-                    .frame(minHeight: 44, alignment: .leading)
+                    .padding(.top, 8)
                 }
-                Button { viewStore.send(.refresh) } label: { retryLabel(isRefreshing: isRefreshing) }
-                    .buttonStyle(.plain).font(.subheadline.weight(.medium))
-                    .disabled(isRefreshing)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         } else {
@@ -364,7 +374,7 @@ public struct ThreadsView: View {
         }
         .buttonStyle(.plain)
         .disabled(isArchiving)
-        .listRowInsets(EdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 16))
+        .listRowInsets(EdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 16))
         .listRowSeparator(.visible)
         .listRowBackground(isSelected ? Color.accentColor.opacity(0.06) : Color(uiColor: .systemBackground))
         .contextMenu {
@@ -434,7 +444,7 @@ private struct ThreadRow: View {
     let isArchiving: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(thread.listTitle)
                     .font(.body.weight(.medium))
@@ -470,57 +480,23 @@ private struct ThreadRow: View {
                 }
             }
 
-            if let subtitle = thread.listSubtitle {
-                Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            if summary != nil || thread.lastActiveAt != nil {
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    if let summary { summary.fixedSize(horizontal: false, vertical: true) }
-                    Spacer(minLength: 0)
-                    if let activityAt = thread.lastActiveAt {
-                        Text(ThreadListDate.shortActivity(activityAt))
-                            .foregroundStyle(.secondary).monospacedDigit()
-                            .fixedSize()
-                    }
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                if let reason = thread.attentionReason {
+                    Text(reason).font(.subheadline).foregroundStyle(attentionColor)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
+                } else if let subtitle = thread.listSubtitle {
+                    Text(subtitle).font(.subheadline).foregroundStyle(.secondary)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
                 }
-                .font(.footnote)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(summaryAccessibilityLabel)
+                Spacer(minLength: 0)
+                if let activityAt = thread.lastActiveAt {
+                    Text(ThreadListDate.shortActivity(activityAt))
+                        .font(.footnote).foregroundStyle(.secondary).monospacedDigit()
+                        .fixedSize()
+                        .accessibilityLabel("最后活动：" + ThreadListDate.full(activityAt))
+                }
             }
         }
-    }
-
-    private var summary: Text? {
-        var parts: [Text] = []
-        if let reason = thread.attentionReason {
-            parts.append(Text(reason).foregroundColor(attentionColor))
-        }
-        if metadata == nil {
-            parts.append(Text("同步未知").foregroundColor(Color(uiColor: .secondaryLabel)))
-        } else if metadata?.lastSyncedAt == nil {
-            parts.append(Text("待同步").foregroundColor(Color(uiColor: .secondaryLabel)))
-        }
-        if metadata?.isPartial == true {
-            parts.append(Text("部分历史").foregroundColor(Color(uiColor: .secondaryLabel)))
-        }
-        guard let first = parts.first else { return nil }
-        return parts.dropFirst().reduce(first) { $0 + Text(" · ").foregroundColor(Color(uiColor: .secondaryLabel)) + $1 }
-    }
-
-    private var summaryAccessibilityLabel: String {
-        var parts = [thread.attentionReason].compactMap { $0 }
-        if metadata == nil { parts.append("同步记录未知") }
-        else if metadata?.lastSyncedAt == nil { parts.append("本地内容，等待同步") }
-        if metadata?.isPartial == true { parts.append("部分历史") }
-        if let activityAt = thread.lastActiveAt {
-            parts.append("最后活动：" + ThreadListDate.full(activityAt))
-        }
-        return parts.joined(separator: "，")
     }
 
     private var attentionColor: Color {
@@ -677,7 +653,7 @@ private enum ThreadListDate {
     static func shortActivity(_ date: Date) -> String {
         let calendar = Calendar.current
         if calendar.isDateInToday(date) {
-            return "今天 " + date.formatted(.dateTime.locale(locale).hour().minute())
+            return date.formatted(.dateTime.locale(locale).hour().minute())
         }
         if calendar.isDateInYesterday(date) { return "昨天" }
         if calendar.isDate(date, equalTo: Date(), toGranularity: .year) {

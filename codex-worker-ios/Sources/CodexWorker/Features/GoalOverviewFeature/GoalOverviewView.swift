@@ -115,9 +115,10 @@ struct GoalOverviewView: View {
             NavigationLink {
                 goalDetails(row)
             } label: {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 6) {
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Text(row.title).font(.body.weight(.medium)).foregroundStyle(.primary)
+                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 2)
                             .fixedSize(horizontal: false, vertical: true)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .layoutPriority(1)
@@ -130,11 +131,9 @@ struct GoalOverviewView: View {
                     } else {
                         HStack(alignment: .firstTextBaseline, spacing: 16) { summaryValues(row) }
                     }
-                    observationCaption(row)
-                    metadata(row)
                 }
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                .padding(.horizontal, inset).padding(.vertical, 18).contentShape(Rectangle())
+                .padding(.horizontal, inset).padding(.vertical, 10).contentShape(Rectangle())
             }.buttonStyle(.plain)
                 .accessibilityElement(children: .combine)
                 .accessibilityHint("查看进展、判断依据与承接事项")
@@ -152,42 +151,32 @@ struct GoalOverviewView: View {
     }
 
     @ViewBuilder private func summaryValues(_ row: GoalOverviewRow) -> some View {
-        HStack(spacing: 6) {
-            Text("进度").foregroundStyle(.secondary)
-            Text(progressTitle(row)).fontWeight(.medium).monospacedDigit()
-        }.font(.subheadline).foregroundStyle(.primary)
-        HStack(spacing: 6) {
-            if let health = row.visibleHealth {
-                Image(systemName: healthSymbol(health)).foregroundStyle(color(health))
-                Text(healthTitle(health))
-            } else {
-                Text(row.healthAvailability == .pending ? "状态待评估" : "状态暂无判断")
-            }
-        }.font(.subheadline.weight(.medium)).foregroundStyle(.primary)
-    }
-
-    @ViewBuilder private func observationCaption(_ row: GoalOverviewRow) -> some View {
-        let progressAt = row.progressDimension == nil ? row.evaluatedAt : row.progressDimension?.evaluatedAt
-        let healthAt = row.healthDimension == nil ? row.evaluatedAt : row.healthDimension?.evaluatedAt
-        if row.progressAvailability == .pending, row.healthAvailability == .pending,
-           progressAt == nil, healthAt == nil {
-            // No judgment exists to date; both pending values are already visible above.
-            EmptyView()
-        } else if row.progressAvailability == row.healthAvailability, let progressAt, progressAt == healthAt {
-            observationLine(row.progressAvailability, progressAt)
-                .font(.footnote)
-                .fixedSize(horizontal: false, vertical: true)
+        if row.progressAvailability == .pending, row.healthAvailability == .pending {
+            Text("待评估").font(.subheadline).foregroundStyle(.secondary)
         } else {
-            VStack(alignment: .leading, spacing: 3) {
-                Text("进度 · ").foregroundColor(.secondary) + observationLine(row.progressAvailability, progressAt)
-                Text("状态 · ").foregroundColor(.secondary) + observationLine(row.healthAvailability, healthAt)
-            }.font(.footnote)
+            HStack(spacing: 6) {
+                Text(progressTitle(row)).fontWeight(.medium).monospacedDigit()
+                if row.progressAvailability == .lastKnown {
+                    Text("上次").font(.footnote).foregroundStyle(.secondary)
+                }
+            }.font(.subheadline).foregroundStyle(.primary)
+            HStack(spacing: 6) {
+                if let health = row.visibleHealth {
+                    Image(systemName: healthSymbol(health)).foregroundStyle(color(health))
+                    Text(healthTitle(health))
+                } else {
+                    Text(row.healthAvailability == .pending ? "状态待评估" : "状态暂无判断")
+                }
+                if row.healthAvailability == .lastKnown {
+                    Text("上次").font(.footnote).foregroundStyle(.secondary)
+                }
+            }.font(.subheadline.weight(.medium)).foregroundStyle(.primary)
         }
     }
 
     private func goalDetails(_ row: GoalOverviewRow) -> AnyView {
         AnyView(ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 10) {
                     Text(row.title).font(.title2.weight(.medium))
                         .fixedSize(horizontal: false, vertical: true).textSelection(.enabled)
@@ -224,7 +213,7 @@ struct GoalOverviewView: View {
     }
 
     private func assessments(_ row: GoalOverviewRow) -> some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 12) {
             assessment("进度", value: progressTitle(row), state: row.progressAvailability,
                        dimension: row.progressDimension, row: row, progress: row.validProgress)
             Divider()
@@ -237,7 +226,7 @@ struct GoalOverviewView: View {
     private func assessment(_ name: String, value: String, state: ObservationAvailability,
                             dimension: GoalOverviewDimension?, row: GoalOverviewRow,
                             progress: Int? = nil, health: GoalHealth? = nil) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 6) {
             if dynamicTypeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(name).font(.subheadline).foregroundStyle(.secondary)
