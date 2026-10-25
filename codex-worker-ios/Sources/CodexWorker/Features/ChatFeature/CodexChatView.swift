@@ -665,7 +665,7 @@ private struct CodexMessageBubble: View {
                     }
                 }
             } else {
-                let rendered = renderPipeline.render(message.text)
+                let rendered = renderPipeline.render(message.text, isAssistant: isAssistant)
                 VStack(alignment: .leading, spacing: 0) {
                     if showsAuthor || hasMessageTimestamp {
                         messageIdentity

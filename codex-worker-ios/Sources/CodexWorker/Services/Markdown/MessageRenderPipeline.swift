@@ -33,7 +33,7 @@ public struct MessageRenderContent: Equatable {
 
 public struct MessageRenderPipeline: Sendable {
     public static let live = MessageRenderPipeline()
-    private static let cacheVersion = "v5"
+    private static let cacheVersion = "v6"
 
     private let parser: MarkdownParserService
     private let semanticExtractor: MessageSemanticExtractor
@@ -52,13 +52,14 @@ public struct MessageRenderPipeline: Sendable {
         self.cache = cache
     }
 
-    public func render(_ raw: String) -> MessageRenderContent {
-        let cacheKey = "\(Self.cacheVersion)::\(raw)"
+    public func render(_ raw: String, isAssistant: Bool = false) -> MessageRenderContent {
+        let cacheKey = "\(Self.cacheVersion)::\(isAssistant)::\(raw)"
         if let cached = cache.value(for: cacheKey) {
             return cached
         }
 
-        let normalized = linkNormalizer.normalize(ChineseMarkdownLabels.normalize(raw))
+        let displayText = isAssistant ? StandaloneContentReference.displayText(for: raw) : raw
+        let normalized = linkNormalizer.normalize(ChineseMarkdownLabels.normalize(displayText))
         let parseResult = parser.parse(normalized)
         let semantics = semanticExtractor.extract(from: raw)
         let content = MessageRenderContent(
@@ -73,6 +74,19 @@ public struct MessageRenderPipeline: Sendable {
 
     func clearCache() {
         cache.clear()
+    }
+}
+
+private enum StandaloneContentReference {
+    private static let pattern = try? NSRegularExpression(
+        pattern: #"\A::chatgpt-content-reference\{index="(?:0|[1-9][0-9]*)" source_message_id="[0-9A-Fa-f]{8}-(?:[0-9A-Fa-f]{4}-){3}[0-9A-Fa-f]{12}"\}\z"#
+    )
+
+    static func displayText(for raw: String) -> String {
+        // Match the whole message without trimming: code and mixed prose stay literal.
+        guard let pattern,
+              pattern.firstMatch(in: raw, range: NSRange(raw.startIndex..., in: raw)) != nil else { return raw }
+        return "引用内容尚未展开"
     }
 }
 
