@@ -443,8 +443,6 @@ private struct ThreadRow: View {
     let isSelected: Bool
     let isArchiving: Bool
 
-    private var hasSubtitle: Bool { thread.attentionReason != nil || thread.listSubtitle != nil }
-
     @ViewBuilder private var activityTime: some View {
         if let activityAt = thread.lastActiveAt {
             Text(ThreadListDate.shortActivity(activityAt))
@@ -455,6 +453,8 @@ private struct ThreadRow: View {
     }
 
     var body: some View {
+        let subtitle = thread.attentionReason == nil ? thread.listSubtitle : nil
+        let hasSubtitle = thread.attentionReason != nil || subtitle != nil
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(thread.listTitle)
@@ -497,7 +497,7 @@ private struct ThreadRow: View {
                     if let reason = thread.attentionReason {
                         Text(reason).font(.subheadline).foregroundStyle(attentionColor)
                             .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
-                    } else if let subtitle = thread.listSubtitle {
+                    } else if let subtitle {
                         Text(subtitle).font(.subheadline).foregroundStyle(.secondary)
                             .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
                     }
