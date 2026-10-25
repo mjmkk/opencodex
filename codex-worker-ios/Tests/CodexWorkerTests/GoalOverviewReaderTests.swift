@@ -63,7 +63,7 @@ final class GoalOverviewReaderTests: XCTestCase {
         return (try MobileSyncCache(path: path), path)
     }
 
-    private func refusedRead() async throws -> JSONValue {
+    private static func refusedRead() async throws -> JSONValue {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.timeoutIntervalForRequest = 3
         configuration.timeoutIntervalForResource = 3
@@ -127,7 +127,7 @@ final class GoalOverviewReaderTests: XCTestCase {
         try await cache.saveGoalOverview(entry, scope: identity.scope())
         let reopened = try MobileSyncCache(path: path)
         let reader = GoalOverviewReader(cache: reopened, currentScope: identity.scope,
-            namespaceForScope: identity.namespace, readRemote: refusedRead)
+            namespaceForScope: identity.namespace, readRemote: { try await Self.refusedRead() })
         await reader.refresh()
         XCTAssertEqual(reader.rows, try GoalOverviewDecoder.rows(entry.payload, cached: true))
         XCTAssertEqual(reader.inventoryValidation, try GoalOverviewDecoder.inventoryValidation(entry.payload, cached: true))
@@ -146,7 +146,7 @@ final class GoalOverviewReaderTests: XCTestCase {
         identity.defaults.set("other-account", forKey: "current")
         identity.defaults.set(try XCTUnwrap(entry.payload.objectValue?["namespace"]?.stringValue), forKey: "namespace.other-account")
         let reader = GoalOverviewReader(cache: cache, currentScope: identity.scope,
-            namespaceForScope: identity.namespace, readRemote: refusedRead)
+            namespaceForScope: identity.namespace, readRemote: { try await Self.refusedRead() })
         await reader.refresh()
         XCTAssertTrue(reader.rows.isEmpty)
         XCTAssertFalse(reader.hasSnapshot)
@@ -163,7 +163,7 @@ final class GoalOverviewReaderTests: XCTestCase {
         try await cache.saveGoalOverview(entry, scope: identity.scope())
         identity.defaults.set("openai:different-source", forKey: "namespace.observed-account")
         let reader = GoalOverviewReader(cache: cache, currentScope: identity.scope,
-            namespaceForScope: identity.namespace, readRemote: refusedRead)
+            namespaceForScope: identity.namespace, readRemote: { try await Self.refusedRead() })
         await reader.refresh()
         XCTAssertTrue(reader.rows.isEmpty)
         XCTAssertFalse(reader.hasSnapshot)
