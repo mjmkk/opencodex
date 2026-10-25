@@ -255,13 +255,23 @@ public struct ThreadsView: View {
 
     private func destinationButton(_ title: String, action: @escaping () -> Void) -> some View {
         Button {
-            isSearchFocused = false
-            dismissKeyboard()
-            action()
+            openDestination(action)
         } label: {
             Text(title).font(.subheadline.weight(.medium))
                 .frame(maxWidth: .infinity, minHeight: 52).contentShape(Rectangle())
         }.buttonStyle(.plain).foregroundStyle(.primary)
+    }
+
+    private func openDestination(_ action: () -> Void) {
+        isSearchFocused = false
+        dismissKeyboard()
+        action()
+    }
+
+    private func showInformation(for thread: Thread) {
+        openDestination {
+            informationSelection = ThreadInformationSelection(id: thread.id)
+        }
     }
 
     @ViewBuilder
@@ -298,7 +308,7 @@ public struct ThreadsView: View {
                             .font(.footnote).foregroundStyle(.secondary)
                         Text(errorMessage).font(.footnote).textSelection(.enabled)
                         if let onSettingsTap {
-                            Button("连接设置", action: onSettingsTap)
+                            Button("连接设置") { openDestination(onSettingsTap) }
                                 .buttonStyle(.plain).font(.subheadline)
                                 .frame(minHeight: 44)
                         }
@@ -319,7 +329,7 @@ public struct ThreadsView: View {
                         .buttonStyle(.plain).font(.subheadline.weight(.semibold))
                         .disabled(isRefreshing)
                     if let onSettingsTap {
-                        Button("连接设置", action: onSettingsTap)
+                        Button("连接设置") { openDestination(onSettingsTap) }
                             .buttonStyle(.plain).font(.subheadline)
                             .foregroundStyle(.secondary).frame(minHeight: 44)
                     }
@@ -363,8 +373,7 @@ public struct ThreadsView: View {
         return HStack(spacing: 0) {
             if let onDismiss {
                 Button {
-                    isSearchFocused = false
-                    onDismiss()
+                    openDestination(onDismiss)
                 } label: {
                     Image(systemName: "sidebar.leading")
                         .font(.body.weight(.medium))
@@ -458,9 +467,7 @@ public struct ThreadsView: View {
 
         return HStack(alignment: .top, spacing: 0) {
             Button {
-                isSearchFocused = false
-                dismissKeyboard()
-                viewStore.send(.threadTapped(thread.threadId))
+                openDestination { viewStore.send(.threadTapped(thread.threadId)) }
             } label: {
                 ThreadRow(
                     thread: thread,
@@ -476,11 +483,11 @@ public struct ThreadsView: View {
             .accessibilityHint("打开此任务")
             .accessibilityIdentifier("thread-" + thread.threadId)
             .accessibilityAction(named: Text("任务信息")) {
-                informationSelection = ThreadInformationSelection(id: thread.id)
+                showInformation(for: thread)
             }
 
             Button {
-                informationSelection = ThreadInformationSelection(id: thread.id)
+                showInformation(for: thread)
             } label: {
                 Image(systemName: "info.circle")
                     .font(.body)
@@ -498,7 +505,7 @@ public struct ThreadsView: View {
         .listRowBackground(isSelected ? Color.accentColor.opacity(0.06) : Color(uiColor: .systemBackground))
         .contextMenu {
             Button {
-                informationSelection = ThreadInformationSelection(id: thread.id)
+                showInformation(for: thread)
             } label: {
                 Label("任务信息", systemImage: "info.circle")
             }
