@@ -360,15 +360,23 @@ public struct CodexChatView: View {
     }
 
     private func nativeControlRow(_ viewStore: ViewStore<ViewState, ChatFeature.Action>) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 12) {
-                if viewStore.isControlLoading || viewStore.isSending { ProgressView().controlSize(.small) }
-                Text(viewStore.isReceiptChecking ? "正在核对提交结果…"
-                     : viewStore.isSending ? (viewStore.pendingControlOperation == .interrupt ? "正在请求停止…" : "正在提交…")
-                     : viewStore.isControlLoading ? "正在核对…"
-                     : viewStore.controlStatus == "running" ? "正在执行"
-                     : viewStore.controlStatus == "idle" ? "当前空闲" : "状态未确认")
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        if viewStore.isControlLoading || viewStore.isSending { ProgressView().controlSize(.small) }
+                        Text(viewStore.isReceiptChecking ? "正在核对提交结果…"
+                             : viewStore.isSending ? (viewStore.pendingControlOperation == .interrupt ? "正在请求停止…" : "正在提交…")
+                             : viewStore.isControlLoading ? "正在核对…"
+                             : viewStore.controlStatus == "running" ? "正在执行"
+                             : viewStore.controlStatus == "idle" ? "当前空闲" : "状态未确认")
+                            .foregroundStyle(.secondary)
+                    }
+                    if let observedAt = viewStore.controlObservedAt {
+                        Text("上次确认 \(observedAt.formatted(date: Calendar.current.isDateInToday(observedAt) ? .omitted : .abbreviated, time: .standard))")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                }
                 Spacer(minLength: 0)
                 Button("刷新执行状态") { viewStore.send(.refreshControl) }
                     .frame(minHeight: 44).disabled(viewStore.isControlLoading || viewStore.isSending)
@@ -380,10 +388,6 @@ public struct CodexChatView: View {
             }
             .font(.footnote)
             .buttonStyle(.plain)
-            if let observedAt = viewStore.controlObservedAt {
-                Text("上次确认 \(observedAt.formatted(date: Calendar.current.isDateInToday(observedAt) ? .omitted : .abbreviated, time: .standard))")
-                    .font(.caption).foregroundStyle(.secondary)
-            }
             if viewStore.canStop {
                 Text("这会停止当前一轮，也可能结束本任务的活跃子任务。目标仍保持原状态。")
                     .font(.footnote).foregroundStyle(.secondary)
