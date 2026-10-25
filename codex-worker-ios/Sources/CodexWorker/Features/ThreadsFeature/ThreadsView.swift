@@ -114,6 +114,8 @@ public struct ThreadsView: View {
                 .scrollContentBackground(.hidden)
                 .contentMargins(.top, 0, for: .scrollContent)
                 .listRowSpacing(0)
+                .listSectionSpacing(8)
+                .environment(\.defaultMinListHeaderHeight, 0)
                 .refreshable {
                     guard !viewStore.isLoading && !viewStore.isSyncing else { return }
                     viewStore.send(.refresh)
