@@ -151,12 +151,13 @@ struct GoalOverviewView: View {
     }
 
     @ViewBuilder private func summaryValues(_ row: GoalOverviewRow) -> some View {
+        let sharedLastKnown = sharesObservation(row) && row.progressAvailability == .lastKnown
         if row.progressAvailability == .pending, row.healthAvailability == .pending {
             Text("待评估").font(.subheadline).foregroundStyle(.secondary)
         } else {
             HStack(spacing: 6) {
                 Text(progressTitle(row)).fontWeight(.medium).monospacedDigit()
-                if row.progressAvailability == .lastKnown {
+                if row.progressAvailability == .lastKnown && !sharedLastKnown {
                     Text("上次").font(.footnote).foregroundStyle(.secondary)
                 }
             }.font(.subheadline).foregroundStyle(.primary)
@@ -167,10 +168,13 @@ struct GoalOverviewView: View {
                 } else {
                     Text(healthPlaceholder(row.healthAvailability))
                 }
-                if row.healthAvailability == .lastKnown {
+                if row.healthAvailability == .lastKnown && !sharedLastKnown {
                     Text("上次").font(.footnote).foregroundStyle(.secondary)
                 }
             }.font(.subheadline.weight(.medium)).foregroundStyle(.primary)
+            if sharedLastKnown {
+                Text("上次观察").font(.footnote).foregroundStyle(.secondary)
+            }
         }
     }
 
@@ -214,18 +218,32 @@ struct GoalOverviewView: View {
 
     private func assessments(_ row: GoalOverviewRow) -> some View {
         VStack(alignment: .leading, spacing: 12) {
+            if sharesObservation(row) {
+                observationDetails(state: row.progressAvailability, dimension: row.progressDimension, row: row)
+            }
             assessment("进度", value: progressTitle(row), state: row.progressAvailability,
-                       dimension: row.progressDimension, row: row, progress: row.validProgress)
+                       dimension: row.progressDimension, row: row, progress: row.validProgress,
+                       showsObservation: !sharesObservation(row))
             Divider()
             assessment("健康状态", value: row.visibleHealth.map(healthTitle) ?? "尚无判断",
                        state: row.healthAvailability, dimension: row.healthDimension, row: row,
-                       health: row.visibleHealth)
+                       health: row.visibleHealth, showsObservation: !sharesObservation(row))
         }
+    }
+
+    private func sharesObservation(_ row: GoalOverviewRow) -> Bool {
+        if let progress = row.progressDimension, let health = row.healthDimension {
+            // Compare full provenance, including source/version/reason metadata.
+            // Equal dates or equal rendered labels alone never join two observations.
+            return progress == health
+        }
+        return row.progressDimension == nil && row.healthDimension == nil
     }
 
     private func assessment(_ name: String, value: String, state: ObservationAvailability,
                             dimension: GoalOverviewDimension?, row: GoalOverviewRow,
-                            progress: Int? = nil, health: GoalHealth? = nil) -> some View {
+                            progress: Int? = nil, health: GoalHealth? = nil,
+                            showsObservation: Bool = true) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             if dynamicTypeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: 6) {
@@ -243,6 +261,15 @@ struct GoalOverviewView: View {
                 ProgressView(value: Double(progress), total: 100).tint(.primary)
                     .accessibilityLabel("进度 \(progress)%")
             }
+            if showsObservation { observationDetails(state: state, dimension: dimension, row: row) }
+            sourceDetails(dimension?.sourceNotes ?? row.sourceNotes, observation: dimension?.observation,
+                          title: name == "进度" ? "进度依据" : "健康依据")
+        }
+    }
+
+    private func observationDetails(state: ObservationAvailability,
+                                    dimension: GoalOverviewDimension?, row: GoalOverviewRow) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
             if let reason = dimension?.explanation ?? (dimension == nil ? row.explanation : nil) {
                 Text(reasonText(reason)).font(.body).lineSpacing(3)
             }
@@ -252,7 +279,6 @@ struct GoalOverviewView: View {
                     .fixedSize(horizontal: false, vertical: true)
                 timestamp("资料覆盖至", dimension == nil ? row.coverageAt : dimension?.coverageAt)
             }
-            sourceDetails(dimension?.sourceNotes ?? row.sourceNotes, observation: dimension?.observation)
         }
     }
 
@@ -268,7 +294,7 @@ struct GoalOverviewView: View {
         }
     }
 
-    @ViewBuilder private func sourceDetails(_ notes: [String], observation: JSONValue?) -> some View {
+    @ViewBuilder private func sourceDetails(_ notes: [String], observation: JSONValue?, title: String) -> some View {
         let sources = observation?.objectValue?["sources"]?.arrayValue ?? []
         if !notes.isEmpty || !sources.isEmpty {
             DisclosureGroup {
@@ -296,7 +322,7 @@ struct GoalOverviewView: View {
                     }.font(.footnote).foregroundStyle(.secondary)
                 }.padding(.top, 8)
             } label: {
-                Label("判断依据 · \(max(notes.count, sources.count)) 项记录", systemImage: "doc.text")
+                Label("\(title) · \(max(notes.count, sources.count)) 项记录", systemImage: "doc.text")
                     .font(.subheadline).foregroundStyle(.secondary).frame(minHeight: 44)
             }.tint(.secondary)
         }

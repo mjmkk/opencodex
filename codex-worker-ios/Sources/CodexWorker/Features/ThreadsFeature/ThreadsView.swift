@@ -443,6 +443,17 @@ private struct ThreadRow: View {
     let isSelected: Bool
     let isArchiving: Bool
 
+    private var hasSubtitle: Bool { thread.attentionReason != nil || thread.listSubtitle != nil }
+
+    @ViewBuilder private var activityTime: some View {
+        if let activityAt = thread.lastActiveAt {
+            Text(ThreadListDate.shortActivity(activityAt))
+                .font(.footnote).foregroundStyle(.secondary).monospacedDigit()
+                .fixedSize()
+                .accessibilityLabel("最后活动：" + ThreadListDate.full(activityAt))
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -478,22 +489,20 @@ private struct ThreadRow: View {
                         .controlSize(.small)
                         .accessibilityLabel("归档中")
                 }
+                if !hasSubtitle { activityTime }
             }
 
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                if let reason = thread.attentionReason {
-                    Text(reason).font(.subheadline).foregroundStyle(attentionColor)
-                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
-                } else if let subtitle = thread.listSubtitle {
-                    Text(subtitle).font(.subheadline).foregroundStyle(.secondary)
-                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
-                }
-                Spacer(minLength: 0)
-                if let activityAt = thread.lastActiveAt {
-                    Text(ThreadListDate.shortActivity(activityAt))
-                        .font(.footnote).foregroundStyle(.secondary).monospacedDigit()
-                        .fixedSize()
-                        .accessibilityLabel("最后活动：" + ThreadListDate.full(activityAt))
+            if hasSubtitle {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    if let reason = thread.attentionReason {
+                        Text(reason).font(.subheadline).foregroundStyle(attentionColor)
+                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
+                    } else if let subtitle = thread.listSubtitle {
+                        Text(subtitle).font(.subheadline).foregroundStyle(.secondary)
+                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? 3 : 1)
+                    }
+                    Spacer(minLength: 0)
+                    activityTime
                 }
             }
         }
