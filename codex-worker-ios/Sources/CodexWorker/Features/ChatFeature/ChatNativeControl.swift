@@ -23,14 +23,15 @@ extension ChatFeature {
               let configuration = WorkerConfiguration.load(),
               operation == .input ? state.canSend : state.canStop,
               operation != .input || !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              let editOrdinal = state.composerEditOrdinal,
               let cache = MobileSyncCache.shared else {
             state.controlMessage = "当前操作尚不可用，草稿已保留。请先核对执行状态。"
             return .none
         }
         let account = MobileSyncEngine.scope(configuration: configuration)
         let scope = MobileSyncEngine.threadScope(for: thread, configuration: configuration)
-        // Older on-disk drafts predate editing revisions. Bind the displayed
-        // text before capture so its eventual acceptance can clear only it.
+        // The cache binds legacy drafts before hydration. Capture the exact
+        // displayed edit; never allocate a newer order for an old operation.
         if state.composerTextRevision == nil { state.composerTextRevision = UUID().uuidString }
         if state.composerEditedAt == nil { state.composerEditedAt = Date() }
         let textRevision = state.composerTextRevision
@@ -54,7 +55,8 @@ extension ChatFeature {
                     expected_turn_id: operation == .interrupt ? shown.active_turn_id : nil)
                 let attempt = NativeControlAttempt(operation: operation, request: body, attemptedAt: Date())
                 let saved = try await cache.beginControlAttempt(attempt, text: text,
-                    textRevision: textRevision, editedAt: editedAt, threadId: thread.threadId, scope: scope)
+                    textRevision: textRevision, editedAt: editedAt, editOrdinal: editOrdinal,
+                    threadId: thread.threadId, scope: scope)
                 committed = true
                 await send(.controlWillWrite(identity: thread.id, account: account, operationID: id, saved))
                 guard WorkerConfiguration.load() == configuration else {

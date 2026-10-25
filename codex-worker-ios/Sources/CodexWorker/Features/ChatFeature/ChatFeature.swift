@@ -19,6 +19,7 @@ public struct ChatFeature {
         public var composerScope: String?
         public var composerTextRevision: String?
         public var composerEditedAt: Date?
+        public var composerEditOrdinal: UInt64?
         public var composerLoadID: String?
         public var controlObservation: NativeControlObservation?
         public var controlAccount: String?
@@ -34,6 +35,7 @@ public struct ChatFeature {
         public var hasUncertainControl: Bool { controlAttempt?.isUncertain == true }
         public var canSend: Bool {
             isInputConnected
+                && composerEditOrdinal != nil
                 && !isSending && !isControlLoading && !hasUnconfirmedReply && !hasUncertainControl
         }
         public var isInputConnected: Bool { controlIsCurrent && controlObservation?.canInput == true }
@@ -96,7 +98,7 @@ public struct ChatFeature {
                 state.activeThread = thread; state.messages = []; state.history = nil
                 state.inputText = ""; state.outgoing = nil; state.isSending = false
                 state.composerScope = nil; state.controlObservation = nil; state.controlAccount = nil
-                state.composerTextRevision = nil; state.composerEditedAt = nil
+                state.composerTextRevision = nil; state.composerEditedAt = nil; state.composerEditOrdinal = nil
                 state.composerLoadID = nil
                 state.controlObservedAt = nil; state.controlAttempt = nil; state.controlMessage = nil
                 state.isControlLoading = false; state.pendingControlOperation = nil
@@ -140,6 +142,7 @@ public struct ChatFeature {
                       scope == MobileSyncEngine.threadScope(for: thread, configuration: configuration) else { return .none }
                 state.inputText = draft.text; state.composerTextRevision = draft.textRevision
                 state.composerEditedAt = draft.editedAt
+                state.composerEditOrdinal = draft.editOrdinal
                 state.composerScope = scope; state.outgoing = draft.outgoing
                 state.controlAttempt = draft.controlAttempt
                 // A write can finish after this cache snapshot was read but
@@ -150,16 +153,24 @@ public struct ChatFeature {
                 guard let thread = state.activeThread, thread.threadId == id, !state.isSending,
                       !state.hasUnconfirmedReply, state.inputText != text,
                       let scope = state.currentComposerScope else { return .none }
-                state.inputText = text; state.composerTextRevision = UUID().uuidString; state.composerEditedAt = Date()
-                return Self.saveDraft(.init(text: text, outgoing: state.outgoing, controlAttempt: state.controlAttempt,
-                    editedAt: state.composerEditedAt, textRevision: state.composerTextRevision), thread: thread, scope: scope)
+                let draft = ComposerDraft(text: text, outgoing: state.outgoing, controlAttempt: state.controlAttempt)
+                state.inputText = text; state.composerTextRevision = draft.textRevision
+                state.composerEditedAt = draft.editedAt; state.composerEditOrdinal = draft.editOrdinal
+                guard draft.editOrdinal != nil else {
+                    state.controlMessage = "草稿暂未保存，请保留输入内容。"; return .none
+                }
+                return Self.saveDraft(draft, thread: thread, scope: scope)
             case .acknowledgeUnknownReply:
                 guard let thread = state.activeThread, state.hasUnconfirmedReply, !state.isSending,
                       let scope = state.currentComposerScope else { return .none }
                 state.inputText = state.outgoing?.body ?? state.inputText; state.outgoing = nil
-                state.composerTextRevision = UUID().uuidString; state.composerEditedAt = Date()
-                return Self.saveDraft(.init(text: state.inputText, controlAttempt: state.controlAttempt,
-                    editedAt: state.composerEditedAt, textRevision: state.composerTextRevision), thread: thread, scope: scope)
+                let draft = ComposerDraft(text: state.inputText, controlAttempt: state.controlAttempt)
+                state.composerTextRevision = draft.textRevision; state.composerEditedAt = draft.editedAt
+                state.composerEditOrdinal = draft.editOrdinal
+                guard draft.editOrdinal != nil else {
+                    state.controlMessage = "草稿暂未保存，请保留输入内容。"; return .none
+                }
+                return Self.saveDraft(draft, thread: thread, scope: scope)
             case .didSendDraft(let draft):
                 return Self.beginControl(state: &state, operation: .input, text: draft.text)
             case .sendReply:
@@ -209,9 +220,11 @@ public struct ChatFeature {
                     }
                     if let attempt = draft.controlAttempt, attempt.operation == .input,
                        state.composerTextRevision == attempt.draftTextRevision,
+                       state.composerEditOrdinal == attempt.draftEditOrdinal,
                        state.inputText == attempt.request.text {
                         state.inputText = draft.text; state.composerTextRevision = draft.textRevision
                         state.composerEditedAt = draft.editedAt
+                        state.composerEditOrdinal = draft.editOrdinal
                     }
                     state.controlAttempt = draft.controlAttempt
                     state.controlMessage = nil

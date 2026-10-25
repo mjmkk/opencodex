@@ -192,7 +192,7 @@ struct NativeControlPersistenceTests {
     @Test func legacyRevisionBindsAtomicallyWithoutReplacingAnEqualTimeNewEdit() async throws {
         let cache = try MobileSyncCache(path: ":memory:")
         let time = Date(timeIntervalSince1970: 1)
-        try await cache.saveComposer(.init(text: "保留原文", editedAt: time, textRevision: nil), threadId: thread, scope: scope)
+        try await cache.saveComposer(.init(text: "保留原文", editedAt: time, textRevision: nil, editOrdinal: nil), threadId: thread, scope: scope)
         let pending = attempt()
         let sealed = try await cache.beginControlAttempt(pending, text: "保留原文",
             textRevision: "bound-legacy-edit", editedAt: time, threadId: thread, scope: scope)

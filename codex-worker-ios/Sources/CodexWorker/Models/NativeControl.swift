@@ -70,6 +70,7 @@ public struct NativeControlAttempt: Codable, Equatable, Sendable {
     public var receipt: NativeControlReceipt? = nil
     public var localRejection: String? = nil
     public var draftTextRevision: String? = nil
+    public var draftEditOrdinal: UInt64? = nil
 
     var isUncertain: Bool {
         localRejection == nil && (receipt == nil || receipt?.status == "unknown")

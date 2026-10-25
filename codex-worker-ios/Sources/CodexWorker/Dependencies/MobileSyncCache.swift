@@ -43,6 +43,13 @@ actor MobileSyncCache {
                   scope TEXT NOT NULL, name TEXT NOT NULL, value BLOB NOT NULL, PRIMARY KEY(scope,name));
                 """)
         }
+        let persistedDrafts = try db.read { try Data.fetchAll($0, sql: "SELECT value FROM mobile_composer_drafts") }
+        for data in persistedDrafts {
+            if let draft = try? JSONDecoder().decode(ComposerDraft.self, from: data) {
+                ComposerEditOrder.shared.observe(draft.editOrdinal)
+                ComposerEditOrder.shared.observe(draft.controlAttempt?.draftEditOrdinal)
+            }
+        }
     }
 
     /// Rebuildable observer responses share the existing account-scoped cache.
@@ -71,20 +78,52 @@ actor MobileSyncCache {
     }
 
     func composer(threadId: String, scope: String) throws -> ComposerDraft? {
-        try db.read { db in
-            try Data.fetchOne(db, sql: "SELECT value FROM mobile_composer_drafts WHERE scope=? AND threadId=?", arguments: [scope,threadId])
-                .map { try JSONDecoder().decode(ComposerDraft.self, from: $0) }
+        try db.write { db in
+            guard let data = try Data.fetchOne(db, sql: "SELECT value FROM mobile_composer_drafts WHERE scope=? AND threadId=?", arguments: [scope,threadId]) else { return nil }
+            var draft = try JSONDecoder().decode(ComposerDraft.self, from: data)
+            if draft.editOrdinal == nil {
+                // Read and bind the exact current legacy row in one transaction.
+                // A delayed nil-order save can never replace this modern row.
+                try Self.bindLegacyOrder(&draft)
+                try db.execute(sql: "UPDATE mobile_composer_drafts SET value=? WHERE scope=? AND threadId=?",
+                    arguments: [try JSONEncoder().encode(draft),scope,threadId])
+            }
+            return draft
         }
+    }
+
+    private static func bindLegacyOrder(_ draft: inout ComposerDraft) throws {
+        guard draft.editOrdinal == nil else { return }
+        // Exhaustion blocks new writes but must not hide a readable legacy
+        // body behind the caller's failed-load fallback.
+        guard let ordinal = ComposerEditOrder.shared.next() else { return }
+        draft.editOrdinal = ordinal
+        let previousRevision = draft.textRevision
+        if draft.textRevision == nil { draft.textRevision = UUID().uuidString }
+        if var attempt = draft.controlAttempt, attempt.draftEditOrdinal == nil,
+           attempt.draftTextRevision == previousRevision, attempt.request.text == draft.text {
+            attempt.draftTextRevision = draft.textRevision
+            attempt.draftEditOrdinal = ordinal; draft.controlAttempt = attempt
+        }
+    }
+
+    private static func mayAdoptEdit(_ incoming: ComposerDraft, over current: ComposerDraft) -> Bool {
+        guard let next = incoming.editOrdinal else {
+            return current.editOrdinal == nil && incoming.textRevision == current.textRevision && incoming.text == current.text
+        }
+        guard let previous = current.editOrdinal else { return true }
+        return next > previous || (next == previous && incoming.textRevision == current.textRevision && incoming.text == current.text)
     }
     func saveComposer(_ draft: ComposerDraft, threadId: String, scope: String) throws {
         try db.write { db in
             var draft = draft
             draft.controlAttempt = nil
+            ComposerEditOrder.shared.observe(draft.editOrdinal)
             if let data = try Data.fetchOne(db, sql: "SELECT value FROM mobile_composer_drafts WHERE scope=? AND threadId=?", arguments: [scope,threadId]) {
                 let previous = try JSONDecoder().decode(ComposerDraft.self, from: data)
-                guard (draft.editedAt ?? .distantPast) >= (previous.editedAt ?? .distantPast) else { return }
-                guard draft.editedAt != previous.editedAt || draft.textRevision == previous.textRevision else { return }
+                guard Self.mayAdoptEdit(draft, over: previous) else { return }
                 guard draft.textRevision != previous.textRevision || draft.text == previous.text else { return }
+                if draft.editOrdinal == previous.editOrdinal { draft.editedAt = previous.editedAt }
                 // Delayed ordinary draft saves cannot clear or downgrade a sealed
                 // control attempt. Only the dedicated methods below change it.
                 draft.controlAttempt = previous.controlAttempt
@@ -95,8 +134,7 @@ actor MobileSyncCache {
                    previous.controlAttempt?.receipt?.status == "accepted",
                    let consumed = previous.controlAttempt?.draftTextRevision,
                    draft.textRevision == consumed {
-                    draft.text = previous.text; draft.textRevision = previous.textRevision
-                    draft.editedAt = previous.editedAt
+                    return
                 }
             }
             try db.execute(sql: "INSERT INTO mobile_composer_drafts(scope,threadId,value) VALUES(?,?,?) ON CONFLICT(scope,threadId) DO UPDATE SET value=excluded.value",
@@ -105,21 +143,29 @@ actor MobileSyncCache {
     }
 
     func beginControlAttempt(_ attempt: NativeControlAttempt, text: String,
-                             textRevision: String? = nil, editedAt: Date? = nil,
+                             textRevision: String? = nil, editedAt: Date? = nil, editOrdinal: UInt64? = nil,
                              threadId: String, scope: String) throws -> ComposerDraft {
         try db.write { db in
-            var draft = try Data.fetchOne(db, sql: "SELECT value FROM mobile_composer_drafts WHERE scope=? AND threadId=?", arguments: [scope,threadId])
-                .map { try JSONDecoder().decode(ComposerDraft.self, from: $0) } ?? ComposerDraft(editedAt: nil)
+            let data = try Data.fetchOne(db, sql: "SELECT value FROM mobile_composer_drafts WHERE scope=? AND threadId=?", arguments: [scope,threadId])
+            var draft = try data.map { try JSONDecoder().decode(ComposerDraft.self, from: $0) }
+                ?? ComposerDraft(editedAt: nil, textRevision: nil, editOrdinal: nil)
             guard draft.controlAttempt?.isUncertain != true,
                   attempt.operation != .input || draft.outgoing == nil || draft.outgoing?.acknowledgedReceiptID != nil else { throw CodexError.invalidState }
             let revision = textRevision ?? (draft.text == text ? draft.textRevision : nil) ?? UUID().uuidString
             let editTime = editedAt ?? (draft.text == text ? draft.editedAt : nil) ?? attempt.attemptedAt
-            var sealed = attempt; sealed.draftTextRevision = revision
             let sameRevision = draft.textRevision == revision
-            let bindsLegacyRevision = draft.textRevision == nil && draft.text == text && draft.editedAt == editedAt
-            if bindsLegacyRevision || (sameRevision ? text == draft.text && editTime >= (draft.editedAt ?? .distantPast)
-                : editTime > (draft.editedAt ?? .distantPast)) {
-                draft.text = text; draft.textRevision = revision; draft.editedAt = editTime
+            let bindsLegacySnapshot = draft.editOrdinal == nil && draft.text == text && draft.editedAt == editedAt
+                && (draft.textRevision == nil || sameRevision)
+            var ordinal = editOrdinal ?? (sameRevision && draft.text == text ? draft.editOrdinal : nil)
+            if ordinal == nil && (data == nil || bindsLegacySnapshot) {
+                guard let reserved = ComposerEditOrder.shared.next() else { throw CodexError.invalidState }
+                ordinal = reserved
+            }
+            ComposerEditOrder.shared.observe(ordinal)
+            var sealed = attempt; sealed.draftTextRevision = revision; sealed.draftEditOrdinal = ordinal
+            let captured = ComposerDraft(text: text, editedAt: editTime, textRevision: revision, editOrdinal: ordinal)
+            if Self.mayAdoptEdit(captured, over: draft) {
+                draft.text = text; draft.textRevision = revision; draft.editedAt = editTime; draft.editOrdinal = ordinal
             }
             draft.controlAttempt = sealed
             try db.execute(sql: "INSERT INTO mobile_composer_drafts(scope,threadId,value) VALUES(?,?,?) ON CONFLICT(scope,threadId) DO UPDATE SET value=excluded.value",
@@ -133,10 +179,12 @@ actor MobileSyncCache {
         try db.write { db in
             guard let data = try Data.fetchOne(db, sql: "SELECT value FROM mobile_composer_drafts WHERE scope=? AND threadId=?", arguments: [scope,threadId]) else { throw CodexError.invalidState }
             var draft = try JSONDecoder().decode(ComposerDraft.self, from: data)
+            try Self.bindLegacyOrder(&draft)
             guard let previous = draft.controlAttempt, previous.request.submission_id == id else { return draft }
             let attempt = try previous.reconciled(receipt: receipt, localRejection: localRejection, threadID: threadId)
             if attempt.operation == .input, attempt.receipt?.status == "accepted", draft.text == attempt.request.text,
-               let revision = attempt.draftTextRevision, draft.textRevision == revision {
+               let revision = attempt.draftTextRevision, draft.textRevision == revision,
+               let ordinal = attempt.draftEditOrdinal, draft.editOrdinal == ordinal {
                 draft.text = ""; draft.textRevision = UUID().uuidString
             }
             // Receipt metadata is not a user edit. Advancing editedAt here
