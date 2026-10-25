@@ -195,10 +195,13 @@ public struct SettingsSheetView: View {
                         LabeledContent("构建", value: Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "未知")
                     }
                 }
-                .listStyle(.plain)
+                .listStyle(.grouped)
+                .scrollContentBackground(.hidden)
                 .background(CodexAppearance.canvas)
                 .navigationTitle("连接与设置")
                 .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(CodexAppearance.canvas, for: .navigationBar)
+                .toolbarBackground(.visible, for: .navigationBar)
                 .tint(.primary)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
