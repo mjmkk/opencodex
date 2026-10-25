@@ -166,34 +166,67 @@ public struct ThreadsView: View {
         }.buttonStyle(.plain).foregroundStyle(.primary)
     }
 
+    @ViewBuilder
     private func failureContent(viewStore: ViewStoreOf<ThreadsFeature>, errorMessage: String) -> some View {
         let isRefreshing = viewStore.isLoading || viewStore.isSyncing
-        let title = viewStore.failure == nil ? "部分同步未完成"
+        let title = viewStore.failure == nil ? "部分内容未更新"
             : (viewStore.needsConnectionSettings ? "连接需要检查" : "操作未完成")
-        return VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.subheadline.weight(.semibold))
-            Text(viewStore.items.isEmpty ? "目录状态待确认，可重试读取。" : "已保留列表，可继续查看。")
-                .font(.subheadline).foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-            HStack(spacing: 24) {
-                Button { viewStore.send(.refresh) } label: { retryLabel(isRefreshing: isRefreshing) }
-                    .buttonStyle(.plain).font(.subheadline.weight(.semibold))
-                    .disabled(isRefreshing)
-                if let onSettingsTap {
-                    Button("连接设置", action: onSettingsTap)
-                        .buttonStyle(.plain).font(.subheadline)
-                        .foregroundStyle(.secondary).frame(minHeight: 44)
+        if !viewStore.items.isEmpty {
+            HStack(alignment: .top, spacing: 20) {
+                DisclosureGroup {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(isRefreshing ? "上次读取或操作的原因" : "读取或操作未完成的原因")
+                            .font(.footnote.weight(.medium))
+                        Text(recoveryHint(viewStore))
+                            .font(.footnote).foregroundStyle(.secondary)
+                        Text(errorMessage).font(.footnote).textSelection(.enabled)
+                        if let onSettingsTap {
+                            Button("连接设置", action: onSettingsTap)
+                                .buttonStyle(.plain).font(.subheadline)
+                                .frame(minHeight: 44)
+                        }
+                    }
+                    .fixedSize(horizontal: false, vertical: true)
+                } label: {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(isRefreshing ? "正在更新列表…" : title)
+                            .font(.subheadline.weight(.medium))
+                        Text("已保存的任务仍可查看")
+                            .font(.footnote).foregroundStyle(.secondary)
+                    }
+                    .frame(minHeight: 44, alignment: .leading)
                 }
+                Button { viewStore.send(.refresh) } label: { retryLabel(isRefreshing: isRefreshing) }
+                    .buttonStyle(.plain).font(.subheadline.weight(.medium))
+                    .disabled(isRefreshing)
             }
-            DisclosureGroup("查看失败原因") {
-                Text(recoveryHint(viewStore))
-                    .font(.footnote).foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(isRefreshing ? "正在读取任务…" : title).font(.subheadline.weight(.semibold))
+                Text("目录状态待确认，可重试读取。")
+                    .font(.subheadline).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Text(errorMessage).font(.footnote).textSelection(.enabled)
-                    .fixedSize(horizontal: false, vertical: true)
-            }.font(.footnote).frame(minHeight: 44)
+                HStack(spacing: 24) {
+                    Button { viewStore.send(.refresh) } label: { retryLabel(isRefreshing: isRefreshing) }
+                        .buttonStyle(.plain).font(.subheadline.weight(.semibold))
+                        .disabled(isRefreshing)
+                    if let onSettingsTap {
+                        Button("连接设置", action: onSettingsTap)
+                            .buttonStyle(.plain).font(.subheadline)
+                            .foregroundStyle(.secondary).frame(minHeight: 44)
+                    }
+                }
+                DisclosureGroup(isRefreshing ? "上次失败原因" : "查看失败原因") {
+                    Text(recoveryHint(viewStore))
+                        .font(.footnote).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(errorMessage).font(.footnote).textSelection(.enabled)
+                        .fixedSize(horizontal: false, vertical: true)
+                }.font(.footnote).frame(minHeight: 44)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func retryLabel(isRefreshing: Bool) -> some View {
