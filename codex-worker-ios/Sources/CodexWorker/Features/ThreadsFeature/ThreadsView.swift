@@ -546,6 +546,11 @@ private struct ThreadInformationView: View {
                                 .font(.body)
                                 .foregroundStyle(.secondary)
                         }
+                        if metadata?.isPartial == true {
+                            Text("部分已保存历史")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
                     }
                     .listRowInsets(EdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20))
                     .listRowBackground(Color.clear)
@@ -553,33 +558,13 @@ private struct ThreadInformationView: View {
                 }
 
                 Section {
-                    informationHeading("任务记录")
                     informationField("最后活动", value: thread.lastActiveAt.map(ThreadListDate.minute) ?? "时间未知")
                         .accessibilityLabel("最后活动：" + (thread.lastActiveAt.map(ThreadListDate.full) ?? "时间未知"))
                     informationField("上次同步", value: metadata == nil ? "同步记录未知" : (metadata?.lastSyncedAt.map(ThreadListDate.minute) ?? "本地内容 · 等待同步"))
                         .accessibilityLabel("上次同步：" + (metadata == nil ? "同步记录未知" : (metadata?.lastSyncedAt.map(ThreadListDate.full) ?? "本地内容 · 等待同步")))
-                    if metadata?.isPartial == true {
-                        Label("部分历史", systemImage: "text.alignleft")
-                            .font(.body)
-                            .listRowInsets(informationInsets)
-                    }
                     if let cwd = thread.cwd, !cwd.isEmpty {
                         informationField("工作目录", value: cwd)
                     }
-                }
-
-                if let preview = thread.preview?.trimmingCharacters(in: .whitespacesAndNewlines), !preview.isEmpty {
-                    Section {
-                        informationHeading("内容预览")
-                        Text(preview)
-                            .font(.body)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .textSelection(.enabled)
-                            .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 20, trailing: 20))
-                    }
-                }
-
-                Section {
                     DisclosureGroup("完整记录与来源") {
                         sourceField("最后活动", value: thread.lastActiveAt.map(ThreadListDate.full) ?? "时间未知")
                         sourceField("上次同步", value: metadata == nil ? "同步记录未知" : (metadata?.lastSyncedAt.map(ThreadListDate.full) ?? "本地内容 · 等待同步"))
@@ -595,6 +580,17 @@ private struct ThreadInformationView: View {
                     }
                     .listRowInsets(informationInsets)
                 }
+
+                if let preview = thread.preview?.trimmingCharacters(in: .whitespacesAndNewlines), !preview.isEmpty {
+                    Section {
+                        informationHeading("内容预览")
+                        Text(preview)
+                            .font(.body)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
+                            .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 20, trailing: 20))
+                    }
+                }
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
@@ -602,6 +598,8 @@ private struct ThreadInformationView: View {
             .tint(.primary)
             .navigationTitle("任务信息")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(CodexAppearance.canvas, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("完成") { dismiss() }
