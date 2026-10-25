@@ -369,6 +369,7 @@ public struct CodexChatView: View {
                     .frame(minHeight: 44).disabled(viewStore.isControlLoading || viewStore.isSending)
                 if viewStore.canStop {
                     Button("停止本轮", role: .destructive) { viewStore.send(.stopCurrentTurn) }
+                        .foregroundStyle(.red)
                         .frame(minHeight: 44).accessibilityIdentifier("stop-current-native-turn")
                 }
             }
