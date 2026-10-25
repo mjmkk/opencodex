@@ -151,16 +151,19 @@ struct GoalOverviewView: View {
     }
 
     @ViewBuilder private func summaryValues(_ row: GoalOverviewRow) -> some View {
-        let sharedLastKnown = sharesObservation(row) && row.progressAvailability == .lastKnown
+        let showsProgress = !row.progressNotApplicable
+        let sharedLastKnown = showsProgress && sharesObservation(row) && row.progressAvailability == .lastKnown
         if row.progressAvailability == .pending, row.healthAvailability == .pending {
             Text("待评估").font(.subheadline).foregroundStyle(.secondary)
         } else {
-            HStack(spacing: 6) {
-                Text(progressTitle(row)).fontWeight(.medium).monospacedDigit()
-                if row.progressAvailability == .lastKnown && !sharedLastKnown {
-                    Text("上次").font(.footnote).foregroundStyle(.secondary)
-                }
-            }.font(.subheadline).foregroundStyle(.primary)
+            if showsProgress {
+                HStack(spacing: 6) {
+                    Text(progressTitle(row)).fontWeight(.medium).monospacedDigit()
+                    if row.progressAvailability == .lastKnown && !sharedLastKnown {
+                        Text("上次").font(.footnote).foregroundStyle(.secondary)
+                    }
+                }.font(.subheadline).foregroundStyle(.primary)
+            }
             HStack(spacing: 6) {
                 if let health = row.visibleHealth {
                     Image(systemName: healthSymbol(health)).foregroundStyle(color(health))
@@ -169,7 +172,7 @@ struct GoalOverviewView: View {
                     Text(healthPlaceholder(row.healthAvailability))
                 }
                 if row.healthAvailability == .lastKnown && !sharedLastKnown {
-                    Text("上次").font(.footnote).foregroundStyle(.secondary)
+                    Text(showsProgress ? "上次" : "上次观察").font(.footnote).foregroundStyle(.secondary)
                 }
             }.font(.subheadline.weight(.medium)).foregroundStyle(.primary)
             if sharedLastKnown {

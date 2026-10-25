@@ -193,6 +193,8 @@ public struct ChatFeature {
                 case .success(let observation):
                     state.controlObservation = observation; state.controlObservedAt = Date()
                     state.controlMessage = nil
+                case .failure(.apiError(code: "NATIVE_THREAD_NOT_CONFIGURED", message: _)):
+                    state.controlObservation = nil; state.controlMessage = "此任务的回复尚未接通，草稿会保留。"
                 case .failure:
                     state.controlObservation = nil; state.controlMessage = "暂时无法核对执行状态，草稿会保留。"
                 }
