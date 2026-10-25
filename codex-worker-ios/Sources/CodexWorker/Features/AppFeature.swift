@@ -34,6 +34,8 @@ public struct AppFeature {
         public var connectionState: ConnectionState = .disconnected
         public var workerReachability: WorkerReachability = .unknown
         public var pendingHealthChecks = 0
+        // Binds a completion to the read that owns the current busy indicator.
+        var syncRequestID: UUID?
         public var isCheckingConnection: Bool { pendingHealthChecks > 0 }
         public var executionAccessMode: ExecutionAccessMode = .defaultPermissions
         public var threads = ThreadsFeature.State()
@@ -65,7 +67,8 @@ public struct AppFeature {
         case healthCheckNow
         case healthCheckResponse(Result<HealthCheckResponse, CodexError>)
         case syncNow
-        case syncResponse(Result<MobileSyncResult, CodexError>)
+        case syncResponse(requestID: UUID, Result<MobileSyncResult, CodexError>)
+        case syncCancelled(requestID: UUID)
         case syncCached(generation: UInt64, MobileSyncResult)
         case openNotificationThread(String)
     }
@@ -107,6 +110,8 @@ public struct AppFeature {
                 )
 
             case .onDisappear:
+                state.syncRequestID = nil
+                state.threads.isSyncing = false
                 return .merge(.cancel(id: CancelID.healthMonitor), .cancel(id: CancelID.syncLoop), .cancel(id: CancelID.syncRequest))
 
             case .lifecycleChanged(let lifecycle):
@@ -118,6 +123,7 @@ public struct AppFeature {
                         .send(.chat(.appDidBecomeActive))
                     )
                 case .background:
+                    state.syncRequestID = nil
                     state.threads.isSyncing = false
                     return .merge(.send(.chat(.appDidEnterBackground)),
                         .cancel(id: CancelID.syncLoop), .cancel(id: CancelID.syncRequest))
@@ -145,22 +151,34 @@ public struct AppFeature {
 
             case .syncNow:
                 guard !state.threads.isSyncing else { return .none }
+                let requestID = UUID()
+                state.syncRequestID = requestID
                 state.threads.isSyncing = true
                 let preferred = state.activeThread.map { [$0.threadId] } ?? []
                 return .run { send in
                     @Dependency(\.threadSyncClient) var sync
-                    do { await send(.syncResponse(.success(try await sync.sync(preferred, false)))) }
-                    catch is CancellationError { }
-                    catch { await send(.syncResponse(.failure(CodexError.from(error)))) }
+                    do { await send(.syncResponse(requestID: requestID, .success(try await sync.sync(preferred, false)))) }
+                    catch is CancellationError { await send(.syncCancelled(requestID: requestID)) }
+                    catch { await send(.syncResponse(requestID: requestID, .failure(CodexError.from(error)))) }
                 }.cancellable(id: CancelID.syncRequest, cancelInFlight: true)
 
-            case .syncResponse(.failure(let error)):
+            case .syncCancelled(let requestID):
+                guard state.syncRequestID == requestID else { return .none }
+                state.syncRequestID = nil
+                state.threads.isSyncing = false
+                return .none
+
+            case .syncResponse(let requestID, .failure(let error)):
+                guard state.syncRequestID == requestID else { return .none }
+                state.syncRequestID = nil
                 state.threads.isSyncing = false
                 state.threads.failure = error
                 state.threads.errorMessage = "同步未完成，保留本地内容：" + error.localizedDescription
                 return .none
 
-            case .syncResponse(.success(let result)):
+            case .syncResponse(let requestID, .success(let result)):
+                guard state.syncRequestID == requestID else { return .none }
+                state.syncRequestID = nil
                 state.threads.isSyncing = false
                 state.threads.failure = nil
                 state.threads.errorMessage = result.failures.isEmpty ? nil

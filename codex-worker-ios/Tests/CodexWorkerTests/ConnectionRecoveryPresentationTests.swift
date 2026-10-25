@@ -47,13 +47,19 @@ struct ConnectionRecoveryPresentationTests {
     func parentSyncFailurePublishesItsTypedRecoveryWithItsMessage() async {
         var initial = AppFeature.State()
         initial.threads.isSyncing = true
+        let requestID = UUID()
+        initial.syncRequestID = requestID
         let store = TestStore(initialState: initial) { AppFeature() }
         let error = CodexError.secureConnectionRequired("system reason")
-        await store.send(.syncResponse(.failure(error))) {
+        await store.send(.syncResponse(requestID: requestID, .failure(error))) {
+            $0.syncRequestID = nil
             $0.threads.isSyncing = false
             $0.threads.failure = error
             $0.threads.errorMessage = "同步未完成，保留本地内容：" + error.localizedDescription
         }
+        #expect(store.state.syncRequestID == nil && !store.state.threads.isSyncing)
+        #expect(store.state.threads.failure == error)
+        #expect(store.state.threads.errorMessage == "同步未完成，保留本地内容：" + error.localizedDescription)
         #expect(store.state.threads.needsConnectionSettings)
         await store.finish()
     }
