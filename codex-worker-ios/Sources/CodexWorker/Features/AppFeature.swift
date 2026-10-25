@@ -163,7 +163,9 @@ public struct AppFeature {
             case .syncResponse(.success(let result)):
                 state.threads.isSyncing = false
                 state.threads.failure = nil
-                state.threads.errorMessage = result.failures.isEmpty ? nil : "部分任务尚未同步，已保留本地内容。"
+                state.threads.errorMessage = result.failures.isEmpty ? nil
+                    : "部分任务尚未同步，已保留本地内容。\n\n" + result.failures.sorted { $0.key < $1.key }
+                        .map { "\($0.key)\n\($0.value)" }.joined(separator: "\n\n")
                 var changedIdentity: Thread?
                 if let id = state.activeThread?.threadId {
                     state.chat.lastSyncedAt = result.metadata[id]?.lastSyncedAt

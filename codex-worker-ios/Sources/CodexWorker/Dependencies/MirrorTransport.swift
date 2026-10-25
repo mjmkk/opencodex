@@ -95,6 +95,7 @@ public struct MirrorBody: Codable, Equatable, Sendable {
     public var refresh_requested: Bool?
 
     public var isPartial: Bool { page.next_offset != nil || thread.content_coverage?.stringValue != "complete" }
+    public var refreshRequested: Bool { refresh_requested == true || thread.refresh_requested == true }
 
     mutating func append(_ next: MirrorBody) throws {
         guard namespace == next.namespace, thread.thread_id == next.thread.thread_id,
@@ -110,7 +111,7 @@ public struct MirrorBody: Codable, Equatable, Sendable {
         var attachmentIDs = Set(attachments.map(\.native_id))
         attachments += next.attachments.filter { attachmentIDs.insert($0.native_id).inserted }
         page.next_offset = next.page.next_offset; page.local_total = next.page.local_total
-        refresh_requested = refresh_requested == true || next.refresh_requested == true
+        refresh_requested = refreshRequested || next.refreshRequested
     }
 }
 
@@ -126,7 +127,7 @@ extension MirrorCachedBody {
             records: body.items.map { .init(id: $0.native_id, title: $0.type ?? "原始记录", observedAt: $0.last_seen_at) },
             attachments: body.attachments.map { .init(id: $0.native_id, filename: $0.filename ?? $0.native_id, availability: $0.state ?? "状态未知") },
             downloadedAt: downloadedAt, isPartial: body.isPartial, hasMore: body.page.next_offset != nil,
-            availableMessageCount: body.page.local_total, refreshRequested: body.refresh_requested == true,
+            availableMessageCount: body.page.local_total, refreshRequested: body.refreshRequested,
             pagination: .init(snapshot: body.page.snapshot, nextOffset: body.page.next_offset))
     }
 }

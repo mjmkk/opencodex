@@ -18,7 +18,10 @@ enum MirrorHistoryReader {
                 guard first.page.offset == 0 else { throw CodexError.invalidState }
                 pagesRead = 1
                 if var old, old.page.snapshot == first.page.snapshot {
-                    old.refresh_requested = first.refresh_requested
+                    // The snapshot binds messages, not the source observation.
+                    // Keep the readable checkpoint while accepting fresh metadata.
+                    old.thread = first.thread
+                    old.refresh_requested = first.refreshRequested
                     body = old
                 } else { body = first }
                 try validateAccount(); try Task.checkCancellation()

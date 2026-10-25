@@ -50,7 +50,7 @@ public struct ThreadsView: View {
                     if let errorMessage = viewStore.errorMessage {
                         Section {
                             failureContent(viewStore: viewStore, errorMessage: errorMessage)
-                                .listRowInsets(EdgeInsets(top: 16, leading: 20, bottom: 8, trailing: 20))
+                                .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 20))
                                 .listRowSeparator(.hidden)
                         }
                     }
@@ -166,41 +166,39 @@ public struct ThreadsView: View {
 
     private func failureContent(viewStore: ViewStoreOf<ThreadsFeature>, errorMessage: String) -> some View {
         let isRefreshing = viewStore.isLoading || viewStore.isSyncing
-        let needsSettings = viewStore.needsConnectionSettings && onSettingsTap != nil
-        return VStack(alignment: .leading, spacing: 12) {
-            Label("任务目录未能更新", systemImage: "exclamationmark.circle")
-                .font(.body.weight(.medium))
-            Text(recoveryHint(viewStore))
+        let title = viewStore.failure == nil ? "部分同步未完成"
+            : (viewStore.needsConnectionSettings ? "连接需要检查" : "操作未完成")
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(title).font(.subheadline.weight(.semibold))
+            Text(viewStore.items.isEmpty ? "目录状态待确认，可重试读取。" : "已保留列表，可继续查看。")
                 .font(.subheadline).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-            if needsSettings, let onSettingsTap {
-                Button("连接与设置", action: onSettingsTap)
-                    .buttonStyle(CodexPrimaryButtonStyle())
+            HStack(spacing: 24) {
                 Button { viewStore.send(.refresh) } label: { retryLabel(isRefreshing: isRefreshing) }
-                    .buttonStyle(.plain).font(.footnote)
+                    .buttonStyle(.plain).font(.subheadline.weight(.semibold))
                     .disabled(isRefreshing)
-            } else {
-                Button { viewStore.send(.refresh) } label: { retryLabel(isRefreshing: isRefreshing) }
-                    .buttonStyle(CodexPrimaryButtonStyle()).disabled(isRefreshing)
                 if let onSettingsTap {
-                    Button("连接与设置", action: onSettingsTap)
-                        .buttonStyle(.plain).font(.footnote).frame(minHeight: 44)
+                    Button("连接设置", action: onSettingsTap)
+                        .buttonStyle(.plain).font(.subheadline)
+                        .foregroundStyle(.secondary).frame(minHeight: 44)
                 }
             }
             DisclosureGroup("查看失败原因") {
+                Text(recoveryHint(viewStore))
+                    .font(.footnote).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
                 Text(errorMessage).font(.footnote).textSelection(.enabled)
                     .fixedSize(horizontal: false, vertical: true)
             }.font(.footnote).frame(minHeight: 44)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, 8)
     }
 
     private func retryLabel(isRefreshing: Bool) -> some View {
         HStack(spacing: 8) {
             if isRefreshing { ProgressView().controlSize(.small) }
             else { Image(systemName: "arrow.clockwise") }
-            Text(isRefreshing ? "正在读取…" : "重新读取")
+            Text(isRefreshing ? "正在读取…" : "重试")
         }.frame(minHeight: 44)
     }
 
