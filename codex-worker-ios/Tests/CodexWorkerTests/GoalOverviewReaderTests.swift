@@ -4,7 +4,7 @@ import XCTest
 
 /// Integration checks use an authorized saved observation, production SQLite,
 /// real HTTPS reads, and an actual refused connection. No API/AI response stub.
-/// The local verification runner places the saved cache entry in Documents;
+/// The local verification runner identifies the authorized normal App container;
 /// environments without that private input explicitly skip these checks.
 @MainActor
 final class GoalOverviewReaderTests: XCTestCase {
@@ -32,7 +32,7 @@ final class GoalOverviewReaderTests: XCTestCase {
         let gate = AsyncStream<Void>.makeStream()
 
         func read() async throws -> JSONValue {
-            let value = try await APIClient.live.goalOverview()
+            let value = try await GoalOverviewReaderTests.realRead()
             _ = try GoalOverviewDecoder.rows(value)
             payload = value
             // Delay delivery of a genuine response, without changing its bytes.
@@ -43,9 +43,32 @@ final class GoalOverviewReaderTests: XCTestCase {
         func release() { gate.continuation.yield(()); gate.continuation.finish() }
     }
 
+    private static func realAppDirectory() throws -> URL {
+        guard let path = ProcessInfo.processInfo.environment["AGT12_REAL_APP_DATA_DIRECTORY"] else {
+            throw XCTSkip("Requires the authorized normal App container; no generated fixture fallback")
+        }
+        return URL(fileURLWithPath: path, isDirectory: true)
+    }
+
+    private static func realRead() async throws -> JSONValue {
+        let file = try realAppDirectory().appendingPathComponent("Library/Preferences/chenken.CodexWorkerApp.plist")
+        let plist = try PropertyListSerialization.propertyList(from: Data(contentsOf: file), format: nil)
+        let values = try XCTUnwrap(plist as? [String: Any])
+        let data = try XCTUnwrap(values["codex.worker.configuration"] as? Data)
+        _ = try JSONDecoder().decode(WorkerConfiguration.self, from: data)
+        // Supply the existing configuration only to this unhosted test process.
+        // Never persist credentials or change the normal App's defaults.
+        let defaults = UserDefaults.standard
+        let previous = defaults.volatileDomain(forName: UserDefaults.argumentDomain)
+        var overlay = previous
+        overlay["codex.worker.configuration"] = data
+        defaults.setVolatileDomain(overlay, forName: UserDefaults.argumentDomain)
+        defer { defaults.setVolatileDomain(previous, forName: UserDefaults.argumentDomain) }
+        return try await APIClient.live.goalOverview()
+    }
+
     private func observation() throws -> GoalOverviewCacheEntry {
-        let directory = try XCTUnwrap(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first)
-        let file = directory.appendingPathComponent("AGT12-Overview-baseline.json")
+        let file = try Self.realAppDirectory().appendingPathComponent("Documents/AGT12-Overview-baseline.json")
         guard FileManager.default.fileExists(atPath: file.path) else {
             throw XCTSkip("Requires the authorized real Overview cache entry; no generated fixture fallback")
         }
@@ -106,7 +129,7 @@ final class GoalOverviewReaderTests: XCTestCase {
         var received: JSONValue?
         let reader = GoalOverviewReader(cache: cache, currentScope: identity.scope,
             namespaceForScope: identity.namespace, readRemote: {
-                let payload = try await APIClient.live.goalOverview()
+                let payload = try await Self.realRead()
                 received = payload
                 return payload
             })
