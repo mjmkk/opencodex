@@ -648,7 +648,7 @@ private struct CodexMessageBubble: View {
                 Spacer(minLength: 24)
                 VStack(alignment: .trailing, spacing: 4) {
                     messageIdentity
-                    Text(message.text)
+                    userMessageContent
                         .textSelection(.enabled)
                         .font(.body)
                         .foregroundStyle(.primary)
@@ -715,6 +715,35 @@ private struct CodexMessageBubble: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 10)
+    }
+
+    @ViewBuilder
+    private var userMessageContent: some View {
+        if let presentation = QuestionReplyPresentation(message.text, isCurrentUser: message.user.isCurrentUser) {
+            VStack(alignment: .leading, spacing: 12) {
+                ForEach(Array(presentation.items.enumerated()), id: \.offset) { index, item in
+                    if index > 0 { Divider() }
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(item.question)
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                        Text(item.answer)
+                    }
+                }
+                DisclosureGroup {
+                    Text(presentation.originalText)
+                        .font(.footnote)
+                        .padding(.top, 6)
+                } label: {
+                    Text("原始文本")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .tint(.secondary)
+            }
+        } else {
+            Text(message.text)
+        }
     }
 
     private var messageIdentity: some View {
