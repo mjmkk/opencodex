@@ -75,13 +75,49 @@ final class GoalOverviewReaderTests: XCTestCase {
         return try JSONDecoder().decode(JSONValue.self, from: data)
     }
 
-    private func waitForRealResponse(_ delivery: Delivery, reader: GoalOverviewReader) async throws {
-        let deadline = Date().addingTimeInterval(40)
-        while delivery.payload == nil && reader.failure == nil && Date() < deadline {
-            try await Task.sleep(for: .milliseconds(10))
+    private func waitForRealResponse(_ delivery: Delivery, reader: GoalOverviewReader,
+                                    pending: Task<Void, Never>, baseline: GoalOverviewCacheEntry) async throws {
+        do {
+            let deadline = Date().addingTimeInterval(40)
+            while delivery.payload == nil && reader.failure == nil && Date() < deadline {
+                try await Task.sleep(for: .milliseconds(10))
+            }
+            let payload = try XCTUnwrap(delivery.payload, "A genuine backend response is required")
+            let namespace = try XCTUnwrap(payload.objectValue?["namespace"]?.stringValue)
+            let revision = try XCTUnwrap(payload.objectValue?["snapshot_revision"]?.intValue)
+            let previous = try XCTUnwrap(baseline.payload.objectValue?["snapshot_revision"]?.intValue)
+            XCTAssertEqual(namespace, baseline.payload.objectValue?["namespace"]?.stringValue)
+            XCTAssertGreaterThanOrEqual(revision, previous)
+            guard namespace == baseline.payload.objectValue?["namespace"]?.stringValue,
+                  revision >= previous else { throw CodexError.invalidState }
+        } catch {
+            reader.invalidate()
+            pending.cancel()
+            delivery.release()
+            await pending.value
+            throw error
         }
-        XCTAssertNotNil(delivery.payload, "The genuine backend read must succeed; failure is not a substitute for a delayed success")
-        if delivery.payload == nil { throw CodexError.invalidState }
+    }
+
+    func testGenuineResponsePersistsAndPublishes() async throws {
+        let entry = try observation(), identity = try makeIdentity(entry)
+        defer { identity.remove() }
+        let (cache, _) = try makeCache()
+        var received: JSONValue?
+        let reader = GoalOverviewReader(cache: cache, currentScope: identity.scope,
+            namespaceForScope: identity.namespace, readRemote: {
+                let payload = try await APIClient.live.goalOverview()
+                received = payload
+                return payload
+            })
+        await reader.refresh()
+        let payload = try XCTUnwrap(received)
+        XCTAssertNil(reader.failure)
+        XCTAssertTrue(reader.hasSnapshot)
+        XCTAssertEqual(reader.rows, try GoalOverviewDecoder.rows(payload))
+        XCTAssertEqual(reader.inventoryValidation, try GoalOverviewDecoder.inventoryValidation(payload))
+        let retained = try await cache.goalOverview(scope: identity.scope())?.payload
+        XCTAssertEqual(retained, payload)
     }
 
     func testReopenedCacheSurvivesRealConnectionFailure() async throws {
@@ -146,7 +182,7 @@ final class GoalOverviewReaderTests: XCTestCase {
             namespaceForScope: identity.namespace, readRemote: delivery.read)
         let pending = Task { await reader.refresh() }
         await Task.yield()
-        try await waitForRealResponse(delivery, reader: reader)
+        try await waitForRealResponse(delivery, reader: reader, pending: pending, baseline: entry)
         reader.invalidate()
         delivery.release()
         await pending.value
@@ -168,7 +204,7 @@ final class GoalOverviewReaderTests: XCTestCase {
             namespaceForScope: identity.namespace, readRemote: delivery.read)
         let pending = Task { await reader.refresh() }
         await Task.yield()
-        try await waitForRealResponse(delivery, reader: reader)
+        try await waitForRealResponse(delivery, reader: reader, pending: pending, baseline: entry)
         identity.defaults.removeObject(forKey: "current")
         reader.identityChanged()
         delivery.release()
