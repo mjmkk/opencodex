@@ -160,7 +160,6 @@ public struct CodexChatView: View {
                         Group {
                           if showsComposer && viewStore.activeThreadId != nil {
                         VStack(alignment: .leading, spacing: 8) {
-                            nativeControlRow(viewStore)
                             HStack(alignment: .bottom, spacing: 8) {
                                 // Mirrored history has no verified owner route for these tools.
                                 if !viewStore.hasCachedSource {
@@ -208,24 +207,7 @@ public struct CodexChatView: View {
                             .padding(.horizontal, 12).padding(.vertical, 5)
                             .background(CodexAppearance.canvas, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                             .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(CodexAppearance.separator, lineWidth: 0.5))
-                            if let attempt = viewStore.controlAttempt, attempt.isUncertain {
-                                Text(attempt.operation == .interrupt ? "停止结果未确认，不会自动重试。" : "发送结果未确认，原文已保留，不会自动重试。")
-                                    .font(.footnote).foregroundStyle(.secondary)
-                                Button("核对提交结果") { viewStore.send(.checkControlReceipt) }
-                                    .font(.footnote.weight(.medium)).frame(minHeight: 44)
-                                    .disabled(viewStore.isSending)
-                            } else if let message = controlReceiptMessage(viewStore.controlAttempt) {
-                                Text(message).font(.footnote).foregroundStyle(.secondary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                            if let message = viewStore.controlMessage {
-                                Text(message).font(.footnote).foregroundStyle(.secondary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            } else if !viewStore.canInput && viewStore.controlAttempt?.isUncertain != true {
-                                Text("仅保存草稿 · 回复尚未接通")
-                                    .font(.footnote).foregroundStyle(.secondary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
+                            nativeControlRow(viewStore)
                         }
                         .padding(.horizontal, CodexAppearance.pageInset).padding(.top, 10).padding(.bottom, 8)
 
@@ -364,8 +346,8 @@ public struct CodexChatView: View {
 
     private func nativeControlRow(_ viewStore: ViewStore<ViewState, ChatFeature.Action>) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         if viewStore.isControlLoading || viewStore.isSending { ProgressView().controlSize(.small) }
                         Text(viewStore.isReceiptChecking ? "正在核对提交结果…"
@@ -379,13 +361,23 @@ public struct CodexChatView: View {
                         Text("上次确认 \(observedAt.formatted(date: Calendar.current.isDateInToday(observedAt) ? .omitted : .abbreviated, time: .standard))")
                             .font(.caption).foregroundStyle(.secondary)
                     }
+                    nativeControlMessages(viewStore)
                 }
-                Spacer(minLength: 0)
-                Button("刷新执行状态") { viewStore.send(.refreshControl) }
-                    .frame(minHeight: 44).disabled(viewStore.isControlLoading || viewStore.isSending)
+                .fixedSize(horizontal: false, vertical: true)
+                .layoutPriority(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                Button { viewStore.send(.refreshControl) } label: {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.body)
+                        .frame(width: 44, height: 44)
+                }
+                .accessibilityLabel("刷新执行状态")
+                .help("刷新执行状态")
+                .disabled(viewStore.isControlLoading || viewStore.isSending)
                 if viewStore.canStop {
                     Button("停止本轮", role: .destructive) { viewStore.send(.stopCurrentTurn) }
                         .foregroundStyle(.red)
+                        .fixedSize(horizontal: true, vertical: false)
                         .frame(minHeight: 44).accessibilityIdentifier("stop-current-native-turn")
                 }
             }
@@ -396,6 +388,29 @@ public struct CodexChatView: View {
                     .font(.footnote).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func nativeControlMessages(_ viewStore: ViewStore<ViewState, ChatFeature.Action>) -> some View {
+        if let attempt = viewStore.controlAttempt, attempt.isUncertain {
+            Text(attempt.operation == .interrupt ? "停止结果未确认，不会自动重试。" : "发送结果未确认，原文已保留，不会自动重试。")
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Button("核对提交结果") { viewStore.send(.checkControlReceipt) }
+                .font(.footnote.weight(.medium)).frame(minHeight: 44)
+                .disabled(viewStore.isSending)
+        } else if let message = controlReceiptMessage(viewStore.controlAttempt) {
+            Text(message).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        if let message = viewStore.controlMessage {
+            Text(message).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        } else if !viewStore.canInput && viewStore.controlAttempt?.isUncertain != true {
+            Text("仅保存草稿 · 回复尚未接通")
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
