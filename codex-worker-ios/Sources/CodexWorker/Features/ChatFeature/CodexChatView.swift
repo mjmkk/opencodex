@@ -144,9 +144,12 @@ public struct CodexChatView: View {
                     didSendMessage: { draft in
                         viewStore.send(.didSendDraft(draft))
                     },
-                    messageBuilder: { message, _, _, _, _, _, _ in
+                    messageBuilder: { message, positionInUserGroup, _, _, _, _, _ in
                         CodexMessageBubble(
                             message: message,
+                            showsAuthor: message.user.isCurrentUser || message.user.id != "assistant"
+                                || positionInUserGroup == .first
+                                || positionInUserGroup == .single,
                             renderPipeline: renderPipeline,
                             codeSyntaxHighlighter: codeSyntaxHighlighter,
                             colorScheme: colorScheme,
@@ -633,6 +636,7 @@ public struct CodexChatView: View {
 
 private struct CodexMessageBubble: View {
     let message: Message
+    let showsAuthor: Bool
     let renderPipeline: MessageRenderPipeline
     let codeSyntaxHighlighter: CodeSyntaxHighlighter
     let colorScheme: ColorScheme
@@ -663,7 +667,11 @@ private struct CodexMessageBubble: View {
             } else {
                 let rendered = renderPipeline.render(message.text)
                 VStack(alignment: .leading, spacing: 0) {
-                    messageIdentity.padding(.horizontal, 12).padding(.bottom, 2)
+                    if showsAuthor || hasMessageTimestamp {
+                        messageIdentity
+                            .padding(.horizontal, 12)
+                            .padding(.bottom, isAssistant ? 6 : 2)
+                    }
                     Markdown(rendered.markdownContent)
                         .markdownTheme(messageTheme)
                         .relativeLineSpacing(.em(0.25))
@@ -690,7 +698,7 @@ private struct CodexMessageBubble: View {
                         })
                         .textSelection(.enabled)
                         .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
+                        .padding(.vertical, isAssistant ? 0 : 10)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
 
@@ -711,11 +719,21 @@ private struct CodexMessageBubble: View {
 
     private var messageIdentity: some View {
         HStack(spacing: 6) {
-            Text(message.user.isCurrentUser ? "你" : message.user.name)
-            if message.createdAt > Date(timeIntervalSince1970: 0) {
+            if showsAuthor {
+                Text(message.user.isCurrentUser ? "你" : message.user.name)
+            }
+            if hasMessageTimestamp {
                 Text(MobileTime.timestamp(message.createdAt))
             }
         }.font(.caption2).foregroundStyle(.secondary)
+    }
+
+    private var isAssistant: Bool {
+        message.user.id == "assistant" && !message.user.isCurrentUser
+    }
+
+    private var hasMessageTimestamp: Bool {
+        message.createdAt > Date(timeIntervalSince1970: 0)
     }
 
     private var messageTheme: Theme {
