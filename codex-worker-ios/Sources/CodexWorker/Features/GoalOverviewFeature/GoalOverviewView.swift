@@ -43,6 +43,15 @@ struct GoalOverviewView: View {
                     Button("关闭") { dismiss() }.frame(minWidth: 44, minHeight: 44)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        inventoryDetails
+                    } label: {
+                        Image(systemName: "info.circle").frame(minWidth: 44, minHeight: 44)
+                    }
+                    .accessibilityLabel("观察说明")
+                    .accessibilityIdentifier("overview-observation-info")
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     Button { Task { await refresh() } } label: {
                         Group {
                             if isRefreshing { ProgressView() }
@@ -62,19 +71,6 @@ struct GoalOverviewView: View {
             if dynamicTypeSize.isAccessibilitySize {
                 VStack(spacing: 4) { filterButtons }
             } else { HStack(spacing: 4) { filterButtons } }
-            NavigationLink {
-                inventoryDetails
-            } label: {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(hasSnapshot
-                         ? "\(rows.filter { $0.hasPendingAssessment }.count) 待评估 · \(rows.filter { $0.hasLastKnownAssessment }.count) 含上次观察"
-                         : inventoryValidation.title)
-                    Spacer(minLength: 0)
-                    Image(systemName: "info.circle").accessibilityHidden(true)
-                }
-                .font(.footnote).foregroundStyle(.secondary)
-                .frame(minHeight: 44, alignment: .leading).contentShape(Rectangle())
-            }.buttonStyle(.plain)
             if let failure {
                 Label(failure, systemImage: "exclamationmark.arrow.triangle.2.circlepath")
                     .font(.footnote).foregroundStyle(.secondary)
@@ -87,6 +83,13 @@ struct GoalOverviewView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 Text(inventoryValidation.title).font(.title2.weight(.semibold))
+                if hasSnapshot {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("全部 \(rows.count) 个目标").font(.subheadline.weight(.medium))
+                        Text("\(rows.filter { $0.hasPendingAssessment }.count) 待评估 · \(rows.filter { $0.hasLastKnownAssessment }.count) 含上次观察")
+                            .font(.subheadline).foregroundStyle(.secondary)
+                    }
+                }
                 Text("任务列表和每个目标的评分分别更新。刷新列表后，目标可能仍保留上一次判断。")
                 timestamp("列表核对", inventoryValidation.verifiedAt)
                 Text("每项目标均标明判断状态与原始时间。尚无判断的项目会显示待评估，不会记成 0%。")
@@ -220,17 +223,22 @@ struct GoalOverviewView: View {
     }
 
     private func assessments(_ row: GoalOverviewRow) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            if sharesObservation(row) {
+        let sharedEvidence = sharesObservation(row)
+        return VStack(alignment: .leading, spacing: 12) {
+            if sharedEvidence {
                 observationDetails(state: row.progressAvailability, dimension: row.progressDimension, row: row)
             }
             assessment("进度", value: progressTitle(row), state: row.progressAvailability,
                        dimension: row.progressDimension, row: row, progress: row.validProgress,
-                       showsObservation: !sharesObservation(row))
+                       showsEvidence: !sharedEvidence)
             Divider()
             assessment("健康状态", value: row.visibleHealth.map(healthTitle) ?? "尚无判断",
                        state: row.healthAvailability, dimension: row.healthDimension, row: row,
-                       health: row.visibleHealth, showsObservation: !sharesObservation(row))
+                       health: row.visibleHealth, showsEvidence: !sharedEvidence)
+            if sharedEvidence {
+                sourceDetails(row.progressDimension?.sourceNotes ?? row.sourceNotes,
+                              observation: row.progressDimension?.observation, title: "判断依据")
+            }
         }
     }
 
@@ -246,7 +254,7 @@ struct GoalOverviewView: View {
     private func assessment(_ name: String, value: String, state: ObservationAvailability,
                             dimension: GoalOverviewDimension?, row: GoalOverviewRow,
                             progress: Int? = nil, health: GoalHealth? = nil,
-                            showsObservation: Bool = true) -> some View {
+                            showsEvidence: Bool = true) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             if dynamicTypeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: 6) {
@@ -264,9 +272,11 @@ struct GoalOverviewView: View {
                 ProgressView(value: Double(progress), total: 100).tint(.primary)
                     .accessibilityLabel("进度 \(progress)%")
             }
-            if showsObservation { observationDetails(state: state, dimension: dimension, row: row) }
-            sourceDetails(dimension?.sourceNotes ?? row.sourceNotes, observation: dimension?.observation,
-                          title: name == "进度" ? "进度依据" : "健康依据")
+            if showsEvidence {
+                observationDetails(state: state, dimension: dimension, row: row)
+                sourceDetails(dimension?.sourceNotes ?? row.sourceNotes, observation: dimension?.observation,
+                              title: name == "进度" ? "进度依据" : "健康依据")
+            }
         }
     }
 
