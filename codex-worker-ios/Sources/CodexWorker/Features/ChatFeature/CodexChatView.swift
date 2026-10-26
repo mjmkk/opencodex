@@ -301,7 +301,7 @@ public struct CodexChatView: View {
                                     if missingTimes > 0 {
                                         Text("其中 \(missingTimes) 条消息未提供发送时间。观察时间不代表发送时间。")
                                     }
-                                    if body.refreshRequested { Text("已请求来源刷新；当前仍显示上次可读历史。") }
+                                    if let notice = sourceRefreshNotice(body) { Text(notice) }
                                 }
                                 if let first = viewStore.messages.first, first.createdAt > Date(timeIntervalSince1970: 0) {
                                     Text("此页最早：" + MobileTime.timestamp(first.createdAt))
@@ -540,8 +540,8 @@ public struct CodexChatView: View {
                     .buttonStyle(CodexIconButtonStyle()).accessibilityLabel("任务更多选项")
             }
             if viewStore.activeThreadId != nil {
-                if viewStore.history?.refreshRequested == true {
-                    Text("已请求来源刷新，当前内容尚未更新")
+                if let history = viewStore.history, let notice = sourceRefreshNotice(history) {
+                    Text(notice)
                         .font(.footnote).foregroundStyle(.secondary).padding(.horizontal, 12)
                 }
             }
@@ -568,6 +568,11 @@ public struct CodexChatView: View {
 
     private func taskStatus(_ state: ViewStore<ViewState, ChatFeature.Action>) -> String {
         state.hasNativeReviewWait ? "有请求待处理" : "任务对话"
+    }
+
+    private func sourceRefreshNotice(_ history: ThreadHistory) -> String? {
+        guard history.refreshRequested else { return nil }
+        return history.isPartial ? "已请求刷新 · 历史部分保存" : "已请求来源刷新"
     }
 
     private func sourceAndSyncSummary(_ state: ViewStore<ViewState, ChatFeature.Action>) -> String {
