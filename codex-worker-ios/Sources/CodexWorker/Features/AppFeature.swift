@@ -317,6 +317,7 @@ public struct AppFeature {
             if let cached = try? await sync.cached() { await send(.syncCached(generation: generation, cached)) }
             while !Task.isCancelled {
                 await send(.syncNow)
+                await send(.chat(.pollControl))
                 try await clock.sleep(for: .seconds(20))
             }
         }.cancellable(id: CancelID.syncLoop, cancelInFlight: true)

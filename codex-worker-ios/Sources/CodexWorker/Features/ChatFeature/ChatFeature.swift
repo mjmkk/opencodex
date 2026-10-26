@@ -4,7 +4,7 @@ import Foundation
 
 @Reducer
 public struct ChatFeature {
-    private enum CancelID { case history }
+    private enum CancelID { case history, control }
     @ObservableState
     public struct State: Equatable {
         public var activeThread: Thread?
@@ -26,6 +26,8 @@ public struct ChatFeature {
         public var controlObservedAt: Date?
         public var controlAttempt: NativeControlAttempt?
         public var isControlLoading = false
+        public var isControlPolling = false
+        public var isControlVisible = false
         public var controlMessage: String?
         public var pendingControlOperation: NativeControlOperation?
         public var pendingControlID: String?
@@ -69,7 +71,7 @@ public struct ChatFeature {
         case composerLoaded(identity: String, scope: String, loadID: String, ComposerDraft)
         case acknowledgeUnknownReply
         case didSendDraft(DraftMessage)
-        case refreshControl, sendReply, stopCurrentTurn, checkControlReceipt
+        case refreshControl, pollControl, controlVisibilityChanged(Bool), sendReply, stopCurrentTurn, checkControlReceipt
         case controlResponse(identity: String, account: String, readID: String, Result<NativeControlObservation, CodexError>)
         case controlWillWrite(identity: String, account: String, operationID: String, ComposerDraft)
         case controlFinished(identity: String, account: String, operationID: String, Result<ComposerDraft, CodexError>)
@@ -80,11 +82,17 @@ public struct ChatFeature {
         BindingReducer()
         Reduce { state, action in
             switch action {
-            case .onAppear, .onDisappear, .binding:
+            case .onAppear, .binding:
                 return .none
+            case .onDisappear:
+                state.isControlVisible = false
+                Self.invalidateControlRead(state: &state)
+                return .cancel(id: CancelID.control)
             case .appDidEnterBackground:
                 state.isHistorySyncing = false
-                return .cancel(id: CancelID.history)
+                state.isControlVisible = false
+                Self.invalidateControlRead(state: &state)
+                return .merge(.cancel(id: CancelID.history), .cancel(id: CancelID.control))
             case .appDidBecomeActive, .refreshHistory:
                 guard let thread = state.activeThread else { return .none }
                 state.isHistorySyncing = true
@@ -92,7 +100,7 @@ public struct ChatFeature {
                 let refreshSource = action.isExplicitRefresh
                 return .merge(Self.load(thread, loadID: loadID, refreshSource: refreshSource)
                     .cancellable(id: CancelID.history, cancelInFlight: true),
-                    action.isExplicitRefresh ? .none : .send(.refreshControl))
+                    action.isExplicitRefresh ? .none : .send(.pollControl))
             case .setActiveThread(let thread):
                 if let thread, state.activeThread?.id == thread.id { state.activeThread = thread; return .none }
                 state.activeThread = thread; state.messages = []; state.history = nil
@@ -102,12 +110,14 @@ public struct ChatFeature {
                 state.composerLoadID = nil
                 state.controlObservedAt = nil; state.controlAttempt = nil; state.controlMessage = nil
                 state.isControlLoading = false; state.pendingControlOperation = nil
+                state.isControlPolling = false
                 state.pendingControlID = nil; state.controlReadID = nil
                 state.isReceiptChecking = false
                 state.errorMessage = nil; state.lastSyncedAt = nil; state.isHistorySyncing = thread != nil
-                guard let thread else { return .cancel(id: CancelID.history) }
+                guard let thread else { return .merge(.cancel(id: CancelID.history), .cancel(id: CancelID.control)) }
                 let loadID = UUID().uuidString; state.composerLoadID = loadID
-                return .merge(Self.load(thread, loadID: loadID).cancellable(id: CancelID.history, cancelInFlight: true), .send(.refreshControl))
+                return .concatenate(.cancel(id: CancelID.control),
+                    .merge(Self.load(thread, loadID: loadID).cancellable(id: CancelID.history, cancelInFlight: true), .send(.refreshControl)))
             case .historyResponse(let identity, let cached, let result):
                 guard state.activeThread?.id == identity else { return .none }
                 if !cached { state.isHistorySyncing = false }
@@ -172,21 +182,33 @@ public struct ChatFeature {
                 }
                 return Self.saveDraft(draft, thread: thread, scope: scope)
             case .didSendDraft(let draft):
-                return Self.beginControl(state: &state, operation: .input, text: draft.text)
+                let effect = Self.beginControl(state: &state, operation: .input, text: draft.text)
+                return state.isSending ? .concatenate(.cancel(id: CancelID.control), effect) : effect
             case .sendReply:
                 let text = state.inputText
-                return Self.beginControl(state: &state, operation: .input, text: text)
+                let effect = Self.beginControl(state: &state, operation: .input, text: text)
+                return state.isSending ? .concatenate(.cancel(id: CancelID.control), effect) : effect
             case .stopCurrentTurn:
                 let text = state.inputText
-                return Self.beginControl(state: &state, operation: .interrupt, text: text)
+                let effect = Self.beginControl(state: &state, operation: .interrupt, text: text)
+                return state.isSending ? .concatenate(.cancel(id: CancelID.control), effect) : effect
+            case .controlVisibilityChanged(let visible):
+                guard state.isControlVisible != visible else { return .none }
+                state.isControlVisible = visible
+                if visible { return .send(.pollControl) }
+                Self.invalidateControlRead(state: &state)
+                return .cancel(id: CancelID.control)
+            case .pollControl:
+                guard state.isControlVisible, !state.isSending, !state.isReceiptChecking,
+                      !state.hasUncertainControl, !state.hasUnconfirmedReply,
+                      !state.isControlLoading, !state.isControlPolling else { return .none }
+                return Self.startControlRead(state: &state, quietly: true)
             case .refreshControl:
-                guard let thread = state.activeThread, !state.isControlLoading else { return .none }
-                state.isControlLoading = true
-                let readID = UUID().uuidString; state.controlReadID = readID
-                return Self.readControl(thread, readID: readID)
+                guard !state.isSending, !state.isControlLoading else { return .none }
+                return Self.startControlRead(state: &state, quietly: false)
             case .controlResponse(let identity, let account, let readID, let result):
                 guard state.activeThread?.id == identity, state.controlReadID == readID else { return .none }
-                state.isControlLoading = false
+                Self.invalidateControlRead(state: &state)
                 guard (try? MobileSyncEngine.scope()) == account else { state.controlObservation = nil; return .none }
                 state.controlAccount = account
                 switch result {
@@ -243,12 +265,29 @@ public struct ChatFeature {
                 state.isSending = true; state.pendingControlOperation = attempt.operation
                 state.pendingControlID = attempt.request.submission_id
                 state.isReceiptChecking = true
-                return Self.checkControl(thread, attempt: attempt)
+                Self.invalidateControlRead(state: &state)
+                return .concatenate(.cancel(id: CancelID.control), Self.checkControl(thread, attempt: attempt))
             case .clearError:
                 state.errorMessage = nil; return .none
             }
         }
     }
+    private static func invalidateControlRead(state: inout State) {
+        state.isControlLoading = false
+        state.isControlPolling = false
+        state.controlReadID = nil
+    }
+
+    private static func startControlRead(state: inout State, quietly: Bool) -> Effect<Action> {
+        guard let thread = state.activeThread else { return .none }
+        let readID = UUID().uuidString
+        state.controlReadID = readID
+        state.isControlLoading = !quietly
+        state.isControlPolling = quietly
+        return Self.readControl(thread, readID: readID)
+            .cancellable(id: CancelID.control, cancelInFlight: true)
+    }
+
     private static func saveDraft(_ draft: ComposerDraft, thread: Thread, scope: String) -> Effect<Action> {
         return .run { _ in try await MobileSyncCache.shared?.saveComposer(draft, threadId: thread.threadId, scope: scope) }
     }

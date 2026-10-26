@@ -37,6 +37,8 @@ extension ChatFeature {
         let textRevision = state.composerTextRevision
         let editedAt = state.composerEditedAt
         let id = UUID().uuidString
+        // A read started before this write must not overwrite its later state.
+        state.controlReadID = nil; state.isControlPolling = false
         state.isSending = true; state.pendingControlOperation = operation; state.pendingControlID = id
         state.isReceiptChecking = false
         state.controlMessage = nil

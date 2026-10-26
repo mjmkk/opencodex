@@ -94,7 +94,10 @@ public struct ContentView: View {
                             },
                             isPinned: viewStore.isPinned,
                             onInboxTap: { nativeRequestRoute = nil; isInboxPresented = true },
-                            onOverviewTap: { isOverviewPresented = true }
+                            onOverviewTap: { isOverviewPresented = true },
+                            isControlVisible: scenePhase == .active && !viewStore.isDrawerPresented
+                                && !viewStore.isFileBrowserPresented && !isSettingsPresented
+                                && !isInboxPresented && !isOverviewPresented
                         )
 
                         if viewStore.isTerminalPresented {

@@ -77,6 +77,7 @@ public struct CodexChatView: View {
     let onInboxTap: (() -> Void)?
     let onOverviewTap: (() -> Void)?
     let showsComposer: Bool
+    let isControlVisible: Bool
     private let renderPipeline: MessageRenderPipeline
     private let codeSyntaxHighlighter: CodeSyntaxHighlighter
 
@@ -96,6 +97,7 @@ public struct CodexChatView: View {
         onInboxTap: (() -> Void)? = nil,
         onOverviewTap: (() -> Void)? = nil,
         showsComposer: Bool = true,
+        isControlVisible: Bool = false,
         renderPipeline: MessageRenderPipeline = .live,
         codeSyntaxHighlighter: CodeSyntaxHighlighter = CodexCodeSyntaxHighlighter()
     ) {
@@ -114,6 +116,7 @@ public struct CodexChatView: View {
         self.onInboxTap = onInboxTap
         self.onOverviewTap = onOverviewTap
         self.showsComposer = showsComposer
+        self.isControlVisible = isControlVisible
         self.renderPipeline = renderPipeline
         self.codeSyntaxHighlighter = codeSyntaxHighlighter
     }
@@ -262,6 +265,9 @@ public struct CodexChatView: View {
             .onAppear {
                 renderPipeline.clearCache()
                 viewStore.send(.onAppear)
+            }
+            .onChange(of: isControlVisible && !showIdentity && !showActivities, initial: true) { _, visible in
+                viewStore.send(.controlVisibilityChanged(visible))
             }
             .onDisappear { viewStore.send(.onDisappear) }
             .sheet(isPresented: $showIdentity) {
