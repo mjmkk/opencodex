@@ -10,7 +10,8 @@ extension ChatFeature {
         return .run { send in
             @Dependency(\.apiClient) var api
             do {
-                let observation = try await api.nativeControl(thread.threadId, configuration)
+                let observation = try await api.nativeControl(thread, configuration)
+                guard observation.validates(thread: thread) else { throw CodexError.invalidState }
                 await send(.controlResponse(identity: thread.id, account: account, readID: readID, .success(observation)))
             } catch {
                 await send(.controlResponse(identity: thread.id, account: account, readID: readID, .failure(CodexError.from(error))))
@@ -48,14 +49,16 @@ extension ChatFeature {
             @Dependency(\.apiClient) var api
             var committed = false
             do {
-                let current = try await api.nativeControl(thread.threadId, configuration)
-                guard current.validates(threadID: thread.threadId), WorkerConfiguration.load() == configuration,
+                let current = try await api.nativeControl(thread, configuration)
+                guard current.validates(thread: thread), current.executionContext == shown.executionContext,
+                      WorkerConfiguration.load() == configuration,
                       operation == .input ? current.canInput
                         : current.canStop && current.active_turn_id == shown.active_turn_id else { throw CodexError.invalidState }
                 let body = NativeControlWriteBody(submission_id: id, control_receipt: current.control_receipt,
                     control_version: current.control_version, text: operation == .input ? text : nil,
                     expected_turn_id: operation == .interrupt ? shown.active_turn_id : nil)
-                let attempt = NativeControlAttempt(operation: operation, request: body, attemptedAt: Date())
+                let attempt = NativeControlAttempt(operation: operation, request: body, attemptedAt: Date(),
+                    executionContext: current.executionContext, accountScope: account)
                 let saved = try await cache.beginControlAttempt(attempt, text: text,
                     textRevision: textRevision, editedAt: editedAt, editOrdinal: editOrdinal,
                     threadId: thread.threadId, scope: scope)
@@ -99,6 +102,9 @@ extension ChatFeature {
         return .run { send in
             @Dependency(\.apiClient) var api
             do {
+                guard attempt.accountScope == nil || attempt.accountScope == account,
+                      attempt.executionContext == nil || attempt.executionContext?.validates(thread: thread) == true
+                else { throw CodexError.invalidState }
                 if let retained = try await cache.composer(threadId: thread.threadId, scope: scope),
                    let known = retained.controlAttempt,
                    known.request.submission_id == id, !known.isUncertain {

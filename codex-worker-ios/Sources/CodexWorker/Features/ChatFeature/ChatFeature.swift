@@ -33,6 +33,8 @@ public struct ChatFeature {
         public var pendingControlID: String?
         public var controlReadID: String?
         public var isReceiptChecking = false
+        var replyHistoryRefresh: ReplyHistoryRefresh?
+        var replyHistoryReadID: String?
         public var hasUnconfirmedReply: Bool { outgoing != nil && outgoing?.acknowledgedReceiptID == nil }
         public var hasUncertainControl: Bool { controlAttempt?.isUncertain == true }
         public var canSend: Bool {
@@ -55,7 +57,7 @@ public struct ChatFeature {
             guard let thread = activeThread, let configuration = WorkerConfiguration.load() else { return false }
             return controlAccount == MobileSyncEngine.scope(configuration: configuration)
                 && composerScope == MobileSyncEngine.threadScope(for: thread, configuration: configuration)
-                && controlObservation?.validates(threadID: thread.threadId) == true
+                && controlObservation?.validates(thread: thread) == true
         }
         public var hasNativeReviewWait: Bool { (activeThread?.pendingRequestCount ?? 0) > 0 }
         public init() {}
@@ -75,6 +77,8 @@ public struct ChatFeature {
         case controlResponse(identity: String, account: String, readID: String, Result<NativeControlObservation, CodexError>)
         case controlWillWrite(identity: String, account: String, operationID: String, ComposerDraft)
         case controlFinished(identity: String, account: String, operationID: String, Result<ComposerDraft, CodexError>)
+        case refreshReplyHistory(identity: String, account: String, submissionID: String, turnID: String)
+        case replyHistoryResponse(readID: String, identity: String, account: String, submissionID: String, turnID: String, Result<ThreadHistory, CodexError>)
         case clearError
     }
     public init() {}
@@ -89,12 +93,15 @@ public struct ChatFeature {
                 Self.invalidateControlRead(state: &state)
                 return .cancel(id: CancelID.control)
             case .appDidEnterBackground:
+                if state.replyHistoryReadID != nil { state.replyHistoryRefresh?.pending = true }
+                state.replyHistoryReadID = nil
                 state.isHistorySyncing = false
                 state.isControlVisible = false
                 Self.invalidateControlRead(state: &state)
                 return .merge(.cancel(id: CancelID.history), .cancel(id: CancelID.control))
             case .appDidBecomeActive, .refreshHistory:
                 guard let thread = state.activeThread else { return .none }
+                guard state.replyHistoryReadID == nil else { return .none }
                 state.isHistorySyncing = true
                 let loadID = UUID().uuidString; state.composerLoadID = loadID
                 let refreshSource = action.isExplicitRefresh
@@ -109,6 +116,7 @@ public struct ChatFeature {
                 state.composerTextRevision = nil; state.composerEditedAt = nil; state.composerEditOrdinal = nil
                 state.composerLoadID = nil
                 state.controlObservedAt = nil; state.controlAttempt = nil; state.controlMessage = nil
+                state.replyHistoryRefresh = nil; state.replyHistoryReadID = nil
                 state.isControlLoading = false; state.pendingControlOperation = nil
                 state.isControlPolling = false
                 state.pendingControlID = nil; state.controlReadID = nil
@@ -120,27 +128,7 @@ public struct ChatFeature {
                     .merge(Self.load(thread, loadID: loadID).cancellable(id: CancelID.history, cancelInFlight: true), .send(.refreshControl)))
             case .historyResponse(let identity, let cached, let result):
                 guard state.activeThread?.id == identity else { return .none }
-                if !cached { state.isHistorySyncing = false }
-                switch result {
-                case .success(let history):
-                    if !cached { state.errorMessage = nil }
-                    // An earlier cached read may arrive after a later page was displayed.
-                    // Compare checkpoints only within one immutable source snapshot.
-                    if let current = state.history?.pagination, let incoming = history.pagination,
-                       current.snapshot == incoming.snapshot,
-                       (current.nextOffset ?? Int.max) > (incoming.nextOffset ?? Int.max) {
-                        return .none
-                    }
-                    state.history = history; state.lastSyncedAt = history.downloadedAt
-                    state.messages = history.messages.map {
-                        ChatMessageAdapter.makeMessage(id: $0.id,
-                            sender: $0.role == "user" ? .user : ($0.role == "assistant" ? .assistant : .system),
-                            text: $0.text, status: nil, createdAt: $0.sentAt ?? .distantPast)
-                    }
-                case .failure(let error):
-                    state.errorMessage = "保留上次可读历史。" + error.localizedDescription
-                }
-                return .none
+                return Self.applyHistory(state: &state, cached: cached, result: result)
             case .syncMetadata(let id, let metadata):
                 guard state.activeThread?.threadId == id else { return .none }
                 state.lastSyncedAt = metadata?.lastSyncedAt
@@ -195,7 +183,7 @@ public struct ChatFeature {
             case .controlVisibilityChanged(let visible):
                 guard state.isControlVisible != visible else { return .none }
                 state.isControlVisible = visible
-                if visible { return .send(.pollControl) }
+                if visible { return .merge(.send(.pollControl), Self.scheduleReplyHistoryRefresh(state: state)) }
                 Self.invalidateControlRead(state: &state)
                 return .cancel(id: CancelID.control)
             case .pollControl:
@@ -215,12 +203,15 @@ public struct ChatFeature {
                 case .success(let observation):
                     state.controlObservation = observation; state.controlObservedAt = Date()
                     state.controlMessage = nil
+                    var refresh = state.replyHistoryRefresh
+                    refresh?.observeIdle(observation, attempt: state.controlAttempt)
+                    state.replyHistoryRefresh = refresh
                 case .failure(.apiError(code: "NATIVE_THREAD_NOT_CONFIGURED", message: _)):
                     state.controlObservation = nil; state.controlMessage = "此任务的回复尚未接通，草稿会保留。"
                 case .failure:
                     state.controlObservation = nil; state.controlMessage = "暂时无法核对执行状态，草稿会保留。"
                 }
-                return .none
+                return Self.scheduleReplyHistoryRefresh(state: state)
             case .controlWillWrite(let identity, let account, let operationID, let draft):
                 guard state.activeThread?.id == identity, state.controlAccount == account,
                       state.pendingControlID == operationID else { return .none }
@@ -252,11 +243,35 @@ public struct ChatFeature {
                     }
                     state.controlAttempt = draft.controlAttempt
                     state.controlMessage = nil
+                    if let refresh = ReplyHistoryRefresh(identity: identity, account: account, attempt: draft.controlAttempt),
+                       state.replyHistoryRefresh?.matches(refresh) != true {
+                        state.replyHistoryRefresh = refresh
+                    }
                 case .failure:
                     state.controlMessage = state.controlAttempt?.isUncertain == false ? nil
                         : "操作尚未完成，草稿和提交记录会保留。"
                 }
-                return .send(.refreshControl)
+                return .merge(.send(.refreshControl), Self.scheduleReplyHistoryRefresh(state: state))
+            case .refreshReplyHistory(let identity, let account, let submissionID, let turnID):
+                return Self.refreshReplyHistory(state: &state, identity: identity, account: account,
+                    submissionID: submissionID, turnID: turnID)
+                    .cancellable(id: CancelID.history, cancelInFlight: false)
+            case .replyHistoryResponse(let readID, let identity, let account, let submissionID, let turnID, let result):
+                guard state.replyHistoryReadID == readID else { return .none }
+                state.replyHistoryReadID = nil; state.isHistorySyncing = false
+                guard Self.replyHistoryMatches(state: state, identity: identity, account: account,
+                    submissionID: submissionID, turnID: turnID) else {
+                    return Self.scheduleReplyHistoryRefresh(state: state)
+                }
+                switch result {
+                case .success(let history):
+                    return Self.applyHistory(state: &state, cached: false, result: .success(history))
+                case .failure(let error):
+                    // Keep this pending for a later control/visibility refresh, never a tight loop.
+                    state.replyHistoryRefresh?.pending = true
+                    state.errorMessage = "保留上次可读历史。" + error.localizedDescription
+                    return .none
+                }
             case .checkControlReceipt:
                 guard let thread = state.activeThread, let attempt = state.controlAttempt,
                       attempt.isUncertain, !state.isSending, let configuration = WorkerConfiguration.load(),
@@ -272,6 +287,30 @@ public struct ChatFeature {
             }
         }
     }
+    private static func applyHistory(state: inout State, cached: Bool, result: Result<ThreadHistory, CodexError>) -> Effect<Action> {
+        if !cached { state.isHistorySyncing = false }
+        switch result {
+        case .success(let history):
+            if !cached { state.errorMessage = nil }
+            // An earlier cached read may arrive after a later page was displayed.
+            // Compare checkpoints only within one immutable source snapshot.
+            if let current = state.history?.pagination, let incoming = history.pagination,
+               current.snapshot == incoming.snapshot,
+               (current.nextOffset ?? Int.max) > (incoming.nextOffset ?? Int.max) {
+                return cached ? .none : Self.scheduleReplyHistoryRefresh(state: state)
+            }
+            state.history = history; state.lastSyncedAt = history.downloadedAt
+            state.messages = history.messages.map {
+                ChatMessageAdapter.makeMessage(id: $0.id,
+                    sender: $0.role == "user" ? .user : ($0.role == "assistant" ? .assistant : .system),
+                    text: $0.text, status: nil, createdAt: $0.sentAt ?? .distantPast)
+            }
+        case .failure(let error):
+            state.errorMessage = "保留上次可读历史。" + error.localizedDescription
+        }
+        return cached ? .none : Self.scheduleReplyHistoryRefresh(state: state)
+    }
+
     private static func invalidateControlRead(state: inout State) {
         state.isControlLoading = false
         state.isControlPolling = false

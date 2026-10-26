@@ -19,6 +19,10 @@ public struct NativeControlObservation: Codable, Equatable, Sendable {
     public var stop_mode: String
     public var stop_pauses_goal: Bool
     public var stop_may_interrupt_active_thread_descendants: Bool
+    public var native_host_id: String? = nil
+    public var source_namespace: String? = nil
+    public var execution_machine: String? = nil
+    public var execution_binding: String? = nil
 
     func validates(threadID: String) -> Bool {
         self.protocol == "plain-text-local-v2" && thread_id == threadID && host_id == "local"
@@ -26,6 +30,23 @@ public struct NativeControlObservation: Codable, Equatable, Sendable {
             && control_receipt.count == 64 && control_version.count == 64
             && control_receipt.utf8.allSatisfy { (48...57).contains($0) || (97...102).contains($0) }
             && control_version.utf8.allSatisfy { (48...57).contains($0) || (97...102).contains($0) }
+    }
+
+    func validates(thread: Thread) -> Bool {
+        if self.protocol == "plain-text-local-v2" { return validates(threadID: thread.threadId) }
+        guard self.protocol == "plain-text-ssh-v1", thread_id == thread.threadId,
+              !owner_client_id.isEmpty, !stop_available,
+              NativeControlExecutionContext.isDigest(control_receipt),
+              NativeControlExecutionContext.isDigest(control_version),
+              let executionContext else { return false }
+        return executionContext.validates(thread: thread)
+    }
+
+    var executionContext: NativeControlExecutionContext? {
+        guard self.protocol == "plain-text-ssh-v1", let native_host_id, let source_namespace,
+              let execution_machine, let execution_binding else { return nil }
+        return .init(protocolName: self.protocol, hostID: host_id, nativeHostID: native_host_id,
+            sourceNamespace: source_namespace, machine: execution_machine, binding: execution_binding)
     }
 
     var canInput: Bool {
@@ -60,6 +81,46 @@ public struct NativeControlReceipt: Codable, Equatable, Sendable {
     public var turn_id: String?
     public var code: String?
     public var goal_pause_error: String?
+    public var `protocol`: String? = nil
+    public var host_id: String? = nil
+    public var native_host_id: String? = nil
+    public var source_namespace: String? = nil
+    public var execution_machine: String? = nil
+    public var execution_binding: String? = nil
+
+    var executionContext: NativeControlExecutionContext? {
+        guard let `protocol`, let host_id, let native_host_id, let source_namespace,
+              let execution_machine, let execution_binding else { return nil }
+        return .init(protocolName: `protocol`, hostID: host_id, nativeHostID: native_host_id,
+            sourceNamespace: source_namespace, machine: execution_machine, binding: execution_binding)
+    }
+
+    var hasExecutionContextFields: Bool {
+        self.protocol != nil || host_id != nil || native_host_id != nil || source_namespace != nil
+            || execution_machine != nil || execution_binding != nil
+    }
+}
+
+/// Execution identity from the authenticated control endpoint, never Mirror origin.
+public struct NativeControlExecutionContext: Codable, Equatable, Sendable {
+    public var protocolName: String
+    public var hostID: String
+    public var nativeHostID: String
+    public var sourceNamespace: String
+    public var machine: String
+    public var binding: String
+
+    func validates(thread: Thread) -> Bool {
+        protocolName == "plain-text-ssh-v1" && !hostID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && hostID != "local" && nativeHostID == "local"
+            && sourceNamespace == thread.origin?.namespace
+            && !machine.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && Self.isDigest(binding)
+    }
+
+    static func isDigest(_ value: String) -> Bool {
+        value.count == 64 && value.utf8.allSatisfy { (48...57).contains($0) || (97...102).contains($0) }
+    }
 }
 
 /// Stored with the existing scoped composer. Endpoint credentials are never stored here.
@@ -71,6 +132,8 @@ public struct NativeControlAttempt: Codable, Equatable, Sendable {
     public var localRejection: String? = nil
     public var draftTextRevision: String? = nil
     public var draftEditOrdinal: UInt64? = nil
+    public var executionContext: NativeControlExecutionContext? = nil
+    public var accountScope: String? = nil
 
     var isUncertain: Bool {
         localRejection == nil && (receipt == nil || receipt?.status == "unknown")
@@ -92,6 +155,12 @@ public struct NativeControlAttempt: Codable, Equatable, Sendable {
 
     func validates(_ receipt: NativeControlReceipt, threadID: String) -> Bool {
         guard receipt.thread_id == threadID, receipt.submission_id == request.submission_id else { return false }
+        if let executionContext {
+            guard receipt.executionContext == executionContext else { return false }
+        } else {
+            // Legacy local intents cannot acquire a remote execution identity later.
+            guard !receipt.hasExecutionContextFields else { return false }
+        }
         if operation == .input {
             guard ["start", "steer"].contains(receipt.operation) else { return false }
             return receipt.status == "accepted" ? receipt.turn_id?.isEmpty == false

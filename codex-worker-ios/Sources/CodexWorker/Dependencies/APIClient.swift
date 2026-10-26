@@ -45,7 +45,7 @@ public struct APIClient: DependencyKey, Sendable {
     public var goalOverview: @Sendable () async throws -> JSONValue = { throw CodexError.invalidState }
     public var readNativeRequest: @Sendable (NativeRequestSelection) async throws -> NativeRemoteRequest = { _ in throw CodexError.invalidState }
     public var respondNativeRequest: @Sendable (NativeRequestSelection) async throws -> NativeRemoteRequest = { _ in throw CodexError.invalidState }
-    public var nativeControl: @Sendable (String, WorkerConfiguration) async throws -> NativeControlObservation = { _, _ in throw CodexError.invalidState }
+    public var nativeControl: @Sendable (Thread, WorkerConfiguration) async throws -> NativeControlObservation = { _, _ in throw CodexError.invalidState }
     public var submitNativeControl: @Sendable (String, NativeControlOperation, NativeControlWriteBody, WorkerConfiguration) async throws -> NativeControlReceipt = { _, _, _, _ in throw CodexError.invalidState }
     public var nativeControlReceipt: @Sendable (String, String, WorkerConfiguration) async throws -> NativeControlReceipt = { _, _, _ in throw CodexError.invalidState }
 
@@ -500,10 +500,10 @@ actor LiveAPIClient {
         return request
     }
 
-    func nativeControl(_ threadID: String, configuration: WorkerConfiguration) async throws -> NativeControlObservation {
+    func nativeControl(_ thread: Thread, configuration: WorkerConfiguration) async throws -> NativeControlObservation {
         let observation: NativeControlObservation = try await performRequest(
-            nativeControlRequest(threadID, suffix: "control", configuration: configuration), preservingKeys: true)
-        guard observation.validates(threadID: threadID) else { throw CodexError.invalidState }
+            nativeControlRequest(thread.threadId, suffix: "control", configuration: configuration), preservingKeys: true)
+        guard observation.validates(thread: thread) else { throw CodexError.invalidState }
         return observation
     }
 
