@@ -114,3 +114,27 @@ extension ChatFeature {
         }
     }
 }
+
+extension ChatFeature.State {
+    var controlAttemptMessage: String? {
+        if let refresh = replyHistoryRefresh,
+           ChatFeature.replyHistoryMatches(state: self, identity: refresh.identity, account: refresh.account,
+            submissionID: refresh.submissionID, turnID: refresh.turnID),
+           let message = refresh.statusMessage { return message }
+        return Self.controlReceiptMessage(controlAttempt)
+    }
+
+    private static func controlReceiptMessage(_ attempt: NativeControlAttempt?) -> String? {
+        guard let attempt else { return nil }
+        if attempt.localRejection != nil || attempt.receipt?.status == "rejected" {
+            return attempt.operation == .interrupt ? "停止未执行，请刷新状态。" : "本次未发送，原文已保留。"
+        }
+        switch attempt.receipt?.status {
+        case "accepted": return "回复已提交。"
+        case "interrupted": return attempt.receipt?.goal_pause_error == nil ? "本轮已停止；子任务清理结果尚未确认。" : "本轮已停止；还有原生处理结果未确认。"
+        case "not_interrupted": return "未停止任何执行，请刷新状态。"
+        default: return nil
+        }
+    }
+
+}

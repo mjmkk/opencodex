@@ -36,7 +36,7 @@ public struct CodexChatView: View {
         let controlObservedAt: Date?
         let controlMessage: String?
         let controlAttempt: NativeControlAttempt?
-        let replyHistoryMessage: String?
+        let controlAttemptMessage: String?
         let isReceiptChecking: Bool
         let pendingControlOperation: NativeControlOperation?
         let canEdit: Bool
@@ -56,7 +56,7 @@ public struct CodexChatView: View {
             isControlLoading = state.isControlLoading; controlStatus = state.controlObservation?.status ?? "unknown"
             controlObservedAt = state.controlObservedAt
             controlMessage = state.controlMessage; controlAttempt = state.controlAttempt
-            replyHistoryMessage = state.replyHistoryRefresh?.statusMessage
+            controlAttemptMessage = state.controlAttemptMessage
             isReceiptChecking = state.isReceiptChecking; pendingControlOperation = state.pendingControlOperation
             hasCachedSource = state.activeThread?.hasCachedSource == true; sourceDevice = state.activeThread?.sourceDevice
             history = state.history; lastSyncedAt = state.lastSyncedAt
@@ -417,7 +417,7 @@ public struct CodexChatView: View {
             Button("核对提交结果") { viewStore.send(.checkControlReceipt) }
                 .font(.footnote.weight(.medium)).frame(minHeight: 44)
                 .disabled(viewStore.isSending)
-        } else if let message = viewStore.replyHistoryMessage ?? controlReceiptMessage(viewStore.controlAttempt) {
+        } else if let message = viewStore.controlAttemptMessage {
             Text(message).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -428,19 +428,6 @@ public struct CodexChatView: View {
             Text("仅保存草稿 · 回复尚未接通")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-        }
-    }
-
-    private func controlReceiptMessage(_ attempt: NativeControlAttempt?) -> String? {
-        guard let attempt else { return nil }
-        if attempt.localRejection != nil || attempt.receipt?.status == "rejected" {
-            return attempt.operation == .interrupt ? "停止未执行，请刷新状态。" : "本次未发送，原文已保留。"
-        }
-        switch attempt.receipt?.status {
-        case "accepted": return "回复已提交。"
-        case "interrupted": return attempt.receipt?.goal_pause_error == nil ? "本轮已停止；子任务清理结果尚未确认。" : "本轮已停止；还有原生处理结果未确认。"
-        case "not_interrupted": return "未停止任何执行，请刷新状态。"
-        default: return nil
         }
     }
 
