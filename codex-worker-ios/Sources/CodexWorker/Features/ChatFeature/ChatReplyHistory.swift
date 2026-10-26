@@ -7,8 +7,12 @@ struct ReplyHistoryRefresh: Equatable, Sendable {
     let account: String
     let submissionID: String
     let turnID: String
+    let route: String
+    let executionContext: NativeControlExecutionContext?
+    let deadline: Date
+    var readsStarted = 0
     var pending = true
-    var observedIdle = false
+    var isAwaitingResponse = true
 
     init?(identity: String, account: String, attempt: NativeControlAttempt?) {
         guard let attempt, attempt.operation == .input, attempt.localRejection == nil,
@@ -18,19 +22,50 @@ struct ReplyHistoryRefresh: Equatable, Sendable {
               let turnID = receipt.turn_id, !turnID.isEmpty else { return nil }
         self.identity = identity; self.account = account
         submissionID = attempt.request.submission_id; self.turnID = turnID
+        route = receipt.operation
+        executionContext = attempt.executionContext
+        // This stored intent time survives app restarts; reopening cannot extend the window.
+        deadline = attempt.attemptedAt.addingTimeInterval(5 * 60)
     }
 
     func matches(_ other: Self) -> Bool {
         identity == other.identity && account == other.account
-            && submissionID == other.submissionID && turnID == other.turnID
+            && submissionID == other.submissionID && turnID == other.turnID && route == other.route
+            && executionContext == other.executionContext
     }
 
-    mutating func observeIdle(_ observation: NativeControlObservation, attempt: NativeControlAttempt?) {
-        guard !observedIdle, observation.status == "idle", let attempt,
-              observation.executionContext == attempt.executionContext,
+    func hasBudget(at now: Date = Date()) -> Bool {
+        isAwaitingResponse && readsStarted < 15 && now < deadline
+    }
+
+    var statusMessage: String? {
+        guard isAwaitingResponse else { return nil }
+        return hasBudget() ? "已提交 · 等待回复更新…" : "已提交 · 回复仍待更新"
+    }
+
+    mutating func requestRead(at now: Date = Date()) {
+        pending = hasBudget(at: now)
+    }
+
+    mutating func beginRead(at now: Date = Date()) -> Bool {
+        guard pending, hasBudget(at: now) else { return false }
+        readsStarted += 1; pending = false
+        return true
+    }
+
+    mutating func observeHistory(_ history: ThreadHistory, attempt: NativeControlAttempt?) {
+        guard isAwaitingResponse, route == "start", history.threadIdentity == identity, !history.hasMore,
               let current = Self(identity: identity, account: account, attempt: attempt), matches(current) else { return }
-        // Idle is only a reason to read the source again, not proof that our turn completed.
-        observedIdle = true; pending = true
+        let visible = history.messages.contains { assistant in
+            guard assistant.turnID == turnID, assistant.role == "assistant",
+                  assistant.hasNonemptySourceText == true,
+                  !assistant.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  assistant.phase == "final_answer",
+                  let context = assistant.contextSnapshotSHA256, NativeControlExecutionContext.isDigest(context) else { return false }
+            return true
+        }
+        // Steer can reuse a turn containing older replies; it needs stronger source correlation.
+        if visible { isAwaitingResponse = false; pending = false }
     }
 }
 
@@ -49,7 +84,7 @@ extension ChatFeature {
 
     static func scheduleReplyHistoryRefresh(state: State) -> Effect<Action> {
         guard state.isControlVisible, !state.isHistorySyncing, state.replyHistoryReadID == nil,
-              let refresh = state.replyHistoryRefresh, refresh.pending else { return .none }
+              let refresh = state.replyHistoryRefresh, refresh.hasBudget(), refresh.pending else { return .none }
         return .send(.refreshReplyHistory(identity: refresh.identity, account: refresh.account,
             submissionID: refresh.submissionID, turnID: refresh.turnID))
     }
@@ -57,12 +92,13 @@ extension ChatFeature {
     static func refreshReplyHistory(state: inout State, identity: String, account: String,
                                    submissionID: String, turnID: String) -> Effect<Action> {
         guard state.isControlVisible, !state.isHistorySyncing, state.replyHistoryReadID == nil,
+              state.replyHistoryRefresh?.isAwaitingResponse == true,
               state.replyHistoryRefresh?.pending == true, let thread = state.activeThread,
               replyHistoryMatches(state: state, identity: identity, account: account,
                 submissionID: submissionID, turnID: turnID) else { return .none }
+        guard state.replyHistoryRefresh?.beginRead() == true else { return .none }
         let readID = UUID().uuidString
         state.replyHistoryReadID = readID; state.isHistorySyncing = true
-        state.replyHistoryRefresh?.pending = false
         return .run { send in
             @Dependency(\.threadSyncClient) var sync
             do {

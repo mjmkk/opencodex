@@ -143,6 +143,11 @@ public struct ChatFeature {
                 state.composerEditOrdinal = draft.editOrdinal
                 state.composerScope = scope; state.outgoing = draft.outgoing
                 state.controlAttempt = draft.controlAttempt
+                // Resume newly sealed accepted inputs after reopening. Legacy intents
+                // without an account binding do not acquire a new background read loop.
+                let account = (try? MobileSyncEngine.scope()) ?? ""
+                state.replyHistoryRefresh = draft.controlAttempt?.accountScope == account
+                    ? ReplyHistoryRefresh(identity: identity, account: account, attempt: draft.controlAttempt) : nil
                 // A write can finish after this cache snapshot was read but
                 // before hydration. Reconcile a restored uncertain intent once;
                 // this reads the original receipt and never repeats its POST.
@@ -188,9 +193,13 @@ public struct ChatFeature {
                 return .cancel(id: CancelID.control)
             case .pollControl:
                 guard state.isControlVisible, !state.isSending, !state.isReceiptChecking,
-                      !state.hasUncertainControl, !state.hasUnconfirmedReply,
-                      !state.isControlLoading, !state.isControlPolling else { return .none }
-                return Self.startControlRead(state: &state, quietly: true)
+                      !state.hasUncertainControl, !state.hasUnconfirmedReply else { return .none }
+                // Reuse this foreground cadence even when the native owner is
+                // unavailable; the accepted input's history is still readable.
+                state.replyHistoryRefresh?.requestRead()
+                let history = Self.scheduleReplyHistoryRefresh(state: state)
+                guard !state.isControlLoading, !state.isControlPolling else { return history }
+                return .merge(Self.startControlRead(state: &state, quietly: true), history)
             case .refreshControl:
                 guard !state.isSending, !state.isControlLoading else { return .none }
                 return Self.startControlRead(state: &state, quietly: false)
@@ -203,9 +212,6 @@ public struct ChatFeature {
                 case .success(let observation):
                     state.controlObservation = observation; state.controlObservedAt = Date()
                     state.controlMessage = nil
-                    var refresh = state.replyHistoryRefresh
-                    refresh?.observeIdle(observation, attempt: state.controlAttempt)
-                    state.replyHistoryRefresh = refresh
                 case .failure(.apiError(code: "NATIVE_THREAD_NOT_CONFIGURED", message: _)):
                     state.controlObservation = nil; state.controlMessage = "此任务的回复尚未接通，草稿会保留。"
                 case .failure:
@@ -300,6 +306,12 @@ public struct ChatFeature {
                 return cached ? .none : Self.scheduleReplyHistoryRefresh(state: state)
             }
             state.history = history; state.lastSyncedAt = history.downloadedAt
+            if var refresh = state.replyHistoryRefresh,
+               Self.replyHistoryMatches(state: state, identity: refresh.identity, account: refresh.account,
+                submissionID: refresh.submissionID, turnID: refresh.turnID) {
+                refresh.observeHistory(history, attempt: state.controlAttempt)
+                state.replyHistoryRefresh = refresh
+            }
             state.messages = history.messages.map {
                 ChatMessageAdapter.makeMessage(id: $0.id,
                     sender: $0.role == "user" ? .user : ($0.role == "assistant" ? .assistant : .system),

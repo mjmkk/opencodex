@@ -34,6 +34,11 @@ public struct ThreadHistory: Equatable, Sendable {
         public var role: String?
         public var text: String
         public var sentAt: Date?
+        public var turnID: String? = nil
+        public var phase: String? = nil
+        public var turnStatus: String? = nil
+        public var contextSnapshotSHA256: String? = nil
+        public var hasNonemptySourceText: Bool? = nil
     }
     public struct Record: Identifiable, Equatable, Sendable {
         public var id: String

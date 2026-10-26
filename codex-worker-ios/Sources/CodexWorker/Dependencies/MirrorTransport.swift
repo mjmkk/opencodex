@@ -63,6 +63,10 @@ public struct MirrorMessage: Codable, Equatable, Sendable {
     public var role: String?
     public var text_content: String?
     public var last_seen_at: String?
+    public var turn_id: String? = nil
+    public var phase: String? = nil
+    public var turn_status: String? = nil
+    public var context_snapshot_sha256: String? = nil
 }
 
 public struct MirrorItem: Codable, Equatable, Sendable {
@@ -127,7 +131,9 @@ struct MirrorCachedBody: Codable, Equatable, Sendable {
 extension MirrorCachedBody {
     var history: ThreadHistory {
         ThreadHistory(threadIdentity: body.thread.thread(in: body.namespace).id,
-            messages: body.messages.map { .init(id: $0.native_id, role: $0.role, text: $0.text_content ?? "（此条记录未提供文本）", sentAt: nil) },
+            messages: body.messages.map { .init(id: $0.native_id, role: $0.role, text: $0.text_content ?? "（此条记录未提供文本）", sentAt: nil,
+                turnID: $0.turn_id, phase: $0.phase, turnStatus: $0.turn_status, contextSnapshotSHA256: $0.context_snapshot_sha256,
+                hasNonemptySourceText: $0.text_content?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false) },
             records: body.items.map { .init(id: $0.native_id, title: $0.type ?? "原始记录", observedAt: $0.last_seen_at) },
             attachments: body.attachments.map { .init(id: $0.native_id, filename: $0.filename ?? $0.native_id, availability: $0.state ?? "状态未知") },
             downloadedAt: downloadedAt, isPartial: body.isPartial, hasMore: body.page.next_offset != nil,

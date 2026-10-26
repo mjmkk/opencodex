@@ -36,6 +36,7 @@ public struct CodexChatView: View {
         let controlObservedAt: Date?
         let controlMessage: String?
         let controlAttempt: NativeControlAttempt?
+        let replyHistoryMessage: String?
         let isReceiptChecking: Bool
         let pendingControlOperation: NativeControlOperation?
         let canEdit: Bool
@@ -55,6 +56,7 @@ public struct CodexChatView: View {
             isControlLoading = state.isControlLoading; controlStatus = state.controlObservation?.status ?? "unknown"
             controlObservedAt = state.controlObservedAt
             controlMessage = state.controlMessage; controlAttempt = state.controlAttempt
+            replyHistoryMessage = state.replyHistoryRefresh?.statusMessage
             isReceiptChecking = state.isReceiptChecking; pendingControlOperation = state.pendingControlOperation
             hasCachedSource = state.activeThread?.hasCachedSource == true; sourceDevice = state.activeThread?.sourceDevice
             history = state.history; lastSyncedAt = state.lastSyncedAt
@@ -415,7 +417,7 @@ public struct CodexChatView: View {
             Button("核对提交结果") { viewStore.send(.checkControlReceipt) }
                 .font(.footnote.weight(.medium)).frame(minHeight: 44)
                 .disabled(viewStore.isSending)
-        } else if let message = controlReceiptMessage(viewStore.controlAttempt) {
+        } else if let message = viewStore.replyHistoryMessage ?? controlReceiptMessage(viewStore.controlAttempt) {
             Text(message).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
