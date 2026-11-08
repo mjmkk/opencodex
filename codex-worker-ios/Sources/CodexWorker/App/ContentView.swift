@@ -230,7 +230,13 @@ public struct ContentView: View {
                     }
                 )
             }
-            .sheet(isPresented: $isOverviewPresented) { GoalOverviewScreen() }
+            // AGT-26 S6：「工作」页以 Goal 为主轴，替换原来的 Goal Overview 弹层。GoalOverviewScreen 的代码保留
+            .sheet(isPresented: $isOverviewPresented) {
+                HarnessHomeScreen(openThread: { member in
+                    isOverviewPresented = false
+                    viewStore.send(.openNotificationThread(member.id))
+                }, close: { isOverviewPresented = false })
+            }
             .sheet(isPresented: $isInboxPresented) {
                 MobileInboxView(nativeRequestRoute: nativeRequestRoute) { id in
                     isInboxPresented = false

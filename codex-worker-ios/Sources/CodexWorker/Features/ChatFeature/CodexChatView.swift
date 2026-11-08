@@ -136,12 +136,7 @@ public struct CodexChatView: View {
                     },
                     inputViewBuilder: { text, _, _, _, action, _ in
                         HStack(alignment: .bottom, spacing: 8) {
-                            Menu {
-                                Button("浏览文件", systemImage: "folder") { onFileBrowserTap?() }
-                                Button("终端", systemImage: "terminal") { onTerminalToggle?() }
-                            } label: {
-                                Image(systemName: "plus").frame(width: 44, height: 44)
-                            }.accessibilityLabel("添加工具")
+                            // AGT-26 S6：Terminal 和文件浏览先屏蔽入口，代码保留；输入框只用来聊天
                             TextField("继续这个任务…", text: text, axis: .vertical)
                                 .lineLimit(1...5).padding(.vertical, 12)
                                 .disabled(!viewStore.canEdit)
@@ -316,14 +311,16 @@ public struct CodexChatView: View {
                         .frame(maxWidth: .infinity, alignment: .leading).foregroundStyle(.primary)
                 }.accessibilityLabel("任务信息：" + viewStore.activeThreadTitle)
                 Menu {
-                    Button("Goal Overview", systemImage: "chart.bar.xaxis") { onOverviewTap?() }
+                    Button("工作", systemImage: "square.stack.3d.up") { onOverviewTap?() }
                     Button("待你处理", systemImage: "tray") { onInboxTap?() }
                     if viewStore.activeThreadId != nil {
                         Button(isPinned ? "取消持续展示" : "Pin 持续展示", systemImage: isPinned ? "pin.slash" : "pin") { onPinTap?() }
+                        Button("复制原生 id", systemImage: "doc.on.doc") {
+                            if let id = viewStore.activeThreadId { UIPasteboard.general.string = id }
+                        }
                         Button("来源记录（\(viewStore.history?.records.count ?? 0)）", systemImage: "list.bullet.rectangle") { showActivities = true }
                         Button("刷新来源历史", systemImage: "arrow.clockwise") { viewStore.send(.refreshHistory) }.disabled(viewStore.isHistorySyncing)
-                        Button("浏览文件", systemImage: "folder") { onFileBrowserTap?() }
-                        Button("终端", systemImage: "terminal") { onTerminalToggle?() }
+                        // AGT-26 S6：Terminal 和文件浏览先屏蔽入口，代码保留
                     }
                     Button("连接", systemImage: "network") { onSettingsTap?() }
                 } label: {

@@ -1,0 +1,68 @@
+import Foundation
+import XCTest
+
+@testable import CodexWorker
+
+/// AGT-26 S6：`/v1/harness/tree` 的解析与首页展示规则
+final class HarnessTreeDecoderTests: XCTestCase {
+    private func payload(_ goals: [JSONValue]) -> JSONValue {
+        .object(["ok": .bool(true), "schema_version": .int(1), "goals": .array(goals)])
+    }
+
+    private func member(_ role: String, _ id: String, kind: String, host: String? = nil,
+                        title: String? = nil, model: String? = nil) -> JSONValue {
+        var m: [String: JSONValue] = ["role": .string(role), "id": .string(id), "kind": .string(kind)]
+        m["host_id"] = host.map(JSONValue.string) ?? .null
+        m["title"] = title.map(JSONValue.string) ?? .null
+        m["model"] = model.map(JSONValue.string) ?? .null
+        return .object(m)
+    }
+
+    func testDecodesRolesKindsAndRuntimeLine() throws {
+        let goals = try HarnessTreeDecoder.goals(payload([
+            .object(["issue_id": .string("AGT-26"), "members": .array([
+                member("chatgpt", "6aa8", kind: "chatgpt", title: "方案讨论"),
+                member("master", "01a1", kind: "codex", host: "local", title: "AGT-26 · Master", model: "gpt-6.1-sol"),
+                member("worker", "b483", kind: "claude", host: "mac-m1pro"),
+            ])]),
+        ]))
+        XCTAssertEqual(goals.count, 1)
+        let g = goals[0]
+        XCTAssertEqual(g.title, "AGT-26 · Master")
+        XCTAssertEqual(g.issueURL?.absoluteString, "https://linear.app/mjmk/issue/AGT-26")
+        XCTAssertEqual(g.members.map(\.role), [.thinker, .master, .worker])
+        XCTAssertEqual(g.master?.runtimeLine, "Codex · spirit-master · gpt-6.1-sol")
+        XCTAssertEqual(g.members[2].runtimeLine, "Claude Code · M1 Mac")
+        XCTAssertEqual(g.members[0].runtimeLine, "ChatGPT")
+        XCTAssertEqual(g.members[0].roleLabel, "思考")
+    }
+
+    func testDropsGoalsWithoutMasterOrWorkerAndInvalidMembers() throws {
+        let goals = try HarnessTreeDecoder.goals(payload([
+            .object(["issue_id": .string("AGT-9"), "members": .array([member("chatgpt", "x", kind: "chatgpt")])]),
+            .object(["issue_id": .string("BOX-1"), "members": .array([
+                member("worker", "w1", kind: "codex", host: "local"),
+                .object(["role": .string("unknown-role"), "id": .string("z"), "kind": .string("codex")]),
+                .object(["role": .string("worker"), "kind": .string("codex")]),   // 缺 id
+            ])]),
+        ]))
+        XCTAssertEqual(goals.map(\.id), ["BOX-1"])
+        XCTAssertEqual(goals[0].members.count, 1)
+        XCTAssertEqual(goals[0].title, "BOX-1")   // 没有 Master 时用 Issue 号
+    }
+
+    func testRejectsNotOkPayload() {
+        XCTAssertThrowsError(try HarnessTreeDecoder.goals(.object(["ok": .bool(false)])))
+    }
+
+    func testSurfacedNeedsYouAndHostLabels() {
+        var w = HarnessMember(id: "w", role: .worker, kind: "codex", host: "remote-control:env_e_x", title: nil, model: nil)
+        w.status = .needsYou
+        let g = HarnessGoal(id: "BOX-167", issueURL: nil, members: [w])
+        XCTAssertTrue(g.needsYou)
+        XCTAssertEqual(g.surfaced.map(\.id), ["w"])
+        XCTAssertEqual(HarnessMember.hostLabel("remote-ssh-discovered:agt-ubuntu-worker"), "Ubuntu")
+        XCTAssertEqual(HarnessMember.hostLabel("remote-control:env_e_x"), "远程设备")
+        XCTAssertNil(HarnessMember.hostLabel(""))
+    }
+}
