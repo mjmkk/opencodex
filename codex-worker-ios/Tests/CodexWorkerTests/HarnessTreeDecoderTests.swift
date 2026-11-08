@@ -51,6 +51,24 @@ final class HarnessTreeDecoderTests: XCTestCase {
         XCTAssertEqual(goals[0].title, "BOX-1")   // 没有 Master 时用 Issue 号
     }
 
+    func testNodeStatusAndSubagentsAreDecoded() throws {
+        var worker = member("worker", "b483", kind: "claude", host: "mac-m1pro")
+        if case .object(var o) = worker {
+            o["status"] = .string("needs_you")
+            o["subagents"] = .array([.object(["id": .string("b483/a1"), "kind": .string("claude"),
+                                              "title": .string("general-purpose"), "status": .string("done")])])
+            worker = .object(o)
+        }
+        let g = try HarnessTreeDecoder.goals(payload([
+            .object(["issue_id": .string("AGT-26"), "members": .array([worker])]),
+        ]))[0]
+        XCTAssertTrue(g.needsYou)
+        XCTAssertEqual(g.members[0].subagents.map(\.id), ["b483/a1"])
+        XCTAssertEqual(g.members[0].subagents[0].role, .subagent)
+        XCTAssertEqual(g.members[0].subagents[0].status, .done)
+        XCTAssertEqual(HarnessTreeDecoder.status("bogus"), .unknown)
+    }
+
     func testRejectsNotOkPayload() {
         XCTAssertThrowsError(try HarnessTreeDecoder.goals(.object(["ok": .bool(false)])))
     }

@@ -70,18 +70,32 @@ enum HarnessTreeDecoder {
               let goals = root["goals"]?.arrayValue else { throw CodexError.invalidState }
         return goals.compactMap { value -> HarnessGoal? in
             guard let g = value.objectValue, let issue = g["issue_id"]?.stringValue else { return nil }
-            let members = (g["members"]?.arrayValue ?? []).compactMap(member)
+            let members = (g["members"]?.arrayValue ?? []).compactMap { member($0) }
             guard members.contains(where: { $0.role == .master || $0.role == .worker }) else { return nil }
             return HarnessGoal(id: issue, issueURL: URL(string: "https://linear.app/mjmk/issue/" + issue),
                                members: members)
         }
     }
 
-    private static func member(_ value: JSONValue) -> HarnessMember? {
+    private static func member(_ value: JSONValue, role forced: HarnessMember.Role? = nil) -> HarnessMember? {
         guard let m = value.objectValue, let id = m["id"]?.stringValue, !id.isEmpty,
-              let role = m["role"]?.stringValue.flatMap(HarnessMember.Role.init(rawValue:)),
+              let role = forced ?? m["role"]?.stringValue.flatMap(HarnessMember.Role.init(rawValue:)),
               let kind = m["kind"]?.stringValue else { return nil }
-        return HarnessMember(id: id, role: role, kind: kind, host: m["host_id"]?.stringValue,
-                             title: m["title"]?.stringValue, model: m["model"]?.stringValue)
+        var member = HarnessMember(id: id, role: role, kind: kind, host: m["host_id"]?.stringValue,
+                                   title: m["title"]?.stringValue, model: m["model"]?.stringValue)
+        member.status = status(m["status"]?.stringValue)
+        member.subagents = (m["subagents"]?.arrayValue ?? []).compactMap { Self.member($0, role: .subagent) }
+        return member
+    }
+
+    /// Node 用钩子事件汇总出来的状态；没有观测到就是 unknown，不推测
+    static func status(_ raw: String?) -> HarnessMember.Status {
+        switch raw {
+        case "needs_you": return .needsYou
+        case "running": return .running
+        case "idle": return .idle
+        case "done": return .done
+        default: return .unknown
+        }
     }
 }
