@@ -15,8 +15,10 @@ struct HarnessHomeView: View {
     let refresh: () async -> Void
     let openThread: (HarnessMember) -> Void
 
-    @State private var expanded: Set<String> = []
+    // 启动参数 -AGTExpand <Issue>：启动后先展开指定的 Goal（模拟器自动化验证用）
+    @State private var expanded: Set<String> = UserDefaults.standard.string(forKey: "AGTExpand").map { [$0] } ?? []
     @State private var expandedSubagents: Set<String> = []
+    @State private var expandedThinkers: Set<String> = []
     @State private var copiedId: String?
 
     private var needYou: [HarnessGoal] { goals.filter(\.needsYou) }
@@ -79,7 +81,9 @@ struct HarnessHomeView: View {
                     .font(.caption).foregroundStyle(.secondary)
                     if !isOpen {
                         ForEach(goal.surfaced) { m in
-                            Label((m.title ?? m.id) + " · 待你处理", systemImage: "exclamationmark.circle.fill")
+                            // 没有标题时显示「角色 · harness · 机器」，不显示原生 id（id 只在复制时用）
+                            Label((m.title ?? (m.roleLabel + " · " + m.runtimeLine)) + " · 待你处理",
+                                  systemImage: "exclamationmark.circle.fill")
                                 .font(.caption.weight(.medium)).foregroundStyle(.orange).lineLimit(1)
                         }
                     }
@@ -90,7 +94,31 @@ struct HarnessHomeView: View {
         .accessibilityHint(isOpen ? "收起成员" : "展开成员")
 
         if isOpen {
-            ForEach(goal.members) { m in memberRows(m, goal: goal) }
+            // 思考线程超过 3 条时折叠成一行，避免把 Master 和 Worker 挤到下面（AGT-26 有 24 条）
+            let thinkers = goal.members.filter { $0.role == .thinker }
+            // Master 排第一；Worker 按 需要你 → 运行中 → 其他 排序，同一档内保持原来的顺序
+            let rank: (HarnessMember) -> Int = { m in
+                m.role == .master ? 0 : m.status == .needsYou ? 1 : m.status == .running ? 2 : 3
+            }
+            let others = goal.members.filter { $0.role != .thinker }.enumerated()
+                .sorted { (rank($0.element), $0.offset) < (rank($1.element), $1.offset) }.map(\.element)
+            let foldThinkers = thinkers.count > 3 && !expandedThinkers.contains(goal.id)
+            ForEach(others) { m in memberRows(m, goal: goal) }
+            if foldThinkers {
+                Button { toggle(&expandedThinkers, goal.id) } label: {
+                    HStack(spacing: 8) {
+                        Text("思考").font(.caption2.weight(.semibold)).foregroundStyle(Color.accentColor)
+                            .frame(width: 46, alignment: .leading)
+                        Text("\(thinkers.count) 个思考线程").font(.subheadline).foregroundStyle(.secondary)
+                        Spacer()
+                        Image(systemName: "chevron.down").font(.caption2).foregroundStyle(.secondary)
+                    }
+                    .padding(.leading, 18)
+                }
+                .buttonStyle(.plain)
+            } else {
+                ForEach(thinkers) { m in memberRows(m, goal: goal) }
+            }
         }
     }
 
@@ -114,7 +142,7 @@ struct HarnessHomeView: View {
                         .buttonStyle(.borderless)
                         .accessibilityLabel(subsOpen ? "收起子代理" : "展开子代理")
                     }
-                    Text(m.title ?? shortId(m.id)).font(.subheadline).lineLimit(1)
+                    Text(m.title ?? (m.runtimeLine + " · " + shortId(m.id))).font(.subheadline).lineLimit(1)
                     Spacer(minLength: 8)
                     statusText(m.status)
                 }

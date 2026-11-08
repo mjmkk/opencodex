@@ -189,6 +189,8 @@ public struct ContentView: View {
             }
             .onAppear {
                 viewStore.send(.onAppear)
+                // 启动参数 -AGTOpenWork 1：启动后直接打开「工作」页（模拟器自动化验证用；不影响正常启动）
+                if UserDefaults.standard.bool(forKey: "AGTOpenWork") { isOverviewPresented = true }
                 if let id = MobileLifecycle.takePendingThread() { viewStore.send(.openNotificationThread(id)) }
                 if let route = MobileLifecycle.takePendingNativeRequest() {
                     nativeRequestRoute = route; isInboxPresented = true
@@ -210,6 +212,11 @@ public struct ContentView: View {
             .onOpenURL { url in
                 if let route = NativeRequestRoute(url: url) {
                     nativeRequestRoute = route; isInboxPresented = true
+                    return
+                }
+                // AGT-26 S6：opencodex://work 直接打开「工作」Goal 树（推送深链和自动化验证共用这个入口）
+                if url.scheme == "opencodex", url.host == "work" {
+                    isOverviewPresented = true
                     return
                 }
                 if url.scheme == "opencodex", url.host == "thread", url.pathComponents.count == 2 {
