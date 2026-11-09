@@ -6,6 +6,7 @@ import SwiftUI
 struct WaitingCard: View {
     let waiting: HarnessMember.Waiting
     let hostLabel: String
+    var isClaude = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -15,9 +16,9 @@ struct WaitingCard: View {
             if !waiting.summary.isEmpty {
                 Text(waiting.summary).font(.callout.monospaced()).lineLimit(4)
             }
-            Text(waiting.isPermission
-                 ? "这类审批要在 \(hostLabel) 上的原会话里点。"
-                 : "直接在下面回复就行。")
+            Text(!waiting.isPermission ? "直接在下面回复就行。"
+                 : isClaude ? "AGT 的 Claude Worker 应该用无审批模式启动（~/.agt-node/claude-worker.sh）。这个会话不是，需要在 \(hostLabel) 上点一下，或者用无审批模式重启它。"
+                 : "这类审批要在 \(hostLabel) 上的原会话里点。")
                 .font(.footnote).foregroundStyle(.secondary)
         }
         .padding(14)

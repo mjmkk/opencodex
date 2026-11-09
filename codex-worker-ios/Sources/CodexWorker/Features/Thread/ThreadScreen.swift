@@ -69,7 +69,7 @@ struct ThreadScreen: View {
             VStack(spacing: 8) {
                 // 原生请求列表里没有这条线程的请求时，用 Node 观测到的“在等什么”兜底
                 if requests.isEmpty, let w = member.waiting {
-                    WaitingCard(waiting: w, hostLabel: HarnessMember.hostLabel(member.host) ?? "原机器")
+                    WaitingCard(waiting: w, hostLabel: HarnessMember.hostLabel(member.host) ?? "原机器", isClaude: member.kind == "claude")
                         .padding(.horizontal, 12)
                 }
                 // 等你处理的请求贴在输入框上方，不混进对话流
