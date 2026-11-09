@@ -20,22 +20,10 @@ let package = Package(
         .package(path: "../codex-activity-models"),
         // TCA（The Composable Architecture，组合式架构库）
         .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.26.0"),
-        // Exyte Chat（聊天 UI 组件）
-        .package(url: "https://github.com/exyte/Chat.git", from: "2.7.6"),
-        // Giphy SDK 版本范围：已验证 2.3.0 可用，限制在 3.0.0 以内避免未来破坏性升级
-        .package(url: "https://github.com/Giphy/giphy-ios-sdk", "2.2.16" ..< "3.0.0"),
-        // swift-navigation 版本范围：当前工具链已验证 2.7.x 可编译，限制在 3.0.0 以内
-        .package(url: "https://github.com/pointfreeco/swift-navigation", "2.3.2" ..< "3.0.0"),
         // MarkdownUI（完整 Markdown 渲染，支持 GitHub 风格 Markdown 的表格/任务列表）
         .package(url: "https://github.com/gonzalezreal/swift-markdown-ui.git", from: "2.0.2"),
         // GRDB（SQLite 封装）
         .package(url: "https://github.com/groue/GRDB.swift.git", from: "7.10.0"),
-        // SwiftTerm（终端渲染）
-        .package(url: "https://github.com/migueldeicaza/SwiftTerm.git", from: "1.2.6"),
-        // Runestone（代码编辑器视图）
-        .package(url: "https://github.com/simonbs/Runestone.git", from: "0.5.2"),
-        // TreeSitterLanguages（Runestone 语法语言包）
-        .package(url: "https://github.com/simonbs/TreeSitterLanguages.git", from: "0.1.10"),
     ],
     targets: [
         .target(
@@ -43,23 +31,8 @@ let package = Package(
             dependencies: [
                 .product(name: "CodexActivityModels", package: "codex-activity-models"),
                 .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
-                .product(name: "ExyteChat", package: "Chat"),
                 .product(name: "MarkdownUI", package: "swift-markdown-ui"),
                 .product(name: "GRDB", package: "GRDB.swift"),
-                .product(name: "SwiftTerm", package: "SwiftTerm"),
-                .product(name: "Runestone", package: "Runestone"),
-                .product(name: "TreeSitterSwiftRunestone", package: "TreeSitterLanguages"),
-                .product(name: "TreeSitterJavaScriptRunestone", package: "TreeSitterLanguages"),
-                .product(name: "TreeSitterTypeScriptRunestone", package: "TreeSitterLanguages"),
-                .product(name: "TreeSitterTSXRunestone", package: "TreeSitterLanguages"),
-                .product(name: "TreeSitterJSONRunestone", package: "TreeSitterLanguages"),
-                .product(name: "TreeSitterYAMLRunestone", package: "TreeSitterLanguages"),
-                .product(name: "TreeSitterTOMLRunestone", package: "TreeSitterLanguages"),
-                .product(name: "TreeSitterMarkdownRunestone", package: "TreeSitterLanguages"),
-                .product(name: "TreeSitterBashRunestone", package: "TreeSitterLanguages"),
-                .product(name: "TreeSitterPythonRunestone", package: "TreeSitterLanguages"),
-                .product(name: "TreeSitterCSSRunestone", package: "TreeSitterLanguages"),
-                .product(name: "TreeSitterHTMLRunestone", package: "TreeSitterLanguages"),
             ],
             path: "Sources/CodexWorker",
             swiftSettings: [
@@ -76,7 +49,8 @@ let package = Package(
         .testTarget(
             name: "CodexWorkerTests",
             dependencies: ["CodexWorker"],
-            path: "Tests"
+            path: "Tests",
+            resources: [.copy("CodexWorkerTests/Fixtures")]
         ),
     ]
 )

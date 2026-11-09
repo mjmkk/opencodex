@@ -45,30 +45,7 @@ actor MobileSyncCache {
         }
     }
 
-    /// Rebuildable observer responses share the existing account-scoped cache.
-    func goalOverview(scope: String) throws -> GoalOverviewCacheEntry? {
-        try db.read { db in
-            try Data.fetchOne(db, sql: "SELECT value FROM mobile_observer_snapshots WHERE scope=? AND name='goal-overview'", arguments: [scope])
-                .map { try JSONDecoder().decode(GoalOverviewCacheEntry.self, from: $0) }
-        }
-    }
-
-    func saveGoalOverview(_ entry: GoalOverviewCacheEntry, scope: String) throws {
-        _ = try GoalOverviewDecoder.inventoryValidation(entry.payload)
-        try db.write { db in
-            guard let incoming = entry.payload.objectValue,
-                  let namespace = incoming["namespace"]?.stringValue,
-                  let revision = incoming["snapshot_revision"]?.intValue else { throw CodexError.invalidState }
-            if let data = try Data.fetchOne(db, sql: "SELECT value FROM mobile_observer_snapshots WHERE scope=? AND name='goal-overview'", arguments: [scope]),
-               let saved = try? JSONDecoder().decode(GoalOverviewCacheEntry.self, from: data),
-               let previous = saved.payload.objectValue,
-               previous["namespace"]?.stringValue == namespace,
-               let oldRevision = previous["snapshot_revision"]?.intValue,
-               oldRevision > revision { throw CodexError.invalidState }
-            try db.execute(sql: "INSERT INTO mobile_observer_snapshots(scope,name,value) VALUES(?,'goal-overview',?) ON CONFLICT(scope,name) DO UPDATE SET value=excluded.value",
-                arguments: [scope, try JSONEncoder().encode(entry)])
-        }
-    }
+    // AGT-26 S6：Goal Overview 的缓存读写随旧 UI 一起删除（mobile_observer_snapshots 表保留，不做迁移）
 
     func composer(threadId: String, scope: String) throws -> ComposerDraft? {
         try db.read { db in

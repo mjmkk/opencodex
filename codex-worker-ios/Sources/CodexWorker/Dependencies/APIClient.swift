@@ -45,6 +45,8 @@ public struct APIClient: DependencyKey, Sendable {
     public var goalOverview: @Sendable () async throws -> JSONValue = { throw CodexError.invalidState }
     /// AGT-26 S6：Goal 下的成员树（思考线程 / Master / Worker），每个成员带 harness 和机器
     public var harnessTree: @Sendable () async throws -> JSONValue = { throw CodexError.invalidState }
+    /// AGT-26 S6：Claude 会话的统一消息模型（Codex 线程服务端会返回 409，客户端改走 Mirror）
+    public var harnessThread: @Sendable (String) async throws -> JSONValue = { _ in throw CodexError.invalidState }
     public var readNativeRequest: @Sendable (NativeRequestSelection) async throws -> NativeRemoteRequest = { _ in throw CodexError.invalidState }
     public var respondNativeRequest: @Sendable (NativeRequestSelection) async throws -> NativeRemoteRequest = { _ in throw CodexError.invalidState }
 
@@ -137,6 +139,7 @@ extension APIClient {
             nativeRequests: { try await impl.nativeRequests() },
             goalOverview: { try await impl.goalOverview() },
             harnessTree: { try await impl.harnessTree() },
+            harnessThread: { try await impl.harnessThread($0) },
             readNativeRequest: { try await impl.nativeRequest($0, operation: "read") },
             respondNativeRequest: { try await impl.nativeRequest($0, operation: "respond") },
             getThreadTerminal: { try await impl.getThreadTerminal(threadId: $0) },
@@ -472,6 +475,12 @@ actor LiveAPIClient {
     }
     func goalOverview() async throws -> JSONValue {
         try await performRequest(buildRequest(url: buildURL(path: "/v1/overview/goals")), preservingKeys: true)
+    }
+    func harnessThread(_ id: String) async throws -> JSONValue {
+        // 查询参数必须走 queryItems：buildURL 会用 queryItems 覆盖 path 里手写的 ?id=
+        try await performRequest(buildRequest(url: buildURL(path: "/v1/harness/thread",
+                                                            queryItems: [URLQueryItem(name: "id", value: id)])),
+                                 preservingKeys: true)
     }
     func harnessTree() async throws -> JSONValue {
         try await performRequest(buildRequest(url: buildURL(path: "/v1/harness/tree")), preservingKeys: true)

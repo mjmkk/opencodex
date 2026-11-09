@@ -5,19 +5,12 @@
 //  根容器：对外提供可嵌入的根视图
 //
 
-import ComposableArchitecture
 import SwiftUI
 
-/// 根视图工厂
+/// 根视图工厂。AGT-26 S6 原地重写后，根就是 RootView（Goal 树 + 线程页）
 public enum CodexWorkerRoot {
-    /// 创建根视图
     @MainActor
     public static func makeRootView() -> some View {
-        ContentView(
-            store: Store(
-                initialState: AppFeature.State(),
-                reducer: { AppFeature() }
-            )
-        )
+        RootView()
     }
 }
