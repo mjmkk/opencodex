@@ -33,8 +33,13 @@ struct ThreadScreen: View {
                 }
                 if let transcript {
                     if transcript.hasMore {
-                        Text("更早的消息暂未加载").font(.caption).foregroundStyle(.tertiary)
-                            .frame(maxWidth: .infinity, alignment: .center)
+                        // Mirror 分页同步有断点：再拉一次会从上次停下的地方接着往前拉，不重复下载
+                        Button { Task { await load() } } label: {
+                            Text(loading ? "正在加载…" : "加载更早的消息")
+                                .font(.footnote).foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, minHeight: 36)
+                        }
+                        .buttonStyle(.plain).disabled(loading)
                     }
                     ForEach(transcript.rows) { row in rowView(row) }
                     // 记录里已经出现同样文字的就不再单独显示
@@ -62,6 +67,11 @@ struct ThreadScreen: View {
         }
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 8) {
+                // 原生请求列表里没有这条线程的请求时，用 Node 观测到的“在等什么”兜底
+                if requests.isEmpty, let w = member.waiting {
+                    WaitingCard(waiting: w, hostLabel: HarnessMember.hostLabel(member.host) ?? "原机器")
+                        .padding(.horizontal, 12)
+                }
                 // 等你处理的请求贴在输入框上方，不混进对话流
                 ForEach(requests) { r in
                     InlineRequestCard(item: r, hostLabel: HarnessMember.hostLabel(member.host) ?? "原机器") {

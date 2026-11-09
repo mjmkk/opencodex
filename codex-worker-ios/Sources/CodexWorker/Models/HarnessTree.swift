@@ -28,6 +28,14 @@ struct HarnessMember: Identifiable, Equatable, Sendable {
     let model: String?
     var status: Status = .unknown
     var subagents: [HarnessMember] = []
+    /// needs_you 时在等什么：Node 从钩子事件里取的工具名和一行摘要（命令或文件路径）
+    var waiting: Waiting?
+
+    struct Waiting: Equatable, Sendable {
+        let isPermission: Bool
+        let tool: String?
+        let summary: String
+    }
 
     var roleLabel: String {
         switch role {
@@ -89,6 +97,10 @@ enum HarnessTreeDecoder {
                                    title: m["title"]?.stringValue, model: m["model"]?.stringValue)
         member.status = status(m["status"]?.stringValue)
         member.subagents = (m["subagents"]?.arrayValue ?? []).compactMap { Self.member($0, role: .subagent) }
+        if member.status == .needsYou, let w = m["waiting"]?.objectValue {
+            member.waiting = .init(isPermission: w["kind"]?.stringValue == "permission",
+                                   tool: w["tool"]?.stringValue, summary: w["summary"]?.stringValue ?? "")
+        }
         return member
     }
 

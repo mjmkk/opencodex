@@ -69,6 +69,22 @@ final class HarnessTreeDecoderTests: XCTestCase {
         XCTAssertEqual(HarnessTreeDecoder.status("bogus"), .unknown)
     }
 
+    /// needs_you 时才解析“在等什么”；状态不是 needs_you 时即使带了 waiting 也忽略
+    func testWaitingDecodedOnlyWhenNeedsYou() throws {
+        func with(_ status: String) -> JSONValue {
+            guard case .object(var o) = member("worker", "b483", kind: "claude", host: "mac-m1pro") else { return .null }
+            o["status"] = .string(status)
+            o["waiting"] = .object(["kind": .string("permission"), "tool": .string("Bash"), "summary": .string("rm -rf build")])
+            return .object(o)
+        }
+        let goals = try HarnessTreeDecoder.goals(payload([
+            .object(["issue_id": .string("A"), "members": .array([with("needs_you")])]),
+            .object(["issue_id": .string("B"), "members": .array([with("idle")])]),
+        ]))
+        XCTAssertEqual(goals[0].members[0].waiting, .init(isPermission: true, tool: "Bash", summary: "rm -rf build"))
+        XCTAssertNil(goals[1].members[0].waiting)
+    }
+
     func testRejectsNotOkPayload() {
         XCTAssertThrowsError(try HarnessTreeDecoder.goals(.object(["ok": .bool(false)])))
     }
