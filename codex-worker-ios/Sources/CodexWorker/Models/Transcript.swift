@@ -7,8 +7,9 @@ struct Transcript: Equatable, Sendable {
         enum Kind: Equatable, Sendable {
             case user(String)
             case assistant(String)
-            /// 一个 turn 里中间过程的折叠行：只有已结束的 turn 才折叠，运行中的 turn 保持展开
-            case folded(count: Int, kinds: [String])
+            /// 一个 turn 里中间过程的折叠行（参考 ChatGPT「Thought for Ns」、Happy「Worked for 2m3s」）：
+            /// steps 是被折叠的中间消息，点开逐条显示；seconds 是这轮从提问到回答的耗时，算不出来时为 nil
+            case folded(steps: [String], seconds: Int?)
         }
         let id: String
         let kind: Kind
@@ -30,7 +31,8 @@ enum TranscriptBuilder {
         for (t, turnValue) in turns.enumerated() {
             let items = (turnValue.objectValue?["items"]?.arrayValue ?? []).compactMap { $0.objectValue }
             let lastAssistant = items.lastIndex { $0["role"]?.stringValue == "assistant" }
-            var folded = 0
+            var steps: [String] = []
+            var askedAt: Date?
             for (i, item) in items.enumerated() {
                 let text = (item["text"]?.stringValue ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !text.isEmpty else { continue }
@@ -38,17 +40,19 @@ enum TranscriptBuilder {
                 let id = "t\(t)-\(i)"
                 switch item["role"]?.stringValue {
                 case "user":
-                    rows.append(.init(id: id, kind: .user(text), at: at))
+                    rows.append(.init(id: id, kind: .user(text), at: at)); askedAt = at
                 case "assistant" where i == lastAssistant:
-                    if folded > 0 { rows.append(.init(id: id + "-f", kind: .folded(count: folded, kinds: ["过程"]), at: nil)) }
-                    folded = 0
+                    if !steps.isEmpty {
+                        rows.append(.init(id: id + "-f", kind: .folded(steps: steps, seconds: elapsed(askedAt, at)), at: nil))
+                    }
+                    steps = []
                     rows.append(.init(id: id, kind: .assistant(text), at: at))
                 case "assistant":
-                    folded += 1
+                    steps.append(text)
                 default: continue
                 }
             }
-            if folded > 0 { rows.append(.init(id: "t\(t)-f", kind: .folded(count: folded, kinds: ["过程"]), at: nil)) }
+            if !steps.isEmpty { rows.append(.init(id: "t\(t)-f", kind: .folded(steps: steps, seconds: nil), at: nil)) }
         }
         return Transcript(rows: rows, model: thread["model"]?.stringValue, isPartial: false, hasMore: false)
     }
@@ -61,7 +65,8 @@ enum TranscriptBuilder {
         func flush() {
             guard let answer = pending.last else { return }
             if pending.count > 1 {
-                rows.append(.init(id: answer.id + "-f", kind: .folded(count: pending.count - 1, kinds: ["过程"]), at: nil))
+                // Mirror 的消息没有时间，算不出耗时
+                rows.append(.init(id: answer.id + "-f", kind: .folded(steps: pending.dropLast().map(\.text), seconds: nil), at: nil))
             }
             rows.append(.init(id: answer.id, kind: .assistant(answer.text), at: answer.sentAt))
             pending = []
@@ -82,6 +87,19 @@ enum TranscriptBuilder {
 }
 
 extension TranscriptBuilder {
+    static func elapsed(_ from: Date?, _ to: Date?) -> Int? {
+        guard let from, let to, to >= from else { return nil }
+        return Int(to.timeIntervalSince(from).rounded())
+    }
+
+    /// 「工作了 45 秒」「工作了 2 分 3 秒」「工作了 1 小时 5 分」；没有耗时就说步数
+    static func foldLabel(steps: Int, seconds: Int?) -> String {
+        guard let s = seconds else { return "中间过程 \(steps) 步" }
+        if s < 60 { return "工作了 \(s) 秒" }
+        if s < 3600 { return "工作了 \(s / 60) 分" + (s % 60 > 0 ? " \(s % 60) 秒" : "") }
+        return "工作了 \(s / 3600) 小时" + ((s % 3600) / 60 > 0 ? " \((s % 3600) / 60) 分" : "")
+    }
+
     /// 同时接受带小数秒和不带小数秒的 ISO 8601 时间（Date.ISO8601FormatStyle 是值类型，并发安全）
     static func parseDate(_ s: String) -> Date? {
         (try? Date(s, strategy: .iso8601.year().month().day().time(includingFractionalSeconds: true)))

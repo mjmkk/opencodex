@@ -28,7 +28,7 @@ final class TranscriptBuilderTests: XCTestCase {
             ])]),
         ])])])
         let kinds = try TranscriptBuilder.claude(payload).rows.map(\.kind)
-        XCTAssertEqual(kinds, [.user("问"), .folded(count: 2, kinds: ["过程"]), .assistant("结论")])
+        XCTAssertEqual(kinds, [.user("问"), .folded(steps: ["我先查一下", "再看一个文件"], seconds: nil), .assistant("结论")])
     }
 
     /// Codex：两条用户消息之间只留最后一条 assistant，文本去掉首尾空白，空消息跳过
@@ -42,7 +42,14 @@ final class TranscriptBuilderTests: XCTestCase {
         ], records: [], attachments: [], downloadedAt: Date(), isPartial: false, hasMore: false,
            availableMessageCount: 6, refreshRequested: false)
         XCTAssertEqual(TranscriptBuilder.codex(history).rows.map(\.kind),
-                       [.user("问"), .folded(count: 1, kinds: ["过程"]), .assistant("结论"), .user("再问"), .assistant("好")])
+                       [.user("问"), .folded(steps: ["查一下"], seconds: nil), .assistant("结论"), .user("再问"), .assistant("好")])
+    }
+
+    func testFoldLabel() {
+        XCTAssertEqual(TranscriptBuilder.foldLabel(steps: 3, seconds: nil), "中间过程 3 步")
+        XCTAssertEqual(TranscriptBuilder.foldLabel(steps: 3, seconds: 45), "工作了 45 秒")
+        XCTAssertEqual(TranscriptBuilder.foldLabel(steps: 3, seconds: 123), "工作了 2 分 3 秒")
+        XCTAssertEqual(TranscriptBuilder.foldLabel(steps: 3, seconds: 3900), "工作了 1 小时 5 分")
     }
 
     func testClaudeRejectsErrorPayload() {

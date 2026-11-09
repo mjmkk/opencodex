@@ -4,6 +4,7 @@ import SwiftUI
 /// 打开时先显示上次缓存的 Goal 树，再去拉新数据（参考 Happy 的 offline-first）；拉取失败时保留旧数据，只给一行说明。
 struct HarnessHomeScreen: View {
     @Binding var goals: [HarnessGoal]
+    var currentId: String? = nil
     let openThread: (HarnessMember) -> Void
 
     @Environment(\.scenePhase) private var scenePhase
@@ -11,7 +12,7 @@ struct HarnessHomeScreen: View {
     @State private var failure: String?
 
     var body: some View {
-        HarnessHomeView(goals: goals, isRefreshing: isRefreshing, failure: failure,
+        HarnessHomeView(goals: goals, currentId: currentId, isRefreshing: isRefreshing, failure: failure,
                         refresh: refresh, openThread: openThread)
             .task {
                 if goals.isEmpty, let cached = HarnessTreeCache.load() { goals = cached }

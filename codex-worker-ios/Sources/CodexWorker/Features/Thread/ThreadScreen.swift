@@ -20,7 +20,7 @@ struct ThreadScreen: View {
 
     var body: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 14) {
+            LazyVStack(alignment: .leading, spacing: 12) {
                 if let notice {
                     Text(notice).font(.footnote).foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center).padding(.top, 8)
@@ -102,42 +102,72 @@ struct ThreadScreen: View {
     private func rowView(_ row: Transcript.Row) -> some View {
         switch row.kind {
         case .user(let text):
-            // 长消息默认只显示 6 行，点一下展开（参考 Happy 对长 prompt 的处理），免得一条消息占满整屏
+            // 浅灰气泡、正文色文字、靠右（ChatGPT / Claude）。长消息默认 6 行，点一下展开
             let open = expandedFolds.contains(row.id)
             HStack {
-                Spacer(minLength: 48)
+                Spacer(minLength: 64)
                 Text(text).font(.body)
                     .lineLimit(open ? nil : 6)
                     .padding(.horizontal, 14).padding(.vertical, 10)
-                    .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 18))
-                    .foregroundStyle(.white)
+                    .background(Theme.userBubble, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
                     .onTapGesture { toggleFold(row.id) }
             }
+            .padding(.top, 10)
         case .assistant(let text):
+            // 全宽、无气泡、无头像（ChatGPT / Claude / Happy 都这么做）
             Markdown(text)
-                .markdownTextStyle { FontSize(16) }
+                .markdownTextStyle { FontSize(17) }
+                .lineSpacing(5)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
-        case .folded(let count, _):
-            Label("中间过程 \(count) 步", systemImage: "ellipsis.rectangle")
-                .font(.caption).foregroundStyle(.secondary)
-                .padding(.horizontal, 10).padding(.vertical, 5)
-                .background(.quaternary.opacity(0.5), in: Capsule())
+        case .folded(let steps, let seconds):
+            // 一行纯灰字 + ›，不加框（ChatGPT「Thought for Ns ›」/ Happy「Worked for 2m3s ›」）；点开逐条显示
+            let open = expandedFolds.contains(row.id)
+            VStack(alignment: .leading, spacing: 8) {
+                Button { toggleFold(row.id) } label: {
+                    HStack(spacing: 4) {
+                        Text(TranscriptBuilder.foldLabel(steps: steps.count, seconds: seconds))
+                        Image(systemName: "chevron.right").font(.caption2.weight(.semibold))
+                            .rotationEffect(.degrees(open ? 90 : 0))
+                    }
+                    .font(.subheadline).foregroundStyle(.tertiary)
+                    .frame(minHeight: 32).contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                if open {
+                    VStack(alignment: .leading, spacing: 10) {
+                        ForEach(Array(steps.enumerated()), id: \.offset) { _, s in
+                            Text(s).font(.footnote).foregroundStyle(.secondary).lineLimit(8)
+                        }
+                    }
+                    .padding(.leading, 12)
+                    .overlay(alignment: .leading) { Rectangle().fill(.quaternary).frame(width: 2) }
+                }
+            }
         }
     }
 
     // MARK: - 输入框（发送接口还没有，先显示原因，不假装可用）
 
+    /// 悬浮胶囊输入框（ChatGPT 52 高、距两侧 16；Happy 圆角 30 外壳），内容从它下面滚过
     private var composer: some View {
         HStack(spacing: 10) {
-            Text("回复功能还没接上：服务端暂无发送接口")
-                .font(.footnote).foregroundStyle(.secondary)
+            Text("回复功能还没接上")
+                .font(.body).foregroundStyle(.tertiary)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 14).padding(.vertical, 11)
-                .background(.thinMaterial, in: Capsule())
+            Image(systemName: "arrow.up")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(Theme.page)
+                .frame(width: 36, height: 36)
+                .background(Theme.ink.opacity(0.25), in: Circle())
+                .accessibilityLabel("发送（暂不可用）")
         }
-        .padding(.horizontal, 12).padding(.vertical, 8)
-        .background(.bar)
+        .padding(.leading, 18).padding(.trailing, 8)
+        .frame(height: 52)
+        .background(.regularMaterial, in: Capsule())
+        .overlay(Capsule().stroke(.quaternary, lineWidth: 0.5))
+        .shadow(color: .black.opacity(0.06), radius: 12, y: 4)
+        .padding(.horizontal, 16).padding(.bottom, 8)
     }
 
     // MARK: - 加载
@@ -197,7 +227,10 @@ struct ThreadScreen: View {
     }
 
     private func toggleFold(_ id: String) {
-        if expandedFolds.contains(id) { expandedFolds.remove(id) } else { expandedFolds.insert(id) }
+        Haptics.light()
+        withAnimation(.snappy(duration: 0.2)) {
+            if expandedFolds.contains(id) { expandedFolds.remove(id) } else { expandedFolds.insert(id) }
+        }
     }
 
     private func copy(_ id: String) {

@@ -1,66 +1,141 @@
 import SwiftUI
 
-/// AGT-26 S6 原地重写后的根视图：启动后直接进入「工作」Goal 树，点任意成员进入它的线程页。
-/// 旧的聊天主界面、抽屉、Goal Overview、Terminal、文件浏览、独立收件箱都已删除，只能在 git 历史里找到。
-/// 推送和深链（opencodex://thread/<id>、opencodex://work）都在这里统一路由，同一个线程不会重复打开。
+/// AGT-26 S6 根视图，布局学 ChatGPT / Claude 手机端：主区域是当前线程，Goal 树放在左侧抽屉里。
+/// - 从屏幕左缘右滑或点左上角按钮打开抽屉；拖过 35% 或甩得够快就打开，否则弹回
+/// - 抽屉打开时主区域稍微缩小、加圆角和遮罩，点遮罩或左滑关闭
+/// - 启动时回到上次打开的线程；推送和深链（opencodex://thread/<id>、opencodex://work）也在这里统一处理，打开的是同一个线程就不重复加载
 struct RootView: View {
-    @State private var path: [Route] = []
     @State private var goals: [HarnessGoal] = []
+    @State private var currentId: String? = UserDefaults.standard.string(forKey: "AGTOpenThread")
+        ?? UserDefaults.standard.string(forKey: Self.lastThreadKey)
+    @State private var drawerOpen = UserDefaults.standard.bool(forKey: "AGTDrawer")
+    @State private var drag: CGFloat = 0
     @State private var showSettings = !Self.isConfigured
-    @State private var pendingOpen: String?
 
-    enum Route: Hashable {
-        case thread(memberId: String)
-    }
+    private static let lastThreadKey = "agt.lastThread"
 
     var body: some View {
-        NavigationStack(path: $path) {
-            HarnessHomeScreen(goals: $goals, openThread: { open($0.id) })
+        GeometryReader { geo in
+            let width = min(geo.size.width * 0.86, 380)
+            let progress = drawerProgress(width)
+            ZStack(alignment: .leading) {
+                Theme.page.ignoresSafeArea()
+                drawer.frame(width: width)
+                    .offset(x: (progress - 1) * width * 0.3)
+                    .opacity(progress == 0 ? 0 : 0.4 + 0.6 * progress)
+                main
+                    .clipShape(RoundedRectangle(cornerRadius: progress > 0 ? 20 * progress + 0.01 : 0, style: .continuous))
+                    .overlay {
+                        Color.black.opacity(0.18 * progress).ignoresSafeArea()
+                            .allowsHitTesting(drawerOpen)
+                            .onTapGesture { setDrawer(false) }
+                    }
+                    .scaleEffect(1 - 0.06 * progress)
+                    .offset(x: progress * width)
+                    .shadow(color: .black.opacity(0.12 * progress), radius: 16)
+                    .ignoresSafeArea(edges: progress > 0 ? .vertical : [])
+            }
+            .gesture(drawerGesture(width))
+        }
+        .sheet(isPresented: $showSettings) { ConnectionSettingsView { showSettings = false } }
+        .onAppear { if let id = MobileLifecycle.takePendingThread() { open(id) } }
+        .onReceive(NotificationCenter.default.publisher(for: MobileLifecycle.openThreadNotification)) { note in
+            if let id = note.object as? String { _ = MobileLifecycle.takePendingThread(); open(id) }
+        }
+        .onOpenURL { url in
+            guard url.scheme == "opencodex" else { return }
+            if url.host == "work" { setDrawer(true) }
+            if url.host == "thread", url.pathComponents.count == 2 { open(url.lastPathComponent) }
+        }
+    }
+
+    // MARK: - 抽屉：Goal 树
+
+    private var drawer: some View {
+        NavigationStack {
+            HarnessHomeScreen(goals: $goals, currentId: currentId, openThread: { open($0.id) })
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button { showSettings = true } label: { Image(systemName: "gearshape") }
                             .accessibilityLabel("连接设置")
                     }
                 }
-                .navigationDestination(for: Route.self) { route in
-                    switch route {
-                    case .thread(let id):
-                        // 每次渲染都重新解析：深链可能早于 Goal 树加载完成，树加载好之后这里会拿到真正的成员信息
-                        let (member, goal) = lookup(id)
-                        ThreadScreen(member: member, goal: goal)
-                    }
+        }
+    }
+
+    // MARK: - 主区域：当前线程
+
+    private var main: some View {
+        NavigationStack {
+            Group {
+                if let id = currentId {
+                    let (member, goal) = lookup(id)
+                    // 换线程时整页重建，不把上一个线程的内容和展开状态带过来
+                    ThreadScreen(member: member, goal: goal).id(id)
+                } else {
+                    ContentUnavailableView("选一个线程", systemImage: "sidebar.left",
+                        description: Text("从左侧打开 Goal 列表，点任意线程进入对话。"))
                 }
-        }
-        .sheet(isPresented: $showSettings) { ConnectionSettingsView { showSettings = false } }
-        .onAppear {
-            if let id = MobileLifecycle.takePendingThread() { pendingOpen = id }
-            if let id = UserDefaults.standard.string(forKey: "AGTOpenThread") { pendingOpen = id }
-        }
-        // 深链和推送要等 Goal 树加载好再打开，这样线程页能拿到正确的 harness 和机器信息；
-        // 树已经有缓存的话，第一帧就能打开
-        .onChange(of: goals) { _, _ in
-            if let id = pendingOpen, !goals.isEmpty { pendingOpen = nil; open(id) }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: MobileLifecycle.openThreadNotification)) { note in
-            if let id = note.object as? String {
-                _ = MobileLifecycle.takePendingThread()
-                if goals.isEmpty { pendingOpen = id } else { open(id) }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { setDrawer(true) } label: {
+                        Image(systemName: "line.3.horizontal")
+                            .overlay(alignment: .topTrailing) {
+                                // 有 Goal 需要你处理时，菜单按钮上带一个橙点
+                                if goals.contains(where: \.needsYou) {
+                                    Circle().fill(Theme.needsYou).frame(width: 8, height: 8).offset(x: 4, y: -3)
+                                }
+                            }
+                    }
+                    .accessibilityLabel("打开 Goal 列表")
+                }
             }
         }
-        .onOpenURL { url in
-            guard url.scheme == "opencodex" else { return }
-            if url.host == "work" { path = [] }
-            if url.host == "thread", url.pathComponents.count == 2 { open(url.lastPathComponent) }
-        }
+        // 底色铺满安全区，否则抽屉关着时会从输入框下面露出来
+        .background(Theme.page.ignoresSafeArea())
     }
 
-    /// 同一个线程已经在最上层时不再压栈（推送重复到达时去重，参考 Happy 的 NotificationResponseFilter）
+    // MARK: - 手势和状态
+
+    private func drawerProgress(_ width: CGFloat) -> CGFloat {
+        let base: CGFloat = drawerOpen ? width : 0
+        return min(max((base + drag) / width, 0), 1)
+    }
+
+    /// 关着时只认从左缘 24pt 内开始的右滑，免得和列表里的横滑操作冲突；开着时任意位置左滑都能关
+    private func drawerGesture(_ width: CGFloat) -> some Gesture {
+        DragGesture(minimumDistance: 12)
+            .onChanged { v in
+                guard abs(v.translation.width) > abs(v.translation.height) else { return }
+                if drawerOpen { drag = min(0, v.translation.width) }
+                else if v.startLocation.x < 24 { drag = max(0, v.translation.width) }
+            }
+            .onEnded { v in
+                let moved = drag
+                drag = 0
+                guard moved != 0 else { return }
+                let velocity = v.predictedEndTranslation.width - v.translation.width
+                if drawerOpen { setDrawer(!(moved < -width * 0.35 || velocity < -250)) }
+                else { setDrawer(moved > width * 0.35 || velocity > 250) }
+            }
+    }
+
+    private func setDrawer(_ open: Bool) {
+        if open != drawerOpen { Haptics.soft() }
+        withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) { drawerOpen = open; drag = 0 }
+    }
+
     private func open(_ id: String) {
-        if case .thread(let top)? = path.last, top == id { return }
-        path.append(.thread(memberId: id))
+        if currentId != id {
+            currentId = id
+            UserDefaults.standard.set(id, forKey: Self.lastThreadKey)
+        }
+        setDrawer(false)
     }
 
-    /// 在已加载的 Goal 树里找这个成员（包括子代理）；找不到时按 Codex 线程处理
+    /// 在 Goal 树里找这个成员（包括子代理）。树还没加载或不在树里时 kind 记为 unknown，
+    /// 线程页会先问服务端是不是 Claude 会话，不是再走 Mirror。树加载好后这里会重新算，拿到正确的机器和模型
     private func lookup(_ id: String) -> (HarnessMember, HarnessGoal?) {
         for g in goals {
             for m in g.members {
@@ -68,7 +143,6 @@ struct RootView: View {
                 if let s = m.subagents.first(where: { $0.id == id }) { return (s, g) }
             }
         }
-        // 不在树里：kind 记为 unknown，由线程页先问服务端（Claude 会话），服务端回 409 再走 Mirror（Codex）。不按 id 长相去猜
         return (HarnessMember(id: id, role: .worker, kind: "unknown", host: nil, title: nil, model: nil), nil)
     }
 

@@ -40,15 +40,19 @@ struct HarnessMember: Identifiable, Equatable, Sendable {
 
     /// 第二行：harness · 机器 · 模型。缺的部分不显示，不编造
     var runtimeLine: String {
-        let harness: String
-        switch kind {
-        case "codex": harness = "Codex"
-        case "claude": harness = "Claude Code"
-        case "chatgpt": harness = "ChatGPT"
-        default: harness = kind
-        }
-        return [harness, HarnessMember.hostLabel(host), model].compactMap { $0 }.joined(separator: " · ")
+        [harnessName, hostLabel, model].compactMap { $0 }.joined(separator: " · ")
     }
+
+    var harnessName: String {
+        switch kind {
+        case "codex": return "Codex"
+        case "claude": return "Claude Code"
+        case "chatgpt": return "ChatGPT"
+        default: return kind
+        }
+    }
+
+    var hostLabel: String? { HarnessMember.hostLabel(host) }
 
     /// Registry 里的 host_id 是机器内部标识，这里换成人能认出来的名字
     static func hostLabel(_ host: String?) -> String? {
