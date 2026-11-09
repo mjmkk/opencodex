@@ -48,6 +48,9 @@ public struct APIClient: DependencyKey, Sendable {
     /// AGT-26 S6：Claude 会话的统一消息模型（Codex 线程服务端会返回 409，客户端改走 Mirror）
     public var harnessThread: @Sendable (String) async throws -> JSONValue = { _ in throw CodexError.invalidState }
     public var harnessSend: @Sendable (String, String, String) async throws -> JSONValue = { _, _, _ in throw CodexError.invalidState }
+    public var nativeControl: @Sendable (String) async throws -> JSONValue = { _ in throw CodexError.invalidState }
+    public var nativeInput: @Sendable (String, String, String, String, String) async throws -> JSONValue = { _, _, _, _, _ in throw CodexError.invalidState }
+    public var nativeSubmission: @Sendable (String, String) async throws -> JSONValue = { _, _ in throw CodexError.invalidState }
     public var readNativeRequest: @Sendable (NativeRequestSelection) async throws -> NativeRemoteRequest = { _ in throw CodexError.invalidState }
     public var respondNativeRequest: @Sendable (NativeRequestSelection) async throws -> NativeRemoteRequest = { _ in throw CodexError.invalidState }
 
@@ -142,6 +145,9 @@ extension APIClient {
             harnessTree: { try await impl.harnessTree() },
             harnessThread: { try await impl.harnessThread($0) },
             harnessSend: { try await impl.harnessSend(id: $0, text: $1, clientMessageId: $2) },
+            nativeControl: { try await impl.nativeControl($0) },
+            nativeInput: { try await impl.nativeInput($0, text: $1, submissionId: $2, receipt: $3, version: $4) },
+            nativeSubmission: { try await impl.nativeSubmission($0, submissionId: $1) },
             readNativeRequest: { try await impl.nativeRequest($0, operation: "read") },
             respondNativeRequest: { try await impl.nativeRequest($0, operation: "respond") },
             getThreadTerminal: { try await impl.getThreadTerminal(threadId: $0) },
@@ -482,6 +488,23 @@ actor LiveAPIClient {
         // 查询参数必须走 queryItems：buildURL 会用 queryItems 覆盖 path 里手写的 ?id=
         try await performRequest(buildRequest(url: buildURL(path: "/v1/harness/thread",
                                                             queryItems: [URLQueryItem(name: "id", value: id)])),
+                                 preservingKeys: true)
+    }
+    /// Codex 线程的原生控制通道（服务端 native-control-route）：先读当前观测，再带着 receipt/version 发文字。
+    /// 服务端写入前会落一条持久意图，同一个 submission_id 永远不会发第二次
+    func nativeControl(_ threadId: String) async throws -> JSONValue {
+        try await performRequest(buildRequest(url: buildURL(path: "/v1/native-threads/\(threadId)/control")),
+                                 preservingKeys: true)
+    }
+    func nativeInput(_ threadId: String, text: String, submissionId: String,
+                     receipt: String, version: String) async throws -> JSONValue {
+        let body = try JSONSerialization.data(withJSONObject: [
+            "submission_id": submissionId, "control_receipt": receipt, "control_version": version, "text": text])
+        return try await performRequest(buildRequest(url: buildURL(path: "/v1/native-threads/\(threadId)/input"),
+                                                     method: "POST", body: body), preservingKeys: true)
+    }
+    func nativeSubmission(_ threadId: String, submissionId: String) async throws -> JSONValue {
+        try await performRequest(buildRequest(url: buildURL(path: "/v1/native-threads/\(threadId)/submissions/\(submissionId)")),
                                  preservingKeys: true)
     }
     /// POST /v1/harness/send：Human 回复一条线程。client_message_id 由调用方生成，同一个 id 服务端只投递一次

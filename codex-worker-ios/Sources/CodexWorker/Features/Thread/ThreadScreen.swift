@@ -206,6 +206,34 @@ struct ThreadScreen: View {
 
     private var canSend: Bool { !sending && !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 
+    /// Codex：走 AGT-12 原有的原生控制通道。先读当前观测（拿 receipt 和 version），再发文字；
+    /// 服务端写之前先落持久意图，同一个 submission_id 不会发第二次。返回值映射成和 harness/send 一样的状态
+    @MainActor private func sendNative(_ text: String, submissionId: String) async throws -> String {
+        let api = APIClient.live
+        // 上次结果不明时先查回执，不重新发
+        if let prior = try? await api.nativeSubmission(member.id, submissionId),
+           let st = prior.objectValue?["status"]?.stringValue {
+            return st == "accepted" ? "queued" : st == "rejected" ? "failed" : "unconfirmed"
+        }
+        let control: JSONValue
+        do { control = try await api.nativeControl(member.id) }
+        catch CodexError.apiError(let code, _) {
+            // 线程不在名单里，或者现在没被 Desktop 加载：都没有可写的原生通道
+            if code == "NATIVE_THREAD_NOT_CONFIGURED" { return "unsupported" }
+            if code == "NATIVE_OWNER_UNAVAILABLE" { return "offline" }
+            throw CodexError.apiError(code: code, message: "")
+        }
+        guard let c = control.objectValue, c["input_available"] == .bool(true),
+              let receipt = c["control_receipt"]?.stringValue, let version = c["control_version"]?.stringValue
+        else { return "busy" }
+        let r = try await api.nativeInput(member.id, text, submissionId, receipt, version)
+        switch r.objectValue?["status"]?.stringValue {
+        case "accepted": return "queued"
+        case "rejected": return "failed"
+        default: return "unconfirmed"
+        }
+    }
+
     @MainActor private func send() async {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !sending else { return }
@@ -216,8 +244,9 @@ struct ThreadScreen: View {
         let cmid = pendingId ?? ("m" + UUID().uuidString.replacingOccurrences(of: "-", with: ""))
         pendingId = cmid
         do {
-            let r = try await APIClient.live.harnessSend(member.id, text, cmid)
-            let status = r.objectValue?["status"]?.stringValue ?? ""
+            let status = member.kind == "codex" || member.kind == "unknown"
+                ? try await sendNative(text, submissionId: cmid)
+                : (try await APIClient.live.harnessSend(member.id, text, cmid)).objectValue?["status"]?.stringValue ?? ""
             switch status {
             case "queued", "received", "duplicate":
                 outgoing.append(.init(id: cmid, kind: .user(text), at: Date()))
@@ -230,7 +259,11 @@ struct ThreadScreen: View {
                 draft = ""; pendingId = nil
                 sendNotice = "已发出，还没收到确认；稍后刷新看看，不用重发"
             case "offline":
-                sendNotice = "对方会话现在没在运行，没有发出"; pendingId = nil
+                sendNotice = member.kind == "claude" ? "对方会话现在没在运行，没有发出"
+                    : "这个线程现在没在 Desktop 里打开，没有发出"
+                pendingId = nil
+            case "busy":
+                sendNotice = "对方现在不接受输入（可能在等审批），没有发出"; pendingId = nil
             case "unsupported":
                 sendNotice = "这台机器上的线程还不能从手机回复（" + (HarnessMember.hostLabel(member.host) ?? "未知机器") + "）"
                 pendingId = nil
