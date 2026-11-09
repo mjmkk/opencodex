@@ -16,6 +16,7 @@ struct ThreadScreen: View {
     @State private var loading = false
     @State private var notice: String?
     @State private var expandedFolds: Set<String> = []
+    @State private var requests: [NativeRemoteRequest] = []
 
     var body: some View {
         ScrollView {
@@ -49,12 +50,29 @@ struct ThreadScreen: View {
             ToolbarItem(placement: .principal) { header }
             ToolbarItem(placement: .topBarTrailing) { menu }
         }
-        .safeAreaInset(edge: .bottom) { composer }
+        .safeAreaInset(edge: .bottom) {
+            VStack(spacing: 8) {
+                // 等你处理的请求贴在输入框上方，不混进对话流
+                ForEach(requests) { r in
+                    InlineRequestCard(item: r, hostLabel: HarnessMember.hostLabel(member.host) ?? "原机器") {
+                        Task { await loadRequests() }
+                    }
+                    .padding(.horizontal, 12)
+                }
+                composer
+            }
+        }
         // 成员信息变了（例如深链打开后 Goal 树才到，kind 从 unknown 变成 claude）就重新加载；
         // .task(id:) 会取消上一次加载，所以 loading 不会卡住
-        .task(id: member.id + "|" + member.kind) { loading = false; await load() }
-        .refreshable { await load() }
-        .onChange(of: scenePhase) { _, phase in if phase == .active { Task { await load() } } }
+        .task(id: member.id + "|" + member.kind) {
+            loading = false
+            async let r: Void = loadRequests()
+            await load(); await r
+        }
+        .refreshable { async let r: Void = loadRequests(); await load(); await r }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { Task { await loadRequests(); await load() } }
+        }
     }
 
     // MARK: - 标题和菜单
@@ -159,6 +177,23 @@ struct ThreadScreen: View {
         } catch {
             notice = transcript == nil ? "暂时读不到这条线程，下拉重试" : "刷新失败，显示的是上次的内容"
         }
+    }
+
+    /// 只取这条线程上还没结束的原生请求。服务端读不到（比如原机器离线）时就不显示卡片，不影响看对话
+    @MainActor private func loadRequests() async {
+#if DEBUG
+        // 模拟器验收用：-AGTSampleRequest YES 时放一张示例卡片（不会发送：response_available 为 false）
+        if UserDefaults.standard.bool(forKey: "AGTSampleRequest") {
+            requests = [NativeRemoteRequest(receipt_id: "sample", request_id: .string("1"), thread_id: member.id,
+                request: ["method": .string("item/commandExecution/requestApproval"),
+                          "params": .object(["command": .string("cmake --build build -j8 && ctest --output-on-failure")])],
+                response_available: false, response_submitted: false)]
+            return
+        }
+#endif
+        guard member.kind != "claude" else { return }
+        guard let list = try? await APIClient.live.nativeRequests() else { return }
+        requests = list.data.filter { $0.thread_id == member.id && $0.native_resolution == nil && $0.native_terminal == nil }
     }
 
     private func toggleFold(_ id: String) {
