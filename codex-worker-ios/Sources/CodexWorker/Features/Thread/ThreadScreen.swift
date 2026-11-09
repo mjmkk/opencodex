@@ -17,6 +17,12 @@ struct ThreadScreen: View {
     @State private var notice: String?
     @State private var expandedFolds: Set<String> = []
     @State private var requests: [NativeRemoteRequest] = []
+    @State private var draft = ""
+    @State private var sending = false
+    @State private var sendNotice: String?
+    @State private var pendingId: String?
+    /// 刚从手机发出、服务端记录里还没出现的消息
+    @State private var outgoing: [Transcript.Row] = []
 
     var body: some View {
         ScrollView {
@@ -31,6 +37,10 @@ struct ThreadScreen: View {
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
                     ForEach(transcript.rows) { row in rowView(row) }
+                    // 记录里已经出现同样文字的就不再单独显示
+                    ForEach(outgoing.filter { o in !transcript.rows.suffix(6).contains { $0.kind == o.kind } }) { row in
+                        rowView(row).opacity(0.7)
+                    }
                 } else if loading {
                     ProgressView().frame(maxWidth: .infinity).padding(.top, 80)
                 } else {
@@ -149,25 +159,77 @@ struct ThreadScreen: View {
 
     // MARK: - 输入框（发送接口还没有，先显示原因，不假装可用）
 
-    /// 悬浮胶囊输入框（ChatGPT 52 高、距两侧 16；Happy 圆角 30 外壳），内容从它下面滚过
+    /// 悬浮胶囊输入框（ChatGPT 52 高、距两侧 16；Happy 圆角 30 外壳），内容从它下面滚过。
+    /// 发送走 /v1/harness/send：服务端按线程跑在哪选通道。发出去的消息先以「发送中」挂在列表底部，
+    /// 投递确认后显示「已送达」，等下一次刷新拿到真实记录后自然被替换
     private var composer: some View {
-        HStack(spacing: 10) {
-            Text("回复功能还没接上")
-                .font(.body).foregroundStyle(.tertiary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Image(systemName: "arrow.up")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(Theme.page)
-                .frame(width: 36, height: 36)
-                .background(Theme.ink.opacity(0.25), in: Circle())
-                .accessibilityLabel("发送（暂不可用）")
+        VStack(alignment: .leading, spacing: 6) {
+            if let sendNotice {
+                Text(sendNotice).font(.footnote).foregroundStyle(.secondary).padding(.horizontal, 20)
+            }
+            HStack(alignment: .bottom, spacing: 10) {
+                TextField("回复 " + member.roleLabel, text: $draft, axis: .vertical)
+                    .font(.body).lineLimit(1...6)
+                    .padding(.vertical, 15)
+                    .disabled(sending)
+                Button { Task { await send() } } label: {
+                    Group {
+                        if sending { ProgressView().tint(Theme.page) }
+                        else { Image(systemName: "arrow.up").font(.system(size: 15, weight: .semibold)) }
+                    }
+                    .foregroundStyle(Theme.page)
+                    .frame(width: 36, height: 36)
+                    .background(Theme.ink.opacity(canSend ? 1 : 0.25), in: Circle())
+                }
+                .disabled(!canSend)
+                .padding(.bottom, 8)
+                .accessibilityLabel("发送")
+            }
+            .padding(.leading, 18).padding(.trailing, 8)
+            .frame(minHeight: 52)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 26, style: .continuous).stroke(.quaternary, lineWidth: 0.5))
+            .shadow(color: .black.opacity(0.06), radius: 12, y: 4)
         }
-        .padding(.leading, 18).padding(.trailing, 8)
-        .frame(height: 52)
-        .background(.regularMaterial, in: Capsule())
-        .overlay(Capsule().stroke(.quaternary, lineWidth: 0.5))
-        .shadow(color: .black.opacity(0.06), radius: 12, y: 4)
         .padding(.horizontal, 16).padding(.bottom, 8)
+    }
+
+    private var canSend: Bool { !sending && !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+    @MainActor private func send() async {
+        let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, !sending else { return }
+        Haptics.light()
+        sending = true; sendNotice = nil
+        defer { sending = false }
+        // 同一条消息只生成一次 id：网络失败后重点发送，服务端会认出是同一条，不会投两次
+        let cmid = pendingId ?? ("m" + UUID().uuidString.replacingOccurrences(of: "-", with: ""))
+        pendingId = cmid
+        do {
+            let r = try await APIClient.live.harnessSend(member.id, text, cmid)
+            let status = r.objectValue?["status"]?.stringValue ?? ""
+            switch status {
+            case "queued", "received", "duplicate":
+                outgoing.append(.init(id: cmid, kind: .user(text), at: Date()))
+                draft = ""; pendingId = nil
+                sendNotice = status == "received" ? "已送达" : "已送达，等对方处理"
+                Task { try? await Task.sleep(for: .seconds(6)); await load() }
+            case "unconfirmed":
+                // 可能已经发出去了：保留 id，不清空输入框，但提示别急着重发
+                outgoing.append(.init(id: cmid, kind: .user(text), at: Date()))
+                draft = ""; pendingId = nil
+                sendNotice = "已发出，还没收到确认；稍后刷新看看，不用重发"
+            case "offline":
+                sendNotice = "对方会话现在没在运行，没有发出"; pendingId = nil
+            case "unsupported":
+                sendNotice = "这台机器上的线程还不能从手机回复（" + (HarnessMember.hostLabel(member.host) ?? "未知机器") + "）"
+                pendingId = nil
+            default:
+                sendNotice = "没有发出，可以再试一次"
+            }
+        } catch {
+            sendNotice = "网络有问题，没确认是否发出；再点一次发送是安全的，不会重复"
+        }
     }
 
     // MARK: - 加载

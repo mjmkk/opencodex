@@ -47,6 +47,7 @@ public struct APIClient: DependencyKey, Sendable {
     public var harnessTree: @Sendable () async throws -> JSONValue = { throw CodexError.invalidState }
     /// AGT-26 S6：Claude 会话的统一消息模型（Codex 线程服务端会返回 409，客户端改走 Mirror）
     public var harnessThread: @Sendable (String) async throws -> JSONValue = { _ in throw CodexError.invalidState }
+    public var harnessSend: @Sendable (String, String, String) async throws -> JSONValue = { _, _, _ in throw CodexError.invalidState }
     public var readNativeRequest: @Sendable (NativeRequestSelection) async throws -> NativeRemoteRequest = { _ in throw CodexError.invalidState }
     public var respondNativeRequest: @Sendable (NativeRequestSelection) async throws -> NativeRemoteRequest = { _ in throw CodexError.invalidState }
 
@@ -140,6 +141,7 @@ extension APIClient {
             goalOverview: { try await impl.goalOverview() },
             harnessTree: { try await impl.harnessTree() },
             harnessThread: { try await impl.harnessThread($0) },
+            harnessSend: { try await impl.harnessSend(id: $0, text: $1, clientMessageId: $2) },
             readNativeRequest: { try await impl.nativeRequest($0, operation: "read") },
             respondNativeRequest: { try await impl.nativeRequest($0, operation: "respond") },
             getThreadTerminal: { try await impl.getThreadTerminal(threadId: $0) },
@@ -481,6 +483,12 @@ actor LiveAPIClient {
         try await performRequest(buildRequest(url: buildURL(path: "/v1/harness/thread",
                                                             queryItems: [URLQueryItem(name: "id", value: id)])),
                                  preservingKeys: true)
+    }
+    /// POST /v1/harness/send：Human 回复一条线程。client_message_id 由调用方生成，同一个 id 服务端只投递一次
+    func harnessSend(id: String, text: String, clientMessageId: String) async throws -> JSONValue {
+        let body = try JSONSerialization.data(withJSONObject: ["id": id, "text": text, "client_message_id": clientMessageId])
+        return try await performRequest(buildRequest(url: buildURL(path: "/v1/harness/send"), method: "POST", body: body),
+                                        preservingKeys: true)
     }
     func harnessTree() async throws -> JSONValue {
         try await performRequest(buildRequest(url: buildURL(path: "/v1/harness/tree")), preservingKeys: true)
