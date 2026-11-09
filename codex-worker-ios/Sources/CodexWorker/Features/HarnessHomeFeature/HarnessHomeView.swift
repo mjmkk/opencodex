@@ -81,13 +81,18 @@ struct HarnessHomeView: View {
         let isOpen = expanded.contains(goal.id)
         Button { toggle(&expanded, goal.id) } label: {
             HStack(spacing: 10) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(goal.title).font(.body.weight(.semibold)).lineLimit(1)
-                    // 标题就是 Issue 号时第二行不再重复它
-                    let where_ = goal.master.map { "Master 在 " + ($0.hostLabel ?? $0.harnessName) }
-                        ?? "\(goal.members.count) 个线程 · 没有 Master"
-                    Text(goal.title == goal.id ? where_ : goal.id + " · " + where_)
-                    .font(.footnote).foregroundStyle(.secondary).lineLimit(1)
+                VStack(alignment: .leading, spacing: 3) {
+                    // 标题是主角，最多两行；Issue 号退到第二行，用小号灰字
+                    Text(goal.title).font(.body.weight(.semibold)).lineLimit(2)
+                    HStack(spacing: 4) {
+                        if goal.title != goal.id { Text(goal.id).monospacedDigit() }
+                        if let m = goal.master {
+                            Text("Master · " + (m.hostLabel ?? m.harnessName))
+                        } else {
+                            Text("\(goal.members.count) 个线程")
+                        }
+                    }
+                    .font(.caption).foregroundStyle(.tertiary).lineLimit(1)
                 }
                 Spacer(minLength: 6)
                 if goal.runningCount > 0 && !goal.needsYou {
@@ -157,7 +162,8 @@ struct HarnessHomeView: View {
     private func memberRow(_ m: HarnessMember, goal: HarnessGoal, indent: CGFloat) -> some View {
         let selected = m.id == currentId
         // Goal 行已经用了 Master 的标题，Master 行就只写角色，不重复一遍
-        let title: String = (m.role == .master && m.title == goal.title) ? m.roleLabel : (m.title ?? m.roleLabel)
+        // 成员行只说“这条线程是什么”：Master 就写 Master；其他线程去掉和 Goal 重复的「BOX-166 · 」「AGT-26「…」·」前缀
+        let title: String = m.role == .master ? "Master" : Self.shortTitle(m.title, goal: goal) ?? m.roleLabel
         let detail: String = m.roleLabel + " · " + m.runtimeLine
         let needs = m.status == .needsYou
         let a11y: String = [title, detail, needs ? "需要你处理" : nil].compactMap { $0 }.joined(separator: "，")
@@ -193,6 +199,21 @@ struct HarnessHomeView: View {
         if let url = goal.issueURL {
             Link(destination: url) { Label("在 Linear 打开 " + goal.id, systemImage: "arrow.up.right.square") }
         }
+    }
+
+    static func shortTitle(_ raw: String?, goal: HarnessGoal) -> String? {
+        guard var t = raw?.trimmingCharacters(in: .whitespaces), !t.isEmpty else { return nil }
+        if t == goal.id { return nil }  // 标题只有 Issue 号，等于没有标题
+        for sep in [" · ", "｜", " | ", "：", ": ", " "] {
+            if t.hasPrefix(goal.id + sep) { t.removeFirst(goal.id.count + sep.count); break }
+        }
+        if t.hasPrefix(goal.id) && t.count > goal.id.count {
+            // 例如「AGT-26「AGT 协作开发」· Worker」：去掉 Issue 号和书名号里的项目名
+            var rest = t.dropFirst(goal.id.count)
+            if rest.first == "「", let end = rest.firstIndex(of: "」") { rest = rest[rest.index(after: end)...] }
+            t = rest.trimmingCharacters(in: CharacterSet(charactersIn: " ·｜|：:"))
+        }
+        return t.isEmpty ? nil : t
     }
 
     private func toggle(_ set: inout Set<String>, _ id: String) {

@@ -85,6 +85,18 @@ final class HarnessTreeDecoderTests: XCTestCase {
         XCTAssertNil(goals[1].members[0].waiting)
     }
 
+    func testGoalTitlePrefersLinearAndMemberTitlesDropGoalPrefix() throws {
+        let g = try HarnessTreeDecoder.goals(payload([
+            .object(["issue_id": .string("BOX-166"), "title": .string("M2：交付 Robot Integration"),
+                     "members": .array([member("worker", "w1", kind: "codex", host: "local")])]),
+        ]))[0]
+        XCTAssertEqual(g.title, "M2：交付 Robot Integration")
+        XCTAssertEqual(HarnessHomeView.shortTitle("BOX-166 · SDK CTest 核查", goal: g), "SDK CTest 核查")
+        XCTAssertEqual(HarnessHomeView.shortTitle("BOX-166「ROBOX 开发」· 图传 Worker", goal: g), "图传 Worker")
+        XCTAssertEqual(HarnessHomeView.shortTitle("另一件事", goal: g), "另一件事")
+        XCTAssertNil(HarnessHomeView.shortTitle("BOX-166", goal: g))
+    }
+
     func testRejectsNotOkPayload() {
         XCTAssertThrowsError(try HarnessTreeDecoder.goals(.object(["ok": .bool(false)])))
     }

@@ -6,10 +6,12 @@ struct HarnessGoal: Identifiable, Equatable, Sendable {
     let id: String              // Linear Issue，例如 BOX-166
     let issueURL: URL?
     let members: [HarnessMember]
+    /// Linear Issue 的标题（服务端从 Linear 取，可能没有）
+    var issueTitle: String? = nil
 
     var master: HarnessMember? { members.first { $0.role == .master } }
-    /// Goal 行上显示的标题：优先用 Master 线程的标题，没有就用 Issue 号
-    var title: String { master?.title ?? id }
+    /// Goal 行上显示的标题：Linear Issue 标题优先（说清楚这件事是什么），其次 Master 线程标题，最后才是 Issue 号
+    var title: String { issueTitle ?? master?.title ?? id }
     /// 收起时露出来的成员：需要 Human 处理的（待审批、待决策）
     var surfaced: [HarnessMember] { members.filter { $0.status == .needsYou } }
     var needsYou: Bool { !surfaced.isEmpty }
@@ -85,7 +87,7 @@ enum HarnessTreeDecoder {
             let members = (g["members"]?.arrayValue ?? []).compactMap { member($0) }
             guard members.contains(where: { $0.role == .master || $0.role == .worker }) else { return nil }
             return HarnessGoal(id: issue, issueURL: URL(string: "https://linear.app/mjmk/issue/" + issue),
-                               members: members)
+                               members: members, issueTitle: g["title"]?.stringValue)
         }
     }
 
