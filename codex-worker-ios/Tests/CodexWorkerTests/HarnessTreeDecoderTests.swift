@@ -28,7 +28,7 @@ final class HarnessTreeDecoderTests: XCTestCase {
         ]))
         XCTAssertEqual(goals.count, 1)
         let g = goals[0]
-        XCTAssertEqual(g.title, "AGT-26 · Master")
+        XCTAssertEqual(g.title, "AGT-26", "Master 标题只有 Issue 号和角色时，没有可用的名字，退回 Issue 号")
         XCTAssertEqual(g.issueURL?.absoluteString, "https://linear.app/mjmk/issue/AGT-26")
         XCTAssertEqual(g.members.map(\.role), [.thinker, .master, .worker])
         XCTAssertEqual(g.master?.runtimeLine, "Codex · spirit-master · gpt-6.1-sol")
@@ -90,7 +90,12 @@ final class HarnessTreeDecoderTests: XCTestCase {
             .object(["issue_id": .string("BOX-166"), "title": .string("M2：交付 Robot Integration"),
                      "members": .array([member("worker", "w1", kind: "codex", host: "local")])]),
         ]))[0]
-        XCTAssertEqual(g.title, "M2：交付 Robot Integration")
+        XCTAssertEqual(g.title, "M2：交付 Robot Integration", "唯一线程没有名字时退回 Linear 标题")
+        XCTAssertEqual(HarnessGoal.threadName("AGT-26「AGT 协作开发」· Master", goalId: "AGT-26"), "AGT 协作开发")
+        XCTAssertEqual(HarnessGoal.threadName("AGT-47 演练 · Codex Master", goalId: "AGT-47"), "演练")
+        XCTAssertEqual(HarnessGoal.threadName("BOX-160「Robot Mind 研发」· Master（接续）", goalId: "BOX-160"), "Robot Mind 研发")
+        XCTAssertEqual(HarnessGoal.threadName("BOX-166 · SDK CTest 核查", goalId: "BOX-166"), "SDK CTest 核查")
+        XCTAssertNil(HarnessGoal.threadName("Master", goalId: "X-1"))
         XCTAssertEqual(HarnessHomeView.shortTitle("BOX-166 · SDK CTest 核查", goal: g), "SDK CTest 核查")
         XCTAssertEqual(HarnessHomeView.shortTitle("BOX-166「ROBOX 开发」· 图传 Worker", goal: g), "图传 Worker")
         XCTAssertEqual(HarnessHomeView.shortTitle("另一件事", goal: g), "另一件事")

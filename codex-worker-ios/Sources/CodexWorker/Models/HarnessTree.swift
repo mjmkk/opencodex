@@ -10,8 +10,31 @@ struct HarnessGoal: Identifiable, Equatable, Sendable {
     var issueTitle: String? = nil
 
     var master: HarnessMember? { members.first { $0.role == .master } }
-    /// Goal 行上显示的标题：Linear Issue 标题优先（说清楚这件事是什么），其次 Master 线程标题，最后才是 Issue 号
-    var title: String { issueTitle ?? master?.title ?? id }
+    /// Goal 行上显示的标题：用线程名（Human 自己起的名字最好认）。
+    /// 顺序：Master 线程名 → 只有一条线程时用它的名字 → Linear Issue 标题 → Issue 号。Issue 号另外用小字显示
+    var title: String {
+        if let m = master, let n = Self.threadName(m.title, goalId: id) { return n }
+        let threads = members.filter { $0.role != .thinker }
+        if threads.count == 1, let n = Self.threadName(threads[0].title, goalId: id) { return n }
+        return issueTitle ?? id
+    }
+
+    /// 从线程标题里取出“名字”：「AGT-26「AGT 协作开发」· Master」→「AGT 协作开发」，
+    /// 「AGT-47 演练 · Codex Master」→「演练」，「BOX-166 · SDK CTest 核查」→「SDK CTest 核查」
+    static func threadName(_ raw: String?, goalId: String) -> String? {
+        guard var t = raw?.trimmingCharacters(in: .whitespaces), !t.isEmpty, t != goalId else { return nil }
+        if let a = t.firstIndex(of: "「"), let b = t[a...].firstIndex(of: "」"), t.index(after: a) < b {
+            return String(t[t.index(after: a)..<b])
+        }
+        if t.hasPrefix(goalId) { t = String(t.dropFirst(goalId.count)) }
+        t = t.trimmingCharacters(in: CharacterSet(charactersIn: " ·｜|：:"))
+        // 去掉结尾的角色说明，例如「 · Codex Master」「 · Master（接续）」
+        if let r = t.range(of: " · ", options: .backwards), t[r.upperBound...].contains("Master") {
+            t = String(t[..<r.lowerBound])
+        }
+        t = t.trimmingCharacters(in: .whitespaces)
+        return t.isEmpty || t == "Master" ? nil : t
+    }
     /// 收起时露出来的成员：需要 Human 处理的（待审批、待决策）
     var surfaced: [HarnessMember] { members.filter { $0.status == .needsYou } }
     var needsYou: Bool { !surfaced.isEmpty }
