@@ -86,6 +86,13 @@ struct ThreadScreen: View {
         // .task(id:) 会取消上一次加载，所以 loading 不会卡住
         .task(id: member.id + "|" + member.kind) {
             loading = false
+#if DEBUG
+            // 模拟器联调用：-AGTAutoSend "<文字>" 打开线程后走一遍真实的发送流程（和点发送按钮完全一样）
+            if let auto = UserDefaults.standard.string(forKey: "AGTAutoSend"), member.kind != "unknown", draft.isEmpty, outgoing.isEmpty {
+                draft = auto
+                Task { await send() }
+            }
+#endif
             async let r: Void = loadRequests()
             await load(); await r
         }
@@ -244,9 +251,13 @@ struct ThreadScreen: View {
         let cmid = pendingId ?? ("m" + UUID().uuidString.replacingOccurrences(of: "-", with: ""))
         pendingId = cmid
         do {
-            let status = member.kind == "codex" || member.kind == "unknown"
-                ? try await sendNative(text, submissionId: cmid)
-                : (try await APIClient.live.harnessSend(member.id, text, cmid)).objectValue?["status"]?.stringValue ?? ""
+            var status = member.kind == "codex" || member.kind == "unknown"
+                ? try await sendNative(text, submissionId: cmid) : "unsupported"
+            // 原生通道只覆盖 spirit-master 上的 Codex 线程；其他机器上的 Codex 和 Claude 走 harness/send
+            // （服务端按 Registry 选 Mac queue / Claude inbox）。原生通道已明确没写（unsupported）才换，不会两边都发
+            if status == "unsupported" {
+                status = (try await APIClient.live.harnessSend(member.id, text, cmid)).objectValue?["status"]?.stringValue ?? ""
+            }
             switch status {
             case "queued", "received", "duplicate":
                 outgoing.append(.init(id: cmid, kind: .user(text), at: Date()))
