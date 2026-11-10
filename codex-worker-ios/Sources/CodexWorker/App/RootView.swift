@@ -104,21 +104,24 @@ struct RootView: View {
         return min(max((base + drag) / width, 0), 1)
     }
 
-    /// 关着时只认从左缘 24pt 内开始的右滑，免得和列表里的横滑操作冲突；开着时任意位置左滑都能关
+    /// 侧滑手势：关着时从左缘 44pt 内右滑打开（模仿 ChatGPT），开着时任意左滑关闭
     private func drawerGesture(_ width: CGFloat) -> some Gesture {
-        DragGesture(minimumDistance: 12)
+        DragGesture(minimumDistance: 10)
             .onChanged { v in
-                guard abs(v.translation.width) > abs(v.translation.height) else { return }
-                if drawerOpen { drag = min(0, v.translation.width) }
-                else if v.startLocation.x < 24 { drag = max(0, v.translation.width) }
+                guard abs(v.translation.width) > abs(v.translation.height) * 0.7 else { return }
+                if drawerOpen {
+                    drag = min(0, v.translation.width)
+                } else if v.startLocation.x < 44 || drag > 0 {
+                    drag = max(0, v.translation.width)
+                }
             }
             .onEnded { v in
                 let moved = drag
                 drag = 0
                 guard moved != 0 else { return }
                 let velocity = v.predictedEndTranslation.width - v.translation.width
-                if drawerOpen { setDrawer(!(moved < -width * 0.35 || velocity < -250)) }
-                else { setDrawer(moved > width * 0.35 || velocity > 250) }
+                if drawerOpen { setDrawer(!(moved < -width * 0.3 || velocity < -200)) }
+                else { setDrawer(moved > width * 0.25 || velocity > 200) }
             }
     }
 
