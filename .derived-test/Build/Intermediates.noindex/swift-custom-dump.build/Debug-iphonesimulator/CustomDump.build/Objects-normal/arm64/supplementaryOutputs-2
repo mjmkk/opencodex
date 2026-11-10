@@ -1,0 +1,23 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-custom-dump/Sources/CustomDump/Conformances/CoreImage.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/CoreImage.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/CoreImage.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/CoreImage.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/CoreImage.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/CoreImage.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-custom-dump/Sources/CustomDump/Conformances/CoreLocation.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/CoreLocation.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/CoreLocation.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/CoreLocation.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/CoreLocation.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/CoreLocation.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-custom-dump/Sources/CustomDump/Conformances/CoreMotion.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/CoreMotion.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/CoreMotion.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/CoreMotion.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/CoreMotion.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/CoreMotion.swiftdeps"
+  }
+}

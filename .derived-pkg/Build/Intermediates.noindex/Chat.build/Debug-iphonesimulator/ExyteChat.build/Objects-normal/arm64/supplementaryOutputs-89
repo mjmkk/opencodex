@@ -1,0 +1,58 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Chat/Sources/ExyteChat/Views/PartialTemplateSpecifications.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/PartialTemplateSpecifications.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/PartialTemplateSpecifications.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/PartialTemplateSpecifications.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/PartialTemplateSpecifications.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/PartialTemplateSpecifications.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Chat/Sources/ExyteChat/Views/Recording/RecordIndicator.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/RecordIndicator.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/RecordIndicator.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/RecordIndicator.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/RecordIndicator.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/RecordIndicator.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Chat/Sources/ExyteChat/Views/Recording/RecordWaveform.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/RecordWaveform.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/RecordWaveform.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/RecordWaveform.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/RecordWaveform.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/RecordWaveform.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Chat/Sources/ExyteChat/Views/Recording/Recorder.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/Recorder.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/Recorder.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/Recorder.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/Recorder.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/Recorder.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Chat/Sources/ExyteChat/Views/Recording/RecordingPlayer.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/RecordingPlayer.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/RecordingPlayer.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/RecordingPlayer.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/RecordingPlayer.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/RecordingPlayer.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Chat/Sources/ExyteChat/Views/UIList.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/UIList.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/UIList.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/UIList.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/UIList.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/UIList.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Chat/Sources/ExyteChat/Views/WrappingMessages.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/WrappingMessages.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/WrappingMessages.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/WrappingMessages.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/WrappingMessages.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/WrappingMessages.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Chat.build/Debug-iphonesimulator/ExyteChat.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps"
+  }
+}

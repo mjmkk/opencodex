@@ -1,0 +1,219 @@
+{
+  "" : {
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueReporting-primary.dia",
+    "emit-module-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueReporting-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueReporting-primary-emit-module.dia",
+    "pch" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueReporting-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueReporting-primary.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/ErrorReporting.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ErrorReporting.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ErrorReporting.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ErrorReporting.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ErrorReporting.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ErrorReporting.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ErrorReporting.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ErrorReporting.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ErrorReporting~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/AppHostWarning.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/AppHostWarning.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/AppHostWarning.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/AppHostWarning.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/AppHostWarning.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/AppHostWarning.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/AppHostWarning.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/AppHostWarning.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/AppHostWarning~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Deprecations.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Deprecations.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Deprecations.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Deprecations.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Deprecations.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Deprecations.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Deprecations.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Deprecations.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Deprecations~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/FailureObserver.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FailureObserver.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FailureObserver.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FailureObserver.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FailureObserver.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FailureObserver.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FailureObserver.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FailureObserver.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FailureObserver~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/LockIsolated.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/LockIsolated.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/LockIsolated.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/LockIsolated.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/LockIsolated.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/LockIsolated.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/LockIsolated.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/LockIsolated.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/LockIsolated~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Rethrows.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Rethrows.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Rethrows.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Rethrows.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Rethrows.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Rethrows.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Rethrows.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Rethrows.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Rethrows~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/SwiftTesting.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/SwiftTesting.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/SwiftTesting.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/SwiftTesting.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/SwiftTesting.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/SwiftTesting.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/SwiftTesting.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/SwiftTesting.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/SwiftTesting~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/UncheckedSendable.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/UncheckedSendable.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/UncheckedSendable.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/UncheckedSendable.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/UncheckedSendable.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/UncheckedSendable.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/UncheckedSendable.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/UncheckedSendable.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/UncheckedSendable~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/Warn.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Warn.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Warn.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Warn.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Warn.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Warn.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Warn.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Warn.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Warn~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/XCTest.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/XCTest.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/XCTest.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/XCTest.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/XCTest.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/XCTest.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/XCTest.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/XCTest.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/XCTest~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IsTesting.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IsTesting.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IsTesting.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IsTesting.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IsTesting.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IsTesting.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IsTesting.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IsTesting~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IssueReporter.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueReporter.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueReporter.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueReporter.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueReporter.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueReporter.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueReporter.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueReporter.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueReporter~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IssueReporters/BreakpointReporter.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/BreakpointReporter.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/BreakpointReporter.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/BreakpointReporter.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/BreakpointReporter.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/BreakpointReporter.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/BreakpointReporter.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/BreakpointReporter.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/BreakpointReporter~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IssueReporters/DefaultReporter.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/DefaultReporter.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/DefaultReporter.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/DefaultReporter.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/DefaultReporter.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/DefaultReporter.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/DefaultReporter.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/DefaultReporter.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/DefaultReporter~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IssueReporters/FatalErrorReporter.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FatalErrorReporter.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FatalErrorReporter.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FatalErrorReporter.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FatalErrorReporter.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FatalErrorReporter.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FatalErrorReporter.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FatalErrorReporter.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/FatalErrorReporter~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IssueSeverity.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueSeverity.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueSeverity.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueSeverity.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueSeverity.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueSeverity.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueSeverity.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueSeverity.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/IssueSeverity~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/ReportIssue.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ReportIssue.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ReportIssue.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ReportIssue.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ReportIssue.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ReportIssue.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ReportIssue.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ReportIssue.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/ReportIssue~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/TestContext.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/TestContext.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/TestContext.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/TestContext.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/TestContext.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/TestContext.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/TestContext.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/TestContext.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/TestContext~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Unimplemented.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Unimplemented.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Unimplemented.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Unimplemented.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Unimplemented.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Unimplemented.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Unimplemented.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Unimplemented.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/Unimplemented~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/WithExpectedIssue.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithExpectedIssue.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithExpectedIssue.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithExpectedIssue.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithExpectedIssue.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithExpectedIssue.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithExpectedIssue.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithExpectedIssue.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithExpectedIssue~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/WithIssueContext.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithIssueContext.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithIssueContext.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithIssueContext.dia",
+    "index-unit-output-path" : "/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithIssueContext.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithIssueContext.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithIssueContext.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithIssueContext.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/arm64/WithIssueContext~partial.swiftmodule"
+  }
+}

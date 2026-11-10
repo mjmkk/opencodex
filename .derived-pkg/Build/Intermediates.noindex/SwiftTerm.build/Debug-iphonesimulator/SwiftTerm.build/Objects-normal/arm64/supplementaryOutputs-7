@@ -1,0 +1,37 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/SearchLineCache.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchLineCache.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchLineCache.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchLineCache.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchLineCache.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchLineCache.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/SearchOptions.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchOptions.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchOptions.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchOptions.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchOptions.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchOptions.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/SearchService.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchService.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchService.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchService.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchService.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchService.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/SearchState.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchState.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchState.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchState.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchState.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SearchState.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/SelectionService.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SelectionService.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SelectionService.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SelectionService.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SelectionService.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SelectionService.swiftdeps"
+  }
+}

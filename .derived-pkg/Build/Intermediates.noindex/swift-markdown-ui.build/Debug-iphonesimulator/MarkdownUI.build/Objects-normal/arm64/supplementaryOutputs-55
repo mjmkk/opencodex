@@ -1,0 +1,93 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-markdown-ui/Sources/MarkdownUI/Parser/HTMLTag.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/HTMLTag.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/HTMLTag.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/HTMLTag.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/HTMLTag.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/HTMLTag.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-markdown-ui/Sources/MarkdownUI/Parser/InlineNode+Collect.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineNode+Collect.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineNode+Collect.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineNode+Collect.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineNode+Collect.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineNode+Collect.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-markdown-ui/Sources/MarkdownUI/Parser/InlineNode+Rewrite.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineNode+Rewrite.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineNode+Rewrite.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineNode+Rewrite.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineNode+Rewrite.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineNode+Rewrite.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-markdown-ui/Sources/MarkdownUI/Parser/InlineNode.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineNode.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineNode.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineNode.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineNode.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineNode.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-markdown-ui/Sources/MarkdownUI/Parser/MarkdownParser.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/MarkdownParser.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/MarkdownParser.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/MarkdownParser.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/MarkdownParser.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/MarkdownParser.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-markdown-ui/Sources/MarkdownUI/Renderer/AttributedStringInlineRenderer.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/AttributedStringInlineRenderer.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/AttributedStringInlineRenderer.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/AttributedStringInlineRenderer.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/AttributedStringInlineRenderer.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/AttributedStringInlineRenderer.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-markdown-ui/Sources/MarkdownUI/Renderer/InlineTextStyles.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineTextStyles.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineTextStyles.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineTextStyles.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineTextStyles.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/InlineTextStyles.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-markdown-ui/Sources/MarkdownUI/Renderer/TextInlineRenderer.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/TextInlineRenderer.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/TextInlineRenderer.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/TextInlineRenderer.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/TextInlineRenderer.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/TextInlineRenderer.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-markdown-ui/Sources/MarkdownUI/Theme/BlockStyle/BlockConfiguration.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/BlockConfiguration.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/BlockConfiguration.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/BlockConfiguration.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/BlockConfiguration.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/BlockConfiguration.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-markdown-ui/Sources/MarkdownUI/Theme/BlockStyle/BlockStyle.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/BlockStyle.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/BlockStyle.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/BlockStyle.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/BlockStyle.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/BlockStyle.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-markdown-ui/Sources/MarkdownUI/Theme/BlockStyle/CodeBlockConfiguration.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/CodeBlockConfiguration.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/CodeBlockConfiguration.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/CodeBlockConfiguration.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/CodeBlockConfiguration.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/CodeBlockConfiguration.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-markdown-ui/Sources/MarkdownUI/Theme/BlockStyle/ListBullet.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/ListBullet.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/ListBullet.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/ListBullet.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/ListBullet.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/ListBullet.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-markdown-ui/Sources/MarkdownUI/Theme/BlockStyle/ListMarkerConfiguration.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/ListMarkerConfiguration.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/ListMarkerConfiguration.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/ListMarkerConfiguration.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/ListMarkerConfiguration.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-markdown-ui.build/Debug-iphonesimulator/MarkdownUI.build/Objects-normal/arm64/ListMarkerConfiguration.swiftdeps"
+  }
+}

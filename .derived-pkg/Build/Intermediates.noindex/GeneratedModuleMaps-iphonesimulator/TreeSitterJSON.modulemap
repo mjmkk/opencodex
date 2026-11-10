@@ -1,0 +1,4 @@
+module TreeSitterJSON {
+umbrella "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/TreeSitterLanguages/Sources/TreeSitterJSON/include"
+export *
+}

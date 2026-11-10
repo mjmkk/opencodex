@@ -1,0 +1,16 @@
+{
+  "source": "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Chat/Sources/ExyteChat/Views/MessageView/MessageMenu/MessageMenu+ReactionSelectionView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "🅧",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 155
+        }
+      }
+    ]
+  },
+  "version": 1
+}

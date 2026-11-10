@@ -1,0 +1,23 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-custom-dump/Sources/CustomDump/Conformances/Foundation.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/Foundation.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/Foundation.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/Foundation.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/Foundation.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/Foundation.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-custom-dump/Sources/CustomDump/Conformances/GameKit.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/GameKit.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/GameKit.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/GameKit.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/GameKit.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/GameKit.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-custom-dump/Sources/CustomDump/Conformances/KeyPath.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/KeyPath.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/KeyPath.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/KeyPath.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/KeyPath.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-custom-dump.build/Debug-iphonesimulator/CustomDump.build/Objects-normal/arm64/KeyPath.swiftdeps"
+  }
+}

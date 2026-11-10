@@ -1,0 +1,44 @@
+{
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/codex-worker-ios/Sources/CodexWorker/Models/Thread.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/Thread.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/Thread.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/Thread.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/Thread.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/Thread.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/codex-worker-ios/Sources/CodexWorker/Models/ThreadHistory.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/ThreadHistory.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/ThreadHistory.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/ThreadHistory.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/ThreadHistory.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/ThreadHistory.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/codex-worker-ios/Sources/CodexWorker/Models/WorkerModel.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/WorkerModel.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/WorkerModel.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/WorkerModel.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/WorkerModel.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/WorkerModel.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/codex-worker-ios/Sources/CodexWorker/Services/ConnectionState.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/ConnectionState.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/ConnectionState.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/ConnectionState.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/ConnectionState.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/ConnectionState.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/codex-worker-ios/Sources/CodexWorker/Services/Markdown/CodexCodeSyntaxHighlighter.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/CodexCodeSyntaxHighlighter.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/CodexCodeSyntaxHighlighter.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/CodexCodeSyntaxHighlighter.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/CodexCodeSyntaxHighlighter.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/CodexCodeSyntaxHighlighter.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/codex-worker-ios/Sources/CodexWorker/Services/Markdown/MarkdownParserService.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/MarkdownParserService.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/MarkdownParserService.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/MarkdownParserService.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/MarkdownParserService.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/MarkdownParserService.swiftdeps"
+  }
+}

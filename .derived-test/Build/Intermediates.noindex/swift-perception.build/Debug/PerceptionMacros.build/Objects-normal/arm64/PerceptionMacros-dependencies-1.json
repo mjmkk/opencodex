@@ -1,0 +1,309 @@
+[
+  {
+    "isFramework" : true,
+    "moduleName" : "Combine",
+    "modulePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/swift\/macosx\/prebuilt-modules\/26.2\/Combine.swiftmodule\/arm64e-apple-macos.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "Darwin",
+    "modulePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/swift\/macosx\/prebuilt-modules\/26.2\/Darwin.swiftmodule\/arm64e-apple-macos.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "Dispatch",
+    "modulePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/swift\/macosx\/prebuilt-modules\/26.2\/Dispatch.swiftmodule\/arm64e-apple-macos.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "ObjectiveC",
+    "modulePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/swift\/macosx\/prebuilt-modules\/26.2\/ObjectiveC.swiftmodule\/arm64e-apple-macos.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "Swift",
+    "modulePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/swift\/macosx\/prebuilt-modules\/26.2\/Swift.swiftmodule\/arm64e-apple-macos.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "SwiftBasicFormat",
+    "modulePath" : "\/Users\/Apple\/Dev\/Robox\/.build-cache\/opencodex-spm\/prebuilts\/swift-syntax\/602.0.0\/swiftlang-6.2.4.1.4-MacroSupport-macos_aarch64\/Modules\/SwiftBasicFormat.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "SwiftCompilerPlugin",
+    "modulePath" : "\/Users\/Apple\/Dev\/Robox\/.build-cache\/opencodex-spm\/prebuilts\/swift-syntax\/602.0.0\/swiftlang-6.2.4.1.4-MacroSupport-macos_aarch64\/Modules\/SwiftCompilerPlugin.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "SwiftCompilerPluginMessageHandling",
+    "modulePath" : "\/Users\/Apple\/Dev\/Robox\/.build-cache\/opencodex-spm\/prebuilts\/swift-syntax\/602.0.0\/swiftlang-6.2.4.1.4-MacroSupport-macos_aarch64\/Modules\/SwiftCompilerPluginMessageHandling.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "SwiftDiagnostics",
+    "modulePath" : "\/Users\/Apple\/Dev\/Robox\/.build-cache\/opencodex-spm\/prebuilts\/swift-syntax\/602.0.0\/swiftlang-6.2.4.1.4-MacroSupport-macos_aarch64\/Modules\/SwiftDiagnostics.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "SwiftOnoneSupport",
+    "modulePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/swift\/macosx\/prebuilt-modules\/26.2\/SwiftOnoneSupport.swiftmodule\/arm64e-apple-macos.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "SwiftOperators",
+    "modulePath" : "\/Users\/Apple\/Dev\/Robox\/.build-cache\/opencodex-spm\/prebuilts\/swift-syntax\/602.0.0\/swiftlang-6.2.4.1.4-MacroSupport-macos_aarch64\/Modules\/SwiftOperators.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "SwiftParser",
+    "modulePath" : "\/Users\/Apple\/Dev\/Robox\/.build-cache\/opencodex-spm\/prebuilts\/swift-syntax\/602.0.0\/swiftlang-6.2.4.1.4-MacroSupport-macos_aarch64\/Modules\/SwiftParser.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "SwiftParserDiagnostics",
+    "modulePath" : "\/Users\/Apple\/Dev\/Robox\/.build-cache\/opencodex-spm\/prebuilts\/swift-syntax\/602.0.0\/swiftlang-6.2.4.1.4-MacroSupport-macos_aarch64\/Modules\/SwiftParserDiagnostics.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "SwiftSyntax",
+    "modulePath" : "\/Users\/Apple\/Dev\/Robox\/.build-cache\/opencodex-spm\/prebuilts\/swift-syntax\/602.0.0\/swiftlang-6.2.4.1.4-MacroSupport-macos_aarch64\/Modules\/SwiftSyntax.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "SwiftSyntaxBuilder",
+    "modulePath" : "\/Users\/Apple\/Dev\/Robox\/.build-cache\/opencodex-spm\/prebuilts\/swift-syntax\/602.0.0\/swiftlang-6.2.4.1.4-MacroSupport-macos_aarch64\/Modules\/SwiftSyntaxBuilder.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "SwiftSyntaxMacroExpansion",
+    "modulePath" : "\/Users\/Apple\/Dev\/Robox\/.build-cache\/opencodex-spm\/prebuilts\/swift-syntax\/602.0.0\/swiftlang-6.2.4.1.4-MacroSupport-macos_aarch64\/Modules\/SwiftSyntaxMacroExpansion.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "SwiftSyntaxMacros",
+    "modulePath" : "\/Users\/Apple\/Dev\/Robox\/.build-cache\/opencodex-spm\/prebuilts\/swift-syntax\/602.0.0\/swiftlang-6.2.4.1.4-MacroSupport-macos_aarch64\/Modules\/SwiftSyntaxMacros.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "XPC",
+    "modulePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/swift\/macosx\/prebuilt-modules\/26.2\/XPC.swiftmodule\/arm64e-apple-macos.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "_Builtin_float",
+    "modulePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/swift\/macosx\/prebuilt-modules\/26.2\/_Builtin_float.swiftmodule\/arm64e-apple-macos.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "_Concurrency",
+    "modulePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/swift\/macosx\/prebuilt-modules\/26.2\/_Concurrency.swiftmodule\/arm64e-apple-macos.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "_DarwinFoundation1",
+    "modulePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/swift\/macosx\/prebuilt-modules\/26.2\/_DarwinFoundation1.swiftmodule\/arm64e-apple-macos.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "_DarwinFoundation2",
+    "modulePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/swift\/macosx\/prebuilt-modules\/26.2\/_DarwinFoundation2.swiftmodule\/arm64e-apple-macos.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "_DarwinFoundation3",
+    "modulePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/swift\/macosx\/prebuilt-modules\/26.2\/_DarwinFoundation3.swiftmodule\/arm64e-apple-macos.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "_StringProcessing",
+    "modulePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/swift\/macosx\/prebuilt-modules\/26.2\/_StringProcessing.swiftmodule\/arm64e-apple-macos.swiftmodule"
+  },
+  {
+    "isFramework" : false,
+    "moduleName" : "os",
+    "modulePath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/swift\/macosx\/prebuilt-modules\/26.2\/os.swiftmodule\/arm64e-apple-macos.swiftmodule"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/include\/Darwin.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/Darwin-BV36C8CQBXFZG49KL92AU2699.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "Darwin"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/include\/dispatch.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/Dispatch-AWJSW7EAVT6RSVVZY0QI9ZD5U.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "Dispatch"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/include\/DarwinBasic.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/MachO-B378LVPSV1XJJP9VB79VY2GU3.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "MachO"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/include\/ObjectiveC.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/ObjectiveC-DUPG6HUCEI1LEOZPZMFZRKTAN.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "ObjectiveC"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/lib\/swift\/shims\/module.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/SwiftShims-BW0T6N2C3GF0JIDICV4KGC9TN.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "SwiftShims"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/include\/xpc.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/XPC-2Q00I9W85I5SYES64IASTHCPB.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "XPC"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/include\/DarwinFoundation1.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/_AvailabilityInternal-77GFIB5RID040119WVR6WOSJV.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "_AvailabilityInternal"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/clang\/17\/include\/module.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/_Builtin_float-93J8XLP44G2DXX7JSKCCODSGH.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "_Builtin_float"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/clang\/17\/include\/module.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/_Builtin_inttypes-9FWYJ0ZV0TOG5Z2UN92UEI076.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "_Builtin_inttypes"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/clang\/17\/include\/module.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/_Builtin_limits-EVULMVVQLQ9O5JCZCMRL94RBP.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "_Builtin_limits"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/clang\/17\/include\/module.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/_Builtin_stdarg-F4BAM228PEWYPAKA86TARWD0Z.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "_Builtin_stdarg"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/clang\/17\/include\/module.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/_Builtin_stdatomic-BMS0UKVX9Y45C4AFUVNN17ARR.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "_Builtin_stdatomic"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/clang\/17\/include\/module.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/_Builtin_stdbool-61Y42H7Z13AP63BRR4VLKXG6S.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "_Builtin_stdbool"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/clang\/17\/include\/module.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/_Builtin_stddef-90A07PQ26O6BO5M2WQCJWSEAD.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "_Builtin_stddef"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/clang\/17\/include\/module.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/_Builtin_stdint-DPNP33S2S8M5N12Z8D35ERHCQ.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "_Builtin_stdint"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/include\/DarwinFoundation1.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/_DarwinFoundation1-4ASWJK61QJ8210E7LIQDFPJE9.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "_DarwinFoundation1"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/include\/DarwinFoundation2.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/_DarwinFoundation2-71V33LPE6GDB7MGN98P0ULCAX.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "_DarwinFoundation2"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/include\/DarwinFoundation3.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/_DarwinFoundation3-5RX9DI9QRK5NUXNFHLCYCS49E.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "_DarwinFoundation3"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/lib\/swift\/shims\/module.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/_SwiftConcurrencyShims-7Y9XFLP4BUOQIRDOMMKRV52NP.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "_SwiftConcurrencyShims"
+  },
+  {
+    "clangModuleMapPath" : "\/Users\/Apple\/Dev\/Robox\/.build-cache\/opencodex-spm\/checkouts\/swift-syntax\/Sources\/_SwiftSyntaxCShims\/include\/module.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/Build\/Intermediates.noindex\/SwiftExplicitPrecompiledModules\/_SwiftSyntaxCShims-7YHZNS8SIL1NOFERKR5QHRRLR.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "_SwiftSyntaxCShims"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/include\/launch.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/launch-2YN9KRH9K0238JKO9YWLWT3BR.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "launch"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/include\/os.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/os-7DWX5RZ7PTWMB34USR6JD3QHH.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "os"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/include\/os.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/os_object-8S7T7887KGI3VKO84CIQLP8IV.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "os_object"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/include\/os.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/os_workgroup-18CZVPQ0KSJP30SN3GB6MIPKG.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "os_workgroup"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Toolchains\/XcodeDefault.xctoolchain\/usr\/lib\/clang\/17\/include\/module.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/ptrcheck-BFHB6JNYA6OM27QM86OCPA3L3.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "ptrcheck"
+  },
+  {
+    "clangModuleMapPath" : "\/Applications\/Xcode.app\/Contents\/Developer\/Platforms\/MacOSX.platform\/Developer\/SDKs\/MacOSX.sdk\/usr\/include\/DarwinFoundation2.modulemap",
+    "clangModulePath" : "\/Users\/Apple\/Dev\/Robox\/.worktree\/opencodex-agt12-s6-goal-ui\/.derived-test\/ModuleCache.noindex\/sys_types-836BLKLHD46IEQRBG2IGR0N68.pcm",
+    "isBridgingHeaderDependency" : false,
+    "isFramework" : false,
+    "moduleName" : "sys_types"
+  }
+]

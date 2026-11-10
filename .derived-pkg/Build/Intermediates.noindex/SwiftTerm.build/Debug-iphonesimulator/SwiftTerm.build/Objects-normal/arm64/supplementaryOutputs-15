@@ -1,0 +1,37 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/Mac/MacAccessibilityService.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacAccessibilityService.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacAccessibilityService.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacAccessibilityService.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacAccessibilityService.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacAccessibilityService.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/Mac/MacCaretView.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacCaretView.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacCaretView.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacCaretView.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacCaretView.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacCaretView.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/Mac/MacDebugView.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacDebugView.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacDebugView.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacDebugView.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacDebugView.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacDebugView.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/Mac/MacExtensions.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacExtensions.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacExtensions.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacExtensions.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacExtensions.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacExtensions.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/Mac/MacFindBarView.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacFindBarView.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacFindBarView.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacFindBarView.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacFindBarView.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/MacFindBarView.swiftdeps"
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/DatabaseSchemaCache.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSchemaCache.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSchemaCache.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSchemaCache.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSchemaCache.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSchemaCache.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/DatabaseSchemaSource.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSchemaSource.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSchemaSource.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSchemaSource.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSchemaSource.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSchemaSource.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/DatabaseSnapshot.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSnapshot.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSnapshot.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSnapshot.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSnapshot.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSnapshot.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/DatabaseSnapshotPool.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSnapshotPool.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSnapshotPool.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSnapshotPool.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSnapshotPool.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseSnapshotPool.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/DatabaseValue.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseValue.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseValue.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseValue.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseValue.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseValue.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/DatabaseValueConvertible.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseValueConvertible.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseValueConvertible.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseValueConvertible.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseValueConvertible.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseValueConvertible.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/DatabaseWriter.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseWriter.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseWriter.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseWriter.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseWriter.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DatabaseWriter.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/DispatchQueueActor.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DispatchQueueActor.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DispatchQueueActor.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DispatchQueueActor.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DispatchQueueActor.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/DispatchQueueActor.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/FetchRequest.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/FetchRequest.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/FetchRequest.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/FetchRequest.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/FetchRequest.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/FetchRequest.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/Row.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/Row.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/Row.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/Row.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/Row.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/Row.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/RowAdapter.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/RowAdapter.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/RowAdapter.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/RowAdapter.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/RowAdapter.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/RowAdapter.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/RowDecodingError.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/RowDecodingError.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/RowDecodingError.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/RowDecodingError.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/RowDecodingError.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/RowDecodingError.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/SQL.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SQL.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SQL.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SQL.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SQL.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SQL.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/SQLInterpolation.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SQLInterpolation.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SQLInterpolation.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SQLInterpolation.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SQLInterpolation.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SQLInterpolation.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/SQLRequest.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SQLRequest.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SQLRequest.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SQLRequest.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SQLRequest.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SQLRequest.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/SchedulingWatchdog.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SchedulingWatchdog.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SchedulingWatchdog.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SchedulingWatchdog.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SchedulingWatchdog.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SchedulingWatchdog.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/GRDB.swift/GRDB/Core/SerializedDatabase.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SerializedDatabase.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SerializedDatabase.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SerializedDatabase.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SerializedDatabase.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/GRDB.build/Debug-iphonesimulator/GRDB.build/Objects-normal/arm64/SerializedDatabase.swiftdeps"
+  }
+}

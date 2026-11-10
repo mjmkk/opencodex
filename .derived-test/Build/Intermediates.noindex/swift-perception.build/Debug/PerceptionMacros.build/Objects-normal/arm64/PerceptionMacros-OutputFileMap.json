@@ -1,0 +1,49 @@
+{
+  "" : {
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/PerceptionMacros-primary.dia",
+    "emit-module-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/PerceptionMacros-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/PerceptionMacros-primary-emit-module.dia",
+    "pch" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/PerceptionMacros-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/PerceptionMacros-primary.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-perception/Sources/PerceptionMacros/Availability.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Availability.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Availability.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Availability.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Availability.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Availability.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Availability.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Availability.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Availability~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-perception/Sources/PerceptionMacros/Extensions.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Extensions.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Extensions.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Extensions.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Extensions.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Extensions.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Extensions.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Extensions.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Extensions~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-perception/Sources/PerceptionMacros/PerceptibleMacro.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/PerceptibleMacro.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/PerceptibleMacro.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/PerceptibleMacro.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/PerceptibleMacro.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/PerceptibleMacro.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/PerceptibleMacro.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/PerceptibleMacro.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/PerceptibleMacro~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-perception/Sources/PerceptionMacros/Plugins.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Plugins.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Plugins.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Plugins.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Plugins.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Plugins.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Plugins.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Plugins.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug/PerceptionMacros.build/Objects-normal/arm64/Plugins~partial.swiftmodule"
+  }
+}

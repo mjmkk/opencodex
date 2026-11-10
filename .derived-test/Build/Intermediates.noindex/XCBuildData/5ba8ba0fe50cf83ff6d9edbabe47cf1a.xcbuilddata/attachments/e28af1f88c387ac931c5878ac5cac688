@@ -1,0 +1,4 @@
+module IssueReportingPackageSupport {
+header "IssueReportingPackageSupport-Swift.h"
+export *
+}

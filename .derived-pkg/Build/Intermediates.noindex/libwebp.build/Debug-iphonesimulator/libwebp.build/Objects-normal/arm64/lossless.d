@@ -1,0 +1,26 @@
+dependencies: \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/dsp/lossless.c \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/dsp/dsp.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/dsp/cpu.h \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/17/include/module.modulemap \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/webp/types.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/usr/include/DarwinFoundation3.modulemap \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/usr/include/DarwinFoundation2.modulemap \
+  /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/usr/include/DarwinFoundation1.modulemap \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/dec/vp8li_dec.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/dec/webpi_dec.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/utils/rescaler_utils.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/dec/vp8_dec.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/webp/decode.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/webp/./types.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/utils/bit_reader_utils.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/utils/color_cache_utils.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/utils/huffman_utils.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/webp/format_constants.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/utils/endian_inl_utils.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/dsp/lossless.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/enc/histogram_enc.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/enc/backward_references_enc.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/webp/encode.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/utils/utils.h \
+  /Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/libwebp/src/dsp/lossless_common.h

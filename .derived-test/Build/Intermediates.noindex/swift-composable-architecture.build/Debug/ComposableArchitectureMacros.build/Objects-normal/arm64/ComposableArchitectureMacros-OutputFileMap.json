@@ -1,0 +1,79 @@
+{
+  "" : {
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ComposableArchitectureMacros-primary.dia",
+    "emit-module-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ComposableArchitectureMacros-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ComposableArchitectureMacros-primary-emit-module.dia",
+    "pch" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ComposableArchitectureMacros-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ComposableArchitectureMacros-primary.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-composable-architecture/Sources/ComposableArchitectureMacros/Availability.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Availability.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Availability.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Availability.dia",
+    "index-unit-output-path" : "/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Availability.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Availability.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Availability.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Availability.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Availability~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-composable-architecture/Sources/ComposableArchitectureMacros/Extensions.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Extensions.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Extensions.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Extensions.dia",
+    "index-unit-output-path" : "/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Extensions.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Extensions.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Extensions.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Extensions.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Extensions~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-composable-architecture/Sources/ComposableArchitectureMacros/ObservableStateMacro.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ObservableStateMacro.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ObservableStateMacro.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ObservableStateMacro.dia",
+    "index-unit-output-path" : "/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ObservableStateMacro.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ObservableStateMacro.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ObservableStateMacro.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ObservableStateMacro.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ObservableStateMacro~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-composable-architecture/Sources/ComposableArchitectureMacros/Plugins.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Plugins.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Plugins.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Plugins.dia",
+    "index-unit-output-path" : "/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Plugins.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Plugins.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Plugins.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Plugins.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/Plugins~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-composable-architecture/Sources/ComposableArchitectureMacros/PresentsMacro.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/PresentsMacro.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/PresentsMacro.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/PresentsMacro.dia",
+    "index-unit-output-path" : "/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/PresentsMacro.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/PresentsMacro.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/PresentsMacro.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/PresentsMacro.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/PresentsMacro~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-composable-architecture/Sources/ComposableArchitectureMacros/ReducerMacro.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ReducerMacro.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ReducerMacro.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ReducerMacro.dia",
+    "index-unit-output-path" : "/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ReducerMacro.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ReducerMacro.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ReducerMacro.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ReducerMacro.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ReducerMacro~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-composable-architecture/Sources/ComposableArchitectureMacros/ViewActionMacro.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ViewActionMacro.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ViewActionMacro.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ViewActionMacro.dia",
+    "index-unit-output-path" : "/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ViewActionMacro.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ViewActionMacro.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ViewActionMacro.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ViewActionMacro.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-composable-architecture.build/Debug/ComposableArchitectureMacros.build/Objects-normal/arm64/ViewActionMacro~partial.swiftmodule"
+  }
+}

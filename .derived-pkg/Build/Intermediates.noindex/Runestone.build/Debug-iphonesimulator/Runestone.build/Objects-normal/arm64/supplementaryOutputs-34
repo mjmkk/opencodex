@@ -1,0 +1,107 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TextView/Appearance/LineSelectionDisplayType.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineSelectionDisplayType.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineSelectionDisplayType.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineSelectionDisplayType.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineSelectionDisplayType.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineSelectionDisplayType.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TextView/Appearance/Theme.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/Theme-2593b4bd3abb0dd1f5738d9fefa4f9aa.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/Theme-2593b4bd3abb0dd1f5738d9fefa4f9aa.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/Theme-2593b4bd3abb0dd1f5738d9fefa4f9aa.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/Theme-2593b4bd3abb0dd1f5738d9fefa4f9aa.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/Theme-2593b4bd3abb0dd1f5738d9fefa4f9aa.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TextView/CharacterPairs/CharacterPair.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/CharacterPair.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/CharacterPair.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/CharacterPair.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/CharacterPair.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/CharacterPair.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TextView/CharacterPairs/CharacterPairTrailingComponentDeletionMode.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/CharacterPairTrailingComponentDeletionMode.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/CharacterPairTrailingComponentDeletionMode.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/CharacterPairTrailingComponentDeletionMode.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/CharacterPairTrailingComponentDeletionMode.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/CharacterPairTrailingComponentDeletionMode.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TextView/Core/ContentSizeService.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/ContentSizeService.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/ContentSizeService.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/ContentSizeService.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/ContentSizeService.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/ContentSizeService.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TextView/Core/EditMenuController.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/EditMenuController.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/EditMenuController.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/EditMenuController.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/EditMenuController.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/EditMenuController.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TextView/Core/FloatingCaretView.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/FloatingCaretView.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/FloatingCaretView.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/FloatingCaretView.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/FloatingCaretView.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/FloatingCaretView.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TextView/Core/IndexedPosition.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/IndexedPosition.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/IndexedPosition.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/IndexedPosition.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/IndexedPosition.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/IndexedPosition.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TextView/Core/IndexedRange.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/IndexedRange.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/IndexedRange.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/IndexedRange.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/IndexedRange.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/IndexedRange.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TextView/Core/LayoutManager.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LayoutManager.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LayoutManager.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LayoutManager.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LayoutManager.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LayoutManager.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TextView/Core/LineEnding.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineEnding.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineEnding.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineEnding.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineEnding.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineEnding.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TextView/Core/LineFragmentView.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineFragmentView.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineFragmentView.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineFragmentView.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineFragmentView.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineFragmentView.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TextView/Core/LineMovementController.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineMovementController.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineMovementController.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineMovementController.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineMovementController.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/LineMovementController.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TextView/Core/MoveLinesService.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/MoveLinesService.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/MoveLinesService.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/MoveLinesService.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/MoveLinesService.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/MoveLinesService.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TextView/Core/StringView.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/StringView.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/StringView.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/StringView.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/StringView.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/StringView.swiftdeps"
+  }
+}

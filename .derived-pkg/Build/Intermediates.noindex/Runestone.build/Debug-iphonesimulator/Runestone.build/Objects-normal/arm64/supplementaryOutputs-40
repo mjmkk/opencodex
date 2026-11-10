@@ -1,0 +1,100 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TreeSitter/TreeSitterInputEdit.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterInputEdit.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterInputEdit.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterInputEdit.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterInputEdit.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterInputEdit.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TreeSitter/TreeSitterNode.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterNode.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterNode.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterNode.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterNode.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterNode.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TreeSitter/TreeSitterParser.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterParser.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterParser.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterParser.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterParser.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterParser.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TreeSitter/TreeSitterPredicate.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterPredicate.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterPredicate.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterPredicate.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterPredicate.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterPredicate.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TreeSitter/TreeSitterPredicateMapper.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterPredicateMapper.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterPredicateMapper.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterPredicateMapper.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterPredicateMapper.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterPredicateMapper.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TreeSitter/TreeSitterQuery.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterQuery.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterQuery.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterQuery.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterQuery.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterQuery.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TreeSitter/TreeSitterQueryCursor.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterQueryCursor.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterQueryCursor.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterQueryCursor.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterQueryCursor.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterQueryCursor.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TreeSitter/TreeSitterQueryMatch.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterQueryMatch.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterQueryMatch.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterQueryMatch.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterQueryMatch.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterQueryMatch.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TreeSitter/TreeSitterTextInput.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextInput.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextInput.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextInput.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextInput.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextInput.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TreeSitter/TreeSitterTextPoint.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextPoint.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextPoint.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextPoint.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextPoint.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextPoint.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TreeSitter/TreeSitterTextPredicate.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextPredicate.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextPredicate.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextPredicate.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextPredicate.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextPredicate.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TreeSitter/TreeSitterTextRange.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextRange.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextRange.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextRange.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextRange.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTextRange.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Runestone/Sources/Runestone/TreeSitter/TreeSitterTree.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTree.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTree.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTree.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTree.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/TreeSitterTree.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/Runestone.build/Debug-iphonesimulator/Runestone.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps"
+  }
+}

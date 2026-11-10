@@ -1,0 +1,29 @@
+{
+  "" : {
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/CasePathsMacros-primary.dia",
+    "emit-module-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/CasePathsMacros-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/CasePathsMacros-primary-emit-module.dia",
+    "pch" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/CasePathsMacros-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/CasePathsMacros-primary.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-case-paths/Sources/CasePathsMacros/CasePathableMacro.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/CasePathableMacro.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/CasePathableMacro.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/CasePathableMacro.dia",
+    "index-unit-output-path" : "/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/CasePathableMacro.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/CasePathableMacro.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/CasePathableMacro.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/CasePathableMacro.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/CasePathableMacro~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-case-paths/Sources/CasePathsMacros/Plugin.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/Plugin.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/Plugin.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/Plugin.dia",
+    "index-unit-output-path" : "/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/Plugin.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/Plugin.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/Plugin.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/Plugin.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-case-paths.build/Debug/CasePathsMacros.build/Objects-normal/arm64/Plugin~partial.swiftmodule"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "" : {
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexActivityModels.build/Debug-iphonesimulator/CodexActivityModels.build/Objects-normal/arm64/CodexActivityModels-primary.dia",
+    "emit-module-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexActivityModels.build/Debug-iphonesimulator/CodexActivityModels.build/Objects-normal/arm64/CodexActivityModels-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexActivityModels.build/Debug-iphonesimulator/CodexActivityModels.build/Objects-normal/arm64/CodexActivityModels-primary-emit-module.dia",
+    "pch" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexActivityModels.build/Debug-iphonesimulator/CodexActivityModels.build/Objects-normal/arm64/CodexActivityModels-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexActivityModels.build/Debug-iphonesimulator/CodexActivityModels.build/Objects-normal/arm64/CodexActivityModels-primary.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/codex-activity-models/Sources/CodexActivityModels/PinnedThreadAttributes.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexActivityModels.build/Debug-iphonesimulator/CodexActivityModels.build/Objects-normal/arm64/PinnedThreadAttributes.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexActivityModels.build/Debug-iphonesimulator/CodexActivityModels.build/Objects-normal/arm64/PinnedThreadAttributes.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexActivityModels.build/Debug-iphonesimulator/CodexActivityModels.build/Objects-normal/arm64/PinnedThreadAttributes.dia",
+    "index-unit-output-path" : "/CodexActivityModels.build/Debug-iphonesimulator/CodexActivityModels.build/Objects-normal/arm64/PinnedThreadAttributes.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexActivityModels.build/Debug-iphonesimulator/CodexActivityModels.build/Objects-normal/arm64/PinnedThreadAttributes.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexActivityModels.build/Debug-iphonesimulator/CodexActivityModels.build/Objects-normal/arm64/PinnedThreadAttributes.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexActivityModels.build/Debug-iphonesimulator/CodexActivityModels.build/Objects-normal/arm64/PinnedThreadAttributes.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexActivityModels.build/Debug-iphonesimulator/CodexActivityModels.build/Objects-normal/arm64/PinnedThreadAttributes~partial.swiftmodule"
+  }
+}

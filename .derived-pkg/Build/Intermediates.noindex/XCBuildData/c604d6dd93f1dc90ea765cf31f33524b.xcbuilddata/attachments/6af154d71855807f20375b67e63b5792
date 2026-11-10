@@ -1,0 +1,4 @@
+module TreeSitterJSONQueries {
+header "TreeSitterJSONQueries-Swift.h"
+export *
+}

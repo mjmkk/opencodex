@@ -1,0 +1,4 @@
+module ExyteChat {
+header "ExyteChat-Swift.h"
+export *
+}

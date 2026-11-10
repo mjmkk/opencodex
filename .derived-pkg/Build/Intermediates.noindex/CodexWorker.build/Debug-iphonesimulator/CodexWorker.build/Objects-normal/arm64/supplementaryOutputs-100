@@ -1,0 +1,44 @@
+{
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/codex-worker-ios/Sources/CodexWorker/Models/HarnessTree.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/HarnessTree.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/HarnessTree.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/HarnessTree.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/HarnessTree.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/HarnessTree.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/codex-worker-ios/Sources/CodexWorker/Models/JSONValue.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/JSONValue.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/JSONValue.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/JSONValue.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/JSONValue.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/JSONValue.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/codex-worker-ios/Sources/CodexWorker/Models/MobilePresentation.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/MobilePresentation.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/MobilePresentation.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/MobilePresentation.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/MobilePresentation.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/MobilePresentation.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/codex-worker-ios/Sources/CodexWorker/Models/NativeRemoteRequest.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/NativeRemoteRequest.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/NativeRemoteRequest.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/NativeRemoteRequest.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/NativeRemoteRequest.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/NativeRemoteRequest.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/codex-worker-ios/Sources/CodexWorker/Models/NativeRequestRoute.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/NativeRequestRoute.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/NativeRequestRoute.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/NativeRequestRoute.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/NativeRequestRoute.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/NativeRequestRoute.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/codex-worker-ios/Sources/CodexWorker/Models/Terminal.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/Terminal.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/Terminal.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/Terminal.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/Terminal.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/CodexWorker.build/Debug-iphonesimulator/CodexWorker.build/Objects-normal/arm64/Terminal.swiftdeps"
+  }
+}

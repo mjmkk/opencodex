@@ -1,0 +1,4 @@
+module ExyteMediaPicker {
+header "ExyteMediaPicker-Swift.h"
+export *
+}

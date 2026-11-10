@@ -1,0 +1,16 @@
+{
+  "source": "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Chat/Sources/ExyteChat/Views/Attachments/AttachmentUploadStatusCapsuleView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "%lld%%",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 14
+        }
+      }
+    ]
+  },
+  "version": 1
+}

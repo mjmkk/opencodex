@@ -1,0 +1,37 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/iOS/iOSExtensions.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSExtensions.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSExtensions.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSExtensions.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSExtensions.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSExtensions.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/iOS/iOSKeyboardView.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSKeyboardView.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSKeyboardView.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSKeyboardView.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSKeyboardView.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSKeyboardView.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/iOS/iOSTerminalView.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSTerminalView.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSTerminalView.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSTerminalView.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSTerminalView.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSTerminalView.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/iOS/iOSTextInput.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSTextInput.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSTextInput.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSTextInput.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSTextInput.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSTextInput.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/iOS/iOSTextStorage.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSTextStorage.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSTextStorage.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSTextStorage.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSTextStorage.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/iOSTextStorage.swiftdeps"
+  }
+}

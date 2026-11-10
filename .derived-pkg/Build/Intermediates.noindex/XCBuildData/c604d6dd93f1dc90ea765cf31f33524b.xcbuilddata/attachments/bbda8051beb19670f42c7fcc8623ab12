@@ -1,0 +1,4 @@
+module GiphyUISDKWrapper {
+header "GiphyUISDKWrapper-Swift.h"
+export *
+}

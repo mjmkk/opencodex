@@ -1,0 +1,139 @@
+{
+  "" : {
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/CombineSchedulers-primary.dia",
+    "emit-module-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/CombineSchedulers-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/CombineSchedulers-primary-emit-module.dia",
+    "pch" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/CombineSchedulers-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/CombineSchedulers-primary.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/combine-schedulers/Sources/CombineSchedulers/AnyScheduler.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/AnyScheduler.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/AnyScheduler.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/AnyScheduler.dia",
+    "index-unit-output-path" : "/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/AnyScheduler.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/AnyScheduler.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/AnyScheduler.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/AnyScheduler.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/AnyScheduler~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/combine-schedulers/Sources/CombineSchedulers/Concurrency.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Concurrency.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Concurrency.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Concurrency.dia",
+    "index-unit-output-path" : "/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Concurrency.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Concurrency.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Concurrency.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Concurrency.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Concurrency~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/combine-schedulers/Sources/CombineSchedulers/ImmediateScheduler.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/ImmediateScheduler.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/ImmediateScheduler.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/ImmediateScheduler.dia",
+    "index-unit-output-path" : "/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/ImmediateScheduler.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/ImmediateScheduler.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/ImmediateScheduler.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/ImmediateScheduler.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/ImmediateScheduler~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/combine-schedulers/Sources/CombineSchedulers/Internal/Deprecations.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Deprecations.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Deprecations.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Deprecations.dia",
+    "index-unit-output-path" : "/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Deprecations.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Deprecations.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Deprecations.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Deprecations.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Deprecations~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/combine-schedulers/Sources/CombineSchedulers/Internal/Lock.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Lock.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Lock.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Lock.dia",
+    "index-unit-output-path" : "/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Lock.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Lock.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Lock.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Lock.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Lock~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/combine-schedulers/Sources/CombineSchedulers/Internal/NSRecursiveLock.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/NSRecursiveLock.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/NSRecursiveLock.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/NSRecursiveLock.dia",
+    "index-unit-output-path" : "/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/NSRecursiveLock.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/NSRecursiveLock.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/NSRecursiveLock.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/NSRecursiveLock.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/NSRecursiveLock~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/combine-schedulers/Sources/CombineSchedulers/Internal/Platform.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Platform.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Platform.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Platform.dia",
+    "index-unit-output-path" : "/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Platform.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Platform.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Platform.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Platform.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Platform~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/combine-schedulers/Sources/CombineSchedulers/SwiftUI.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/SwiftUI.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/SwiftUI.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/SwiftUI.dia",
+    "index-unit-output-path" : "/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/SwiftUI.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/SwiftUI.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/SwiftUI.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/SwiftUI.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/SwiftUI~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/combine-schedulers/Sources/CombineSchedulers/TestScheduler.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/TestScheduler.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/TestScheduler.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/TestScheduler.dia",
+    "index-unit-output-path" : "/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/TestScheduler.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/TestScheduler.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/TestScheduler.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/TestScheduler.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/TestScheduler~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/combine-schedulers/Sources/CombineSchedulers/Timer.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Timer.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Timer.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Timer.dia",
+    "index-unit-output-path" : "/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Timer.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Timer.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Timer.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Timer.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/Timer~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/combine-schedulers/Sources/CombineSchedulers/UIKit.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIKit.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIKit.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIKit.dia",
+    "index-unit-output-path" : "/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIKit.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIKit.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIKit.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIKit.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIKit~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/combine-schedulers/Sources/CombineSchedulers/UIScheduler.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIScheduler.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIScheduler.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIScheduler.dia",
+    "index-unit-output-path" : "/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIScheduler.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIScheduler.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIScheduler.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIScheduler.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UIScheduler~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/combine-schedulers/Sources/CombineSchedulers/UnimplementedScheduler.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UnimplementedScheduler.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UnimplementedScheduler.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UnimplementedScheduler.dia",
+    "index-unit-output-path" : "/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UnimplementedScheduler.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UnimplementedScheduler.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UnimplementedScheduler.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UnimplementedScheduler.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/combine-schedulers.build/Debug-iphonesimulator/CombineSchedulers.build/Objects-normal/arm64/UnimplementedScheduler~partial.swiftmodule"
+  }
+}

@@ -1,0 +1,4 @@
+module TreeSitterJSONRunestone {
+header "TreeSitterJSONRunestone-Swift.h"
+export *
+}

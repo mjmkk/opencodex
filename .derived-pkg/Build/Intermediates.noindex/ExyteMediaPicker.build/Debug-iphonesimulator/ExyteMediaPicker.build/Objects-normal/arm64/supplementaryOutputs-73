@@ -1,0 +1,51 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/MediaPicker/Sources/ExyteMediaPicker/Screens/MediaPicker/GenenricsTrick.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/GenenricsTrick.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/GenenricsTrick.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/GenenricsTrick.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/GenenricsTrick.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/GenenricsTrick.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/MediaPicker/Sources/ExyteMediaPicker/Screens/MediaPicker/MediaPicker.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPicker.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPicker.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPicker.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPicker.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPicker.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/MediaPicker/Sources/ExyteMediaPicker/Screens/MediaPicker/MediaPickerMode.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerMode.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerMode.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerMode.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerMode.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerMode.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/MediaPicker/Sources/ExyteMediaPicker/Screens/MediaPicker/MediaPickerParamsHolder.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerParamsHolder.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerParamsHolder.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerParamsHolder.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerParamsHolder.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerParamsHolder.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/MediaPicker/Sources/ExyteMediaPicker/Screens/MediaPicker/MediaPickerViewModel.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerViewModel.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerViewModel.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerViewModel.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerViewModel.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerViewModel.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/MediaPicker/Sources/ExyteMediaPicker/Theme/Bundle+.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/Bundle+.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/Bundle+.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/Bundle+.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/Bundle+.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/Bundle+.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/MediaPicker/Sources/ExyteMediaPicker/Theme/MediaPickerTheme.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerTheme.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerTheme.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerTheme.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerTheme.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/ExyteMediaPicker.build/Debug-iphonesimulator/ExyteMediaPicker.build/Objects-normal/arm64/MediaPickerTheme.swiftdeps"
+  }
+}

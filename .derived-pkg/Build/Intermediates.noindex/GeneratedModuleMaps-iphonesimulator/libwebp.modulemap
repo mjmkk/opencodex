@@ -1,0 +1,4 @@
+module libwebp {
+umbrella "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/libwebp-Xcode/include"
+export *
+}

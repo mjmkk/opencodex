@@ -1,0 +1,229 @@
+{
+  "" : {
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/SwiftNavigation-primary.dia",
+    "emit-module-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/SwiftNavigation-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/SwiftNavigation-primary-emit-module.dia",
+    "pch" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/SwiftNavigation-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/SwiftNavigation-primary.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/AlertState.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AlertState.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AlertState.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AlertState.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AlertState.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AlertState.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AlertState.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AlertState.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AlertState~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/Bind.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Bind.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Bind.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Bind.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Bind.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Bind.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Bind.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Bind.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Bind~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/Binding.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Binding.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Binding.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Binding.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Binding.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Binding.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Binding.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Binding.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Binding~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/ButtonState.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonState.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonState.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonState.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonState.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonState.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonState.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonState.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonState~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/ButtonStateBuilder.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonStateBuilder.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonStateBuilder.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonStateBuilder.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonStateBuilder.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonStateBuilder.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonStateBuilder.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonStateBuilder.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ButtonStateBuilder~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/ConfirmationDialogState.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ConfirmationDialogState.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ConfirmationDialogState.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ConfirmationDialogState.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ConfirmationDialogState.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ConfirmationDialogState.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ConfirmationDialogState.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ConfirmationDialogState.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ConfirmationDialogState~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/HashableObject.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableObject.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableObject.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableObject.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableObject.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableObject.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableObject.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableObject.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableObject~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/Internal/AssumeIsolated.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AssumeIsolated.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AssumeIsolated.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AssumeIsolated.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AssumeIsolated.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AssumeIsolated.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AssumeIsolated.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AssumeIsolated.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/AssumeIsolated~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/Internal/Deprecations.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Deprecations.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Deprecations.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Deprecations.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Deprecations.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Deprecations.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Deprecations.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Deprecations.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Deprecations~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/Internal/ErrorMechanism.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ErrorMechanism.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ErrorMechanism.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ErrorMechanism.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ErrorMechanism.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ErrorMechanism.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ErrorMechanism.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ErrorMechanism.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ErrorMechanism~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/Internal/Exports.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Exports.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Exports.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Exports.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Exports.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Exports.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Exports.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Exports.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Exports~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/Internal/HashableStaticString.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableStaticString.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableStaticString.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableStaticString.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableStaticString.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableStaticString.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableStaticString.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableStaticString.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/HashableStaticString~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/Internal/KeyPath+Sendable.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/KeyPath+Sendable.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/KeyPath+Sendable.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/KeyPath+Sendable.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/KeyPath+Sendable.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/KeyPath+Sendable.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/KeyPath+Sendable.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/KeyPath+Sendable.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/KeyPath+Sendable~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/Internal/ToOptionalUnit.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ToOptionalUnit.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ToOptionalUnit.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ToOptionalUnit.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ToOptionalUnit.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ToOptionalUnit.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ToOptionalUnit.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ToOptionalUnit.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/ToOptionalUnit~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/NSObject+Observe.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/NSObject+Observe.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/NSObject+Observe.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/NSObject+Observe.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/NSObject+Observe.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/NSObject+Observe.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/NSObject+Observe.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/NSObject+Observe.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/NSObject+Observe~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/Observe.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Observe.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Observe.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Observe.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Observe.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Observe.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Observe.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Observe.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/Observe~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/SwiftNavigationSharing/UIBinding+Sharing.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding+Sharing.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding+Sharing.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding+Sharing.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding+Sharing.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding+Sharing.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding+Sharing.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding+Sharing.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding+Sharing~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/TextState.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/TextState.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/TextState.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/TextState.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/TextState.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/TextState.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/TextState.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/TextState.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/TextState~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/UIBindable.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBindable.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBindable.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBindable.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBindable.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBindable.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBindable.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBindable.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBindable~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/UIBinding.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UIBinding~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/UINavigationPath.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UINavigationPath.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UINavigationPath.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UINavigationPath.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UINavigationPath.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UINavigationPath.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UINavigationPath.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UINavigationPath.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UINavigationPath~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/SwiftNavigation/UITransaction.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UITransaction.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UITransaction.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UITransaction.dia",
+    "index-unit-output-path" : "/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UITransaction.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UITransaction.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UITransaction.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UITransaction.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/SwiftNavigation.build/Objects-normal/arm64/UITransaction~partial.swiftmodule"
+  }
+}

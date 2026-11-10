@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logFormatVersion</key>
+	<integer>12</integer>
+	<key>logs</key>
+	<dict>
+		<key>05FD1E27-D5F3-42A8-9644-0F954C02B557</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>05FD1E27-D5F3-42A8-9644-0F954C02B557.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>W</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>1</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>codex-worker-ios</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>CodexWorker</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Testing workspace codex-worker-ios with scheme CodexWorker</string>
+			<key>timeStartedRecording</key>
+			<real>815889380.70438004</real>
+			<key>timeStoppedRecording</key>
+			<real>815889395.54928398</real>
+			<key>title</key>
+			<string>Testing workspace codex-worker-ios with scheme CodexWorker</string>
+			<key>uniqueIdentifier</key>
+			<string>05FD1E27-D5F3-42A8-9644-0F954C02B557</string>
+		</dict>
+		<key>FF133BB4-FB21-4FB1-8EFF-5F9489E529EE</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>FF133BB4-FB21-4FB1-8EFF-5F9489E529EE.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>E</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>9</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>1</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>codex-worker-ios</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>CodexWorker</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Testing workspace codex-worker-ios with scheme CodexWorker</string>
+			<key>timeStartedRecording</key>
+			<real>815889322.13078797</real>
+			<key>timeStoppedRecording</key>
+			<real>815889341.87195396</real>
+			<key>title</key>
+			<string>Testing workspace codex-worker-ios with scheme CodexWorker</string>
+			<key>uniqueIdentifier</key>
+			<string>FF133BB4-FB21-4FB1-8EFF-5F9489E529EE</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

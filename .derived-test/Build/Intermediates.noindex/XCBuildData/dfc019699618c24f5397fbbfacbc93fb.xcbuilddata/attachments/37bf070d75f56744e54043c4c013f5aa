@@ -1,0 +1,159 @@
+{
+  "" : {
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionCore-primary.dia",
+    "emit-module-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionCore-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionCore-primary-emit-module.dia",
+    "pch" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionCore-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionCore-primary.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-perception/Sources/PerceptionCore/Internal/Deprecations.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Deprecations.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Deprecations.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Deprecations.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Deprecations.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Deprecations.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Deprecations.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Deprecations.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Deprecations~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-perception/Sources/PerceptionCore/Internal/Exports.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Exports.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Exports.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Exports.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Exports.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Exports.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Exports.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Exports.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Exports~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-perception/Sources/PerceptionCore/Internal/Locals.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locals.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locals.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locals.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locals.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locals.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locals.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locals.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locals~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-perception/Sources/PerceptionCore/Internal/ObservationBeta.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ObservationBeta.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ObservationBeta.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ObservationBeta.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ObservationBeta.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ObservationBeta.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ObservationBeta.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ObservationBeta.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ObservationBeta~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-perception/Sources/PerceptionCore/Locking.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locking.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locking.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locking.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locking.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locking.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locking.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locking.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Locking~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-perception/Sources/PerceptionCore/Perceptible.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptible.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptible.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptible.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptible.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptible.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptible.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptible.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptible~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-perception/Sources/PerceptionCore/Perception/PerceptionChecking.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionChecking.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionChecking.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionChecking.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionChecking.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionChecking.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionChecking.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionChecking.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionChecking~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-perception/Sources/PerceptionCore/Perception/PerceptionRegistrar.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionRegistrar.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionRegistrar.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionRegistrar.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionRegistrar.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionRegistrar.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionRegistrar.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionRegistrar.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionRegistrar~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-perception/Sources/PerceptionCore/PerceptionTracking.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionTracking.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionTracking.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionTracking.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionTracking.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionTracking.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionTracking.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionTracking.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/PerceptionTracking~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-perception/Sources/PerceptionCore/Perceptions.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptions.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptions.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptions.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptions.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptions.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptions.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptions.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Perceptions~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-perception/Sources/PerceptionCore/SwiftUI/Bindable.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Bindable.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Bindable.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Bindable.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Bindable.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Bindable.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Bindable.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Bindable.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Bindable~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-perception/Sources/PerceptionCore/SwiftUI/Environment.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Environment.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Environment.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Environment.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Environment.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Environment.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Environment.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Environment.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/Environment~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-perception/Sources/PerceptionCore/SwiftUI/WithPerceptionTracking.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/WithPerceptionTracking.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/WithPerceptionTracking.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/WithPerceptionTracking.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/WithPerceptionTracking.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/WithPerceptionTracking.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/WithPerceptionTracking.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/WithPerceptionTracking.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/WithPerceptionTracking~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-perception/Sources/PerceptionCore/ThreadLocal.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ThreadLocal.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ThreadLocal.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ThreadLocal.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ThreadLocal.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ThreadLocal.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ThreadLocal.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ThreadLocal.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/ThreadLocal~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-perception/Sources/PerceptionCore/_PerceptionRegistrar.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/_PerceptionRegistrar.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/_PerceptionRegistrar.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/_PerceptionRegistrar.dia",
+    "index-unit-output-path" : "/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/_PerceptionRegistrar.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/_PerceptionRegistrar.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/_PerceptionRegistrar.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/_PerceptionRegistrar.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-perception.build/Debug-iphonesimulator/PerceptionCore.build/Objects-normal/arm64/_PerceptionRegistrar~partial.swiftmodule"
+  }
+}

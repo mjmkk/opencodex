@@ -1,0 +1,23 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/FireAndForget.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/FireAndForget.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/FireAndForget.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/FireAndForget.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/FireAndForget.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/FireAndForget.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/Locale.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Locale.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Locale.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Locale.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Locale.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Locale.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/MainQueue.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainQueue.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainQueue.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainQueue.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainQueue.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainQueue.swiftdeps"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "source": "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Chat/Sources/ExyteChat/Views/Attachments/AttachmentsPage.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Unknown",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 37
+        }
+      }
+    ]
+  },
+  "version": 1
+}

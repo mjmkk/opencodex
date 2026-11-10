@@ -1,0 +1,23 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-sharing/Sources/Sharing/Internal/NSRecursiveLock+WithLock.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-sharing.build/Debug-iphonesimulator/Sharing.build/Objects-normal/arm64/NSRecursiveLock+WithLock.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-sharing.build/Debug-iphonesimulator/Sharing.build/Objects-normal/arm64/NSRecursiveLock+WithLock.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-sharing.build/Debug-iphonesimulator/Sharing.build/Objects-normal/arm64/NSRecursiveLock+WithLock.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-sharing.build/Debug-iphonesimulator/Sharing.build/Objects-normal/arm64/NSRecursiveLock+WithLock.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-sharing.build/Debug-iphonesimulator/Sharing.build/Objects-normal/arm64/NSRecursiveLock+WithLock.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-sharing/Sources/Sharing/Internal/PassthroughRelay.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-sharing.build/Debug-iphonesimulator/Sharing.build/Objects-normal/arm64/PassthroughRelay.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-sharing.build/Debug-iphonesimulator/Sharing.build/Objects-normal/arm64/PassthroughRelay.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-sharing.build/Debug-iphonesimulator/Sharing.build/Objects-normal/arm64/PassthroughRelay.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-sharing.build/Debug-iphonesimulator/Sharing.build/Objects-normal/arm64/PassthroughRelay.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-sharing.build/Debug-iphonesimulator/Sharing.build/Objects-normal/arm64/PassthroughRelay.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-sharing/Sources/Sharing/Internal/PersistentReferences.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-sharing.build/Debug-iphonesimulator/Sharing.build/Objects-normal/arm64/PersistentReferences.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-sharing.build/Debug-iphonesimulator/Sharing.build/Objects-normal/arm64/PersistentReferences.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-sharing.build/Debug-iphonesimulator/Sharing.build/Objects-normal/arm64/PersistentReferences.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-sharing.build/Debug-iphonesimulator/Sharing.build/Objects-normal/arm64/PersistentReferences.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-sharing.build/Debug-iphonesimulator/Sharing.build/Objects-normal/arm64/PersistentReferences.swiftdeps"
+  }
+}

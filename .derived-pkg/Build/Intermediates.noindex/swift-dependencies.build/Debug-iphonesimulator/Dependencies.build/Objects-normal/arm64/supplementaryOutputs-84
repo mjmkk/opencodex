@@ -1,0 +1,23 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/Clocks.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Clocks.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Clocks.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Clocks.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Clocks.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Clocks.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/Context.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Context.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Context.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Context.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Context.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Context.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/Date.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Date.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Date.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Date.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Date.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Date.swiftdeps"
+  }
+}

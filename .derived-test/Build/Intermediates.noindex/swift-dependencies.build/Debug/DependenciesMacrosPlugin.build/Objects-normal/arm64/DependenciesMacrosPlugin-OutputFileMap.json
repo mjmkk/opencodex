@@ -1,0 +1,49 @@
+{
+  "" : {
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependenciesMacrosPlugin-primary.dia",
+    "emit-module-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependenciesMacrosPlugin-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependenciesMacrosPlugin-primary-emit-module.dia",
+    "pch" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependenciesMacrosPlugin-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependenciesMacrosPlugin-primary.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/DependenciesMacrosPlugin/DependencyClientMacro.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyClientMacro.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyClientMacro.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyClientMacro.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyClientMacro.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyClientMacro.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyClientMacro.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyClientMacro.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyClientMacro~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/DependenciesMacrosPlugin/DependencyEndpointMacro.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyEndpointMacro.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyEndpointMacro.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyEndpointMacro.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyEndpointMacro.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyEndpointMacro.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyEndpointMacro.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyEndpointMacro.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/DependencyEndpointMacro~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/DependenciesMacrosPlugin/Plugins.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Plugins.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Plugins.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Plugins.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Plugins.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Plugins.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Plugins.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Plugins.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Plugins~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/DependenciesMacrosPlugin/Support.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Support.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Support.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Support.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Support.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Support.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Support.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Support.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug/DependenciesMacrosPlugin.build/Objects-normal/arm64/Support~partial.swiftmodule"
+  }
+}

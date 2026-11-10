@@ -1,0 +1,4 @@
+module TreeSitterTypeScriptRunestone {
+header "TreeSitterTypeScriptRunestone-Swift.h"
+export *
+}

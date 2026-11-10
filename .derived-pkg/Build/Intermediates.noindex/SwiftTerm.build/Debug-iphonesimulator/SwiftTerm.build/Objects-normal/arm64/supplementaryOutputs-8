@@ -1,0 +1,37 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/SixelDcsHandler.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SixelDcsHandler.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SixelDcsHandler.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SixelDcsHandler.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SixelDcsHandler.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/SixelDcsHandler.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/Terminal.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/Terminal.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/Terminal.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/Terminal.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/Terminal.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/Terminal.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/TerminalOptions.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/TerminalOptions.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/TerminalOptions.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/TerminalOptions.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/TerminalOptions.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/TerminalOptions.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/TerminalViewSearch.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/TerminalViewSearch.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/TerminalViewSearch.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/TerminalViewSearch.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/TerminalViewSearch.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/TerminalViewSearch.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/SwiftTerm/Sources/SwiftTerm/UnicodeWidthData.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/UnicodeWidthData.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/UnicodeWidthData.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/UnicodeWidthData.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/UnicodeWidthData.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/SwiftTerm.build/Debug-iphonesimulator/SwiftTerm.build/Objects-normal/arm64/UnicodeWidthData.swiftdeps"
+  }
+}

@@ -1,0 +1,4 @@
+module UIKitNavigationShim {
+umbrella "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/SourcePackages/checkouts/swift-navigation/Sources/UIKitNavigationShim/include"
+export *
+}

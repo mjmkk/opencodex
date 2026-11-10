@@ -1,0 +1,72 @@
+{
+  "source": "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/Chat/Sources/ExyteChat/Views/ChatView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Type a message...",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 549
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add signature...",
+        "location": {
+          "startingColumn": 46,
+          "startingLine": 550
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 551
+        }
+      },
+      {
+        "comment": "",
+        "key": "Recents",
+        "location": {
+          "startingColumn": 49,
+          "startingLine": 552
+        }
+      },
+      {
+        "comment": "",
+        "key": "Waiting for network",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 553
+        }
+      },
+      {
+        "comment": "",
+        "key": "Recording...",
+        "location": {
+          "startingColumn": 46,
+          "startingLine": 554
+        }
+      },
+      {
+        "comment": "",
+        "key": "Reply to",
+        "location": {
+          "startingColumn": 44,
+          "startingLine": 555
+        }
+      },
+      {
+        "comment": "",
+        "key": "no giphy key found",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 227
+        }
+      }
+    ]
+  },
+  "version": 1
+}

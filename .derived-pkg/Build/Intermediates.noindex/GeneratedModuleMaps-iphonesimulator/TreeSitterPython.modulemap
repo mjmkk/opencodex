@@ -1,0 +1,4 @@
+module TreeSitterPython {
+umbrella "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/TreeSitterLanguages/Sources/TreeSitterPython/include"
+export *
+}

@@ -1,0 +1,4 @@
+module CodexActivityModels {
+header "CodexActivityModels-Swift.h"
+export *
+}

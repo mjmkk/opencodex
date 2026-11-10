@@ -1,0 +1,269 @@
+{
+  "" : {
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Dependencies-primary.dia",
+    "emit-module-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Dependencies-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Dependencies-primary-emit-module.dia",
+    "pch" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Dependencies-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Dependencies-primary.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/Dependency.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Dependency.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Dependency.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Dependency.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Dependency.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Dependency.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Dependency.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Dependency.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Dependency~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyContext.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyContext.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyContext.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyContext.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyContext.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyContext.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyContext.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyContext.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyContext~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyKey.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyKey.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyKey.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyKey.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyKey.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyKey.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyKey.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyKey.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyKey~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyValues.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyValues.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyValues.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyValues.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyValues.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyValues.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyValues.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/DependencyValues~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/Assert.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Assert.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Assert.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Assert.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Assert.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Assert.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Assert.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Assert.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Assert~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/Calendar.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Calendar.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Calendar.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Calendar.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Calendar.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Calendar.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Calendar.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Calendar.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Calendar~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/Clocks.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Clocks.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Clocks.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Clocks.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Clocks.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Clocks.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Clocks.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Clocks.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Clocks~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/Context.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Context.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Context.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Context.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Context.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Context.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Context.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Context.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Context~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/Date.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Date.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Date.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Date.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Date.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Date.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Date.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Date.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Date~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/FireAndForget.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/FireAndForget.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/FireAndForget.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/FireAndForget.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/FireAndForget.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/FireAndForget.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/FireAndForget.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/FireAndForget.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/FireAndForget~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/Locale.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Locale.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Locale.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Locale.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Locale.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Locale.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Locale.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Locale.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Locale~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/MainQueue.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainQueue.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainQueue.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainQueue.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainQueue.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainQueue.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainQueue.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainQueue.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainQueue~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/MainRunLoop.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainRunLoop.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainRunLoop.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainRunLoop.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainRunLoop.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainRunLoop.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainRunLoop.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainRunLoop.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/MainRunLoop~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/NotificationCenter.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/NotificationCenter.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/NotificationCenter.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/NotificationCenter.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/NotificationCenter.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/NotificationCenter.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/NotificationCenter.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/NotificationCenter.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/NotificationCenter~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/OpenURL.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/OpenURL.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/OpenURL.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/OpenURL.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/OpenURL.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/OpenURL.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/OpenURL.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/OpenURL.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/OpenURL~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/TimeZone.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TimeZone.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TimeZone.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TimeZone.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TimeZone.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TimeZone.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TimeZone.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TimeZone.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TimeZone~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/URLSession.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/URLSession.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/URLSession.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/URLSession.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/URLSession.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/URLSession.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/URLSession.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/URLSession.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/URLSession~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/UUID.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/UUID.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/UUID.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/UUID.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/UUID.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/UUID.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/UUID.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/UUID.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/UUID~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/DependencyValues/WithRandomNumberGenerator.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithRandomNumberGenerator.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithRandomNumberGenerator.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithRandomNumberGenerator.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithRandomNumberGenerator.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithRandomNumberGenerator.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithRandomNumberGenerator.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithRandomNumberGenerator.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithRandomNumberGenerator~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/Internal/AppEntryPoint.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/AppEntryPoint.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/AppEntryPoint.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/AppEntryPoint.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/AppEntryPoint.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/AppEntryPoint.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/AppEntryPoint.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/AppEntryPoint.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/AppEntryPoint~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/Internal/Deprecations.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Deprecations.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Deprecations.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Deprecations.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Deprecations.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Deprecations.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Deprecations.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Deprecations.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Deprecations~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/Internal/Exports.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Exports.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Exports.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Exports.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Exports.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Exports.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Exports.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Exports.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/Exports~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/Internal/TypeName.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TypeName.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TypeName.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TypeName.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TypeName.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TypeName.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TypeName.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TypeName.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TypeName~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/Traits/PreviewTrait.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/PreviewTrait.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/PreviewTrait.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/PreviewTrait.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/PreviewTrait.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/PreviewTrait.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/PreviewTrait.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/PreviewTrait.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/PreviewTrait~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/Traits/TestTrait.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TestTrait.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TestTrait.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TestTrait.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TestTrait.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TestTrait.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TestTrait.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TestTrait.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/TestTrait~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-dependencies/Sources/Dependencies/WithDependencies.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithDependencies.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithDependencies.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithDependencies.dia",
+    "index-unit-output-path" : "/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithDependencies.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithDependencies.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithDependencies.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithDependencies.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-dependencies.build/Debug-iphonesimulator/Dependencies.build/Objects-normal/arm64/WithDependencies~partial.swiftmodule"
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "" : {
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredPopup-primary.dia",
+    "emit-module-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredPopup-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredPopup-primary-emit-module.dia",
+    "pch" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredPopup-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredPopup-primary.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/AnchoredPopup/Sources/AnchoredPopup/AnchoredAnimationManager.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredAnimationManager.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredAnimationManager.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredAnimationManager.dia",
+    "index-unit-output-path" : "/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredAnimationManager.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredAnimationManager.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredAnimationManager.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredAnimationManager.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredAnimationManager~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/AnchoredPopup/Sources/AnchoredPopup/AnchoredPopup.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredPopup.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredPopup.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredPopup.dia",
+    "index-unit-output-path" : "/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredPopup.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredPopup.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredPopup.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredPopup.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/AnchoredPopup~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/AnchoredPopup/Sources/AnchoredPopup/BlurBackdropView.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/BlurBackdropView.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/BlurBackdropView.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/BlurBackdropView.dia",
+    "index-unit-output-path" : "/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/BlurBackdropView.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/BlurBackdropView.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/BlurBackdropView.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/BlurBackdropView.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/BlurBackdropView~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/AnchoredPopup/Sources/AnchoredPopup/PublicAPI.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/PublicAPI.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/PublicAPI.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/PublicAPI.dia",
+    "index-unit-output-path" : "/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/PublicAPI.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/PublicAPI.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/PublicAPI.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/PublicAPI.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/PublicAPI~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/AnchoredPopup/Sources/AnchoredPopup/Utils.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/Utils.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/Utils.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/Utils.dia",
+    "index-unit-output-path" : "/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/Utils.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/Utils.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/Utils.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/Utils.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/Utils~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/AnchoredPopup/Sources/AnchoredPopup/WindowManager.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/WindowManager.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/WindowManager.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/WindowManager.dia",
+    "index-unit-output-path" : "/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/WindowManager.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/WindowManager.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/WindowManager.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/WindowManager.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/AnchoredPopup.build/Debug-iphonesimulator/AnchoredPopup.build/Objects-normal/arm64/WindowManager~partial.swiftmodule"
+  }
+}

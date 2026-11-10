@@ -1,0 +1,44 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-composable-architecture/Sources/ComposableArchitecture/Internal/Deprecations.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/Deprecations.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/Deprecations.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/Deprecations.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/Deprecations.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/Deprecations.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-composable-architecture/Sources/ComposableArchitecture/Internal/DispatchQueue.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/DispatchQueue.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/DispatchQueue.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/DispatchQueue.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/DispatchQueue.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/DispatchQueue.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-composable-architecture/Sources/ComposableArchitecture/Internal/EffectActions.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/EffectActions.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/EffectActions.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/EffectActions.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/EffectActions.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/EffectActions.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-composable-architecture/Sources/ComposableArchitecture/Internal/EphemeralState.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/EphemeralState.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/EphemeralState.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/EphemeralState.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/EphemeralState.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/EphemeralState.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-composable-architecture/Sources/ComposableArchitecture/Internal/Exports.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/Exports.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/Exports.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/Exports.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/Exports.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/Exports.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-composable-architecture/Sources/ComposableArchitecture/Internal/HashableStaticString.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/HashableStaticString.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/HashableStaticString.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/HashableStaticString.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/HashableStaticString.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-composable-architecture.build/Debug-iphonesimulator/ComposableArchitecture.build/Objects-normal/arm64/HashableStaticString.swiftdeps"
+  }
+}

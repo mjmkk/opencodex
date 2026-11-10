@@ -1,0 +1,4 @@
+module TreeSitterMarkdownRunestone {
+header "TreeSitterMarkdownRunestone-Swift.h"
+export *
+}

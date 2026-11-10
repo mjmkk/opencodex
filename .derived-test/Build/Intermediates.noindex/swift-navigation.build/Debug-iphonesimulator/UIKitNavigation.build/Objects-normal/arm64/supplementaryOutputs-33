@@ -1,0 +1,23 @@
+{
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-navigation/Sources/UIKitNavigation/Bindings/UIColorWell.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/UIKitNavigation.build/Objects-normal/arm64/UIColorWell.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/UIKitNavigation.build/Objects-normal/arm64/UIColorWell.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/UIKitNavigation.build/Objects-normal/arm64/UIColorWell.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/UIKitNavigation.build/Objects-normal/arm64/UIColorWell.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/UIKitNavigation.build/Objects-normal/arm64/UIColorWell.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-navigation/Sources/UIKitNavigation/Bindings/UIControl.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/UIKitNavigation.build/Objects-normal/arm64/UIControl.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/UIKitNavigation.build/Objects-normal/arm64/UIControl.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/UIKitNavigation.build/Objects-normal/arm64/UIControl.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/UIKitNavigation.build/Objects-normal/arm64/UIControl.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/UIKitNavigation.build/Objects-normal/arm64/UIControl.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-navigation/Sources/UIKitNavigation/Bindings/UIDatePicker.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/UIKitNavigation.build/Objects-normal/arm64/UIDatePicker.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/UIKitNavigation.build/Objects-normal/arm64/UIDatePicker.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/UIKitNavigation.build/Objects-normal/arm64/UIDatePicker.dia",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/UIKitNavigation.build/Objects-normal/arm64/UIDatePicker.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-test/Build/Intermediates.noindex/swift-navigation.build/Debug-iphonesimulator/UIKitNavigation.build/Objects-normal/arm64/UIDatePicker.swiftdeps"
+  }
+}

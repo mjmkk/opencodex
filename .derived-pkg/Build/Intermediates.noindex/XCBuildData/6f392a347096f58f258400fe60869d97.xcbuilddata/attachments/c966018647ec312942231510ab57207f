@@ -1,0 +1,19 @@
+{
+  "" : {
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/GiphyUISDK.build/Debug-iphonesimulator/GiphyUISDKWrapper.build/Objects-normal/arm64/GiphyUISDKWrapper-primary.dia",
+    "emit-module-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/GiphyUISDK.build/Debug-iphonesimulator/GiphyUISDKWrapper.build/Objects-normal/arm64/GiphyUISDKWrapper-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/GiphyUISDK.build/Debug-iphonesimulator/GiphyUISDKWrapper.build/Objects-normal/arm64/GiphyUISDKWrapper-primary-emit-module.dia",
+    "pch" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/GiphyUISDK.build/Debug-iphonesimulator/GiphyUISDKWrapper.build/Objects-normal/arm64/GiphyUISDKWrapper-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/GiphyUISDK.build/Debug-iphonesimulator/GiphyUISDKWrapper.build/Objects-normal/arm64/GiphyUISDKWrapper-primary.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/giphy-ios-sdk/Sources/dummy.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/GiphyUISDK.build/Debug-iphonesimulator/GiphyUISDKWrapper.build/Objects-normal/arm64/dummy.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/GiphyUISDK.build/Debug-iphonesimulator/GiphyUISDKWrapper.build/Objects-normal/arm64/dummy.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/GiphyUISDK.build/Debug-iphonesimulator/GiphyUISDKWrapper.build/Objects-normal/arm64/dummy.dia",
+    "index-unit-output-path" : "/GiphyUISDK.build/Debug-iphonesimulator/GiphyUISDKWrapper.build/Objects-normal/arm64/dummy.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/GiphyUISDK.build/Debug-iphonesimulator/GiphyUISDKWrapper.build/Objects-normal/arm64/dummy.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/GiphyUISDK.build/Debug-iphonesimulator/GiphyUISDKWrapper.build/Objects-normal/arm64/dummy.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/GiphyUISDK.build/Debug-iphonesimulator/GiphyUISDKWrapper.build/Objects-normal/arm64/dummy.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/GiphyUISDK.build/Debug-iphonesimulator/GiphyUISDKWrapper.build/Objects-normal/arm64/dummy~partial.swiftmodule"
+  }
+}

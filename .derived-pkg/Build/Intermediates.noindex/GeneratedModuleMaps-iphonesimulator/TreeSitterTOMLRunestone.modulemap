@@ -1,0 +1,4 @@
+module TreeSitterTOMLRunestone {
+header "TreeSitterTOMLRunestone-Swift.h"
+export *
+}

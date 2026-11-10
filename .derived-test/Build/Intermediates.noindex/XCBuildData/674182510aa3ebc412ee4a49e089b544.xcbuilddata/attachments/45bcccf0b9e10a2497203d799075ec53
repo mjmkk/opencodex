@@ -1,0 +1,4 @@
+module Sharing1 {
+header "Sharing1-Swift.h"
+export *
+}

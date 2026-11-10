@@ -1,0 +1,4 @@
+module TreeSitterHTMLQueries {
+header "TreeSitterHTMLQueries-Swift.h"
+export *
+}

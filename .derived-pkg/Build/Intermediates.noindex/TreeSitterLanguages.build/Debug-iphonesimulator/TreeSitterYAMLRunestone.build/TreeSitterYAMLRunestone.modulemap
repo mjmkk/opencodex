@@ -1,0 +1,4 @@
+module TreeSitterYAMLRunestone {
+header "TreeSitterYAMLRunestone-Swift.h"
+export *
+}

@@ -1,0 +1,4 @@
+module IdentifiedCollections {
+header "IdentifiedCollections-Swift.h"
+export *
+}

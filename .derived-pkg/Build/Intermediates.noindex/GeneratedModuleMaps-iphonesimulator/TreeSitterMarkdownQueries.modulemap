@@ -1,0 +1,4 @@
+module TreeSitterMarkdownQueries {
+header "TreeSitterMarkdownQueries-Swift.h"
+export *
+}

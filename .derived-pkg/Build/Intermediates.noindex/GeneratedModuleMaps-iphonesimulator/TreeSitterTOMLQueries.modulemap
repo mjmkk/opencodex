@@ -1,0 +1,4 @@
+module TreeSitterTOMLQueries {
+header "TreeSitterTOMLQueries-Swift.h"
+export *
+}

@@ -1,0 +1,4 @@
+module TreeSitterJavaScriptQueries {
+header "TreeSitterJavaScriptQueries-Swift.h"
+export *
+}

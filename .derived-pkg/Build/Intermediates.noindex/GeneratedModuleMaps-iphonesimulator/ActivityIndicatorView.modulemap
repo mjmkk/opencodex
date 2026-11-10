@@ -1,0 +1,4 @@
+module ActivityIndicatorView {
+header "ActivityIndicatorView-Swift.h"
+export *
+}

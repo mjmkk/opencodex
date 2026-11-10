@@ -1,0 +1,4 @@
+module TreeSitterYAML {
+umbrella "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/TreeSitterLanguages/Sources/TreeSitterYAML/include"
+export *
+}

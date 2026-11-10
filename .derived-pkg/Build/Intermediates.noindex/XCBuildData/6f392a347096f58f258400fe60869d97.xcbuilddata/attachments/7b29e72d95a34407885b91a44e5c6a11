@@ -1,0 +1,4 @@
+module TreeSitterHTMLRunestone {
+header "TreeSitterHTMLRunestone-Swift.h"
+export *
+}

@@ -1,0 +1,4 @@
+module AnchoredPopup {
+header "AnchoredPopup-Swift.h"
+export *
+}

@@ -1,0 +1,4 @@
+module TreeSitterCSSQueries {
+header "TreeSitterCSSQueries-Swift.h"
+export *
+}

@@ -1,0 +1,4 @@
+module TreeSitterTypeScript {
+umbrella "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/TreeSitterLanguages/Sources/TreeSitterTypeScript/include"
+export *
+}

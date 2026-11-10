@@ -1,0 +1,109 @@
+{
+  "" : {
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathsCore-primary.dia",
+    "emit-module-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathsCore-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathsCore-primary-emit-module.dia",
+    "pch" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathsCore-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathsCore-primary.swiftdeps"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-case-paths/Sources/CasePathsCore/AnyCasePath.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/AnyCasePath.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/AnyCasePath.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/AnyCasePath.dia",
+    "index-unit-output-path" : "/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/AnyCasePath.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/AnyCasePath.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/AnyCasePath.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/AnyCasePath.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/AnyCasePath~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-case-paths/Sources/CasePathsCore/CasePathIterable.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathIterable.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathIterable.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathIterable.dia",
+    "index-unit-output-path" : "/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathIterable.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathIterable.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathIterable.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathIterable.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathIterable~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-case-paths/Sources/CasePathsCore/CasePathReflectable.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathReflectable.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathReflectable.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathReflectable.dia",
+    "index-unit-output-path" : "/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathReflectable.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathReflectable.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathReflectable.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathReflectable.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathReflectable~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-case-paths/Sources/CasePathsCore/CasePathable.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathable.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathable.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathable.dia",
+    "index-unit-output-path" : "/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathable.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathable.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathable.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathable.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/CasePathable~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-case-paths/Sources/CasePathsCore/Internal/KeyPath+Sendable.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/KeyPath+Sendable.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/KeyPath+Sendable.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/KeyPath+Sendable.dia",
+    "index-unit-output-path" : "/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/KeyPath+Sendable.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/KeyPath+Sendable.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/KeyPath+Sendable.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/KeyPath+Sendable.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/KeyPath+Sendable~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-case-paths/Sources/CasePathsCore/Internal/TypeName.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/TypeName.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/TypeName.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/TypeName.dia",
+    "index-unit-output-path" : "/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/TypeName.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/TypeName.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/TypeName.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/TypeName.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/TypeName~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-case-paths/Sources/CasePathsCore/Internal/UncheckedSendable.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/UncheckedSendable.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/UncheckedSendable.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/UncheckedSendable.dia",
+    "index-unit-output-path" : "/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/UncheckedSendable.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/UncheckedSendable.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/UncheckedSendable.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/UncheckedSendable.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/UncheckedSendable~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-case-paths/Sources/CasePathsCore/Never+CasePathable.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Never+CasePathable.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Never+CasePathable.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Never+CasePathable.dia",
+    "index-unit-output-path" : "/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Never+CasePathable.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Never+CasePathable.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Never+CasePathable.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Never+CasePathable.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Never+CasePathable~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-case-paths/Sources/CasePathsCore/Optional+CasePathable.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Optional+CasePathable.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Optional+CasePathable.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Optional+CasePathable.dia",
+    "index-unit-output-path" : "/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Optional+CasePathable.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Optional+CasePathable.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Optional+CasePathable.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Optional+CasePathable.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Optional+CasePathable~partial.swiftmodule"
+  },
+  "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/swift-case-paths/Sources/CasePathsCore/Result+CasePathable.swift" : {
+    "const-values" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Result+CasePathable.swiftconstvalues",
+    "dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Result+CasePathable.d",
+    "diagnostics" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Result+CasePathable.dia",
+    "index-unit-output-path" : "/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Result+CasePathable.o",
+    "llvm-bc" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Result+CasePathable.bc",
+    "object" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Result+CasePathable.o",
+    "swift-dependencies" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Result+CasePathable.swiftdeps",
+    "swiftmodule" : "/Users/Apple/Dev/Robox/.worktree/opencodex-agt12-s6-goal-ui/.derived-pkg/Build/Intermediates.noindex/swift-case-paths.build/Debug-iphonesimulator/CasePathsCore.build/Objects-normal/arm64/Result+CasePathable~partial.swiftmodule"
+  }
+}

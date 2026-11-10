@@ -1,0 +1,4 @@
+module TreeSitterYAMLQueries {
+header "TreeSitterYAMLQueries-Swift.h"
+export *
+}

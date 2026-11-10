@@ -1,0 +1,4 @@
+module TreeSitterSwift {
+umbrella "/Users/Apple/Dev/Robox/.build-cache/opencodex-spm/checkouts/TreeSitterLanguages/Sources/TreeSitterSwift/include"
+export *
+}
