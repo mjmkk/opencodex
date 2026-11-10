@@ -1,0 +1,4 @@
+// M1 Mac 本机构建用（Team Y9476K2DZJ）
+OPENCODEX_BUNDLE_ID = chenken.CodexWorkerApp
+DEVELOPMENT_TEAM = Y9476K2DZJ
+APS_ENVIRONMENT = development

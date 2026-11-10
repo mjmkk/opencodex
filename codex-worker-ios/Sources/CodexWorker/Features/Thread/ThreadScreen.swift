@@ -28,6 +28,7 @@ struct ThreadScreen: View {
     @State private var loadingEarlier = false
 
     var body: some View {
+        ScrollViewReader { proxy in
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 12) {
                 if let notice {
@@ -55,10 +56,34 @@ struct ThreadScreen: View {
                         .padding(.top, 60)
                 }
             }
+            Text("").frame(height: 0).id("bottom")
             .padding(.horizontal, 16)
             .padding(.bottom, 12)
         }
         .defaultScrollAnchor(.bottom)
+        .overlay(alignment: .bottomTrailing) {
+            // 只在有未展示的更早消息时显示"跳到最新"按钮
+            if let t = transcript, t.rows.count > shownRows {
+                Button {
+                    withAnimation(.easeOut(duration: 0.2)) { shownRows = t.rows.count }
+                    // 下一帧再滚到底
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(50))
+                        withAnimation { proxy.scrollTo("bottom", anchor: .bottom) }
+                    }
+                } label: {
+                    Image(systemName: "arrow.down.circle.fill")
+                        .font(.system(size: 32))
+                        .foregroundStyle(Theme.ink)
+                        .background(Theme.page.clipShape(Circle()))
+                        .shadow(color: .black.opacity(0.12), radius: 6, y: 2)
+                }
+                .padding(.trailing, 16)
+                .padding(.bottom, 100)
+                .transition(.scale.combined(with: .opacity))
+            }
+        }
+        } // ScrollViewReader
         .navigationTitle(member.title ?? member.runtimeLine)
         .navigationBarTitleDisplayMode(.inline)
         // 导航栏用不透明材质，避免滚动内容透到标题下面
