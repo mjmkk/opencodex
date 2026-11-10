@@ -15,6 +15,8 @@ public struct ThreadSyncClient: DependencyKey, Sendable {
     public var cached: @Sendable () async throws -> MobileSyncResult
     public var cachedHistory: @Sendable (Thread) async throws -> ThreadHistory?
     public var syncHistory: @Sendable (Thread, Bool) async throws -> ThreadHistory
+    /// 往前多拉一段；没有更早的消息时返回 nil
+    public var loadEarlier: @Sendable (Thread) async throws -> ThreadHistory?
     public var sync: @Sendable ([String], Bool) async throws -> MobileSyncResult
     public var markRead: @Sendable (String) async throws -> Void
     public var setPinned: @Sendable (String, Bool) async throws -> Void
@@ -27,9 +29,16 @@ public struct ThreadSyncClient: DependencyKey, Sendable {
         syncHistory: { thread, refresh in
             @Dependency(\.apiClient) var api
             guard let namespace = thread.origin?.namespace else { throw CodexError.invalidState }
-            _ = try await MobileSyncEngine.shared.syncMirrorThread(thread.threadId, namespace: namespace, offline: !refresh, api: api)
+            // AGT-26 S6：打开线程只拉最新一段（tail），和本地缓存拼接，不再从第一页往后翻
+            _ = try await MobileSyncEngine.shared.syncMirrorTail(thread.threadId, namespace: namespace, offline: !refresh, api: api)
             guard let cached = try await MobileSyncCache.shared?.mirrorBody(thread.threadId, scope: MobileSyncEngine.threadScope(for: thread)) else { throw CodexError.invalidState }
             return cached.history
+        },
+        loadEarlier: { thread in
+            @Dependency(\.apiClient) var api
+            guard let namespace = thread.origin?.namespace else { throw CodexError.invalidState }
+            guard try await MobileSyncEngine.shared.loadEarlier(thread.threadId, namespace: namespace, api: api) else { return nil }
+            return try await MobileSyncCache.shared?.mirrorBody(thread.threadId, scope: MobileSyncEngine.threadScope(for: thread))?.history
         },
         sync: { ids, background in
             @Dependency(\.apiClient) var api
@@ -76,6 +85,21 @@ actor MobileSyncEngine {
             offline: offline, maxPages: maxPages,
             validateAccount: { guard try Self.scope() == account else { throw CancellationError() } },
             readPage: { try await api.mirrorBody(id, $0, $1, $2) })
+    }
+
+    func syncMirrorTail(_ id: String, namespace: String, offline: Bool, api: APIClient) async throws -> MirrorBody {
+        let account = try Self.scope(); let scope = try Self.threadScope(namespace: namespace)
+        let cache = try cache()
+        let body = try await MirrorHistoryReader.syncTail(id, namespace: namespace, scope: scope, cache: cache, offline: offline,
+            readWindow: { try await api.mirrorWindow(id, $0, $1, $2) })
+        guard try Self.scope() == account else { throw CancellationError() }
+        return body
+    }
+
+    func loadEarlier(_ id: String, namespace: String, api: APIClient) async throws -> Bool {
+        let scope = try Self.threadScope(namespace: namespace)
+        return try await MirrorHistoryReader.loadEarlier(id, namespace: namespace, scope: scope, cache: cache(),
+            readWindow: { try await api.mirrorWindow(id, $0, $1, $2) }) != nil
     }
 
     func sync(preferred: [String], background: Bool, api: APIClient) async throws -> MobileSyncResult {

@@ -119,6 +119,23 @@ actor MobileSyncCache {
         }
     }
 
+    /// AGT-26 S6：直接写入已合并好的最新窗口（不经过分页 staging）。同时清掉旧的 staging，免得后台同步拿旧进度覆盖
+    func saveMirrorWindow(_ body: MirrorBody, scope: String) throws {
+        var body = body; body.items = []
+        try db.write { db in
+            try db.execute(sql: "DELETE FROM mobile_mirror_staging WHERE scope=? AND threadId=?", arguments: [scope, body.thread.thread_id])
+        }
+        try saveMirrorBody(body, scope: scope)
+    }
+
+    /// 只查一条线程，不解码所有缓存正文（metadata() 会把每条线程的正文都解一遍，打开线程时用不起）
+    func thread(_ id: String, scope: String) throws -> Thread? {
+        try db.read { db in
+            try Data.fetchOne(db, sql: "SELECT value FROM mobile_threads WHERE scope=? AND threadId=?", arguments: [scope, id])
+                .map { try JSONDecoder().decode(Thread.self, from: $0) }
+        }
+    }
+
     func mirrorStaging(_ id: String, scope: String) throws -> MirrorBody? {
         try db.read { db in
             try Data.fetchOne(db, sql: "SELECT value FROM mobile_mirror_staging WHERE scope=? AND threadId=?", arguments: [scope,id])

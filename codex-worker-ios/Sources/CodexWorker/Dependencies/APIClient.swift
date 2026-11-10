@@ -41,6 +41,8 @@ public struct APIClient: DependencyKey, Sendable {
     /// 获取线程历史事件分页（线程级游标）
     public var mirrorIndex: @Sendable () async throws -> MirrorIndex = { throw CodexError.invalidState }
     public var mirrorBody: @Sendable (String, Bool, Int, String?) async throws -> MirrorBody = { _, _, _, _ in throw CodexError.invalidState }
+    /// AGT-26 S6：按窗口读正文。offset 为 nil 时取最新的 limit 条（tail），否则从 offset 往后取 limit 条；都不带工具调用列表
+    public var mirrorWindow: @Sendable (String, Bool, Int?, Int) async throws -> MirrorBody = { _, _, _, _ in throw CodexError.invalidState }
     public var nativeRequests: @Sendable () async throws -> NativeRequestList = { throw CodexError.invalidState }
     public var goalOverview: @Sendable () async throws -> JSONValue = { throw CodexError.invalidState }
     /// AGT-26 S6：Goal 下的成员树（思考线程 / Master / Worker），每个成员带 harness 和机器
@@ -141,6 +143,7 @@ extension APIClient {
             activateThread: { try await impl.activateThread(threadId: $0) },
             mirrorIndex: { try await impl.mirrorIndex() },
             mirrorBody: { try await impl.mirrorBody($0, offline: $1, offset: $2, snapshot: $3) },
+            mirrorWindow: { try await impl.mirrorWindow($0, offline: $1, offset: $2, limit: $3) },
             nativeRequests: { try await impl.nativeRequests() },
             goalOverview: { try await impl.goalOverview() },
             harnessTree: { try await impl.harnessTree() },
@@ -292,8 +295,20 @@ actor LiveAPIClient {
     func mirrorBody(_ threadID: String, offline: Bool, offset: Int, snapshot: String?) async throws -> MirrorBody {
         guard let component = threadID.addingPercentEncoding(withAllowedCharacters: .alphanumerics) else { throw CodexError.invalidState }
         var query = [URLQueryItem(name: "offline", value: offline ? "true" : "false"),
-            URLQueryItem(name: "offset", value: String(offset)), URLQueryItem(name: "limit", value: "100")]
+            URLQueryItem(name: "offset", value: String(offset)), URLQueryItem(name: "limit", value: "100"),
+            // 界面不显示工具调用列表；服务端不分页，长线程每页会重复带几 MB
+            URLQueryItem(name: "items", value: "false")]
         if let snapshot { query.append(.init(name: "snapshot", value: snapshot)) }
+        let request = try buildRequest(url: buildURL(path: "/v1/mirror/threads/" + component, queryItems: query))
+        return try await performRequest(request, preservingKeys: true)
+    }
+
+    func mirrorWindow(_ threadID: String, offline: Bool, offset: Int?, limit: Int) async throws -> MirrorBody {
+        guard let component = threadID.addingPercentEncoding(withAllowedCharacters: .alphanumerics) else { throw CodexError.invalidState }
+        var query = [URLQueryItem(name: "offline", value: offline ? "true" : "false"),
+            URLQueryItem(name: "limit", value: String(limit)), URLQueryItem(name: "items", value: "false")]
+        if let offset { query.append(.init(name: "offset", value: String(offset))) }
+        else { query.append(.init(name: "tail", value: "true")) }
         let request = try buildRequest(url: buildURL(path: "/v1/mirror/threads/" + component, queryItems: query))
         return try await performRequest(request, preservingKeys: true)
     }

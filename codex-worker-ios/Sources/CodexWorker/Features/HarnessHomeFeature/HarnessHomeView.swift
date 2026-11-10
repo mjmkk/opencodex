@@ -99,8 +99,15 @@ struct HarnessHomeView: View {
         Button { toggle(&expanded, goal.id) } label: {
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 3) {
-                    // 标题是主角，最多两行；Issue 号退到第二行，用小号灰字
-                    Text(goal.title).font(.body.weight(.semibold)).lineLimit(2)
+                    // 标题是主角，最多两行；有 Master 时旁边加蓝色小人图标，一眼看出这个 Goal 正被 Master 推进
+                    HStack(alignment: .firstTextBaseline, spacing: 5) {
+                        Text(goal.title).font(.body.weight(.semibold)).lineLimit(2)
+                        if goal.master != nil {
+                            Image(systemName: "person.fill")
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(Theme.running)
+                        }
+                    }
                     HStack(spacing: 4) {
                         if goal.title != goal.id { Text(goal.id).monospacedDigit() }
                         if let m = goal.master {

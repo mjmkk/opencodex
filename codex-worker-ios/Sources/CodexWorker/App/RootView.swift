@@ -5,7 +5,8 @@ import SwiftUI
 /// - 抽屉打开时主区域稍微缩小、加圆角和遮罩，点遮罩或左滑关闭
 /// - 启动时回到上次打开的线程；推送和深链（opencodex://thread/<id>、opencodex://work）也在这里统一处理，打开的是同一个线程就不重复加载
 struct RootView: View {
-    @State private var goals: [HarnessGoal] = []
+    // 启动时先用上次的 Goal 树：直接打开线程时马上知道它是 Codex 还是 Claude，可以立刻读对应的缓存
+    @State private var goals: [HarnessGoal] = HarnessTreeCache.load() ?? []
     @State private var currentId: String? = UserDefaults.standard.string(forKey: "AGTOpenThread")
         ?? UserDefaults.standard.string(forKey: Self.lastThreadKey)
     @State private var drawerOpen = UserDefaults.standard.bool(forKey: "AGTDrawer")

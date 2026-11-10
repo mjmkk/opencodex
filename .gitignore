@@ -38,3 +38,5 @@ archive/
 codex-worker-mvp/data/*.db
 codex-worker-mvp/data/*.db-shm
 codex-worker-mvp/data/*.db-wal
+*.derived
+.derived-test/

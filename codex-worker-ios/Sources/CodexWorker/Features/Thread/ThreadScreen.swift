@@ -23,6 +23,9 @@ struct ThreadScreen: View {
     @State private var pendingId: String?
     /// 刚从手机发出、服务端记录里还没出现的消息
     @State private var outgoing: [Transcript.Row] = []
+    /// 只渲染最后这么多行；往上翻时先放出本地已有的，用完了再去服务端拉更早的
+    @State private var shownRows = 80
+    @State private var loadingEarlier = false
 
     var body: some View {
         ScrollView {
@@ -32,16 +35,15 @@ struct ThreadScreen: View {
                         .frame(maxWidth: .infinity, alignment: .center).padding(.top, 8)
                 }
                 if let transcript {
-                    if transcript.hasMore {
-                        // Mirror 分页同步有断点：再拉一次会从上次停下的地方接着往前拉，不重复下载
-                        Button { Task { await load() } } label: {
-                            Text(loading ? "正在加载…" : "加载更早的消息")
+                    if transcript.rows.count > shownRows || transcript.hasMore {
+                        Button { Task { await showEarlier() } } label: {
+                            Text(loadingEarlier ? "正在加载…" : "加载更早的消息")
                                 .font(.footnote).foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity, minHeight: 36)
                         }
-                        .buttonStyle(.plain).disabled(loading)
+                        .buttonStyle(.plain).disabled(loadingEarlier)
                     }
-                    ForEach(transcript.rows) { row in rowView(row) }
+                    ForEach(transcript.rows.suffix(shownRows)) { row in rowView(row) }
                     // 记录里已经出现同样文字的就不再单独显示
                     ForEach(outgoing.filter { o in !transcript.rows.suffix(6).contains { $0.kind == o.kind } }) { row in
                         rowView(row).opacity(0.7)
@@ -67,7 +69,7 @@ struct ThreadScreen: View {
         }
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 8) {
-                // 原生请求列表里没有这条线程的请求时，用 Node 观测到的“在等什么”兜底
+                // 原生请求列表里没有这条线程的请求时，用 Node 观测到的"在等什么"兜底
                 if requests.isEmpty, let w = member.waiting {
                     WaitingCard(waiting: w, hostLabel: HarnessMember.hostLabel(member.host) ?? "原机器", isClaude: member.kind == "claude")
                         .padding(.horizontal, 12)
@@ -86,6 +88,7 @@ struct ThreadScreen: View {
         // .task(id:) 会取消上一次加载，所以 loading 不会卡住
         .task(id: member.id + "|" + member.kind) {
             loading = false
+            shownRows = 80
 #if DEBUG
             // 模拟器联调用：-AGTAutoSend "<文字>" 打开线程后走一遍真实的发送流程（和点发送按钮完全一样）
             if let auto = UserDefaults.standard.string(forKey: "AGTAutoSend"), member.kind != "unknown", draft.isEmpty, outgoing.isEmpty {
@@ -287,41 +290,117 @@ struct ThreadScreen: View {
     }
 
     // MARK: - 加载
+    // 策略：有缓存 → 立刻显示，关 loading，后台静默刷新（不再显示 spinner）。
+    // 没缓存 → 显示 spinner，拉到第一条内容就关掉，之后仍后台刷新。
+    // 刷新失败只在顶部写一行小字，不替换已有内容。
 
     @MainActor private func load() async {
         guard !loading else { return }
+        // 1. 先把缓存内容立刻渲染给用户（和微信/飞书的做法一样）。读缓存期间显示转圈，不闪“没有可显示的对话”
+        if transcript == nil || transcript?.rows.isEmpty == true {
+            loading = true
+            await showCached()
+            loading = false
+        }
+        // 有缓存时不显示 spinner，直接后台刷新
+        // （仍在 .task 里 await，页面关掉时会一起取消）
+        if transcript != nil && transcript?.rows.isEmpty == false {
+            await backgroundRefresh()
+            return
+        }
+        // 没缓存：显示 spinner，等第一次网络结果
         loading = true
-        // 被取消（页面关闭或成员信息变化）时不显示错误，交给下一次加载
-        defer { if Task.isCancelled { notice = nil } }
         defer { loading = false }
+        await backgroundRefresh()
+    }
+
+    /// 只读本地 SQLite，不走网络。失败静默
+    @MainActor private func showCached() async {
         do {
-            if member.kind == "claude" {
-                transcript = try TranscriptBuilder.claude(try await APIClient.live.harnessThread(member.id))
-            } else if member.kind == "unknown",
-                      let claude = try? TranscriptBuilder.claude(try await APIClient.live.harnessThread(member.id)) {
-                // 不知道种类时先问服务端：是 Claude 会话就直接用，否则（409）继续走 Mirror
-                transcript = claude
-            } else {
-                let thread = try await ThreadLookup.thread(member.id)
-                if let cached = try await ThreadSyncClient.liveValue.cachedHistory(thread), !cached.messages.isEmpty {
+            if member.kind == "claude" || member.kind == "unknown",
+               let json = await ClaudeTranscriptCache.load(member.id), let t = try? TranscriptBuilder.claude(json) {
+                transcript = t; return
+            }
+            if member.kind == "claude" { return }
+            // unknown 也试一下 Mirror 缓存：只查本地，查不到 ThreadLookup 会抛错，静默跳过
+            if member.kind == "unknown" {
+                let known = try? await MobileSyncCache.shared?.thread(member.id, scope: MobileSyncEngine.threadScope())
+                if known == nil { return }
+            }
+            // 只用本地路径：先查单条 SQLite 缓存，拿到 namespace 就直接构造 Thread，不走 mirrorIndex 网络请求
+            let scope = try MobileSyncEngine.threadScope()
+            if let t = try await MobileSyncCache.shared?.thread(member.id, scope: scope) {
+                if let cached = try await ThreadSyncClient.liveValue.cachedHistory(t), !cached.messages.isEmpty {
                     transcript = TranscriptBuilder.codex(cached)
                 }
-                // Mirror 只自动同步最近活跃的线程；不在里面的线程，第一次请求会让 Mirror 排队去 Codex 拉，
-                // 通常一分钟内拉到。拉到之前每 5 秒问一次，最多 2 分钟
-                for attempt in 0..<24 {
-                    let history = try await ThreadSyncClient.liveValue.syncHistory(thread, true)
-                    // 服务端把“已排队”标在 thread 上而不是顶层，客户端拿不到可靠信号；正文为空就当还没拉到
-                    if !history.messages.isEmpty {
-                        transcript = TranscriptBuilder.codex(history); break
-                    }
-                    if transcript == nil { notice = "正在从 Codex 拉取这条线程，第一次大约需要一分钟" }
-                    if attempt == 23 { notice = "Codex 还没返回内容，下拉重试" }
-                    try await Task.sleep(for: .seconds(5))
+            } else if let ns = UserDefaults.standard.string(forKey: "codex.mirror.namespace." + (try MobileSyncEngine.scope())) {
+                let t2 = MirrorThread(thread_id: member.id, namespace: ns).thread(in: ns)
+                if let cached = try await ThreadSyncClient.liveValue.cachedHistory(t2), !cached.messages.isEmpty {
+                    transcript = TranscriptBuilder.codex(cached)
                 }
             }
+        } catch {}
+    }
+
+    /// 走一次网络刷新，不阻塞 UI。第一次见到这条线程时最多等 2 分钟（后台轮询）。
+    @MainActor private func backgroundRefresh() async {
+        do {
+            if member.kind == "claude" {
+                let json = try await APIClient.live.harnessThread(member.id)
+                transcript = try TranscriptBuilder.claude(json); notice = nil
+                await ClaudeTranscriptCache.save(member.id, json); return
+            }
+            if member.kind == "unknown", let json = try? await APIClient.live.harnessThread(member.id),
+               let claude = try? TranscriptBuilder.claude(json) {
+                transcript = claude; notice = nil
+                await ClaudeTranscriptCache.save(member.id, json); return
+            }
+            let thread = try await ThreadLookup.thread(member.id)
+            // Mirror 只自动同步最近活跃的线程；没拉过的线程第一次需要最多约 1 分钟。
+            // 有缓存时只轮询 3 次（15 秒）就放弃，让用户下拉触发；
+            // 完全没内容时最多轮询 24 次（2 分钟）。
+            let hasContent = transcript != nil && transcript?.rows.isEmpty == false
+            let maxAttempts = hasContent ? 3 : 24
+            for attempt in 0..<maxAttempts {
+                try Task.checkCancellation()
+                let history = try await ThreadSyncClient.liveValue.syncHistory(thread, true)
+                if !history.messages.isEmpty {
+                    transcript = TranscriptBuilder.codex(history); notice = nil; return
+                }
+                if !hasContent {
+                    notice = "正在从 Codex 拉取这条线程，第一次大约需要一分钟"
+                }
+                if attempt == maxAttempts - 1 { notice = "Codex 还没返回内容，下拉重试" }
+                try await Task.sleep(for: .seconds(5))
+            }
+        } catch is CancellationError {
             notice = nil
         } catch {
-            notice = transcript == nil ? "暂时读不到这条线程，下拉重试" : "刷新失败，显示的是上次的内容"
+            if transcript == nil || transcript?.rows.isEmpty == true {
+                notice = "暂时读不到这条线程，下拉重试"
+            } else {
+                notice = "刷新失败，显示的是上次的内容"
+            }
+        }
+    }
+
+    /// 先放出本地已经有、还没渲染的行；本地用完了再去服务端往前拉一段
+    @MainActor private func showEarlier() async {
+        guard let transcript, !loadingEarlier else { return }
+        Haptics.light()
+        if transcript.rows.count > shownRows { shownRows += 80; return }
+        guard member.kind != "claude" else { return }
+        loadingEarlier = true
+        defer { loadingEarlier = false }
+        do {
+            let thread = try await ThreadLookup.thread(member.id)
+            if let history = try await ThreadSyncClient.liveValue.loadEarlier(thread) {
+                let next = TranscriptBuilder.codex(history)
+                shownRows += max(0, next.rows.count - transcript.rows.count)
+                self.transcript = next
+            }
+        } catch {
+            notice = "更早的消息暂时拉不到，稍后再试"
         }
     }
 
@@ -361,8 +440,7 @@ enum ThreadLookup {
     /// 先查本地缓存的 Mirror 目录；目录里没有（Mirror 还没同步过它）就按当前 namespace 直接构造，
     /// 由正文请求触发 Mirror 去拉。namespace 不知道时拉一次目录拿到它
     static func thread(_ nativeId: String) async throws -> Thread {
-        let cached = try await ThreadSyncClient.liveValue.cached()
-        if let hit = cached.threads.first(where: { $0.threadId == nativeId }) { return hit }
+        if let hit = try? await MobileSyncCache.shared?.thread(nativeId, scope: MobileSyncEngine.threadScope()) { return hit }
         let key = "codex.mirror.namespace." + (try MobileSyncEngine.scope())
         var namespace = UserDefaults.standard.string(forKey: key)
         if namespace == nil {
@@ -372,5 +450,27 @@ enum ThreadLookup {
         }
         guard let namespace else { throw CodexError.invalidState }
         return MirrorThread(thread_id: nativeId, namespace: namespace).thread(in: namespace)
+    }
+}
+
+/// Claude 会话正文的本地缓存：打开时先显示上次的内容，再去服务端拉最新的。放在 Caches 目录，系统清了也只是第一次慢一点
+enum ClaudeTranscriptCache {
+    private static func url(_ id: String) -> URL? {
+        let safe = id.replacingOccurrences(of: "[^A-Za-z0-9_.-]", with: "_", options: .regularExpression)
+        return FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
+            .appendingPathComponent("claude-transcripts", isDirectory: true).appendingPathComponent(safe + ".json")
+    }
+    static func load(_ id: String) async -> JSONValue? {
+        guard let url = url(id) else { return nil }
+        return await Task.detached(priority: .userInitiated) {
+            (try? Data(contentsOf: url)).flatMap { try? JSONDecoder().decode(JSONValue.self, from: $0) }
+        }.value
+    }
+    static func save(_ id: String, _ json: JSONValue) async {
+        guard let url = url(id) else { return }
+        await Task.detached(priority: .utility) {
+            try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try? JSONEncoder().encode(json).write(to: url, options: .atomic)
+        }.value
     }
 }
