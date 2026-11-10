@@ -48,6 +48,7 @@ public struct APIClient: DependencyKey, Sendable {
     /// AGT-26 S6：Claude 会话的统一消息模型（Codex 线程服务端会返回 409，客户端改走 Mirror）
     public var harnessThread: @Sendable (String) async throws -> JSONValue = { _ in throw CodexError.invalidState }
     public var harnessSend: @Sendable (String, String, String) async throws -> JSONValue = { _, _, _ in throw CodexError.invalidState }
+    public var harnessRename: @Sendable (String?, String?, String, Int) async throws -> JSONValue = { _, _, _, _ in throw CodexError.invalidState }
     public var nativeControl: @Sendable (String) async throws -> JSONValue = { _ in throw CodexError.invalidState }
     public var nativeInput: @Sendable (String, String, String, String, String) async throws -> JSONValue = { _, _, _, _, _ in throw CodexError.invalidState }
     public var nativeSubmission: @Sendable (String, String) async throws -> JSONValue = { _, _ in throw CodexError.invalidState }
@@ -145,6 +146,7 @@ extension APIClient {
             harnessTree: { try await impl.harnessTree() },
             harnessThread: { try await impl.harnessThread($0) },
             harnessSend: { try await impl.harnessSend(id: $0, text: $1, clientMessageId: $2) },
+            harnessRename: { try await impl.harnessRename(threadId: $0, issueId: $1, name: $2, revision: $3) },
             nativeControl: { try await impl.nativeControl($0) },
             nativeInput: { try await impl.nativeInput($0, text: $1, submissionId: $2, receipt: $3, version: $4) },
             nativeSubmission: { try await impl.nativeSubmission($0, submissionId: $1) },
@@ -513,6 +515,15 @@ actor LiveAPIClient {
         return try await performRequest(buildRequest(url: buildURL(path: "/v1/harness/send"), method: "POST", body: body),
                                         preservingKeys: true)
     }
+    func harnessRename(threadId: String?, issueId: String?, name: String, revision: Int) async throws -> JSONValue {
+        let body = try JSONSerialization.data(withJSONObject: [
+            "thread_id": threadId as Any, "issue_id": issueId as Any,
+            "new_name": name, "revision": revision].filter { $0.value != nil }
+            .mapValues { $0 })
+        return try await performRequest(buildRequest(url: buildURL(path: "/v1/harness/rename"), method: "POST", body: body),
+                                        preservingKeys: true)
+    }
+
     func harnessTree() async throws -> JSONValue {
         try await performRequest(buildRequest(url: buildURL(path: "/v1/harness/tree")), preservingKeys: true)
     }

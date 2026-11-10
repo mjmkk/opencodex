@@ -22,6 +22,16 @@ struct HarnessHomeView: View {
     @State private var expandedSubagents: Set<String> = []
     @State private var expandedThinkers: Set<String> = []
     @State private var copiedId: String?
+    @State private var renaming: RenameTarget?
+
+    struct RenameTarget: Identifiable {
+        var id: String { threadId ?? issueId ?? "" }
+        let threadId: String?
+        let issueId: String?
+        let currentName: String
+        let subtitle: String
+        let revision: Int
+    }
 
     private var needYou: [HarnessGoal] { goals.filter(\.needsYou) }
     private var running: [HarnessGoal] { goals.filter { !$0.needsYou && $0.runningCount > 0 } }
@@ -55,6 +65,13 @@ struct HarnessHomeView: View {
                     .background(.thinMaterial, in: Capsule())
                     .padding(.bottom, 24)
                     .transition(.opacity)
+            }
+        }
+        .sheet(item: $renaming) { t in
+            RenameSheet(title: t.currentName, subtitle: t.subtitle) { name in
+                guard let r = try? await APIClient.live.harnessRename(t.threadId, t.issueId, name, t.revision),
+                      r.objectValue?["ok"] == .bool(true) else { return false }
+                await refresh(); return true
             }
         }
     }
@@ -106,7 +123,12 @@ struct HarnessHomeView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .contextMenu { linearLink(goal) }
+        .contextMenu {
+            Button { renaming = .init(threadId: goal.master?.id, issueId: goal.id,
+                                     currentName: goal.title, subtitle: goal.id, revision: 0) }
+                label: { Label("改名", systemImage: "pencil") }
+            linearLink(goal)
+        }
         .accessibilityHint(isOpen ? "收起成员" : "展开成员")
 
         if isOpen {
@@ -186,6 +208,9 @@ struct HarnessHomeView: View {
         }
         .buttonStyle(.plain)
         .contextMenu {
+            Button { renaming = .init(threadId: m.id, issueId: nil,
+                                     currentName: title, subtitle: m.roleLabel + " · " + m.id, revision: 0) }
+                label: { Label("改名", systemImage: "pencil") }
             Button { copy(m.id) } label: { Label("复制原生 id", systemImage: "doc.on.doc") }
             linearLink(goal)
         }
