@@ -283,7 +283,9 @@ struct ThreadScreen: View {
                 ? try await sendNative(text, submissionId: cmid) : "unsupported"
             // 原生通道只覆盖 spirit-master 上的 Codex 线程；其他机器上的 Codex 和 Claude 走 harness/send
             // （服务端按 Registry 选 Mac queue / Claude inbox）。原生通道已明确没写（unsupported）才换，不会两边都发
-            if status == "unsupported" {
+            // offline 只在读 control 时出现（线程没被 Desktop 加载），此时还没写出任何东西；
+            // harness/send 会用 send_message_to_thread 把线程拉起再投递，所以也换过去
+            if status == "unsupported" || (status == "offline" && member.kind != "claude") {
                 status = (try await APIClient.live.harnessSend(member.id, text, cmid)).objectValue?["status"]?.stringValue ?? ""
             }
             switch status {
@@ -307,10 +309,11 @@ struct ThreadScreen: View {
                 sendNotice = "这台机器上的线程还不能从手机回复（" + (HarnessMember.hostLabel(member.host) ?? "未知机器") + "）"
                 pendingId = nil
             default:
-                sendNotice = "没有发出，可以再试一次"
+                sendNotice = "没有发出（\(status.isEmpty ? "无响应" : status)），可以再试一次"
             }
         } catch {
-            sendNotice = "网络有问题，没确认是否发出；再点一次发送是安全的，不会重复"
+            let msg = (error as? CodexError).map { "\($0)" } ?? error.localizedDescription
+            sendNotice = "发送出错（\(msg)），再点一次发送是安全的，不会重复"
         }
     }
 

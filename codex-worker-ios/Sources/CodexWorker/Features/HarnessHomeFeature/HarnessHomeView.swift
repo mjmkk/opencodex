@@ -35,7 +35,12 @@ struct HarnessHomeView: View {
 
     private var needYou: [HarnessGoal] { goals.filter(\.needsYou) }
     private var running: [HarnessGoal] { goals.filter { !$0.needsYou && $0.runningCount > 0 } }
-    private var rest: [HarnessGoal] { goals.filter { !$0.needsYou && $0.runningCount == 0 } }
+    private var rest: [HarnessGoal] {
+        // 有 Master 的 Goal 排前面，没有的排后面（同档内保持原顺序）
+        let noMaster = goals.filter { !$0.needsYou && $0.runningCount == 0 && $0.master == nil }
+        let withMaster = goals.filter { !$0.needsYou && $0.runningCount == 0 && $0.master != nil }
+        return withMaster + noMaster
+    }
 
     var body: some View {
         List {
@@ -141,9 +146,14 @@ struct HarnessHomeView: View {
         if isOpen {
             // Master 排第一；其余按 需要你 → 运行中 → 其他 排，同一档保持原顺序。思考线程超过 3 条时折叠
             let rank: (HarnessMember) -> Int = { m in
-                m.role == .master ? 0 : m.status == .needsYou ? 1 : m.status == .running ? 2 : 3
+                // Master 第一，思考线程（chatgpt）第二，Worker 最后；同档按状态再排
+                switch m.role {
+                case .master: return 0
+                case .thinker: return 1
+                default: return m.status == .needsYou ? 2 : m.status == .running ? 3 : 4
+                }
             }
-            let others = goal.members.filter { $0.role != .thinker }.enumerated()
+            let others = goal.members.enumerated()
                 .sorted { (rank($0.element), $0.offset) < (rank($1.element), $1.offset) }.map(\.element)
             let thinkers = goal.members.filter { $0.role == .thinker }
             ForEach(others) { m in memberRows(m, goal: goal) }
