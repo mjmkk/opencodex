@@ -90,20 +90,23 @@ extension TranscriptBuilder {
     /// 把本机会话文件读到的最近几行（live）叠到 Mirror 历史（base）上。
     /// Mirror 的消息没有时间，只能按内容对齐：在 base 里找 live 第一条用户消息最后一次出现的位置，
     /// 从那里截断再接上 live；对不上（live 比 Mirror 已有的还早）就保留 base 原样，只追加 base 里没有的 live 行。
-    /// 把本机会话文件读到的最新消息叠到 Mirror 历史后面。
-    /// 两边按顺序对齐：base 里的历史整段保留，live 里 base 没有的行追加在后面。
-    /// 同一句话出现两次也各自保留——按文字去重会把第二次连同它的回复一起丢掉。
+    /// 把本机会话文件读到的最新一段（live）叠到已有历史（base）上。live 是它覆盖那段时间的准确记录，
+    /// base 只贡献比 live 更早的部分。对齐方法：在 base 里找和 live 开头连续相同最长的位置
+    /// （同样长时取靠后的，避免被历史里重复的短句「OK」带偏），从那里换成 live。
+    /// 完全对不上时 base 原样保留，live 接在后面。
     static func merge(_ base: Transcript, live: [Transcript.Row]) -> Transcript {
         guard !live.isEmpty else { return base }
-        var out = base
-        var i = 0
-        for row in live {
-            if let hit = out.rows[i...].firstIndex(where: { $0.kind == row.kind }) {
-                i = out.rows.index(after: hit)
-            } else {
-                out.rows.append(row)
+        let b = base.rows
+        var best: (i: Int, j: Int, run: Int)?
+        for j in 0..<min(6, live.count) {
+            for i in b.indices where b[i].kind == live[j].kind {
+                var run = 0
+                while i + run < b.count, j + run < live.count, b[i + run].kind == live[j + run].kind { run += 1 }
+                if best == nil || run > best!.run || (run == best!.run && j == best!.j && i > best!.i) { best = (i, j, run) }
             }
         }
+        var out = base
+        if let best { out.rows = Array(b[..<best.i]) + live[best.j...] } else { out.rows = b + live }
         return out
     }
 }

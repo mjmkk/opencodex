@@ -54,9 +54,10 @@ struct ThreadScreen: View {
                         .padding(.top, 60)
                 }
                 // 记录里已经出现同样文字的就不再单独显示
-                ForEach(outgoing.filter { o in !(transcript?.rows.suffix(8) ?? []).contains { $0.kind == .user(o.text) } }) { o in
-                    outgoingView(o)
-                }
+                // 本机会话文件和手机的时钟可能差几秒，留 30 秒余量
+                ForEach(outgoing.filter { o in !(transcript?.rows ?? []).contains { row in
+                    row.kind == .user(o.text) && (row.at.map { $0 >= o.at.addingTimeInterval(-30) } ?? false)
+                } }) { o in outgoingView(o) }
             }
             Text("").frame(height: 0).id("bottom")
             .padding(.horizontal, 16)
@@ -269,6 +270,9 @@ struct ThreadScreen: View {
         enum State: Equatable { case pending, sent, failed(String) }
         let id: String
         let text: String
+        /// 点发送的时间。记录里出现同样文字、且时间不早于这一刻的用户消息，才说明这条已经显示出来，本地气泡收起。
+        /// 只按文字比会把重复发的同一句话（比如再发一次「OK」）立刻藏掉，转圈和失败标红都看不到。
+        let at = Date()
         var state: State = .pending
         /// 投递过至少一次：重发前先查回执，同一个 id 服务端不会投两次
         var tried = false
