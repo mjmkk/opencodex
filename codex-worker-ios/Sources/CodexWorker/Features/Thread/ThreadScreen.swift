@@ -18,11 +18,11 @@ struct ThreadScreen: View {
     @State private var expandedFolds: Set<String> = []
     @State private var requests: [NativeRemoteRequest] = []
     @State private var draft = ""
-    @State private var sending = false
-    @State private var sendNotice: String?
-    @State private var pendingId: String?
-    /// 刚从手机发出、服务端记录里还没出现的消息
-    @State private var outgoing: [Transcript.Row] = []
+    /// 刚从手机发出、服务端记录里还没出现的消息。点发送就进这里并立刻上屏，后台按顺序投递
+    @State private var outgoing: [Outgoing] = []
+    @State private var draining = false
+    /// 只留一个等回复的轮询：连发几条时只等最后一条
+    @State private var replyWaiter: Task<Void, Never>?
     /// 本机会话文件里读到的最近几十行；Mirror 每次刷新后都叠在它上面，Mirror 落后时也不会把新回复盖掉
     @State private var live: [Transcript.Row] = []
     /// 只渲染最后这么多行；往上翻时先放出本地已有的，用完了再去服务端拉更早的
@@ -47,15 +47,15 @@ struct ThreadScreen: View {
                         .buttonStyle(.plain).disabled(loadingEarlier)
                     }
                     ForEach(transcript.rows.suffix(shownRows)) { row in rowView(row) }
-                    // 记录里已经出现同样文字的就不再单独显示
-                    ForEach(outgoing.filter { o in !transcript.rows.suffix(6).contains { $0.kind == o.kind } }) { row in
-                        rowView(row).opacity(0.7)
-                    }
-                } else if loading {
+                } else if loading, outgoing.isEmpty {
                     ProgressView().frame(maxWidth: .infinity).padding(.top, 80)
-                } else {
+                } else if outgoing.isEmpty {
                     ContentUnavailableView("没有可显示的对话", systemImage: "text.bubble")
                         .padding(.top, 60)
+                }
+                // 记录里已经出现同样文字的就不再单独显示
+                ForEach(outgoing.filter { o in !(transcript?.rows.suffix(8) ?? []).contains { $0.kind == .user(o.text) } }) { o in
+                    outgoingView(o)
                 }
             }
             Text("").frame(height: 0).id("bottom")
@@ -120,7 +120,7 @@ struct ThreadScreen: View {
             // 模拟器联调用：-AGTAutoSend "<文字>" 打开线程后走一遍真实的发送流程（和点发送按钮完全一样）
             if let auto = UserDefaults.standard.string(forKey: "AGTAutoSend"), member.kind != "unknown", draft.isEmpty, outgoing.isEmpty {
                 draft = auto
-                Task { await send() }
+                send()
             }
 #endif
             async let r: Void = loadRequests()
@@ -211,18 +211,12 @@ struct ThreadScreen: View {
     /// 投递确认后显示「已送达」，等下一次刷新拿到真实记录后自然被替换
     private var composer: some View {
         VStack(alignment: .leading, spacing: 6) {
-            if let sendNotice {
-                Text(sendNotice).font(.footnote).foregroundStyle(.secondary).padding(.horizontal, 20)
-            }
             HStack(alignment: .bottom, spacing: 10) {
                 TextField("回复 " + member.roleLabel, text: $draft, axis: .vertical)
                     .font(.body).lineLimit(1...6)
                     .padding(.vertical, 15)
-                Button { Task { await send() } } label: {
-                    Group {
-                        if sending { ProgressView().tint(Theme.page) }
-                        else { Image(systemName: "arrow.up").font(.system(size: 15, weight: .semibold)) }
-                    }
+                Button { send() } label: {
+                    Image(systemName: "arrow.up").font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(Theme.page)
                     .frame(width: 36, height: 36)
                     .background(Theme.ink.opacity(canSend ? 1 : 0.25), in: Circle())
@@ -240,7 +234,7 @@ struct ThreadScreen: View {
         .padding(.horizontal, 16).padding(.bottom, 8)
     }
 
-    private var canSend: Bool { !sending && !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    private var canSend: Bool { !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 
     /// Codex：走 AGT-12 原有的原生控制通道。先读当前观测（拿 receipt 和 version），再发文字；
     /// 服务端写之前先落持久意图，同一个 submission_id 不会发第二次。返回值映射成和 harness/send 一样的状态
@@ -270,64 +264,97 @@ struct ThreadScreen: View {
         }
     }
 
-    @MainActor private func send() async {
-        let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty, !sending else { return }
-        Haptics.light()
-        sending = true; sendNotice = "发送中…"
-        defer { sending = false }
-        // 同一条消息只生成一次 id：网络失败后重点发送，服务端会认出是同一条，不会投两次
-        let isRetry = pendingId != nil
-        let cmid = pendingId ?? ("m" + UUID().uuidString.replacingOccurrences(of: "-", with: ""))
-        pendingId = cmid
-        // 像微信一样：点了就先把气泡放出来、清空输入框；没发出去再撤回气泡、把文字放回输入框
-        let bubble = Transcript.Row(id: cmid, kind: .user(text), at: Date())
-        outgoing.removeAll { $0.id == cmid }
-        outgoing.append(bubble)
-        draft = ""
-        func undo() {
-            outgoing.removeAll { $0.id == cmid }
-            if draft.isEmpty { draft = text }
+    /// 手机上发出去的一条消息。像微信：点了就上屏，后台慢慢投递；没发出去就在气泡旁边标红，点一下重发
+    struct Outgoing: Identifiable, Equatable {
+        enum State: Equatable { case pending, sent, failed(String) }
+        let id: String
+        let text: String
+        var state: State = .pending
+        /// 投递过至少一次：重发前先查回执，同一个 id 服务端不会投两次
+        var tried = false
+    }
+
+    @ViewBuilder
+    private func outgoingView(_ o: Outgoing) -> some View {
+        VStack(alignment: .trailing, spacing: 4) {
+            HStack(alignment: .center, spacing: 8) {
+                Spacer(minLength: 40)
+                switch o.state {
+                case .pending: ProgressView().controlSize(.small)
+                case .failed:
+                    Image(systemName: "exclamationmark.circle.fill").foregroundStyle(.red)
+                        .accessibilityLabel("没有发出，点按重发")
+                case .sent: EmptyView()
+                }
+                Text(o.text).font(.body).lineLimit(6)
+                    .padding(.horizontal, 14).padding(.vertical, 10)
+                    .background(Theme.userBubble, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            }
+            if case .failed(let why) = o.state {
+                Text(why + "，点按重发").font(.footnote).foregroundStyle(.red)
+            }
         }
+        .padding(.top, 10)
+        .contentShape(Rectangle())
+        .onTapGesture { if case .failed = o.state { retry(o.id) } }
+    }
+
+    /// 点发送：立刻上屏、清空输入框，可以接着打下一条；投递在后台按顺序进行
+    @MainActor private func send() {
+        let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        Haptics.light()
+        outgoing.append(Outgoing(id: "m" + UUID().uuidString.replacingOccurrences(of: "-", with: ""), text: text))
+        draft = ""
+        Task { await drain() }
+    }
+
+    @MainActor private func retry(_ id: String) {
+        guard let i = outgoing.firstIndex(where: { $0.id == id }) else { return }
+        Haptics.light()
+        outgoing[i].state = .pending
+        Task { await drain() }
+    }
+
+    /// 按发出顺序一条一条投递，保证对方收到的顺序和手机上一样
+    @MainActor private func drain() async {
+        guard !draining else { return }
+        draining = true
+        defer { draining = false }
+        while let i = outgoing.firstIndex(where: { $0.state == .pending }) {
+            let o = outgoing[i]
+            outgoing[i].tried = true
+            let result = await deliver(o.text, id: o.id, isRetry: o.tried)
+            guard let j = outgoing.firstIndex(where: { $0.id == o.id }) else { continue }
+            outgoing[j].state = result.map { .failed($0) } ?? .sent
+            if result == nil {
+                replyWaiter?.cancel()
+                replyWaiter = Task { await awaitReply(to: .user(o.text)) }
+            }
+        }
+    }
+
+    /// 投递一条；成功（含「已发出但没确认」）返回 nil，没发出返回给用户看的原因
+    @MainActor private func deliver(_ text: String, id cmid: String, isRetry: Bool) async -> String? {
         do {
             var status = member.kind == "codex" || member.kind == "unknown"
                 ? try await sendNative(text, submissionId: cmid, isRetry: isRetry) : "unsupported"
             // 原生通道只覆盖 spirit-master 上的 Codex 线程；其他机器上的 Codex 和 Claude 走 harness/send
-            // （服务端按 Registry 选 Mac queue / Claude inbox）。原生通道已明确没写（unsupported）才换，不会两边都发
+            // （服务端按 Registry 选 Mac queue / Claude inbox）。原生通道已明确没写（unsupported）才换，不会两边都发。
             // offline 只在读 control 时出现（线程没被 Desktop 加载），此时还没写出任何东西；
             // harness/send 会用 send_message_to_thread 把线程拉起再投递，所以也换过去
             if status == "unsupported" || (status == "offline" && member.kind != "claude") {
                 status = (try await APIClient.live.harnessSend(member.id, text, cmid)).objectValue?["status"]?.stringValue ?? ""
             }
             switch status {
-            case "queued", "received", "duplicate":
-                pendingId = nil
-                sendNotice = status == "received" ? "已送达" : "已送达，等对方处理"
-                Task { await awaitReply(to: .user(text)) }
-            case "unconfirmed":
-                // 可能已经发出去了：保留 id，不清空输入框，但提示别急着重发
-                pendingId = nil
-                sendNotice = "已发出，还没收到确认；稍后刷新看看，不用重发"
-            case "offline":
-                undo()
-                sendNotice = member.kind == "claude" ? "对方会话现在没在运行，没有发出"
-                    : "这个线程现在没在 Desktop 里打开，没有发出"
-                pendingId = nil
-            case "busy":
-                undo()
-                sendNotice = "对方现在不接受输入（可能在等审批），没有发出"; pendingId = nil
-            case "unsupported":
-                undo()
-                sendNotice = "这台机器上的线程还不能从手机回复（" + (HarnessMember.hostLabel(member.host) ?? "未知机器") + "）"
-                pendingId = nil
-            default:
-                undo()
-                sendNotice = "没有发出（\(status.isEmpty ? "无响应" : status)），可以再试一次"
+            case "queued", "received", "duplicate", "unconfirmed": return nil
+            case "offline": return member.kind == "claude" ? "对方会话没在运行" : "线程没在 Desktop 里打开"
+            case "busy": return "对方现在不接受输入（可能在等审批）"
+            case "unsupported": return "这台机器上的线程还不能从手机回复（" + (HarnessMember.hostLabel(member.host) ?? "未知机器") + "）"
+            default: return "没有发出（\(status.isEmpty ? "无响应" : status)）"
             }
         } catch {
-            let msg = (error as? CodexError).map { "\($0)" } ?? error.localizedDescription
-            undo()
-            sendNotice = "发送出错（\(msg)），再点一次发送是安全的，不会重复"
+            return "发送出错（" + ((error as? CodexError).map { "\($0)" } ?? error.localizedDescription) + "）"
         }
     }
 
@@ -394,7 +421,7 @@ struct ThreadScreen: View {
             transcript = t; notice = nil
             if let i = t.rows.lastIndex(where: { $0.kind == sent }),
                t.rows[(i + 1)...].contains(where: { if case .assistant = $0.kind { return true }; return false }) {
-                sendNotice = nil; return
+                return
             }
         }
     }
