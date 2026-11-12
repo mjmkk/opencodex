@@ -218,7 +218,6 @@ struct ThreadScreen: View {
                 TextField("回复 " + member.roleLabel, text: $draft, axis: .vertical)
                     .font(.body).lineLimit(1...6)
                     .padding(.vertical, 15)
-                    .disabled(sending)
                 Button { Task { await send() } } label: {
                     Group {
                         if sending { ProgressView().tint(Theme.page) }
@@ -245,10 +244,10 @@ struct ThreadScreen: View {
 
     /// Codex：走 AGT-12 原有的原生控制通道。先读当前观测（拿 receipt 和 version），再发文字；
     /// 服务端写之前先落持久意图，同一个 submission_id 不会发第二次。返回值映射成和 harness/send 一样的状态
-    @MainActor private func sendNative(_ text: String, submissionId: String) async throws -> String {
+    @MainActor private func sendNative(_ text: String, submissionId: String, isRetry: Bool) async throws -> String {
         let api = APIClient.live
-        // 上次结果不明时先查回执，不重新发
-        if let prior = try? await api.nativeSubmission(member.id, submissionId),
+        // 重试时先查回执，不重新发；第一次发不用查，省一次往返
+        if isRetry, let prior = try? await api.nativeSubmission(member.id, submissionId),
            let st = prior.objectValue?["status"]?.stringValue {
             return st == "accepted" ? "queued" : st == "rejected" ? "failed" : "unconfirmed"
         }
@@ -275,14 +274,24 @@ struct ThreadScreen: View {
         let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !sending else { return }
         Haptics.light()
-        sending = true; sendNotice = nil
+        sending = true; sendNotice = "发送中…"
         defer { sending = false }
         // 同一条消息只生成一次 id：网络失败后重点发送，服务端会认出是同一条，不会投两次
+        let isRetry = pendingId != nil
         let cmid = pendingId ?? ("m" + UUID().uuidString.replacingOccurrences(of: "-", with: ""))
         pendingId = cmid
+        // 像微信一样：点了就先把气泡放出来、清空输入框；没发出去再撤回气泡、把文字放回输入框
+        let bubble = Transcript.Row(id: cmid, kind: .user(text), at: Date())
+        outgoing.removeAll { $0.id == cmid }
+        outgoing.append(bubble)
+        draft = ""
+        func undo() {
+            outgoing.removeAll { $0.id == cmid }
+            if draft.isEmpty { draft = text }
+        }
         do {
             var status = member.kind == "codex" || member.kind == "unknown"
-                ? try await sendNative(text, submissionId: cmid) : "unsupported"
+                ? try await sendNative(text, submissionId: cmid, isRetry: isRetry) : "unsupported"
             // 原生通道只覆盖 spirit-master 上的 Codex 线程；其他机器上的 Codex 和 Claude 走 harness/send
             // （服务端按 Registry 选 Mac queue / Claude inbox）。原生通道已明确没写（unsupported）才换，不会两边都发
             // offline 只在读 control 时出现（线程没被 Desktop 加载），此时还没写出任何东西；
@@ -292,29 +301,32 @@ struct ThreadScreen: View {
             }
             switch status {
             case "queued", "received", "duplicate":
-                outgoing.append(.init(id: cmid, kind: .user(text), at: Date()))
-                draft = ""; pendingId = nil
+                pendingId = nil
                 sendNotice = status == "received" ? "已送达" : "已送达，等对方处理"
                 Task { await awaitReply(to: .user(text)) }
             case "unconfirmed":
                 // 可能已经发出去了：保留 id，不清空输入框，但提示别急着重发
-                outgoing.append(.init(id: cmid, kind: .user(text), at: Date()))
-                draft = ""; pendingId = nil
+                pendingId = nil
                 sendNotice = "已发出，还没收到确认；稍后刷新看看，不用重发"
             case "offline":
+                undo()
                 sendNotice = member.kind == "claude" ? "对方会话现在没在运行，没有发出"
                     : "这个线程现在没在 Desktop 里打开，没有发出"
                 pendingId = nil
             case "busy":
+                undo()
                 sendNotice = "对方现在不接受输入（可能在等审批），没有发出"; pendingId = nil
             case "unsupported":
+                undo()
                 sendNotice = "这台机器上的线程还不能从手机回复（" + (HarnessMember.hostLabel(member.host) ?? "未知机器") + "）"
                 pendingId = nil
             default:
+                undo()
                 sendNotice = "没有发出（\(status.isEmpty ? "无响应" : status)），可以再试一次"
             }
         } catch {
             let msg = (error as? CodexError).map { "\($0)" } ?? error.localizedDescription
+            undo()
             sendNotice = "发送出错（\(msg)），再点一次发送是安全的，不会重复"
         }
     }
@@ -390,7 +402,7 @@ struct ThreadScreen: View {
     /// 读一次 /v1/harness/live，把结果叠到当前记录上。只对 Codex 线程；服务端不支持这台机器或读失败时返回 nil。
     /// 返回值的 isPartial 为 true 表示手上还没有更早的历史，需要再去 Mirror 补。
     @MainActor private func liveTranscript() async -> Transcript? {
-        guard member.kind == "codex",
+        guard member.kind == "codex" || member.kind == "unknown",
               let root = try? await APIClient.live.harnessLive(member.id).objectValue,
               root["ok"] == .bool(true), let items = root["messages"]?.arrayValue else { return nil }
         let messages = items.enumerated().compactMap { i, v -> ThreadHistory.Message? in
