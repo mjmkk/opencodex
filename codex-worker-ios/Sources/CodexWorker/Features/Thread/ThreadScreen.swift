@@ -293,7 +293,7 @@ struct ThreadScreen: View {
                 outgoing.append(.init(id: cmid, kind: .user(text), at: Date()))
                 draft = ""; pendingId = nil
                 sendNotice = status == "received" ? "已送达" : "已送达，等对方处理"
-                Task { try? await Task.sleep(for: .seconds(6)); await load() }
+                Task { await awaitReply(to: .user(text)) }
             case "unconfirmed":
                 // 可能已经发出去了：保留 id，不清空输入框，但提示别急着重发
                 outgoing.append(.init(id: cmid, kind: .user(text), at: Date()))
@@ -368,6 +368,26 @@ struct ThreadScreen: View {
                 }
             }
         } catch {}
+    }
+
+    /// 发出后像微信一样等回复：每 6 秒拉一次最新内容，看到这条消息之后有回复就停，最多等 3 分钟。
+    /// 服务端会合并重复的刷新请求，所以不会因为轮询多占读取额度。
+    @MainActor private func awaitReply(to sent: Transcript.Row.Kind) async {
+        guard member.kind != "claude", let thread = try? await ThreadLookup.thread(member.id) else {
+            try? await Task.sleep(for: .seconds(6)); await load(); return
+        }
+        for _ in 0..<30 {
+            try? await Task.sleep(for: .seconds(6))
+            if Task.isCancelled { return }
+            guard let history = try? await ThreadSyncClient.liveValue.syncHistory(thread, true),
+                  !history.messages.isEmpty else { continue }
+            let t = TranscriptBuilder.codex(history)
+            transcript = t; notice = nil
+            if let i = t.rows.lastIndex(where: { $0.kind == sent }),
+               t.rows[(i + 1)...].contains(where: { if case .assistant = $0.kind { return true }; return false }) {
+                sendNotice = nil; return
+            }
+        }
     }
 
     /// 走一次网络刷新，不阻塞 UI。第一次见到这条线程时最多等 2 分钟（后台轮询）。
