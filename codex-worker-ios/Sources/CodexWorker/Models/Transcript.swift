@@ -90,16 +90,20 @@ extension TranscriptBuilder {
     /// 把本机会话文件读到的最近几行（live）叠到 Mirror 历史（base）上。
     /// Mirror 的消息没有时间，只能按内容对齐：在 base 里找 live 第一条用户消息最后一次出现的位置，
     /// 从那里截断再接上 live；对不上（live 比 Mirror 已有的还早）就保留 base 原样，只追加 base 里没有的 live 行。
+    /// 把本机会话文件读到的最新消息叠到 Mirror 历史后面。
+    /// 两边按顺序对齐：base 里的历史整段保留，live 里 base 没有的行追加在后面。
+    /// 同一句话出现两次也各自保留——按文字去重会把第二次连同它的回复一起丢掉。
     static func merge(_ base: Transcript, live: [Transcript.Row]) -> Transcript {
         guard !live.isEmpty else { return base }
         var out = base
-        if let first = live.firstIndex(where: { if case .user = $0.kind { return true }; return false }),
-           let cut = base.rows.lastIndex(where: { $0.kind == live[first].kind }) {
-            out.rows = Array(base.rows[..<cut]) + live[first...]
-            return out
+        var i = 0
+        for row in live {
+            if let hit = out.rows[i...].firstIndex(where: { $0.kind == row.kind }) {
+                i = out.rows.index(after: hit)
+            } else {
+                out.rows.append(row)
+            }
         }
-        let known = Set(base.rows.suffix(20).map { "\($0.kind)" })
-        out.rows += live.filter { !known.contains("\($0.kind)") }
         return out
     }
 }

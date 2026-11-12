@@ -59,11 +59,14 @@ final class TranscriptBuilderTests: XCTestCase {
     /// 本机会话文件读到的新回复叠在 Mirror 历史后面：从 live 第一条用户消息处对齐，早的历史保留
     func testMergeAppendsLiveAfterMirrorHistory() {
         let r = { (id: String, k: Transcript.Row.Kind) in Transcript.Row(id: id, kind: k, at: nil) }
+        // base 里「你好」之前还有一轮问答，live 开头又有一条不在 base 里的 assistant。
+        // 两段都不能丢：历史整段保留，live 里 base 没有的行追加在后面。
         let base = Transcript(rows: [r("1", .user("早")), r("2", .assistant("早答")), r("3", .user("你好"))],
                               model: nil, isPartial: false, hasMore: true)
-        let live = [r("a", .user("你好")), r("b", .assistant("你好，我在。"))]
+        let live = [r("z", .assistant("更早的一条")), r("a", .user("你好")), r("b", .assistant("你好，我在。"))]
         let m = TranscriptBuilder.merge(base, live: live)
-        XCTAssertEqual(m.rows.map(\.kind), [.user("早"), .assistant("早答"), .user("你好"), .assistant("你好，我在。")])
+        XCTAssertEqual(m.rows.map(\.kind), [.user("早"), .assistant("早答"), .user("你好"),
+                                            .assistant("更早的一条"), .assistant("你好，我在。")])
         XCTAssertTrue(m.hasMore)
     }
 
@@ -73,6 +76,14 @@ final class TranscriptBuilderTests: XCTestCase {
         let base = Transcript(rows: [r("1", .user("A")), r("2", .assistant("B"))], model: nil, isPartial: false, hasMore: false)
         let m = TranscriptBuilder.merge(base, live: [r("x", .assistant("B")), r("y", .assistant("C"))])
         XCTAssertEqual(m.rows.map(\.kind), [.user("A"), .assistant("B"), .assistant("C")])
+        // 中间隔着一轮问答的回复也要补上，不能因为前面有重叠就把后面的丢了
+        let m2 = TranscriptBuilder.merge(base, live: [r("x", .user("A")), r("y", .assistant("新的回答"))])
+        XCTAssertEqual(m2.rows.map(\.kind), [.user("A"), .assistant("B"), .assistant("新的回答")])
+        // 同一句话出现两次：第二次之后的回复也要保留
+        let twice = Transcript(rows: [r("1", .user("你好")), r("2", .assistant("第一次"))], model: nil, isPartial: false, hasMore: false)
+        let m3 = TranscriptBuilder.merge(twice, live: [r("a", .user("你好")), r("b", .assistant("第一次")),
+                                                       r("c", .user("你好")), r("d", .assistant("第二次"))])
+        XCTAssertEqual(m3.rows.map(\.kind), [.user("你好"), .assistant("第一次"), .user("你好"), .assistant("第二次")])
         XCTAssertEqual(TranscriptBuilder.merge(base, live: []), base)
     }
 }
