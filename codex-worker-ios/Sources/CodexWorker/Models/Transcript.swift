@@ -87,6 +87,24 @@ enum TranscriptBuilder {
 }
 
 extension TranscriptBuilder {
+    /// 把本机会话文件读到的最近几行（live）叠到 Mirror 历史（base）上。
+    /// Mirror 的消息没有时间，只能按内容对齐：在 base 里找 live 第一条用户消息最后一次出现的位置，
+    /// 从那里截断再接上 live；对不上（live 比 Mirror 已有的还早）就保留 base 原样，只追加 base 里没有的 live 行。
+    static func merge(_ base: Transcript, live: [Transcript.Row]) -> Transcript {
+        guard !live.isEmpty else { return base }
+        var out = base
+        if let first = live.firstIndex(where: { if case .user = $0.kind { return true }; return false }),
+           let cut = base.rows.lastIndex(where: { $0.kind == live[first].kind }) {
+            out.rows = Array(base.rows[..<cut]) + live[first...]
+            return out
+        }
+        let known = Set(base.rows.suffix(20).map { "\($0.kind)" })
+        out.rows += live.filter { !known.contains("\($0.kind)") }
+        return out
+    }
+}
+
+extension TranscriptBuilder {
     static func elapsed(_ from: Date?, _ to: Date?) -> Int? {
         guard let from, let to, to >= from else { return nil }
         return Int(to.timeIntervalSince(from).rounded())

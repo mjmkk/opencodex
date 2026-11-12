@@ -23,6 +23,8 @@ struct ThreadScreen: View {
     @State private var pendingId: String?
     /// 刚从手机发出、服务端记录里还没出现的消息
     @State private var outgoing: [Transcript.Row] = []
+    /// 本机会话文件里读到的最近几十行；Mirror 每次刷新后都叠在它上面，Mirror 落后时也不会把新回复盖掉
+    @State private var live: [Transcript.Row] = []
     /// 只渲染最后这么多行；往上翻时先放出本地已有的，用完了再去服务端拉更早的
     @State private var shownRows = 80
     @State private var loadingEarlier = false
@@ -359,35 +361,51 @@ struct ThreadScreen: View {
             let scope = try MobileSyncEngine.threadScope()
             if let t = try await MobileSyncCache.shared?.thread(member.id, scope: scope) {
                 if let cached = try await ThreadSyncClient.liveValue.cachedHistory(t), !cached.messages.isEmpty {
-                    transcript = TranscriptBuilder.codex(cached)
+                    transcript = TranscriptBuilder.merge(TranscriptBuilder.codex(cached), live: live)
                 }
             } else if let ns = UserDefaults.standard.string(forKey: "codex.mirror.namespace." + (try MobileSyncEngine.scope())) {
                 let t2 = MirrorThread(thread_id: member.id, namespace: ns).thread(in: ns)
                 if let cached = try await ThreadSyncClient.liveValue.cachedHistory(t2), !cached.messages.isEmpty {
-                    transcript = TranscriptBuilder.codex(cached)
+                    transcript = TranscriptBuilder.merge(TranscriptBuilder.codex(cached), live: live)
                 }
             }
         } catch {}
     }
 
-    /// 发出后像微信一样等回复：每 6 秒拉一次最新内容，看到这条消息之后有回复就停，最多等 3 分钟。
-    /// 服务端会合并重复的刷新请求，所以不会因为轮询多占读取额度。
+    /// 发出后像微信一样等回复：每 2 秒读一次本机会话文件，看到这条消息之后有回复就停，最多等 3 分钟。
+    /// 这条路不占云端读取额度，所以可以问得勤。本机读不到时才退回 Mirror。
     @MainActor private func awaitReply(to sent: Transcript.Row.Kind) async {
-        guard member.kind != "claude", let thread = try? await ThreadLookup.thread(member.id) else {
-            try? await Task.sleep(for: .seconds(6)); await load(); return
-        }
-        for _ in 0..<30 {
-            try? await Task.sleep(for: .seconds(6))
+        for _ in 0..<90 {
+            try? await Task.sleep(for: .seconds(2))
             if Task.isCancelled { return }
-            guard let history = try? await ThreadSyncClient.liveValue.syncHistory(thread, true),
-                  !history.messages.isEmpty else { continue }
-            let t = TranscriptBuilder.codex(history)
+            guard let t = await liveTranscript() else { await load(); return }
             transcript = t; notice = nil
             if let i = t.rows.lastIndex(where: { $0.kind == sent }),
                t.rows[(i + 1)...].contains(where: { if case .assistant = $0.kind { return true }; return false }) {
                 sendNotice = nil; return
             }
         }
+    }
+
+    /// 读一次 /v1/harness/live，把结果叠到当前记录上。只对 Codex 线程；服务端不支持这台机器或读失败时返回 nil。
+    /// 返回值的 isPartial 为 true 表示手上还没有更早的历史，需要再去 Mirror 补。
+    @MainActor private func liveTranscript() async -> Transcript? {
+        guard member.kind == "codex",
+              let root = try? await APIClient.live.harnessLive(member.id).objectValue,
+              root["ok"] == .bool(true), let items = root["messages"]?.arrayValue else { return nil }
+        let messages = items.enumerated().compactMap { i, v -> ThreadHistory.Message? in
+            guard let o = v.objectValue, let text = o["text"]?.stringValue else { return nil }
+            let id = o["id"]?.stringValue.flatMap { $0.isEmpty ? nil : $0 } ?? "live-\(i)-\(o["at"]?.stringValue ?? "")"
+            return .init(id: id, role: o["role"]?.stringValue, text: text,
+                         sentAt: o["at"]?.stringValue.flatMap(TranscriptBuilder.parseDate))
+        }
+        live = TranscriptBuilder.codex(ThreadHistory(threadIdentity: member.id, messages: messages, records: [],
+            attachments: [], downloadedAt: Date(), isPartial: false, hasMore: false,
+            availableMessageCount: messages.count, refreshRequested: false)).rows
+        guard let base = transcript, !base.rows.isEmpty else {
+            return Transcript(rows: live, model: nil, isPartial: true, hasMore: true)
+        }
+        return TranscriptBuilder.merge(base, live: live)
     }
 
     /// 走一次网络刷新，不阻塞 UI。第一次见到这条线程时最多等 2 分钟（后台轮询）。
@@ -403,6 +421,11 @@ struct ThreadScreen: View {
                 transcript = claude; notice = nil
                 await ClaudeTranscriptCache.save(member.id, json); return
             }
+            // 先读本机会话文件：不占云端额度、几秒内就是最新的。读不到再走下面的 Mirror
+            if let t = await liveTranscript() {
+                transcript = t; notice = nil
+                if !t.isPartial { return }
+            }
             let thread = try await ThreadLookup.thread(member.id)
             // Mirror 只自动同步最近活跃的线程；没拉过的线程第一次需要最多约 1 分钟。
             // 有缓存时只轮询 3 次（15 秒）就放弃，让用户下拉触发；
@@ -413,7 +436,7 @@ struct ThreadScreen: View {
                 try Task.checkCancellation()
                 let history = try await ThreadSyncClient.liveValue.syncHistory(thread, true)
                 if !history.messages.isEmpty {
-                    transcript = TranscriptBuilder.codex(history); notice = nil; return
+                    transcript = TranscriptBuilder.merge(TranscriptBuilder.codex(history), live: live); notice = nil; return
                 }
                 if !hasContent {
                     notice = "正在从 Codex 拉取这条线程，第一次大约需要一分钟"

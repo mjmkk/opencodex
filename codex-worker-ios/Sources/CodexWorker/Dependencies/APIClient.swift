@@ -49,6 +49,8 @@ public struct APIClient: DependencyKey, Sendable {
     public var harnessTree: @Sendable () async throws -> JSONValue = { throw CodexError.invalidState }
     /// AGT-26 S6：Claude 会话的统一消息模型（Codex 线程服务端会返回 409，客户端改走 Mirror）
     public var harnessThread: @Sendable (String) async throws -> JSONValue = { _ in throw CodexError.invalidState }
+    /// AGT-26 S6：Codex 线程最近的消息，服务端直接读会话文件，不占云端读取额度，可以几秒问一次
+    public var harnessLive: @Sendable (String) async throws -> JSONValue = { _ in throw CodexError.invalidState }
     public var harnessSend: @Sendable (String, String, String) async throws -> JSONValue = { _, _, _ in throw CodexError.invalidState }
     public var harnessRename: @Sendable (String?, String?, String, Int) async throws -> JSONValue = { _, _, _, _ in throw CodexError.invalidState }
     public var nativeControl: @Sendable (String) async throws -> JSONValue = { _ in throw CodexError.invalidState }
@@ -148,6 +150,7 @@ extension APIClient {
             goalOverview: { try await impl.goalOverview() },
             harnessTree: { try await impl.harnessTree() },
             harnessThread: { try await impl.harnessThread($0) },
+            harnessLive: { try await impl.harnessLive($0) },
             harnessSend: { try await impl.harnessSend(id: $0, text: $1, clientMessageId: $2) },
             harnessRename: { try await impl.harnessRename(threadId: $0, issueId: $1, name: $2, revision: $3) },
             nativeControl: { try await impl.nativeControl($0) },
@@ -504,6 +507,11 @@ actor LiveAPIClient {
     func harnessThread(_ id: String) async throws -> JSONValue {
         // 查询参数必须走 queryItems：buildURL 会用 queryItems 覆盖 path 里手写的 ?id=
         try await performRequest(buildRequest(url: buildURL(path: "/v1/harness/thread",
+                                                            queryItems: [URLQueryItem(name: "id", value: id)])),
+                                 preservingKeys: true)
+    }
+    func harnessLive(_ id: String) async throws -> JSONValue {
+        try await performRequest(buildRequest(url: buildURL(path: "/v1/harness/live",
                                                             queryItems: [URLQueryItem(name: "id", value: id)])),
                                  preservingKeys: true)
     }

@@ -55,4 +55,24 @@ final class TranscriptBuilderTests: XCTestCase {
     func testClaudeRejectsErrorPayload() {
         XCTAssertThrowsError(try TranscriptBuilder.claude(.object(["ok": .bool(false), "error": .string("use_mirror")])))
     }
+
+    /// 本机会话文件读到的新回复叠在 Mirror 历史后面：从 live 第一条用户消息处对齐，早的历史保留
+    func testMergeAppendsLiveAfterMirrorHistory() {
+        let r = { (id: String, k: Transcript.Row.Kind) in Transcript.Row(id: id, kind: k, at: nil) }
+        let base = Transcript(rows: [r("1", .user("早")), r("2", .assistant("早答")), r("3", .user("你好"))],
+                              model: nil, isPartial: false, hasMore: true)
+        let live = [r("a", .user("你好")), r("b", .assistant("你好，我在。"))]
+        let m = TranscriptBuilder.merge(base, live: live)
+        XCTAssertEqual(m.rows.map(\.kind), [.user("早"), .assistant("早答"), .user("你好"), .assistant("你好，我在。")])
+        XCTAssertTrue(m.hasMore)
+    }
+
+    /// live 对不上 Mirror（没有共同的用户消息）时只追加 Mirror 里没有的行，不丢历史
+    func testMergeWithoutOverlapKeepsBaseAndAddsNewRows() {
+        let r = { (id: String, k: Transcript.Row.Kind) in Transcript.Row(id: id, kind: k, at: nil) }
+        let base = Transcript(rows: [r("1", .user("A")), r("2", .assistant("B"))], model: nil, isPartial: false, hasMore: false)
+        let m = TranscriptBuilder.merge(base, live: [r("x", .assistant("B")), r("y", .assistant("C"))])
+        XCTAssertEqual(m.rows.map(\.kind), [.user("A"), .assistant("B"), .assistant("C")])
+        XCTAssertEqual(TranscriptBuilder.merge(base, live: []), base)
+    }
 }
