@@ -149,16 +149,20 @@ struct ThreadScreen: View {
             }
 #endif
             await load()
+        }
+        .task(id: member.id + "|" + member.kind) {
             await loadRequests()
-            // 只在当前页面持续读取；切页会取消，回到前台仍继续。真实本机读取不占云端历史额度。
+        }
+        // 最新回复独立于 Mirror 补历史和审批读取。它们慢或不可达时，不能阻塞当前聊天。
+        .task(id: member.id + "|" + member.kind + "|" + (scenePhase == .active ? "active" : "inactive")) {
+            guard scenePhase == .active else { return }
             while !Task.isCancelled {
-                do { try await Task.sleep(for: .seconds(3)) } catch { break }
-                guard scenePhase == .active else { continue }
                 if member.kind == "claude" {
                     await backgroundRefresh()
                 } else if let t = await liveTranscript() {
                     transcript = t; notice = nil
                 }
+                do { try await Task.sleep(for: .seconds(3)) } catch { break }
             }
         }
         .refreshable { async let r: Void = loadRequests(); await load(); await r }
@@ -185,7 +189,13 @@ struct ThreadScreen: View {
             if let url = goal?.issueURL {
                 Link(destination: url) { Label("在 Linear 打开 " + (goal?.id ?? ""), systemImage: "arrow.up.right.square") }
             }
+            ForEach(member.workIssues.filter { $0.id != goal?.id }) { work in
+                if let url = work.url {
+                    Link(destination: url) { Label("在 Linear 打开 " + work.id, systemImage: "arrow.up.right.square") }
+                }
+            }
         } label: { Image(systemName: "ellipsis.circle") }
+        .accessibilityLabel("线程选项")
     }
 
     // MARK: - 行
@@ -457,6 +467,7 @@ struct ThreadScreen: View {
         guard member.kind == "codex" || member.kind == "unknown",
               let root = try? await APIClient.live.harnessLive(member.id).objectValue,
               root["ok"] == .bool(true), let items = root["messages"]?.arrayValue else { return nil }
+        guard outbox.usesCurrentConnection, !Task.isCancelled else { return nil }
         let messages = items.enumerated().compactMap { i, v -> ThreadHistory.Message? in
             guard let o = v.objectValue, let text = o["text"]?.stringValue else { return nil }
             let id = o["id"]?.stringValue.flatMap { $0.isEmpty ? nil : $0 } ?? "live-\(i)-\(o["at"]?.stringValue ?? "")"
@@ -475,13 +486,16 @@ struct ThreadScreen: View {
     /// 走一次网络刷新，不阻塞 UI。第一次见到这条线程时最多等 2 分钟（后台轮询）。
     @MainActor private func backgroundRefresh() async {
         do {
+            let scope = try MobileSyncEngine.scope()
             if member.kind == "claude" {
                 let json = try await APIClient.live.harnessThread(member.id)
+                guard scope == (try? MobileSyncEngine.scope()), !Task.isCancelled else { return }
                 transcript = try TranscriptBuilder.claude(json); notice = nil
                 await ClaudeTranscriptCache.save(member.id, json); return
             }
             if member.kind == "unknown", let json = try? await APIClient.live.harnessThread(member.id),
                let claude = try? TranscriptBuilder.claude(json) {
+                guard scope == (try? MobileSyncEngine.scope()), !Task.isCancelled else { return }
                 transcript = claude; notice = nil
                 await ClaudeTranscriptCache.save(member.id, json); return
             }
@@ -499,6 +513,7 @@ struct ThreadScreen: View {
             for attempt in 0..<maxAttempts {
                 try Task.checkCancellation()
                 let history = try await ThreadSyncClient.liveValue.syncHistory(thread, true)
+                guard scope == (try? MobileSyncEngine.scope()), !Task.isCancelled else { return }
                 if !history.messages.isEmpty {
                     transcript = TranscriptBuilder.merge(TranscriptBuilder.codex(history), live: live); notice = nil; return
                 }
@@ -591,9 +606,11 @@ enum ThreadLookup {
 /// Claude 会话正文的本地缓存：打开时先显示上次的内容，再去服务端拉最新的。放在 Caches 目录，系统清了也只是第一次慢一点
 enum ClaudeTranscriptCache {
     private static func url(_ id: String) -> URL? {
+        guard let scope = try? MobileSyncEngine.scope() else { return nil }
         let safe = id.replacingOccurrences(of: "[^A-Za-z0-9_.-]", with: "_", options: .regularExpression)
         return FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
-            .appendingPathComponent("claude-transcripts", isDirectory: true).appendingPathComponent(safe + ".json")
+            .appendingPathComponent("claude-transcripts", isDirectory: true)
+            .appendingPathComponent(scope, isDirectory: true).appendingPathComponent(safe + ".json")
     }
     static func load(_ id: String) async -> JSONValue? {
         guard let url = url(id) else { return nil }

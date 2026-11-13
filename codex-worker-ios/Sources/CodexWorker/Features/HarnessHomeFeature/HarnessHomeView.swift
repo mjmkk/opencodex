@@ -11,6 +11,7 @@ import UIKit
 /// - 只显示对话入口，不显示工具调用，也没有派 CALL 按钮；长按可复制原生 id、跳 Linear
 struct HarnessHomeView: View {
     let goals: [HarnessGoal]
+    var observedAt: Date? = nil
     var currentId: String? = nil
     let isRefreshing: Bool
     let failure: String?
@@ -33,23 +34,34 @@ struct HarnessHomeView: View {
         let revision: Int
     }
 
-    private var needYou: [HarnessGoal] { goals.filter(\.needsYou) }
-    private var running: [HarnessGoal] { goals.filter { !$0.needsYou && $0.runningCount > 0 } }
+    private var assigned: [HarnessGoal] { goals.filter { !$0.needsRelationshipReview } }
+    private var needYou: [HarnessGoal] { assigned.filter(\.needsYou) }
+    private var running: [HarnessGoal] { assigned.filter { !$0.needsYou && $0.runningCount > 0 } }
     private var rest: [HarnessGoal] {
         // 有 Master 的 Goal 排前面，没有的排后面（同档内保持原顺序）
-        let noMaster = goals.filter { !$0.needsYou && $0.runningCount == 0 && $0.master == nil }
-        let withMaster = goals.filter { !$0.needsYou && $0.runningCount == 0 && $0.master != nil }
+        let noMaster = assigned.filter { !$0.needsYou && $0.runningCount == 0 && $0.master == nil }
+        let withMaster = assigned.filter { !$0.needsYou && $0.runningCount == 0 && $0.master != nil }
         return withMaster + noMaster
     }
 
     var body: some View {
         List {
+            if !goals.isEmpty, let observedAt {
+                Text("归属核对：" + observedAt.formatted(date: .abbreviated, time: .shortened))
+                    .font(.caption).foregroundStyle(.secondary).listRowSeparator(.hidden)
+            }
             if let failure {
-                Text(failure).font(.footnote).foregroundStyle(.secondary).listRowSeparator(.hidden)
+                HStack {
+                    Text(failure).font(.footnote).foregroundStyle(.secondary)
+                    Spacer()
+                    Button("重试") { Task { await refresh() } }.disabled(isRefreshing)
+                }
+                .listRowSeparator(.hidden)
             }
             section("需要你", needYou)
             section("进行中", running)
             section("其他", rest)
+            section("归属待确认", goals.filter(\.needsRelationshipReview))
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
@@ -58,9 +70,11 @@ struct HarnessHomeView: View {
         .navigationBarTitleDisplayMode(.large)
         .refreshable { await refresh() }
         .overlay {
-            if goals.isEmpty && !isRefreshing && failure == nil {
+            if goals.isEmpty && isRefreshing {
+                ProgressView("正在加载工作")
+            } else if goals.isEmpty && failure == nil {
                 ContentUnavailableView("还没有进行中的 Goal", systemImage: "circle.dashed",
-                    description: Text("在 Linear Issue 上打 Goal 标签后会出现在这里。"))
+                    description: Text("你的工作和对话将在这里显示。"))
             }
         }
         .overlay(alignment: .bottom) {
@@ -117,11 +131,18 @@ struct HarnessHomeView: View {
                         if goal.title != goal.id { Text(goal.id).monospacedDigit() }
                         if let m = goal.master {
                             Text("Master · " + (m.hostLabel ?? m.harnessName))
-                        } else {
-                            Text("\(goal.members.count) 个线程")
+                        } else if goal.ownershipStatus == "master_missing" {
+                            Text("未登记 Master")
                         }
                     }
-                    .font(.caption).foregroundStyle(.tertiary).lineLimit(1)
+                    .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    if goal.needsRelationshipReview {
+                        Text(goal.ownershipStatus == "unassigned" ? "尚未关联 Goal" : "暂时无法确认归属")
+                            .font(.caption).foregroundStyle(.secondary)
+                    } else {
+                        Text((goal.workCount > 0 ? "\(goal.workCount) 项工作 · " : "") + "\(goal.executionCount) 个执行线程")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                 }
                 Spacer(minLength: 6)
                 if goal.runningCount > 0 && !goal.needsYou {
@@ -136,41 +157,33 @@ struct HarnessHomeView: View {
         }
         .buttonStyle(.plain)
         .contextMenu {
-            Button { renaming = .init(threadId: goal.master?.id, issueId: goal.id,
-                                     currentName: goal.title, subtitle: goal.id, revision: 0) }
-                label: { Label("改名", systemImage: "pencil") }
+            if let master = goal.master {
+                Button { renaming = .init(threadId: master.id, issueId: goal.id,
+                                         currentName: goal.title, subtitle: goal.id, revision: 0) }
+                    label: { Label("改名", systemImage: "pencil") }
+            }
             linearLink(goal)
         }
         .accessibilityHint(isOpen ? "收起成员" : "展开成员")
 
         if isOpen {
-            // Master 排第一；其余按 需要你 → 运行中 → 其他 排，同一档保持原顺序。思考线程超过 3 条时折叠
-            let rank: (HarnessMember) -> Int = { m in
-                // Master 第一，思考线程（chatgpt）第二，Worker 最后；同档按状态再排
-                switch m.role {
-                case .master: return 0
-                case .thinker: return 1
-                default: return m.status == .needsYou ? 2 : m.status == .running ? 3 : 4
-                }
-            }
-            let others = goal.members.enumerated()
-                .sorted { (rank($0.element), $0.offset) < (rank($1.element), $1.offset) }.map(\.element)
-            let thinkers = goal.members.filter { $0.role == .thinker }
-            ForEach(others) { m in memberRows(m, goal: goal) }
-            if thinkers.count > 3 && !expandedThinkers.contains(goal.id) {
+            if let master = goal.master { memberRows(master, goal: goal) }
+            let thinkers = goal.thinkers
+            let showAll = expandedThinkers.contains(goal.id)
+            ForEach(showAll ? thinkers : goal.visibleThinkers, id: \.identityKey) { m in memberRows(m, goal: goal) }
+            if thinkers.count > 3 {
                 Button { toggle(&expandedThinkers, goal.id) } label: {
-                    Text("还有 \(thinkers.count) 个思考线程")
+                    Text(showAll ? "收起思考线程" : "展开其余 \(thinkers.count - 3) 个思考线程")
                         .font(.subheadline).foregroundStyle(.secondary)
                         .padding(.leading, 48).padding(.vertical, 8)
                         .frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-            } else {
-                ForEach(thinkers) { m in memberRows(m, goal: goal) }
             }
+            ForEach(goal.workers, id: \.identityKey) { m in memberRows(m, goal: goal) }
         } else {
             // 收起时，需要你处理的成员单独露出来，点一下直接进
-            ForEach(goal.surfaced) { m in memberRow(m, goal: goal, indent: 8) }
+            ForEach(goal.surfaced, id: \.identityKey) { m in memberRow(m, goal: goal, indent: 8) }
         }
     }
 
@@ -205,7 +218,9 @@ struct HarnessHomeView: View {
         let title: String = m.role == .master ? "Master" : Self.shortTitle(m.title, goal: goal) ?? m.roleLabel
         let detail: String = m.roleLabel + " · " + m.runtimeLine
         let needs = m.status == .needsYou
-        let a11y: String = [title, detail, needs ? "需要你处理" : nil].compactMap { $0 }.joined(separator: "，")
+        let workIDs = m.workIssues.map(\.id).joined(separator: "、")
+        let a11y: String = [title, detail, workIDs.isEmpty ? nil : workIDs, needs ? "需要你处理" : nil]
+            .compactMap { $0 }.joined(separator: "，")
         let highlight: Color = selected ? Color.secondary.opacity(0.12) : Color.clear
         return Button { openThread(m) } label: {
             HStack(spacing: 10) {
@@ -213,6 +228,10 @@ struct HarnessHomeView: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title).font(.subheadline.weight(.medium)).lineLimit(1)
                     Text(detail).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    if m.role != .master && !m.workIssues.isEmpty {
+                        Text(m.workIssues.map(\.id).joined(separator: " · "))
+                            .font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                    }
                 }
                 Spacer(minLength: 6)
                 if needs {
@@ -230,8 +249,14 @@ struct HarnessHomeView: View {
                 label: { Label("改名", systemImage: "pencil") }
             Button { copy(m.id) } label: { Label("复制原生 id", systemImage: "doc.on.doc") }
             linearLink(goal)
+            ForEach(m.workIssues.filter { $0.id != goal.id }) { work in
+                if let url = work.url {
+                    Link(destination: url) { Label("在 Linear 打开 " + work.id, systemImage: "arrow.up.right.square") }
+                }
+            }
         }
         .accessibilityLabel(a11y)
+        .accessibilityHint(m.externalConversationURL == nil ? "打开对话" : "在 ChatGPT 打开原对话")
     }
 
     // MARK: - 小部件

@@ -5,6 +5,49 @@ import XCTest
 
 /// AGT-26 S6：`/v1/harness/tree` 的解析与首页展示规则
 final class HarnessTreeDecoderTests: XCTestCase {
+    /// 从真实 Registry/Linear 快照经生产 owning_goal resolver 投影所得，未使用替身服务。
+    func testActualGoalProjectionPreservesWorkBindingsAndSingleMaster() throws {
+        let url = try XCTUnwrap(Bundle.module.url(forResource: "harness-goals-2026-11-13", withExtension: "json", subdirectory: "Fixtures"))
+        let payload = try JSONDecoder().decode(JSONValue.self, from: Data(contentsOf: url))
+        XCTAssertTrue(HarnessTreeCache.isCurrent(payload))
+        // 重放快照沿用源响应时间；线上响应会提供当前 Linear 核对时间。
+        let goals = try HarnessTreeDecoder.goals(payload)
+        XCTAssertEqual(goals.count, 12)
+        XCTAssertEqual(goals.filter { $0.ownershipStatus == "verified" }.count, 9)
+        XCTAssertEqual(Set(goals.filter(\.needsRelationshipReview).map(\.id)), ["AGT-6", "AGT-39"])
+        let robox = try XCTUnwrap(goals.first { $0.id == "BOX-159" })
+        XCTAssertEqual(robox.workCount, 21)
+        XCTAssertEqual(robox.master?.id, "01a137d1-8040-7953-a23a-d6beeeaea2d7")
+        let migration = robox.members.filter { $0.id == "01a19f43-ec2e-7de0-958a-8ec68009f315" }
+        XCTAssertEqual(migration.count, 1)
+        XCTAssertEqual(Set(migration[0].workIssues.map(\.id)), ["BOX-167", "BOX-169"])
+        let agt = try XCTUnwrap(goals.first { $0.id == "AGT-26" })
+        XCTAssertEqual(agt.thinkers.first?.externalConversationURL?.absoluteString,
+                       "https://chatgpt.com/c/6aa89461-5628-83ee-8bc7-43d5ee6fb5ee")
+        XCTAssertNil(agt.master?.externalConversationURL)
+        XCTAssertEqual(agt.members.filter { $0.role == .master }.count, 1)
+        let workMaster = try XCTUnwrap(agt.members.first { $0.id == "01a1bc84-8d1f-7450-b5f4-9fa8e2377a84" })
+        XCTAssertEqual(workMaster.role, .worker)
+        XCTAssertEqual(workMaster.roleLabel, "工作负责人")
+        XCTAssertTrue(workMaster.workIssues.contains { $0.id == "AGT-47" && $0.role == "master" })
+        let missing = try XCTUnwrap(goals.first { $0.id == "AGT-24" })
+        XCTAssertNil(missing.master)
+        XCTAssertEqual(missing.ownershipStatus, "master_missing")
+        XCTAssertEqual(missing.title, missing.issueTitle)
+    }
+
+    func testActualDrawerRendersEachMemberOnceAndFoldsThinkers() throws {
+        let url = try XCTUnwrap(Bundle.module.url(forResource: "harness-goals-2026-11-13", withExtension: "json", subdirectory: "Fixtures"))
+        let goals = try HarnessTreeDecoder.goals(JSONDecoder().decode(JSONValue.self, from: Data(contentsOf: url)))
+        for g in goals {
+            let all = [g.master].compactMap { $0 } + g.thinkers + g.workers
+            XCTAssertEqual(Set(all.map(\.identityKey)), Set(g.members.map(\.identityKey)))
+            XCTAssertEqual(all.count, Set(all.map(\.identityKey)).count)
+            XCTAssertEqual(g.visibleThinkers.count, min(3, g.thinkers.count))
+            XCTAssertEqual(g.executionCount, g.workers.count + (g.master == nil ? 0 : 1))
+        }
+    }
+
     private func payload(_ goals: [JSONValue]) -> JSONValue {
         .object(["ok": .bool(true), "schema_version": .int(1), "goals": .array(goals)])
     }
