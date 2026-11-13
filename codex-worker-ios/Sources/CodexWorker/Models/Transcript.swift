@@ -2,9 +2,9 @@ import Foundation
 
 /// AGT-26 S6：线程页统一用这个消息模型。Codex（来自 Mirror）和 Claude（来自 /v1/harness/thread）都先转换成它，
 /// 再交给同一套视图渲染。这里只有对话文本，工具调用折叠成一行摘要（做法参考 Happy 的 TurnFold）。
-struct Transcript: Equatable, Sendable {
-    struct Row: Identifiable, Equatable, Sendable {
-        enum Kind: Equatable, Sendable {
+struct Transcript: Codable, Equatable, Sendable {
+    struct Row: Codable, Identifiable, Equatable, Sendable {
+        enum Kind: Codable, Equatable, Sendable {
             case user(String)
             case assistant(String)
             /// 一个 turn 里中间过程的折叠行（参考 ChatGPT「Thought for Ns」、Happy「Worked for 2m3s」）：
