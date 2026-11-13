@@ -17,12 +17,16 @@ struct ThreadScreen: View {
     @State private var notice: String?
     @State private var expandedFolds: Set<String> = []
     @State private var requests: [NativeRemoteRequest] = []
-    @State private var draft = ""
-    /// 刚从手机发出、服务端记录里还没出现的消息。点发送就进这里并立刻上屏，后台按顺序投递
-    @State private var outgoing: [Outgoing] = []
-    @State private var draining = false
-    /// 只留一个等回复的轮询：连发几条时只等最后一条
-    @State private var replyWaiter: Task<Void, Never>?
+    @State private var outbox: ChatOutbox
+    private var outgoing: [ChatOutbox.Message] { outbox.messages }
+    @State private var followingBottom = true
+    @State private var viewportHeight: CGFloat = 0
+
+    init(member: HarnessMember, goal: HarnessGoal?) {
+        self.member = member
+        self.goal = goal
+        _outbox = State(initialValue: ChatOutbox.thread(member.id))
+    }
     /// 本机会话文件里读到的最近几十行；Mirror 每次刷新后都叠在它上面，Mirror 落后时也不会把新回复盖掉
     @State private var live: [Transcript.Row] = []
     /// 只渲染最后这么多行；往上翻时先放出本地已有的，用完了再去服务端拉更早的
@@ -53,22 +57,41 @@ struct ThreadScreen: View {
                     ContentUnavailableView("没有可显示的对话", systemImage: "text.bubble")
                         .padding(.top, 60)
                 }
-                // 记录里已经出现同样文字的就不再单独显示
-                // 本机会话文件和手机的时钟可能差几秒，留 30 秒余量
-                ForEach(outgoing.filter { o in !(transcript?.rows ?? []).contains { row in
-                    row.kind == .user(o.text) && (row.at.map { $0 >= o.at.addingTimeInterval(-30) } ?? false)
-                } }) { o in outgoingView(o) }
+                ForEach(outgoing.filter { o in
+                    o.matchedID.map { matched in !(transcript?.rows.contains { $0.id == matched } ?? false) } ?? true
+                }) { o in outgoingView(o) }
+                if let error = outbox.storageError {
+                    Text(error).font(.footnote).foregroundStyle(.red)
+                }
+                Color.clear.frame(height: 1).id("bottom")
+                    .background(GeometryReader { geo in
+                        Color.clear.preference(key: ChatBottomKey.self, value: geo.frame(in: .named("chat-scroll")).maxY)
+                    })
             }
-            Text("").frame(height: 0).id("bottom")
-            .padding(.horizontal, 16)
-            .padding(.bottom, 12)
+            .padding(.horizontal, 16).padding(.bottom, 12)
         }
+        .coordinateSpace(name: "chat-scroll")
+        .background(GeometryReader { geo in Color.clear.onAppear { viewportHeight = geo.size.height }
+            .onChange(of: geo.size.height) { _, height in viewportHeight = height } })
+        .onPreferenceChange(ChatBottomKey.self) { bottom in followingBottom = bottom <= viewportHeight + 100 }
+        .onChange(of: outgoing.count) { _, _ in
+            followingBottom = true
+            withAnimation(.easeOut(duration: 0.15)) { proxy.scrollTo("bottom", anchor: .bottom) }
+        }
+        .onChange(of: viewportHeight) { oldHeight, height in
+            if height < oldHeight, followingBottom { proxy.scrollTo("bottom", anchor: .bottom) }
+        }
+        .onChange(of: transcript) { _, value in
+            if let value { outbox.remember(value) }
+            if followingBottom { proxy.scrollTo("bottom", anchor: .bottom) }
+        }
+        .scrollDismissesKeyboard(.interactively)
         .defaultScrollAnchor(.bottom)
         .overlay(alignment: .bottomTrailing) {
             // 只在有未展示的更早消息时显示"跳到最新"按钮
-            if let t = transcript, t.rows.count > shownRows {
+            if !followingBottom {
                 Button {
-                    withAnimation(.easeOut(duration: 0.2)) { shownRows = t.rows.count }
+                    withAnimation(.easeOut(duration: 0.2)) { shownRows = max(shownRows, transcript?.rows.count ?? 0) }
                     // 下一帧再滚到底
                     Task { @MainActor in
                         try? await Task.sleep(for: .milliseconds(50))
@@ -117,15 +140,26 @@ struct ThreadScreen: View {
         .task(id: member.id + "|" + member.kind) {
             loading = false
             shownRows = 80
+            if let cached = outbox.cached { transcript = cached }
 #if DEBUG
-            // 模拟器联调用：-AGTAutoSend "<文字>" 打开线程后走一遍真实的发送流程（和点发送按钮完全一样）
-            if let auto = UserDefaults.standard.string(forKey: "AGTAutoSend"), member.kind != "unknown", draft.isEmpty, outgoing.isEmpty {
-                draft = auto
+            if let auto = UserDefaults.standard.string(forKey: "AGTAutoSend"), !auto.isEmpty,
+               member.kind != "unknown", outbox.draft.isEmpty, outgoing.isEmpty {
+                outbox.draft = auto
                 send()
             }
 #endif
-            async let r: Void = loadRequests()
-            await load(); await r
+            await load()
+            await loadRequests()
+            // 只在当前页面持续读取；切页会取消，回到前台仍继续。真实本机读取不占云端历史额度。
+            while !Task.isCancelled {
+                do { try await Task.sleep(for: .seconds(3)) } catch { break }
+                guard scenePhase == .active else { continue }
+                if member.kind == "claude" {
+                    await backgroundRefresh()
+                } else if let t = await liveTranscript() {
+                    transcript = t; notice = nil
+                }
+            }
         }
         .refreshable { async let r: Void = loadRequests(); await load(); await r }
         .onChange(of: scenePhase) { _, phase in
@@ -213,7 +247,7 @@ struct ThreadScreen: View {
     private var composer: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .bottom, spacing: 10) {
-                TextField("回复 " + member.roleLabel, text: $draft, axis: .vertical)
+                TextField("回复 " + member.roleLabel, text: $outbox.draft, axis: .vertical)
                     .font(.body).lineLimit(1...6)
                     .padding(.vertical, 15)
                 Button { send() } label: {
@@ -235,7 +269,7 @@ struct ThreadScreen: View {
         .padding(.horizontal, 16).padding(.bottom, 8)
     }
 
-    private var canSend: Bool { !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    private var canSend: Bool { !outbox.draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 
     /// Codex：走 AGT-12 原有的原生控制通道。先读当前观测（拿 receipt 和 version），再发文字；
     /// 服务端写之前先落持久意图，同一个 submission_id 不会发第二次。返回值映射成和 harness/send 一样的状态
@@ -265,21 +299,8 @@ struct ThreadScreen: View {
         }
     }
 
-    /// 手机上发出去的一条消息。像微信：点了就上屏，后台慢慢投递；没发出去就在气泡旁边标红，点一下重发
-    struct Outgoing: Identifiable, Equatable {
-        enum State: Equatable { case pending, sent, failed(String) }
-        let id: String
-        let text: String
-        /// 点发送的时间。记录里出现同样文字、且时间不早于这一刻的用户消息，才说明这条已经显示出来，本地气泡收起。
-        /// 只按文字比会把重复发的同一句话（比如再发一次「OK」）立刻藏掉，转圈和失败标红都看不到。
-        let at = Date()
-        var state: State = .pending
-        /// 投递过至少一次：重发前先查回执，同一个 id 服务端不会投两次
-        var tried = false
-    }
-
     @ViewBuilder
-    private func outgoingView(_ o: Outgoing) -> some View {
+    private func outgoingView(_ o: ChatOutbox.Message) -> some View {
         VStack(alignment: .trailing, spacing: 4) {
             HStack(alignment: .center, spacing: 8) {
                 Spacer(minLength: 40)
@@ -289,76 +310,91 @@ struct ThreadScreen: View {
                     Image(systemName: "exclamationmark.circle.fill").foregroundStyle(.red)
                         .accessibilityLabel("没有发出，点按重发")
                 case .sent: EmptyView()
+                case .unconfirmed: Image(systemName: "clock").foregroundStyle(.secondary)
                 }
                 Text(o.text).font(.body).lineLimit(6)
                     .padding(.horizontal, 14).padding(.vertical, 10)
                     .background(Theme.userBubble, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
             }
+            if o.state == .unconfirmed {
+                Text("发送结果待确认").font(.footnote).foregroundStyle(.secondary)
+            }
             if case .failed(let why) = o.state {
-                Text(why + "，点按重发").font(.footnote).foregroundStyle(.red)
+                Text(why).font(.footnote).foregroundStyle(.red)
             }
         }
         .padding(.top, 10)
         .contentShape(Rectangle())
         .onTapGesture { if case .failed = o.state { retry(o.id) } }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("outgoing-" + o.id)
     }
 
-    /// 点发送：立刻上屏、清空输入框，可以接着打下一条；投递在后台按顺序进行
+    /// 先持久保存，再让后台按顺序投递；输入不等待网络。
     @MainActor private func send() {
-        let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else { return }
+        let text = outbox.draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, outbox.enqueue(text, rows: transcript?.rows ?? []) else { return }
         Haptics.light()
-        outgoing.append(Outgoing(id: "m" + UUID().uuidString.replacingOccurrences(of: "-", with: ""), text: text))
-        draft = ""
+        outbox.draft = ""
         Task { await drain() }
     }
 
     @MainActor private func retry(_ id: String) {
-        guard let i = outgoing.firstIndex(where: { $0.id == id }) else { return }
+        guard let i = outbox.messages.firstIndex(where: { $0.id == id }) else { return }
         Haptics.light()
-        outgoing[i].state = .pending
+        outbox.messages[i].state = .pending
+        outbox.save()
         Task { await drain() }
     }
 
-    /// 按发出顺序一条一条投递，保证对方收到的顺序和手机上一样
     @MainActor private func drain() async {
-        guard !draining else { return }
-        draining = true
-        defer { draining = false }
-        while let i = outgoing.firstIndex(where: { $0.state == .pending }) {
-            let o = outgoing[i]
-            outgoing[i].tried = true
+        guard !outbox.draining else { return }
+        outbox.draining = true
+        defer { outbox.draining = false }
+        while let i = outbox.messages.firstIndex(where: { $0.state == .pending }) {
+            let o = outbox.messages[i]
+            outbox.messages[i].tried = true
+            guard outbox.save() else { break }
             let result = await deliver(o.text, id: o.id, isRetry: o.tried)
-            guard let j = outgoing.firstIndex(where: { $0.id == o.id }) else { continue }
-            outgoing[j].state = result.map { .failed($0) } ?? .sent
-            if result == nil {
-                replyWaiter?.cancel()
-                replyWaiter = Task { await awaitReply(to: .user(o.text)) }
-            }
+            guard let j = outbox.messages.firstIndex(where: { $0.id == o.id }) else { continue }
+            // 收到真实消息记录的确认，优先于随后返回的网络错误。
+            if outbox.messages[j].matchedID == nil { outbox.messages[j].state = result }
+            outbox.save()
         }
     }
 
-    /// 投递一条；成功（含「已发出但没确认」）返回 nil，没发出返回给用户看的原因
-    @MainActor private func deliver(_ text: String, id cmid: String, isRetry: Bool) async -> String? {
+    /// 投递一条；未知送达独立显示，不能把它当成已送达
+    @MainActor private func deliver(_ text: String, id cmid: String, isRetry: Bool) async -> ChatOutbox.Message.State {
+        guard outbox.usesCurrentConnection else { return .failed("连接设置已改变，请回原连接后重试") }
         do {
-            var status = member.kind == "codex" || member.kind == "unknown"
+            let useHarness = outgoing.first { $0.id == cmid }?.route == .harness
+            var status = !useHarness && (member.kind == "codex" || member.kind == "unknown")
                 ? try await sendNative(text, submissionId: cmid, isRetry: isRetry) : "unsupported"
             // 原生通道只覆盖 spirit-master 上的 Codex 线程；其他机器上的 Codex 和 Claude 走 harness/send
             // （服务端按 Registry 选 Mac queue / Claude inbox）。原生通道已明确没写（unsupported）才换，不会两边都发。
             // offline 只在读 control 时出现（线程没被 Desktop 加载），此时还没写出任何东西；
             // harness/send 会用 send_message_to_thread 把线程拉起再投递，所以也换过去
             if status == "unsupported" || (status == "offline" && member.kind != "claude") {
+                guard outbox.usesCurrentConnection else { return .failed("连接设置已改变，请回原连接后重试") }
+                if let i = outbox.messages.firstIndex(where: { $0.id == cmid }) {
+                    outbox.messages[i].route = .harness
+                    guard outbox.save() else { return .failed("消息未保存，请检查可用空间") }
+                }
                 status = (try await APIClient.live.harnessSend(member.id, text, cmid)).objectValue?["status"]?.stringValue ?? ""
             }
             switch status {
-            case "queued", "received", "duplicate", "unconfirmed": return nil
-            case "offline": return member.kind == "claude" ? "对方会话没在运行" : "线程没在 Desktop 里打开"
-            case "busy": return "对方现在不接受输入（可能在等审批）"
-            case "unsupported": return "这台机器上的线程还不能从手机回复（" + (HarnessMember.hostLabel(member.host) ?? "未知机器") + "）"
-            default: return "没有发出（\(status.isEmpty ? "无响应" : status)）"
+            case "queued", "received": return .sent
+            // duplicate 只证明旧 id 已被占用，不证明旧请求已真正投递；等实际记录确认。
+            case "duplicate", "unconfirmed": return .unconfirmed
+            case "offline": return .failed(member.kind == "claude" ? "对方会话没在运行" : "线程没在 Desktop 里打开")
+            case "busy": return .failed("对方正在等待处理，请稍后重试")
+            case "unsupported": return .failed("这台机器暂时不支持手机回复")
+            default: return .failed("暂时无法发送，请稍后重试")
             }
         } catch {
-            return "发送出错（" + ((error as? CodexError).map { "\($0)" } ?? error.localizedDescription) + "）"
+            if case CodexError.unauthorized = error { return .failed("连接凭据已失效，请检查连接设置") }
+            if case CodexError.timeout = error { return .failed("发送超时，请点按重试") }
+            return .failed("连接失败，请检查网络后点按重试")
         }
     }
 
@@ -413,21 +449,6 @@ struct ThreadScreen: View {
                 }
             }
         } catch {}
-    }
-
-    /// 发出后像微信一样等回复：每 2 秒读一次本机会话文件，看到这条消息之后有回复就停，最多等 3 分钟。
-    /// 这条路不占云端读取额度，所以可以问得勤。本机读不到时才退回 Mirror。
-    @MainActor private func awaitReply(to sent: Transcript.Row.Kind) async {
-        for _ in 0..<90 {
-            try? await Task.sleep(for: .seconds(2))
-            if Task.isCancelled { return }
-            guard let t = await liveTranscript() else { await load(); return }
-            transcript = t; notice = nil
-            if let i = t.rows.lastIndex(where: { $0.kind == sent }),
-               t.rows[(i + 1)...].contains(where: { if case .assistant = $0.kind { return true }; return false }) {
-                return
-            }
-        }
     }
 
     /// 读一次 /v1/harness/live，把结果叠到当前记录上。只对 Codex 线程；服务端不支持这台机器或读失败时返回 nil。
@@ -511,7 +532,7 @@ struct ThreadScreen: View {
             if let history = try await ThreadSyncClient.liveValue.loadEarlier(thread) {
                 let next = TranscriptBuilder.codex(history)
                 shownRows += max(0, next.rows.count - transcript.rows.count)
-                self.transcript = next
+                self.transcript = TranscriptBuilder.merge(next, live: live)
             }
         } catch {
             notice = "更早的消息暂时拉不到，稍后再试"
@@ -587,4 +608,9 @@ enum ClaudeTranscriptCache {
             try? JSONEncoder().encode(json).write(to: url, options: .atomic)
         }.value
     }
+}
+
+private struct ChatBottomKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }

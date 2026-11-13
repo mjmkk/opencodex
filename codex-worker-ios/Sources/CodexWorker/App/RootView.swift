@@ -12,6 +12,7 @@ struct RootView: View {
     @State private var drawerOpen = UserDefaults.standard.bool(forKey: "AGTDrawer")
     @State private var drag: CGFloat = 0
     @State private var showSettings = !Self.isConfigured
+    @State private var connectionScope = (try? MobileSyncEngine.scope()) ?? "unconfigured"
 
     private static let lastThreadKey = "agt.lastThread"
 
@@ -38,7 +39,9 @@ struct RootView: View {
             }
             .gesture(drawerGesture(width))
         }
-        .sheet(isPresented: $showSettings) { ConnectionSettingsView { showSettings = false } }
+        .sheet(isPresented: $showSettings, onDismiss: {
+            connectionScope = (try? MobileSyncEngine.scope()) ?? "unconfigured"
+        }) { ConnectionSettingsView { showSettings = false } }
         .onAppear { if let id = MobileLifecycle.takePendingThread() { open(id) } }
         .onReceive(NotificationCenter.default.publisher(for: MobileLifecycle.openThreadNotification)) { note in
             if let id = note.object as? String { _ = MobileLifecycle.takePendingThread(); open(id) }
@@ -72,7 +75,7 @@ struct RootView: View {
                 if let id = currentId {
                     let (member, goal) = lookup(id)
                     // 换线程时整页重建，不把上一个线程的内容和展开状态带过来
-                    ThreadScreen(member: member, goal: goal).id(id)
+                    ThreadScreen(member: member, goal: goal).id(id + "|" + connectionScope)
                 } else {
                     ContentUnavailableView("选一个线程", systemImage: "sidebar.left",
                         description: Text("从左侧打开 Goal 列表，点任意线程进入对话。"))
