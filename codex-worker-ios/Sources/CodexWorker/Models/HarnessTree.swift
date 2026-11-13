@@ -14,13 +14,34 @@ struct HarnessGoal: Identifiable, Equatable, Sendable {
     var needsRelationshipReview: Bool { ownershipStatus == "unassigned" || ownershipStatus == "unavailable" }
     var executionCount: Int { members.filter { $0.role != .thinker }.count }
     var thinkers: [HarnessMember] { members.filter { $0.role == .thinker } }
-    var visibleThinkers: [HarnessMember] { Array(thinkers.prefix(3)) }
     var workers: [HarnessMember] {
         members.enumerated().filter { $0.element.role == .worker }
             .sorted { (Self.rank($0.element), $0.offset) < (Self.rank($1.element), $1.offset) }.map(\.element)
     }
     private static func rank(_ member: HarnessMember) -> Int {
         member.status == .needsYou ? 0 : member.status == .running ? 1 : 2
+    }
+
+    /// 大 Goal 只露出需要处理、当前查看及最多三个运行中的工作线程；小 Goal 保持直达。
+    func overviewMembers(currentID: String?) -> [HarnessMember] {
+        let candidates = workers
+        let running = Set(candidates.filter { $0.status == .running }.prefix(3).map(\.identityKey))
+        return candidates.filter { member in
+            candidates.count <= 3 || member.status == .needsYou || running.contains(member.identityKey)
+                || member.id == currentID || member.subagents.contains { $0.id == currentID }
+        }
+    }
+
+    func directoryMembers(_ kind: HarnessDirectoryKind, matching query: String = "") -> [HarnessMember] {
+        let candidates = kind == .workers ? workers : thinkers
+        let terms = query.split(whereSeparator: { $0.isWhitespace }).map(String.init)
+        guard !terms.isEmpty else { return candidates }
+        return candidates.filter { member in
+            let fields = [member.title, member.id, member.harnessName, member.host, member.hostLabel, member.model]
+                .compactMap { $0 } + member.workIssues.flatMap { [$0.id, $0.title].compactMap { $0 } }
+            let text = fields.joined(separator: " ")
+            return terms.allSatisfy { text.localizedStandardContains($0) }
+        }
     }
 
     var master: HarnessMember? { members.first { $0.role == .master } }
@@ -54,6 +75,12 @@ struct HarnessGoal: Identifiable, Equatable, Sendable {
     var surfaced: [HarnessMember] { members.filter { $0.status == .needsYou } }
     var needsYou: Bool { !surfaced.isEmpty }
     var runningCount: Int { members.filter { $0.status == .running }.count }
+}
+
+enum HarnessDirectoryKind: String, Hashable, Sendable {
+    case workers, thinkers
+    var title: String { self == .workers ? "工作线程" : "思考对话" }
+    var icon: String { self == .workers ? "list.bullet" : "bubble.left.and.bubble.right" }
 }
 
 struct HarnessMember: Identifiable, Equatable, Sendable {
