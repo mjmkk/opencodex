@@ -36,16 +36,56 @@ final class HarnessTreeDecoderTests: XCTestCase {
         XCTAssertEqual(missing.title, missing.issueTitle)
     }
 
-    func testActualDrawerRendersEachMemberOnceAndFoldsThinkers() throws {
+    func testActualDirectoriesRetainEveryMemberOnce() throws {
         let url = try XCTUnwrap(Bundle.module.url(forResource: "harness-goals-2026-11-13", withExtension: "json", subdirectory: "Fixtures"))
         let goals = try HarnessTreeDecoder.goals(JSONDecoder().decode(JSONValue.self, from: Data(contentsOf: url)))
         for g in goals {
-            let all = [g.master].compactMap { $0 } + g.thinkers + g.workers
+            let all = [g.master].compactMap { $0 } + g.directoryMembers(.thinkers) + g.directoryMembers(.workers)
             XCTAssertEqual(Set(all.map(\.identityKey)), Set(g.members.map(\.identityKey)))
             XCTAssertEqual(all.count, Set(all.map(\.identityKey)).count)
-            XCTAssertEqual(g.visibleThinkers.count, min(3, g.thinkers.count))
             XCTAssertEqual(g.executionCount, g.workers.count + (g.master == nil ? 0 : 1))
         }
+    }
+
+    func testActualLargeGoalOverviewKeepsCurrentAndNeedsYouWithoutDumpingAllMembers() throws {
+        let url = try XCTUnwrap(Bundle.module.url(forResource: "harness-goals-2026-11-13", withExtension: "json", subdirectory: "Fixtures"))
+        let goals = try HarnessTreeDecoder.goals(JSONDecoder().decode(JSONValue.self, from: Data(contentsOf: url)))
+        let robox = try XCTUnwrap(goals.first { $0.id == "BOX-159" })
+        XCTAssertEqual(robox.members.count, 84)
+        XCTAssertEqual(robox.directoryMembers(.workers).count, 23)
+        XCTAssertEqual(robox.directoryMembers(.thinkers).count, 60)
+        XCTAssertTrue(robox.overviewMembers(currentID: nil).isEmpty)
+        let currentID = "01a19f43-ec2e-7de0-958a-8ec68009f315"
+        XCTAssertEqual(robox.overviewMembers(currentID: currentID).map(\.id), [currentID])
+        for g in goals {
+            let urgent = Set(g.workers.filter { $0.status == .needsYou }.map(\.identityKey))
+            XCTAssertTrue(urgent.isSubset(of: Set(g.overviewMembers(currentID: nil).map(\.identityKey))))
+            if g.workers.count <= 3 {
+                XCTAssertEqual(g.overviewMembers(currentID: nil), g.workers)
+            }
+        }
+    }
+
+    func testActualMemberSearchFindsEitherWorkBindingAndMachine() throws {
+        let url = try XCTUnwrap(Bundle.module.url(forResource: "harness-goals-2026-11-13", withExtension: "json", subdirectory: "Fixtures"))
+        let goals = try HarnessTreeDecoder.goals(JSONDecoder().decode(JSONValue.self, from: Data(contentsOf: url)))
+        let robox = try XCTUnwrap(goals.first { $0.id == "BOX-159" })
+        for issue in ["box-167", "BOX-169"] {
+            let matches = robox.directoryMembers(.workers, matching: issue)
+            XCTAssertEqual(matches.map(\.id), ["01a19f43-ec2e-7de0-958a-8ec68009f315"])
+            XCTAssertEqual(Set(matches[0].workIssues.map(\.id)), ["BOX-167", "BOX-169"])
+        }
+        XCTAssertEqual(robox.directoryMembers(.workers, matching: "迁移").map(\.id),
+                       ["01a19f43-ec2e-7de0-958a-8ec68009f315"])
+        let ubuntu = robox.directoryMembers(.workers, matching: "BOX-133 Ubuntu")
+        XCTAssertEqual(ubuntu.count, 1)
+        XCTAssertEqual(ubuntu[0].hostLabel, "Ubuntu")
+        XCTAssertTrue(ubuntu[0].workIssues.contains { $0.id == "BOX-133" })
+        XCTAssertEqual(robox.directoryMembers(.workers, matching: "  ").count, 23)
+        XCTAssertTrue(robox.directoryMembers(.workers, matching: "no-match-qa-9876").isEmpty)
+        let thinkers = robox.directoryMembers(.thinkers, matching: "BOX-133")
+        XCTAssertFalse(thinkers.isEmpty)
+        XCTAssertTrue(thinkers.allSatisfy { $0.workIssues.contains { $0.id == "BOX-133" } })
     }
 
     private func payload(_ goals: [JSONValue]) -> JSONValue {

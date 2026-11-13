@@ -21,7 +21,7 @@ struct HarnessHomeView: View {
     // 启动参数 -AGTExpand <Issue>：启动后先展开指定的 Goal（模拟器自动化验证用）
     @State private var expanded: Set<String> = UserDefaults.standard.string(forKey: "AGTExpand").map { [$0] } ?? []
     @State private var expandedSubagents: Set<String> = []
-    @State private var expandedThinkers: Set<String> = []
+    @State private var directory: MemberDestination?
     @State private var copiedId: String?
     @State private var renaming: RenameTarget?
 
@@ -32,6 +32,11 @@ struct HarnessHomeView: View {
         let currentName: String
         let subtitle: String
         let revision: Int
+    }
+
+    private struct MemberDestination: Hashable {
+        let goalID: String
+        let kind: HarnessDirectoryKind
     }
 
     private var assigned: [HarnessGoal] { goals.filter { !$0.needsRelationshipReview } }
@@ -91,6 +96,13 @@ struct HarnessHomeView: View {
                 guard let r = try? await APIClient.live.harnessRename(t.threadId, t.issueId, name, t.revision),
                       r.objectValue?["ok"] == .bool(true) else { return false }
                 await refresh(); return true
+            }
+        }
+        .navigationDestination(item: $directory) { target in
+            if let goal = goals.first(where: { $0.id == target.goalID }) {
+                HarnessMemberDirectory(goal: goal, kind: target.kind) { member in
+                    memberRows(member, goal: goal)
+                }
             }
         }
     }
@@ -168,23 +180,31 @@ struct HarnessHomeView: View {
 
         if isOpen {
             if let master = goal.master { memberRows(master, goal: goal) }
-            let thinkers = goal.thinkers
-            let showAll = expandedThinkers.contains(goal.id)
-            ForEach(showAll ? thinkers : goal.visibleThinkers, id: \.identityKey) { m in memberRows(m, goal: goal) }
-            if thinkers.count > 3 {
-                Button { toggle(&expandedThinkers, goal.id) } label: {
-                    Text(showAll ? "收起思考线程" : "展开其余 \(thinkers.count - 3) 个思考线程")
-                        .font(.subheadline).foregroundStyle(.secondary)
-                        .padding(.leading, 48).padding(.vertical, 8)
-                        .frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            }
-            ForEach(goal.workers, id: \.identityKey) { m in memberRows(m, goal: goal) }
+            ForEach(goal.overviewMembers(currentID: currentId), id: \.identityKey) { m in memberRows(m, goal: goal) }
+            if goal.workers.count > 3 { directoryLink(goal, kind: .workers) }
+            if !goal.thinkers.isEmpty { directoryLink(goal, kind: .thinkers) }
         } else {
             // 收起时，需要你处理的成员单独露出来，点一下直接进
             ForEach(goal.surfaced, id: \.identityKey) { m in memberRow(m, goal: goal, indent: 8) }
         }
+    }
+
+    private func directoryLink(_ goal: HarnessGoal, kind: HarnessDirectoryKind) -> some View {
+        Button { directory = .init(goalID: goal.id, kind: kind) } label: {
+            HStack(spacing: 10) {
+                Image(systemName: kind.icon).frame(width: 30)
+                Text(kind.title).font(.subheadline)
+                Spacer()
+                Text("\(goal.directoryMembers(kind).count)").monospacedDigit()
+                Image(systemName: "chevron.right").font(.caption.weight(.semibold))
+            }
+            .foregroundStyle(.secondary)
+            .padding(.leading, 8).padding(.trailing, 8).padding(.vertical, 10)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(goal.id) 的\(kind.title)，共 \(goal.directoryMembers(kind).count) 条")
+        .accessibilityHint("打开可搜索的完整列表")
     }
 
     // MARK: - 成员
