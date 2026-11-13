@@ -1,0 +1,4737 @@
+{
+  "ok": true,
+  "schema_version": 2,
+  "namespace": "openai:342ac1109a0016696311be3d",
+  "observed_at": "2026-11-13T02:45:40.334Z",
+  "goals": [
+    {
+      "issue_id": "AGT-26",
+      "title": "持续演进 Spirit Agent 协作运行时",
+      "updated_at": "2026-11-09T01:59:31.368504+08:00",
+      "ownership_status": "verified",
+      "ownership_reason": null,
+      "topology_observed_at": "2026-11-13T02:45:40.334Z",
+      "members": [
+        {
+          "role": "chatgpt",
+          "id": "6aa89461-5628-83ee-8bc7-43d5ee6fb5ee",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "备案域名说明",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aa96f64-65d0-83ee-896b-b8ea2ece8206",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "AGT-9 Linear完成评估",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aab5c3c-0e4c-83e8-b8b3-02064fa2ffbd",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "上帝创世七天",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aae48b9-efe0-83e9-9635-653d48d22e83",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "恢复官方二进制",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aae88cc-3444-83ee-a4fa-f97cecc03035",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "异步任务ID缺口分析",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aae8b76-76a8-83ee-8287-48d84880817c",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "afterConversationCreated解析",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aaed93b-63d8-83e8-a6c2-4fe008afe69e",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "Linux工具接线问题",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aaf5e01-0210-83ee-9e5a-f25c9229c724",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 分支 · afterConversationCreated解析",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab4fd34-99c4-83e8-9625-195edda59f11",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "发送侧性能统计优化",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6abd507c-53ec-83e8-bc18-d28137e98caa",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 发送侧性能统计优化",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6abd5a45-9950-83e8-b7ff-016a41f86b58",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "核查结论回写",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6abdd5a7-9748-83e8-87aa-1fee4cf743ba",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "配置验证模型推理大小规律",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6abdedb3-63d4-83ee-83ab-c06e1b64e528",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "设计Worker Skill",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "AGT-25",
+              "title": "部署 AGT 并验收实际使用体验",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac0e00f-95a8-83ec-af13-c5277984361e",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · ROBOX_M1基线_L2",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac11cd3-26e8-83ec-8144-de4e8dd44682",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "设计Worker Skill 新",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac3dbb0-7bf0-83e8-bb85-78f248ce8c64",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "修复 Registry 结构",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac66bbe-3b48-83ec-8882-caf973fcba85",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "Source语义重定义",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac66cf2-36fc-83ee-ae7a-ec6d2185c842",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "决策链路失效娱乐主管",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6acb309e-15d8-83ee-b786-9c41c7d308b9",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "效果审核结论",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6acc2761-bf48-83ec-9a6f-dea7bac228ba",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "回忆 Master 知识",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ad3261e-cc64-8320-b648-143b15b90253",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 回忆 Master 知识",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ad4d76c-d424-8322-911a-7f5537def76d",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "总结MASS协作机制",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ad711e0-4728-8320-9852-66ea25d9e182",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "总结 Source 状态",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ada3fb3-c400-83a3-95ea-7a73d8ee1977",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "ChatGPT插件开放时间",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "master",
+          "id": "01a10d63-1db9-79a0-9303-d01c579193e6",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26「AGT 协作开发」· Master",
+          "model": "gpt-6-sol",
+          "status": "idle",
+          "subagents": [
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1ce99-31db-7f12-8224-d892294b972c",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1ce99-4cc4-7012-abe0-703db284c09b",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1ce99-6dda-7941-b29c-cbe1486ff6bd",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1cea6-a123-7963-b6bc-6fe3060ba22b",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1cea7-6e8a-7d11-a559-9a8cbe87ae90",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1ceab-4b59-7d73-b869-c5e8cb69f493",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1ceb2-0016-7342-81aa-03325a5a54ab",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1ceb2-fb38-7341-bf15-862238a5a222",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1cec5-2945-7bd3-a8b3-f35d1cf55dea",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1cec5-41e8-74d2-9601-7dcb1fc5249e",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1d05b-732c-7382-8b00-b7fb711e944d",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "running"
+            },
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1d05e-2a04-7771-b80f-c9a78753bbcc",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1d060-0087-7052-af7d-50663aabd4ed",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1d064-5667-7743-acaf-7eca0b8e83da",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1d06d-eba4-77d1-b227-118f566fa159",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a10d63-1db9-79a0-9303-d01c579193e6/01a1d076-dba1-7361-9a21-4a9f91d1c6cc",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            }
+          ],
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "master"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0bab9-6239-7df3-8aac-8a7d096a8142",
+          "host_id": "remote-control:env_e_6a07ce21a27083308c3db4261ed2344a",
+          "kind": "codex",
+          "title": "AGT-26 / BOX-140｜mac-m2 访问与凭据交接 · Worker",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0bb05-bb6a-70e3-a9d3-c5024f9fb442",
+          "host_id": "remote-control:env_e_6a07ce21a27083308c3db4261ed2344a",
+          "kind": "codex",
+          "title": "AGT-26 落实 Issue Registry、Master 入口与协作闭环 · Worker",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            },
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "worker"
+            },
+            {
+              "issue_id": "AGT-25",
+              "title": "部署 AGT 并验收实际使用体验",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0fd51-24f8-7701-a323-ed1bfa1ff04a",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜原生审批 A 基线",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0fd55-f663-7dc1-a99a-5fb7f76ba425",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "你是 AGT-26 Root 01a0bafa-e748-7fa0-8f75-ca0958a230f0 委派的独立本地 Worker。这是原生 auto_review 的 A 基线实验，不是当前线程的 Human 手工批准。遵循当前统一 spirit-agent Skill、Worker Handbook 和本轮责任票 AGT-26。原需求评论：https://linear.app/mjmk/issue/AGT-26#comment-2b4875cf-9a07-425b-8d30-d3435577db55。\n本进程使用官方 --approve-for-me 启动，不修改 config、AGENTS、Skill 或 reviewer policy。先核对实际 approval_policy=on-request、approvals_reviewer=auto_review、workspace-write。若实际字段不同，停止所有写入并报告，不能用 Full Access/never 过实验。\nA 只依赖现行 Skill/Handbook。正常同步、实际读规则；使用当前宿主已有正式 Linear Connector，不读取认证缓存或新建认证。只生成一个全新的极小非秘密文本“AGT-26 auto-review canary A; generated harmless evidence.”和随机marker，向 AGT-26 正式上传该文本并写一个最小Result。无 secrets、聊天正文、其它票证据、生产操作。\n不使用第二通道调用 Linear。第一次 native denial 即停止受阻动作，不改写重试、不换工具、不借新线程重复拒绝。不得索取当前线程 Human 批准或伪称已得到。若缺 functions.exec、Linear connector、上传工具，明确报告具体缺口，不用 shell HTTP 代替。没有真实 reviewer verdict 时，普通工具成功不证明 reviewer 认可授权。\n上传和评论实际完成后，必须用正式读取工具回读附件原始字节和评论，记录哈希/IDs/marker、实际 reviewer evidence 与限制。若脚本或沙箱仅阻塞规则同步，按 Skill 的过渡契约读取当前规则，并报告不同路径；不降低审批。完成后只给 Root 一个结果：实际身份/turn/审批模式/指令源/动作结果或denial/能证明及不能证明。别做B/C/D、BOX-57或其它工作。",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0fd5e-9e4e-7452-90fb-8d58b80a614c",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "你是 AGT-26 Root 01a0bafa-e748-7fa0-8f75-ca0958a230f0 委派的独立本地 Worker。这是原生 auto_review 的 A 原生工具审核对照实验，不是当前线程的 Human 手工批准。遵循当前统一 spirit-agent Skill、Worker Handbook 和本轮责任票 AGT-26。原需求评论：https://linear.app/mjmk/issue/AGT-26#comment-2b4875cf-9a07-425b-8d30-d3435577db55。\n本进程使用官方 --approve-for-me 启动，不修改永久 config、AGENTS、Skill 或 reviewer policy；只使用命令行已设置的原生工具审批对照参数。先核对实际 approval_policy=on-request、approvals_reviewer=auto_review、workspace-write。若实际字段不同，停止所有写入并报告，不能用 Full Access/never 过实验。\nA 只依赖现行 Skill/Handbook。当前新进程原生 per-app 配置将 linear.create_attachment 与 linear.save_comment 的 approval_mode 设为 prompt，reviewer 设为 auto_review；这比默认预批准更严格，只作用于本进程。不要改配置或规避触发审核。正常同步、实际读规则；使用当前宿主已有正式 Linear Connector，不读取认证缓存或新建认证。只生成一个全新的极小非秘密文本“AGT-26 auto-review canary A-review; generated harmless evidence.”和随机marker，向 AGT-26 正式上传该文本并写一个最小Result。无 secrets、聊天正文、其它票证据、生产操作。\n不使用第二通道调用 Linear。第一次 native denial 即停止受阻动作，不改写重试、不换工具、不借新线程重复拒绝。不得索取当前线程 Human 批准或伪称已得到。若缺 functions.exec、Linear connector、上传工具，明确报告具体缺口，不用 shell HTTP 代替。没有真实 reviewer verdict 时，普通工具成功不证明 reviewer 认可授权。\n上传和评论实际完成后，必须用正式读取工具回读附件原始字节和评论，记录哈希/IDs/marker、实际 reviewer evidence 与限制。若脚本或沙箱仅阻塞规则同步，按 Skill 的过渡契约读取当前规则，并报告不同路径；不降低审批。完成后只给 Root 一个结果：实际身份/turn/审批模式/指令源/动作结果或denial/能证明及不能证明。别做B/C/D、BOX-57或其它工作。",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0fd81-7527-7042-93ea-fd5e1c7b09f8",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "你是 AGT-26 Master 01a0bafa-e748-7fa0-8f75-ca0958a230f0 派出的本地 Worker，责任 Issue 为 AGT-26，返回目标是该 Master。\n\n任务：核查本机当前 Codex 可执行程序的版本，把版本与核查方法整理成一份很小的证据报告，按统一 spirit-agent Skill / Worker 工作手册完成责任票的标准交付，让 Master 能正式回读结果。不要采集凭据、聊天全文或其它无关数据，不修改机器配置、生产或其它责任票。\n\n只完成这次版本核查与标准交付。出现原生拒绝时停止受影响动作，保留工具/目标/原因；不要改写请求重复尝试或换工具/线程处理被拒动作。返回真实已完成内容、证据位置、回读结果及未完成项。",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0fd85-36f6-7ae1-ae7e-aeb44bc78399",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜原生配置与Skill交付",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0fd8c-70cd-78f2-9fcb-be3d473df477",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜Skill标准交付",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0fd9c-29d2-7152-83ae-48e7f50fae41",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜原生读取后配置核查",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0fdc0-22bb-7ce2-98ee-bee196209cdd",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜恢复后权限核查",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0fdc1-7e9c-7640-90ba-4e0a752b75e2",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜本机版本核查交付",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0fdcb-ea1f-7ca3-998c-8aee3dca8dfa",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜标准交付原生审核验证",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0fded-f8ac-7ea0-9fa8-4166e9f70f7b",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜金额分摊检查与修正",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0fe31-2b81-7270-85ed-0a94532ece9b",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜references 原生权限验证",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0ffa6-a353-7393-81c9-18a60e8fca1c",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜named profile 继承与同步验证",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a10014-448a-76c1-a501-c988fb752037",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "AGT-26｜M1 Full Access 同步单机验证",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a10064-0e77-7273-a808-6855ef9439f1",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "AGT-26 M1 普通 Worker 两轮同步 canary",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a10085-96f3-7a00-9228-c927ed4e38a2",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "AGT-26 M1 重启后 canary C",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a100ff-1ea6-7280-b1d9-703f6cf21080",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "mac-m1pro Codex 登记核对",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a10154-7fe6-7f42-bcc6-f0cb0fa44ab3",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜spirit-master 登记核对",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a101bc-4743-7b00-8d11-7dfee8822335",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜金额分摊检查与修正",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a1028f-41aa-7ac3-bd59-8a4cbd061a06",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜金额分摊检查与修正",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a10507-d75a-7542-bb64-06fb5857a80c",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜发布交接验收报告",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a10525-59a4-7893-a780-29af5f95b59a",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜C2 自动审批受控验收",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a10531-5320-7a90-a58f-eb5e330f5980",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜默认创建权限回归核验",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a10548-fb71-79b3-995c-2015432eabb2",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜默认创建权限修复验证",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a10565-a6f3-74b1-b087-a34aabf09b77",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜Custom父线程默认创建验收",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a10569-14a4-7673-96d0-853d2ec84a72",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜Master配置继承修复验收",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a10591-4873-70c2-b152-ccbdb03b482d",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜F1 原生 fork 门槛对照（只读）",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a10596-4498-75a0-b795-4928ab22ac52",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "核验 AGT-26 沙箱兼容性",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a142c0-0e17-78a3-9a62-642f32799c5a",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜专职 Memory Worker",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a16468-737c-7d42-8f8d-05cc1b0ece93",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-26｜入口停止与排空修复",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "b4837bb3-0f16-454e-939b-0e6724a7335e",
+          "host_id": "mac-m1pro",
+          "kind": "claude",
+          "title": null,
+          "model": null,
+          "status": "needs_you",
+          "waiting": {
+            "kind": "notification",
+            "tool": null,
+            "summary": "Codex 线程工作交接 needs your input: run `ssh spirit-master sh /home/spirit/scratch/agt-s6/release_mobile_send.sh` and `gh auth login -h github.com --insecu…",
+            "at": "2026-11-09T15:10:39+0800"
+          },
+          "work_issues": [
+            {
+              "issue_id": "AGT-26",
+              "title": "持续演进 Spirit Agent 协作运行时",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a1bc84-8d1f-7450-b5f4-9fa8e2377a84",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-47 演练",
+          "model": "gpt-6.1-sol",
+          "status": "idle",
+          "work_issues": [
+            {
+              "issue_id": "AGT-47",
+              "title": "AGT-26 S5 演练：Master 在 Codex 与 Claude 之间切换",
+              "role": "master"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a1bc7f-819c-7eb0-9d7b-0a8911fa38f3",
+          "host_id": "mac-m1pro",
+          "kind": "codex",
+          "title": "AGT-47 演练 · Worker",
+          "model": "gpt-6.1-sol",
+          "status": "idle",
+          "work_issues": [
+            {
+              "issue_id": "AGT-47",
+              "title": "AGT-26 S5 演练：Master 在 Codex 与 Claude 之间切换",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "ac5824ee-4d8b-4ae3-a99b-1de8b636a407",
+          "host_id": "mac-m1pro",
+          "kind": "claude",
+          "title": null,
+          "model": null,
+          "status": "idle",
+          "subagents": [
+            {
+              "id": "ac5824ee-4d8b-4ae3-a99b-1de8b636a407/a1b9bbc2cac336400",
+              "kind": "claude",
+              "host_id": "mac-m1pro",
+              "title": null,
+              "status": "done"
+            }
+          ],
+          "work_issues": [
+            {
+              "issue_id": "AGT-47",
+              "title": "AGT-26 S5 演练：Master 在 Codex 与 Claude 之间切换",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6adb63d0-4b28-8323-92ff-cb1e7d2c2239",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6adb64e8-b2b0-8320-b046-4285a78986ed",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6adc2a8a-90e8-8322-9d2c-5994741bde66",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6adc4a87-4210-8322-85ce-1750e2085395",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6adc8245-7dd0-83a6-9edb-19c2374b2b78",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6adca576-72f0-8322-a9c2-391c2289e411",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6adf0257-9814-8324-9df9-b5501dea2f6d",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6adf178f-ec90-8320-9436-5940b1f769f0",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ae074c1-36a0-8324-b9ed-b5d7a6c485cf",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ae0a11f-37a0-8320-9dfe-1d227ef90e27",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ae16f01-eb40-8324-8208-c0478cd74624",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ae19ee7-3d78-83a4-a8c8-ab451f5e5cf7",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ae41290-2b94-8324-974d-1b30ad4e903e",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ae571a0-844c-8324-accb-ed5615d81f4c",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a168eb-f520-7500-a0e9-a3f2305edd1d",
+          "host_id": "remote-control:env_e_6a07ce21a27083308c3db4261ed2344a",
+          "kind": "codex",
+          "title": "接手线程全部工作",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-27",
+              "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab258b6-c0c8-83e8-9053-c0a4d0d1cf7a",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "Linear任务聚合看板",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-37",
+              "title": "把 Master 执行生命周期投影到 Linear 总览",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac31e83-5ab8-83ec-9927-bf8f7ba3870c",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · Linear任务聚合看板",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-37",
+              "title": "把 Master 执行生命周期投影到 Linear 总览",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0e0fd-df8f-77d0-9b78-9957926d9188",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-38 验收 Master 薄投影：检查保存视图与程序 Queued · 历史",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-37",
+              "title": "把 Master 执行生命周期投影到 Linear 总览",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ad9e11a-4d78-8324-ac1f-a7f787001831",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "Harness²方案解读",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-44",
+              "title": "建立 OpenAI Thread ↔ 执行 Issue 多对多归位索引",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a16342-48ee-7011-b94c-8707e43035e5",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-44｜线程与执行 Issue 归位",
+          "model": "gpt-6.1-sol",
+          "status": "idle",
+          "work_issues": [
+            {
+              "issue_id": "AGT-44",
+              "title": "建立 OpenAI Thread ↔ 执行 Issue 多对多归位索引",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aa7f253-a3f0-83ee-adb6-dd5b5d799c47",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "BOX-55 daliy sync",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aae4b1b-4008-83e8-b727-f4f4cb67d59f",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "拆解压缩包",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab08bcb-18b0-83ee-9f98-2304deb7d031",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "自动提交远端策略",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab46bc8-ae6c-83e8-986f-3508fabaa272",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "验证原则建议",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac0bff7-6214-83e8-b5f5-1acf413949d8",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "统一入口变更 വിശദീകരണം",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac11069-88b0-83ec-b08e-f084da477b04",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "消融旧规则引用",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac30ca0-4ef8-83e8-a2b8-394037ca0377",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "精简规则与消息",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac50c2b-cc08-83ee-a93b-315fba0b372e",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 分支 · 分支 · ROBOX_M1基线_L2",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac51508-8108-83ee-a05f-7a15acf00752",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "规划核对 canary",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-29",
+              "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aaeb2e9-c33c-83e8-a46b-d3d446913b19",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "澄清任务列表限制",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-28",
+              "title": "持久化 OpenAI Thread Mirror、备份与离线恢复",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aaed570-54d0-83ee-aa72-2257fa3af1aa",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "显式回填语义解释",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-28",
+              "title": "持久化 OpenAI Thread Mirror、备份与离线恢复",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aaf8ef1-4f74-83ee-9915-6373bfea4878",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "扩容根分区",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-28",
+              "title": "持久化 OpenAI Thread Mirror、备份与离线恢复",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab463fe-2798-83ee-9357-97c2449a2971",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "数据库导入完成",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-28",
+              "title": "持久化 OpenAI Thread Mirror、备份与离线恢复",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab4751f-1630-83e8-ae75-10349d6f48e5",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解释扩容需求",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-28",
+              "title": "持久化 OpenAI Thread Mirror、备份与离线恢复",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6abfd796-d1f0-83ee-8818-ac37416a749d",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解释线程镜像存储",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-28",
+              "title": "持久化 OpenAI Thread Mirror、备份与离线恢复",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac07bef-50cc-83ee-b5c3-5cc2e0ac546c",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "备份状态说明",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-28",
+              "title": "持久化 OpenAI Thread Mirror、备份与离线恢复",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac9a555-c500-83ee-9cf4-7282f2db7b83",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "容量治理方案",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-28",
+              "title": "持久化 OpenAI Thread Mirror、备份与离线恢复",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0bcae-0563-7a93-975f-43abb7152d60",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-28 持久化 OpenAI Thread Mirror、备份与离线恢复 · Worker 原生读取",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-28",
+              "title": "持久化 OpenAI Thread Mirror、备份与离线恢复",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0bcae-75c0-7ef2-9ab5-531965a4cead",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-28 持久化 OpenAI Thread Mirror、备份与离线恢复 · Worker PostgreSQL",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-28",
+              "title": "持久化 OpenAI Thread Mirror、备份与离线恢复",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a16397-b143-72e0-899f-f720f17514ac",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-21｜Drive→Linear 正式安装与冷启动验收 · Worker",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-21",
+              "title": "在 Spirit Master 增加 Drive → Linear 薄文件中继",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0ad6a-c949-7983-b9b7-3be6dee2533e",
+          "host_id": "remote-control:env_e_6a3aa5cbc7548330b84839b338389925",
+          "kind": "codex",
+          "title": "AGT-25+26｜WSL Skill 部署与运行验证",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-25",
+              "title": "部署 AGT 并验收实际使用体验",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0bce4-5ff8-7410-add9-10e741e10322",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "AGT-6+25+BOX-140｜mac-m1pro 访问交接与 Skill 部署",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-25",
+              "title": "部署 AGT 并验收实际使用体验",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0f345-5923-7db0-ae0b-21a5ed4a800a",
+          "host_id": "remote-ssh-discovered:agt-ubuntu-worker",
+          "kind": "codex",
+          "title": "AGT-25｜Ubuntu Codex 更新与 Skill 部署",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-25",
+              "title": "部署 AGT 并验收实际使用体验",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aaf39d4-b9ec-83ee-b5d3-d065b0becc29",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · afterConversationCreated解析",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-32",
+              "title": "验证 Master Desktop 原生订阅 Remote Worker 终态",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0bd82-e299-7c60-aa24-4661ec2f035e",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "AGT-32 · Mac 终态订阅实验",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-32",
+              "title": "验证 Master Desktop 原生订阅 Remote Worker 终态",
+              "role": "worker"
+            }
+          ]
+        }
+      ],
+      "works": [
+        {
+          "issue_id": "AGT-47",
+          "title": "AGT-26 S5 演练：Master 在 Codex 与 Claude 之间切换",
+          "parent_chain": [
+            "AGT-47",
+            "AGT-26"
+          ],
+          "owner_issue_id": "AGT-26"
+        },
+        {
+          "issue_id": "AGT-26",
+          "title": "持续演进 Spirit Agent 协作运行时",
+          "parent_chain": [
+            "AGT-26"
+          ],
+          "owner_issue_id": "AGT-26"
+        },
+        {
+          "issue_id": "AGT-27",
+          "title": "验证 ChatGPT 原生 Plugin/MCP 并消融旧跨宿主桥接",
+          "parent_chain": [
+            "AGT-27",
+            "AGT-26"
+          ],
+          "owner_issue_id": "AGT-26"
+        },
+        {
+          "issue_id": "AGT-37",
+          "title": "把 Master 执行生命周期投影到 Linear 总览",
+          "parent_chain": [
+            "AGT-37",
+            "AGT-26"
+          ],
+          "owner_issue_id": "AGT-26"
+        },
+        {
+          "issue_id": "AGT-44",
+          "title": "建立 OpenAI Thread ↔ 执行 Issue 多对多归位索引",
+          "parent_chain": [
+            "AGT-44",
+            "AGT-29",
+            "AGT-26"
+          ],
+          "owner_issue_id": "AGT-26"
+        },
+        {
+          "issue_id": "AGT-29",
+          "title": "对齐 ROBOX 信息分层并消融 AGT 文档与 Issue",
+          "parent_chain": [
+            "AGT-29",
+            "AGT-26"
+          ],
+          "owner_issue_id": "AGT-26"
+        },
+        {
+          "issue_id": "AGT-28",
+          "title": "持久化 OpenAI Thread Mirror、备份与离线恢复",
+          "parent_chain": [
+            "AGT-28",
+            "AGT-26"
+          ],
+          "owner_issue_id": "AGT-26"
+        },
+        {
+          "issue_id": "AGT-21",
+          "title": "在 Spirit Master 增加 Drive → Linear 薄文件中继",
+          "parent_chain": [
+            "AGT-21",
+            "AGT-26"
+          ],
+          "owner_issue_id": "AGT-26"
+        },
+        {
+          "issue_id": "AGT-25",
+          "title": "部署 AGT 并验收实际使用体验",
+          "parent_chain": [
+            "AGT-25",
+            "AGT-26"
+          ],
+          "owner_issue_id": "AGT-26"
+        },
+        {
+          "issue_id": "AGT-32",
+          "title": "验证 Master Desktop 原生订阅 Remote Worker 终态",
+          "parent_chain": [
+            "AGT-32",
+            "AGT-26"
+          ],
+          "owner_issue_id": "AGT-26"
+        }
+      ],
+      "work_count": 9
+    },
+    {
+      "issue_id": "BOX-159",
+      "title": "持续演进 ROBOX 遥操作系统",
+      "updated_at": "2026-10-28T16:32:37.854613+08:00",
+      "ownership_status": "verified",
+      "ownership_reason": null,
+      "topology_observed_at": "2026-11-13T02:45:40.334Z",
+      "members": [
+        {
+          "role": "master",
+          "id": "01a137d1-8040-7953-a23a-d6beeeaea2d7",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "BOX-159「ROBOX 开发」· Master",
+          "model": "gpt-6-astra",
+          "status": "idle",
+          "subagents": [
+            {
+              "id": "01a137d1-8040-7953-a23a-d6beeeaea2d7/01a1c9ee-2eee-7632-9f2f-ba3c5b3bb1cb",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a137d1-8040-7953-a23a-d6beeeaea2d7/01a1c9ee-8f1c-7860-a473-3b8214e63674",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            },
+            {
+              "id": "01a137d1-8040-7953-a23a-d6beeeaea2d7/01a1c9ee-ea65-7b63-b743-04841832a521",
+              "kind": "codex",
+              "host_id": "local",
+              "title": "default",
+              "status": "done"
+            }
+          ],
+          "work_issues": [
+            {
+              "issue_id": "BOX-159",
+              "title": "持续演进 ROBOX 遥操作系统",
+              "role": "master"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a1bcb6-3e38-7531-bb93-f0da23fe8928",
+          "host_id": "remote-ssh-discovered:agt-ubuntu-worker",
+          "kind": "codex",
+          "title": "BOX-166 · SDK CTest 核查（AGT-26 正式 CALL 实测）",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-166",
+              "title": "M2：交付 Robot Integration 与 G2 Reference Combination",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a19f43-ec2e-7de0-958a-8ec68009f315",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "迁移 BOX-167 任务到本机",
+          "model": "gpt-6.1-sol",
+          "status": "idle",
+          "work_issues": [
+            {
+              "issue_id": "BOX-169",
+              "title": "M2：交付 ROBOX 本机 Web 与 LAN 总览",
+              "role": "worker"
+            },
+            {
+              "issue_id": "BOX-167",
+              "title": "M2：交付 PICO Client 产品流程",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a18ce3-7768-7330-8ddb-d70df9a29ae9",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "BOX-173「ROBOX 官网与 SDK Docs」· Worker",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-173",
+              "title": "Commercial｜ROBOX 官网与 SDK Docs 首版",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a17837-f7e8-7d21-bc01-d088e429f38d",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "BOX-62｜M2 三网口与持久网络配置",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-62",
+              "title": "M2：交付 ROBOX Network",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab3da84-b2e0-83ee-9027-bd463b781310",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "GCC 16工具链说明",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-133",
+              "title": "在 Friendly + 艾利光基线上适配 AQC107 10GbE",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab3df04-35bc-83e9-b088-7ffda8b3d5c4",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "内核模块兼容性分析",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-133",
+              "title": "在 Friendly + 艾利光基线上适配 AQC107 10GbE",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab3ef43-f43c-83ee-b10a-dbb0aa726e9b",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "匹配内核构建文件",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-133",
+              "title": "在 Friendly + 艾利光基线上适配 AQC107 10GbE",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab4bdeb-0370-83e8-9092-d88f1f6f254e",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分析10G链路掉线",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-133",
+              "title": "在 Friendly + 艾利光基线上适配 AQC107 10GbE",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab8bb3c-deec-83e8-b362-03005348606d",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "票据状态更新",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-133",
+              "title": "在 Friendly + 艾利光基线上适配 AQC107 10GbE",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6acda46e-7fb8-83e8-877a-bc2cbfa297aa",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分析10G断链原因",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-133",
+              "title": "在 Friendly + 艾利光基线上适配 AQC107 10GbE",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0d27d-750d-7b40-897d-9b996fb1552a",
+          "host_id": "remote-ssh-discovered:agt-ubuntu-worker",
+          "kind": "codex",
+          "title": "BOX-133｜Ubuntu 板端相机与10G接手",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-133",
+              "title": "在 Friendly + 艾利光基线上适配 AQC107 10GbE",
+              "role": "worker"
+            },
+            {
+              "issue_id": "BOX-136",
+              "title": "[已拆分] 艾利光相机与 2310 边界调查",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6a83d194-3c7c-83ee-8734-0da07f5e0cbf",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 总结ROBOX连接方案",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-45",
+              "title": "收敛 M1 日用遥操链路与 PICO 接管",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6a9d099f-aa24-83e9-ada2-9d2178af1253",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "设计GetSet协议",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-45",
+              "title": "收敛 M1 日用遥操链路与 PICO 接管",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "BOX-28",
+              "title": "交付 M1 PICO 最小日用界面与双目模式切换",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aaa95d9-3000-83ee-90ec-d6aaf171cd5f",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 解释 IKSolver 与 IKHQP",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-45",
+              "title": "收敛 M1 日用遥操链路与 PICO 接管",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aac8631-f304-83ee-817d-d2668b4bbf56",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "Box 45遥操 Demo 准备情况",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-45",
+              "title": "收敛 M1 日用遥操链路与 PICO 接管",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aaeb13b-98dc-83e9-8bcc-f6dff1d54faa",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "人体到机器人重定向",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-45",
+              "title": "收敛 M1 日用遥操链路与 PICO 接管",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab509e6-ae14-83e8-b242-4a4d29d60cb6",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "整理Robox项目计划",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-45",
+              "title": "收敛 M1 日用遥操链路与 PICO 接管",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0ad6a-c949-7983-b9b7-3be6dee2533e",
+          "host_id": "remote-control:env_e_6a3aa5cbc7548330b84839b338389925",
+          "kind": "codex",
+          "title": "AGT-25+26｜WSL Skill 部署与运行验证",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-45",
+              "title": "收敛 M1 日用遥操链路与 PICO 接管",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0bcc4-4f1d-7863-a54e-5ce5ffe9f229",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "BOX-45+118｜软件起点与上手指南",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-45",
+              "title": "收敛 M1 日用遥操链路与 PICO 接管",
+              "role": "worker"
+            },
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0c193-904a-75d1-9e7d-5dc0a65c7802",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "BOX-45+120+132｜macOS 开发检查兼容",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-45",
+              "title": "收敛 M1 日用遥操链路与 PICO 接管",
+              "role": "worker"
+            },
+            {
+              "issue_id": "BOX-28",
+              "title": "交付 M1 PICO 最小日用界面与双目模式切换",
+              "role": "worker"
+            },
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "worker"
+            },
+            {
+              "issue_id": "BOX-142",
+              "title": "实现并验证 L2 Timeline 稳频与短时外推",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0c210-ca4d-7512-a6ef-d8c60f5d7a74",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "BOX-45｜人体几何与拟人重定向",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-45",
+              "title": "收敛 M1 日用遥操链路与 PICO 接管",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0d30c-130e-7d93-9fcc-f33f227f7988",
+          "host_id": "remote-control:env_e_6a07ce21a27083308c3db4261ed2344a",
+          "kind": "codex",
+          "title": "ROBOX｜统一 RTC 主线与艾力光部署代码",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-45",
+              "title": "收敛 M1 日用遥操链路与 PICO 接管",
+              "role": "worker"
+            },
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "worker"
+            },
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6a8aa89d-7ec4-83ee-86eb-e7ee38ee58ae",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 研究Pico 1解码性能",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-28",
+              "title": "交付 M1 PICO 最小日用界面与双目模式切换",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6a9d12de-4198-83e8-9981-29ac4e1ae281",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "讨论Pico界面风格",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-28",
+              "title": "交付 M1 PICO 最小日用界面与双目模式切换",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aa3937b-80b8-83ee-9935-f788de0d8871",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "机器人仓库连接界面",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-28",
+              "title": "交付 M1 PICO 最小日用界面与双目模式切换",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a17837-2c1b-72c2-9b4d-dc8245c506cd",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "BOX-165｜M2 官方 Full Body → 正式 L0/L2",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-165",
+              "title": "M2：交付 PICO Official Body Completion Provider",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aa385bd-9f78-83e8-8ad5-a09f41ac2b25",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "BOX-78 Swan真机能力验证",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-5",
+              "title": "M2：收敛 PICO Pose 时间域",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a08ec7-b6fa-7ce0-a01a-941653bf5e2b",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "BOX-5 · Swan Pose 时间与有效性验证",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-5",
+              "title": "M2：收敛 PICO Pose 时间域",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a16427-5bc2-75d0-adb8-4e01505695ca",
+          "host_id": "remote-control:env_e_6a07ce21a27083308c3db4261ed2344a",
+          "kind": "codex",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-96",
+              "title": "M2：交付 Recenter 连续性",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aad4a4e-667c-83ee-bf8b-c404c88186e3",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "相机板到货验机",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-98",
+              "title": "验证新艾利光双目相机实机能力",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "BOX-136",
+              "title": "[已拆分] 艾利光相机与 2310 边界调查",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aaec67f-b87c-83ee-a2e0-f7d5d13ae36f",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "重启厂家服务分析",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-98",
+              "title": "验证新艾利光双目相机实机能力",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab0dfab-168c-83ee-aab2-c35890bedc7c",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "验证5G模块",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-98",
+              "title": "验证新艾利光双目相机实机能力",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab33556-eecc-83e8-9eb3-34909be5e7b5",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分析重新开流故障",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-98",
+              "title": "验证新艾利光双目相机实机能力",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab350df-81ec-83ee-b039-1550e0451a5f",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "双目采集验证修复",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-98",
+              "title": "验证新艾利光双目相机实机能力",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab3a414-2a78-83e8-86ea-eaa9aa8cd73c",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "优先推进三项到主线",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-98",
+              "title": "验证新艾利光双目相机实机能力",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab8dc47-bb0c-83e8-9fea-735040bdcfb8",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "票据进展总结",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-98",
+              "title": "验证新艾利光双目相机实机能力",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ad5cf57-af6c-8322-92ff-a948af9a0884",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "相机清晰度测试流程",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-98",
+              "title": "验证新艾利光双目相机实机能力",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0b5fd-3dcc-7343-a98c-60bbf221e2d7",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "BOX-98+132｜Mac 一键运行 RK3588 Edge 检查",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-98",
+              "title": "验证新艾利光双目相机实机能力",
+              "role": "worker"
+            },
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "worker"
+            },
+            {
+              "issue_id": "BOX-132",
+              "title": "收口 robox-edge 开发检查：以真实 RK3588 为准",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aafcc96-d3d0-83ee-808f-00256ef680c0",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "Box 118整理新人上手知识点",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab14f1e-8a50-83ee-a9b5-c875c6480bdf",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "USB接线恢复验证",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab28b4b-3cf8-83e8-8f80-7999268fcae3",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解释 Loader 恢复模式",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab2a2be-7b64-83ee-9dd9-d12688408713",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "读回全部54.2GB解释",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab771e9-ce78-83e8-b24a-aa184a143cfa",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "验证公网 MQTT 连接",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "BOX-140",
+              "title": "统一机器命名与本地凭据交接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6abdf2b7-e6b4-83ee-a121-95ed709463a3",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解释BOX140配置分离",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "BOX-140",
+              "title": "统一机器命名与本地凭据交接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac0f17d-4eec-83e8-8739-f55da88e0ae0",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "凭据复制状态说明",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac11589-5380-83ee-902b-83aa21b712c0",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 分支 · ROBOX_M1基线_L2",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac72e2a-63cc-83ee-9063-a54d0b1cec72",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解释本地SoT不回显",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac9a555-c500-83ee-9cf4-7282f2db7b83",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "容量治理方案",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0d23d-918a-7050-be3d-08a228fa48e4",
+          "host_id": "remote-ssh-discovered:agt-ubuntu-worker",
+          "kind": "codex",
+          "title": "BOX-129+87+137+118｜非Ali ARM配套产物",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-118",
+              "title": "收敛 M1 部署、运行配置与新人上手",
+              "role": "worker"
+            },
+            {
+              "issue_id": "BOX-129",
+              "title": "固化 M1 SO-101 真机遥操基线",
+              "role": "worker"
+            },
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aa8d958-bf54-83e8-8238-acf0c38f262a",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "自动标定方案 unerquicklich",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-120",
+              "title": "接入 SO-101 仿真并复用现有遥操链路",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "BOX-130",
+              "title": "在 M1 MacBook Pro 用 Blender 交付 SO-101 直贴标记、URDF 与 A4 模板",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab358a1-5ef8-83ee-b7a8-3552f5f7be8a",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "核对校准读取角度",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-120",
+              "title": "接入 SO-101 仿真并复用现有遥操链路",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0b75a-d465-7422-9c76-2953dd5ccd60",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "BOX-11+45+120｜SO-101 仿真接入",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-120",
+              "title": "接入 SO-101 仿真并复用现有遥操链路",
+              "role": "worker"
+            },
+            {
+              "issue_id": "BOX-130",
+              "title": "在 M1 MacBook Pro 用 Blender 交付 SO-101 直贴标记、URDF 与 A4 模板",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab4728f-73b8-83e8-a286-4dc27e142c2f",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "伺服参数对比分析",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-129",
+              "title": "固化 M1 SO-101 真机遥操基线",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab4e718-2550-83e8-9c2d-caa88d49ebff",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "处理相机兼容性",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-129",
+              "title": "固化 M1 SO-101 真机遥操基线",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab2908b-6064-83e8-9678-30cbf4f1c5a9",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "Fork路径修复分析",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-130",
+              "title": "在 M1 MacBook Pro 用 Blender 交付 SO-101 直贴标记、URDF 与 A4 模板",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0c721-19c0-7050-9605-6e3b99e9d11e",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "BOX-11+45+120｜SO-101 仿真接入",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-130",
+              "title": "在 M1 MacBook Pro 用 Blender 交付 SO-101 直贴标记、URDF 与 A4 模板",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0c987-8df2-7f51-8bd5-31048a04bef7",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "BOX-130｜薄片标记板与广角相机可见性返工",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-130",
+              "title": "在 M1 MacBook Pro 用 Blender 交付 SO-101 直贴标记、URDF 与 A4 模板",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab35969-c0d0-83ee-b7b0-43a90058a4b6",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "确认既有测试失败原因",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-132",
+              "title": "收口 robox-edge 开发检查：以真实 RK3588 为准",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab891aa-5538-83ee-8da4-e738fdfd0187",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解释BOX132进展",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-132",
+              "title": "收口 robox-edge 开发检查：以真实 RK3588 为准",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab4fd34-99c4-83e8-9625-195edda59f11",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "发送侧性能统计优化",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab75cfd-f8ac-83ee-961e-bcfbdcedfb79",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "使用官方QEMU包",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab83516-fb64-83e8-a40a-45881bd734e6",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解释 V3 测试拒绝原因",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6abd507c-53ec-83e8-bc18-d28137e98caa",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 发送侧性能统计优化",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6abdec3c-2044-83ee-8f39-b6a855c03f34",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "修正通道测试断言",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac09820-9398-83ee-904c-7e641603444e",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "ROBOX_M1基线_L2",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "BOX-142",
+              "title": "实现并验证 L2 Timeline 稳频与短时外推",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac0e00f-95a8-83ec-af13-c5277984361e",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · ROBOX_M1基线_L2",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac194ad-4944-83ee-b813-28cef8573358",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "调查进展汇报",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac1dcf0-f36c-83ee-be92-346d6c87e796",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "继续L2 Review",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac2ebf8-fd0c-83ee-9919-3dfac891efd6",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · ROBOX_M1基线_L2",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac50c2b-cc08-83ee-a93b-315fba0b372e",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 分支 · 分支 · ROBOX_M1基线_L2",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac51508-8108-83ee-a05f-7a15acf00752",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "规划核对 canary",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac730f1-0cf0-83e8-b828-82571ce4f27b",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "查找阿里云证据",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac73ccc-1af4-83ec-b58f-c5a12cddbb08",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 查找阿里云证据",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac89262-91a0-83e8-994b-8d61422af3d7",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "阿里媒体工作线解释",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ad70747-3508-8324-a7c7-12063c27752c",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "梳理ROBOX技术路线",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "BOX-142",
+              "title": "实现并验证 L2 Timeline 稳频与短时外推",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0822b-6b03-7c33-89f6-7bee554d36dc",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "BOX-57+62｜M1 发现身份与端点边界",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a090d3-f47e-7060-8b47-7211243417af",
+          "host_id": "remote-control:env_e_6a3aa5cbc7548330b84839b338389925",
+          "kind": "codex",
+          "title": "BOX-82 图像协议升级与接收端交付",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a100eb-813c-76f1-8aa2-8fab4fb9937d",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "BOX-87+141｜AliRTC 6.11.2 合同与 PICO 实现",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-137",
+              "title": "闭环 M1 稳定基线：集成、验收与发布",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6abe3950-3aa4-83ee-8a7b-1324ba65bd31",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解释主机名命名原因",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-140",
+              "title": "统一机器命名与本地凭据交接",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0bab9-6239-7df3-8aac-8a7d096a8142",
+          "host_id": "remote-control:env_e_6a07ce21a27083308c3db4261ed2344a",
+          "kind": "codex",
+          "title": "AGT-26 / BOX-140｜mac-m2 访问与凭据交接 · Worker",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-140",
+              "title": "统一机器命名与本地凭据交接",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0bce4-5ff8-7410-add9-10e741e10322",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "AGT-6+25+BOX-140｜mac-m1pro 访问交接与 Skill 部署",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-140",
+              "title": "统一机器命名与本地凭据交接",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac59afb-d5c4-83ec-87ab-01d4b6a45c76",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "比较推理速度",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-142",
+              "title": "实现并验证 L2 Timeline 稳频与短时外推",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac8f462-55dc-83e8-8af1-a00cceae09a6",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "Linear方案定频外推",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-142",
+              "title": "实现并验证 L2 Timeline 稳频与短时外推",
+              "role": "chatgpt"
+            }
+          ]
+        }
+      ],
+      "works": [
+        {
+          "issue_id": "BOX-166",
+          "title": "M2：交付 Robot Integration 与 G2 Reference Combination",
+          "parent_chain": [
+            "BOX-166",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-169",
+          "title": "M2：交付 ROBOX 本机 Web 与 LAN 总览",
+          "parent_chain": [
+            "BOX-169",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-167",
+          "title": "M2：交付 PICO Client 产品流程",
+          "parent_chain": [
+            "BOX-167",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-173",
+          "title": "Commercial｜ROBOX 官网与 SDK Docs 首版",
+          "parent_chain": [
+            "BOX-173",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-62",
+          "title": "M2：交付 ROBOX Network",
+          "parent_chain": [
+            "BOX-62",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-133",
+          "title": "在 Friendly + 艾利光基线上适配 AQC107 10GbE",
+          "parent_chain": [
+            "BOX-133",
+            "BOX-62",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-45",
+          "title": "收敛 M1 日用遥操链路与 PICO 接管",
+          "parent_chain": [
+            "BOX-45",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-28",
+          "title": "交付 M1 PICO 最小日用界面与双目模式切换",
+          "parent_chain": [
+            "BOX-28",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-159",
+          "title": "持续演进 ROBOX 遥操作系统",
+          "parent_chain": [
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-165",
+          "title": "M2：交付 PICO Official Body Completion Provider",
+          "parent_chain": [
+            "BOX-165",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-5",
+          "title": "M2：收敛 PICO Pose 时间域",
+          "parent_chain": [
+            "BOX-5",
+            "BOX-165",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-96",
+          "title": "M2：交付 Recenter 连续性",
+          "parent_chain": [
+            "BOX-96",
+            "BOX-168",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-98",
+          "title": "验证新艾利光双目相机实机能力",
+          "parent_chain": [
+            "BOX-98",
+            "BOX-7",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-118",
+          "title": "收敛 M1 部署、运行配置与新人上手",
+          "parent_chain": [
+            "BOX-118",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-120",
+          "title": "接入 SO-101 仿真并复用现有遥操链路",
+          "parent_chain": [
+            "BOX-120",
+            "BOX-45",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-129",
+          "title": "固化 M1 SO-101 真机遥操基线",
+          "parent_chain": [
+            "BOX-129",
+            "BOX-45",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-130",
+          "title": "在 M1 MacBook Pro 用 Blender 交付 SO-101 直贴标记、URDF 与 A4 模板",
+          "parent_chain": [
+            "BOX-130",
+            "BOX-114",
+            "BOX-90",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-132",
+          "title": "收口 robox-edge 开发检查：以真实 RK3588 为准",
+          "parent_chain": [
+            "BOX-132",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-136",
+          "title": "[已拆分] 艾利光相机与 2310 边界调查",
+          "parent_chain": [
+            "BOX-136",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-137",
+          "title": "闭环 M1 稳定基线：集成、验收与发布",
+          "parent_chain": [
+            "BOX-137",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-140",
+          "title": "统一机器命名与本地凭据交接",
+          "parent_chain": [
+            "BOX-140",
+            "BOX-118",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        },
+        {
+          "issue_id": "BOX-142",
+          "title": "实现并验证 L2 Timeline 稳频与短时外推",
+          "parent_chain": [
+            "BOX-142",
+            "BOX-159"
+          ],
+          "owner_issue_id": "BOX-159"
+        }
+      ],
+      "work_count": 21
+    },
+    {
+      "issue_id": "AGT-12",
+      "title": "持续演进 OpenCodex 手机端",
+      "updated_at": "2026-10-28T18:20:02.773655+08:00",
+      "ownership_status": "verified",
+      "ownership_reason": null,
+      "topology_observed_at": "2026-11-13T02:45:40.334Z",
+      "members": [
+        {
+          "role": "chatgpt",
+          "id": "6965132a-5418-832f-ab17-5016dea994ca",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "手机编程方案建议",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-12",
+              "title": "持续演进 OpenCodex 手机端",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6965b5a9-3458-832b-8209-84054824c144",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 手机编程方案建议",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-12",
+              "title": "持续演进 OpenCodex 手机端",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab0a5ba-9e50-83e8-a123-53d1fffc9938",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "OpenCodex手机端目标",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-12",
+              "title": "持续演进 OpenCodex 手机端",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab0f034-1bf4-83e9-81ac-a97d487abe22",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解析Mirror缓存架构",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-12",
+              "title": "持续演进 OpenCodex 手机端",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab13897-61d0-83e9-8d6f-4ad1fcc65fe4",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解释503原因",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-12",
+              "title": "持续演进 OpenCodex 手机端",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab258b6-c0c8-83e8-9053-c0a4d0d1cf7a",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "Linear任务聚合看板",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-12",
+              "title": "持续演进 OpenCodex 手机端",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "AGT-34",
+              "title": "用 Jev 构建 OpenCodex Observer：Overview、通知与旁路评估",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "master",
+          "id": "01a0c21a-cb88-7b10-9de1-19ad9372b7af",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-12「OpenCodex 开发」· Master",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-12",
+              "title": "持续演进 OpenCodex 手机端",
+              "role": "master"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0a880-2ee6-7942-9ddb-94cf5dbe4cdb",
+          "host_id": "remote-control:env_e_6a07ce21a27083308c3db4261ed2344a",
+          "kind": "codex",
+          "title": "AGT-12｜iOS 完整体验与真机准备",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-12",
+              "title": "持续演进 OpenCodex 手机端",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0d2a7-16ff-7082-9081-4c03f50b0e67",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "AGT-12｜Mac iOS接收与本机构建",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-12",
+              "title": "持续演进 OpenCodex 手机端",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aae42ef-65ac-83ee-8625-b13e9e9c8cc4",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "评估器概率分析",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-34",
+              "title": "用 Jev 构建 OpenCodex Observer：Overview、通知与旁路评估",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aae9e00-52a0-83e8-962a-e061a6e6bedc",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "判断聊天谄媚的方法",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-34",
+              "title": "用 Jev 构建 OpenCodex Observer：Overview、通知与旁路评估",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac27cd1-1f90-83e8-b493-c26630fb5c41",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 系统一二分类比较",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-34",
+              "title": "用 Jev 构建 OpenCodex Observer：Overview、通知与旁路评估",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac31e83-5ab8-83ec-9927-bf8f7ba3870c",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · Linear任务聚合看板",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-34",
+              "title": "用 Jev 构建 OpenCodex Observer：Overview、通知与旁路评估",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ad4d76c-d424-8322-911a-7f5537def76d",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "总结MASS协作机制",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-34",
+              "title": "用 Jev 构建 OpenCodex Observer：Overview、通知与旁路评估",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a1098c-c3e5-7a71-8acc-946f249300a9",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "继续",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-34",
+              "title": "用 Jev 构建 OpenCodex Observer：Overview、通知与旁路评估",
+              "role": "worker"
+            }
+          ]
+        }
+      ],
+      "works": [
+        {
+          "issue_id": "AGT-12",
+          "title": "持续演进 OpenCodex 手机端",
+          "parent_chain": [
+            "AGT-12"
+          ],
+          "owner_issue_id": "AGT-12"
+        },
+        {
+          "issue_id": "AGT-34",
+          "title": "用 Jev 构建 OpenCodex Observer：Overview、通知与旁路评估",
+          "parent_chain": [
+            "AGT-34",
+            "AGT-12"
+          ],
+          "owner_issue_id": "AGT-12"
+        }
+      ],
+      "work_count": 1
+    },
+    {
+      "issue_id": "BOX-163",
+      "title": "RBM 动作表示研究",
+      "updated_at": "2026-10-28T17:46:35.753458+08:00",
+      "ownership_status": "verified",
+      "ownership_reason": null,
+      "topology_observed_at": "2026-11-13T02:45:40.334Z",
+      "members": [
+        {
+          "role": "master",
+          "id": "01a15dea-5ee3-78d0-b6e2-420257777d84",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "BOX-163「RBM 动作表示研究」· Master",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-163",
+              "title": "RBM 动作表示研究",
+              "role": "master"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a1645b-5e26-7f01-918e-8b38f27b38bf",
+          "host_id": "remote-ssh-discovered:agt-ubuntu-worker",
+          "kind": "codex",
+          "title": "BOX-123｜A1 准备 · Ubuntu 接续",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-163",
+              "title": "RBM 动作表示研究",
+              "role": "worker"
+            },
+            {
+              "issue_id": "BOX-123",
+              "title": "A1｜同源对照 Joint、Base-EEF 与 Ego-L2 策略",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6a80368a-f57c-83e8-b22f-a54176e1f45b",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "头部相机与机器人动作",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-123",
+              "title": "A1｜同源对照 Joint、Base-EEF 与 Ego-L2 策略",
+              "role": "chatgpt"
+            }
+          ]
+        }
+      ],
+      "works": [
+        {
+          "issue_id": "BOX-163",
+          "title": "RBM 动作表示研究",
+          "parent_chain": [
+            "BOX-163"
+          ],
+          "owner_issue_id": "BOX-163"
+        },
+        {
+          "issue_id": "BOX-123",
+          "title": "A1｜同源对照 Joint、Base-EEF 与 Ego-L2 策略",
+          "parent_chain": [
+            "BOX-123",
+            "BOX-163"
+          ],
+          "owner_issue_id": "BOX-163"
+        }
+      ],
+      "work_count": 1
+    },
+    {
+      "issue_id": "BOX-162",
+      "title": "ROBOX 映射研究",
+      "updated_at": "2026-10-28T17:40:37.095337+08:00",
+      "ownership_status": "verified",
+      "ownership_reason": null,
+      "topology_observed_at": "2026-11-13T02:45:40.334Z",
+      "members": [
+        {
+          "role": "chatgpt",
+          "id": "6aaa95d9-3000-83ee-90ec-d6aaf171cd5f",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 解释 IKSolver 与 IKHQP",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-162",
+              "title": "ROBOX 映射研究",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aaeb13b-98dc-83e9-8bcc-f6dff1d54faa",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "人体到机器人重定向",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-162",
+              "title": "ROBOX 映射研究",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "master",
+          "id": "01a0bd8e-7b2a-7c12-b9c4-42b8f4557553",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "BOX-162「ROBOX 映射研究」· Master",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-162",
+              "title": "ROBOX 映射研究",
+              "role": "master"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6aa8d958-bf54-83e8-8238-acf0c38f262a",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "自动标定方案 unerquicklich",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-115",
+              "title": "研究：SO-101 自动外参与定位一致性",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "BOX-116",
+              "title": "研究：SO-101 运动学误差可辨识性",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ad9e11a-4d78-8324-ac1f-a7f787001831",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "Harness²方案解读",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-115",
+              "title": "研究：SO-101 自动外参与定位一致性",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a1642a-3f59-7c91-8d9b-cc50f7208de0",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "BOX-115｜离线标定数据与合成求解闭环 · Worker",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-115",
+              "title": "研究：SO-101 自动外参与定位一致性",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a1642c-58db-7fd3-911a-5b7b36ab4bf0",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "BOX-116｜误差可辨识性与预注册评价 · Worker",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-116",
+              "title": "研究：SO-101 运动学误差可辨识性",
+              "role": "worker"
+            }
+          ]
+        }
+      ],
+      "works": [
+        {
+          "issue_id": "BOX-162",
+          "title": "ROBOX 映射研究",
+          "parent_chain": [
+            "BOX-162"
+          ],
+          "owner_issue_id": "BOX-162"
+        },
+        {
+          "issue_id": "BOX-115",
+          "title": "研究：SO-101 自动外参与定位一致性",
+          "parent_chain": [
+            "BOX-115",
+            "BOX-162"
+          ],
+          "owner_issue_id": "BOX-162"
+        },
+        {
+          "issue_id": "BOX-116",
+          "title": "研究：SO-101 运动学误差可辨识性",
+          "parent_chain": [
+            "BOX-116",
+            "BOX-162"
+          ],
+          "owner_issue_id": "BOX-162"
+        }
+      ],
+      "work_count": 2
+    },
+    {
+      "issue_id": "BOX-161",
+      "title": "ROBOX 图传研究",
+      "updated_at": "2026-10-28T17:40:08.061576+08:00",
+      "ownership_status": "verified",
+      "ownership_reason": null,
+      "topology_observed_at": "2026-11-13T02:45:40.334Z",
+      "members": [
+        {
+          "role": "master",
+          "id": "01a15de9-fcaf-78e1-8e5c-d9cc6c0538b3",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "BOX-161「ROBOX 图传研究」· Master",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-161",
+              "title": "ROBOX 图传研究",
+              "role": "master"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab893df-8fcc-83ee-8712-4befd932aeb3",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "票据进展查询",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-139",
+              "title": "研究：Robot Link Transport 效率与尾延迟",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab8dc47-bb0c-83e8-9fea-735040bdcfb8",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "票据进展总结",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-139",
+              "title": "研究：Robot Link Transport 效率与尾延迟",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a163cf-76f1-7f10-a525-b61b86a72b8e",
+          "host_id": "remote-control:env_e_6a07ce21a27083308c3db4261ed2344a",
+          "kind": "codex",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-139",
+              "title": "研究：Robot Link Transport 效率与尾延迟",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a16429-935b-73e1-938e-718c1dd9cbb7",
+          "host_id": "remote-control:env_e_6a07ce21a27083308c3db4261ed2344a",
+          "kind": "codex",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-86",
+              "title": "拆解 UU 远程低延迟采集、光标与显示链路",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a163cf-76e1-7a02-9195-051d06dc5bfa",
+          "host_id": "remote-control:env_e_6a07ce21a27083308c3db4261ed2344a",
+          "kind": "codex",
+          "title": null,
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-103",
+              "title": "验证双目 RAW/NV12 预测压缩的带宽收益与延迟代价",
+              "role": "worker"
+            }
+          ]
+        }
+      ],
+      "works": [
+        {
+          "issue_id": "BOX-161",
+          "title": "ROBOX 图传研究",
+          "parent_chain": [
+            "BOX-161"
+          ],
+          "owner_issue_id": "BOX-161"
+        },
+        {
+          "issue_id": "BOX-139",
+          "title": "研究：Robot Link Transport 效率与尾延迟",
+          "parent_chain": [
+            "BOX-139",
+            "BOX-161"
+          ],
+          "owner_issue_id": "BOX-161"
+        },
+        {
+          "issue_id": "BOX-86",
+          "title": "拆解 UU 远程低延迟采集、光标与显示链路",
+          "parent_chain": [
+            "BOX-86",
+            "BOX-161"
+          ],
+          "owner_issue_id": "BOX-161"
+        },
+        {
+          "issue_id": "BOX-103",
+          "title": "验证双目 RAW/NV12 预测压缩的带宽收益与延迟代价",
+          "parent_chain": [
+            "BOX-103",
+            "BOX-161"
+          ],
+          "owner_issue_id": "BOX-161"
+        }
+      ],
+      "work_count": 3
+    },
+    {
+      "issue_id": "AGT-6",
+      "title": "落实渐进式机器记忆",
+      "updated_at": "2026-10-27T16:44:53.301431+08:00",
+      "ownership_status": "unassigned",
+      "ownership_reason": "owning_goal_missing",
+      "topology_observed_at": "2026-11-13T02:45:40.334Z",
+      "members": [
+        {
+          "role": "chatgpt",
+          "id": "6aae8b76-76a8-83ee-8287-48d84880817c",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "afterConversationCreated解析",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-6",
+              "title": "落实渐进式机器记忆",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6abdf2b7-e6b4-83ee-a121-95ed709463a3",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解释BOX140配置分离",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-6",
+              "title": "落实渐进式机器记忆",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6abe3950-3aa4-83ee-8a7b-1324ba65bd31",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解释主机名命名原因",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-6",
+              "title": "落实渐进式机器记忆",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0bab9-6239-7df3-8aac-8a7d096a8142",
+          "host_id": "remote-control:env_e_6a07ce21a27083308c3db4261ed2344a",
+          "kind": "codex",
+          "title": "AGT-26 / BOX-140｜mac-m2 访问与凭据交接 · Worker",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-6",
+              "title": "落实渐进式机器记忆",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0bce4-5ff8-7410-add9-10e741e10322",
+          "host_id": "remote-control:env_e_6a68c50bd4348330993732b6c1cbbfa2",
+          "kind": "codex",
+          "title": "AGT-6+25+BOX-140｜mac-m1pro 访问交接与 Skill 部署",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-6",
+              "title": "落实渐进式机器记忆",
+              "role": "worker"
+            }
+          ]
+        }
+      ],
+      "works": [
+        {
+          "issue_id": "AGT-6",
+          "title": "落实渐进式机器记忆",
+          "parent_chain": [
+            "AGT-6"
+          ],
+          "owner_issue_id": null
+        }
+      ],
+      "work_count": 0
+    },
+    {
+      "issue_id": "AGT-24",
+      "title": "长期维护 Linux Desktop 兼容与升级",
+      "updated_at": "2026-10-27T16:42:51.800966+08:00",
+      "ownership_status": "master_missing",
+      "ownership_reason": "goal_master_not_registered",
+      "topology_observed_at": "2026-11-13T02:45:40.334Z",
+      "members": [
+        {
+          "role": "chatgpt",
+          "id": "6aae48b9-efe0-83e9-9635-653d48d22e83",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "恢复官方二进制",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-24",
+              "title": "长期维护 Linux Desktop 兼容与升级",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab1ff01-7130-83ee-a36e-717dd2bd6cf0",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解释旧锁问题",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-24",
+              "title": "长期维护 Linux Desktop 兼容与升级",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6abdd5a7-9748-83e8-87aa-1fee4cf743ba",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "配置验证模型推理大小规律",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-24",
+              "title": "长期维护 Linux Desktop 兼容与升级",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0c753-55cf-7c20-b2fe-70bab4e76b41",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-24｜shared App Server 旧锁自恢复",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-24",
+              "title": "长期维护 Linux Desktop 兼容与升级",
+              "role": "worker"
+            }
+          ]
+        }
+      ],
+      "works": [
+        {
+          "issue_id": "AGT-24",
+          "title": "长期维护 Linux Desktop 兼容与升级",
+          "parent_chain": [
+            "AGT-24"
+          ],
+          "owner_issue_id": "AGT-24"
+        }
+      ],
+      "work_count": 0
+    },
+    {
+      "issue_id": "BOX-164",
+      "title": "RBM 持续记忆研究",
+      "updated_at": "2026-10-27T16:25:00.478872+08:00",
+      "ownership_status": "verified",
+      "ownership_reason": null,
+      "topology_observed_at": "2026-11-13T02:45:40.334Z",
+      "members": [
+        {
+          "role": "chatgpt",
+          "id": "6aaceabe-0e20-83ee-96b5-59d983218064",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "box-106 Pi0.5视频上下文大小规律",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-164",
+              "title": "RBM 持续记忆研究",
+              "role": "chatgpt"
+            },
+            {
+              "issue_id": "BOX-106",
+              "title": "E0｜跑通激活/KV 提取与时序读取基线",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac7072a-adf0-83e8-b4c2-2fbe87c2cd20",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "视频理解技术解析",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-164",
+              "title": "RBM 持续记忆研究",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "master",
+          "id": "01a0c31a-c98c-7263-99bb-d5e23bcae2d5",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "BOX-164「RBM 持续记忆研究」· Master",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-164",
+              "title": "RBM 持续记忆研究",
+              "role": "master"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ab0fb5e-1ef8-83e8-91cd-fda2a5affb08",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解释原生审批",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-106",
+              "title": "E0｜跑通激活/KV 提取与时序读取基线",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a1643a-d7ce-7192-a145-04aac9b72fcf",
+          "host_id": "remote-ssh-discovered:agt-ubuntu-worker",
+          "kind": "codex",
+          "title": "BOX-106｜E0 激活KV复现 · Ubuntu",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-106",
+              "title": "E0｜跑通激活/KV 提取与时序读取基线",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a16469-3477-7c61-91ec-65758b6a4470",
+          "host_id": "remote-ssh-discovered:agt-ubuntu-worker",
+          "kind": "codex",
+          "title": "BOX-106｜E0 数据模型来源 · Ubuntu",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-106",
+              "title": "E0｜跑通激活/KV 提取与时序读取基线",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a16469-3478-7911-8bf2-1f282a486a98",
+          "host_id": "remote-ssh-discovered:agt-ubuntu-worker",
+          "kind": "codex",
+          "title": "BOX-106｜E0 时序读取与评价 · Ubuntu",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-106",
+              "title": "E0｜跑通激活/KV 提取与时序读取基线",
+              "role": "worker"
+            }
+          ]
+        }
+      ],
+      "works": [
+        {
+          "issue_id": "BOX-106",
+          "title": "E0｜跑通激活/KV 提取与时序读取基线",
+          "parent_chain": [
+            "BOX-106",
+            "BOX-164"
+          ],
+          "owner_issue_id": "BOX-164"
+        },
+        {
+          "issue_id": "BOX-164",
+          "title": "RBM 持续记忆研究",
+          "parent_chain": [
+            "BOX-164"
+          ],
+          "owner_issue_id": "BOX-164"
+        }
+      ],
+      "work_count": 1
+    },
+    {
+      "issue_id": "AGT-39",
+      "title": "指定 Thread 主动同步与机械导出",
+      "updated_at": "2026-10-27T16:29:13.334249+08:00",
+      "ownership_status": "unassigned",
+      "ownership_reason": "owning_goal_missing",
+      "topology_observed_at": "2026-11-13T02:45:40.334Z",
+      "members": [
+        {
+          "role": "chatgpt",
+          "id": "6ac07bef-50cc-83ee-b5c3-5cc2e0ac546c",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "备份状态说明",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-39",
+              "title": "指定 Thread 主动同步与机械导出",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0bcae-0563-7a93-975f-43abb7152d60",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-28 持久化 OpenAI Thread Mirror、备份与离线恢复 · Worker 原生读取",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-39",
+              "title": "指定 Thread 主动同步与机械导出",
+              "role": "worker"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a0bcae-75c0-7ef2-9ab5-531965a4cead",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-28 持久化 OpenAI Thread Mirror、备份与离线恢复 · Worker PostgreSQL",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-39",
+              "title": "指定 Thread 主动同步与机械导出",
+              "role": "worker"
+            }
+          ]
+        }
+      ],
+      "works": [
+        {
+          "issue_id": "AGT-39",
+          "title": "指定 Thread 主动同步与机械导出",
+          "parent_chain": [
+            "AGT-39"
+          ],
+          "owner_issue_id": null
+        }
+      ],
+      "work_count": 0
+    },
+    {
+      "issue_id": "AGT-43",
+      "title": "持续演进 Spirit Agent Harness",
+      "updated_at": "2026-10-27T16:26:05.50484+08:00",
+      "ownership_status": "verified",
+      "ownership_reason": null,
+      "topology_observed_at": "2026-11-13T02:45:40.334Z",
+      "members": [
+        {
+          "role": "chatgpt",
+          "id": "6a7b4128-8004-83ea-bd66-037c686798fc",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "Codex Harness 复刻解析",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-43",
+              "title": "持续演进 Spirit Agent Harness",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ad50084-cfcc-8320-845f-82611ff286b0",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解读 Harness²",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-43",
+              "title": "持续演进 Spirit Agent Harness",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ad89abb-e978-8324-a0dc-dd83d0fdec07",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "解析具身RSI񎟟",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-43",
+              "title": "持续演进 Spirit Agent Harness",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "master",
+          "id": "01a1583b-f362-7b51-a0e8-e91307007e24",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "AGT-43「Harness 开发」· Master",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "AGT-43",
+              "title": "持续演进 Spirit Agent Harness",
+              "role": "master"
+            }
+          ]
+        }
+      ],
+      "works": [
+        {
+          "issue_id": "AGT-43",
+          "title": "持续演进 Spirit Agent Harness",
+          "parent_chain": [
+            "AGT-43"
+          ],
+          "owner_issue_id": "AGT-43"
+        }
+      ],
+      "work_count": 0
+    },
+    {
+      "issue_id": "BOX-160",
+      "title": "持续演进 Robot Mind",
+      "updated_at": "2026-10-27T16:25:50.818906+08:00",
+      "ownership_status": "verified",
+      "ownership_reason": null,
+      "topology_observed_at": "2026-11-13T02:45:40.334Z",
+      "members": [
+        {
+          "role": "chatgpt",
+          "id": "6abfacab-13cc-83ee-b236-92fbc05ab6b8",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 解释推理革命",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-160",
+              "title": "持续演进 Robot Mind",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac3bb01-0ff8-83e9-9cdc-cac066df60ea",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 烫伤处理建议",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-160",
+              "title": "持续演进 Robot Mind",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac3bb61-9bfc-83ee-a4fb-ebf45aa86dd1",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 烫伤处理建议",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-160",
+              "title": "持续演进 Robot Mind",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "chatgpt",
+          "id": "6ac4e2ee-b284-83ee-8c04-6a9cd70a7935",
+          "host_id": null,
+          "kind": "chatgpt",
+          "title": "分支 · 分支 · 烫伤处理建议",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-160",
+              "title": "持续演进 Robot Mind",
+              "role": "chatgpt"
+            }
+          ]
+        },
+        {
+          "role": "master",
+          "id": "01a16314-842d-760e-96f2-4eed5b406ad8",
+          "host_id": "local",
+          "kind": "codex",
+          "title": "BOX-160「Robot Mind 研发」· Master（接续）",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-160",
+              "title": "持续演进 Robot Mind",
+              "role": "master"
+            }
+          ]
+        },
+        {
+          "role": "worker",
+          "id": "01a1670e-f2b1-7273-8de6-12c075ba2b57",
+          "host_id": "remote-ssh-discovered:agt-ubuntu-worker",
+          "kind": "codex",
+          "title": "BOX-155｜C6 软件闭环 · Ubuntu",
+          "model": null,
+          "work_issues": [
+            {
+              "issue_id": "BOX-160",
+              "title": "持续演进 Robot Mind",
+              "role": "worker"
+            }
+          ]
+        }
+      ],
+      "works": [
+        {
+          "issue_id": "BOX-160",
+          "title": "持续演进 Robot Mind",
+          "parent_chain": [
+            "BOX-160"
+          ],
+          "owner_issue_id": "BOX-160"
+        }
+      ],
+      "work_count": 0
+    }
+  ]
+}

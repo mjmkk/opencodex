@@ -1,0 +1,36 @@
+{
+  "source": "/v1/harness/live (real production)",
+  "thread_id": "01a1bc84-8d1f-7450-b5f4-9fa8e2377a84",
+  "observed_at": "2026-11-13T03:23:32.103320+00:00",
+  "running": false,
+  "messages": [
+    {
+      "id": "msg_01a1d2e7-e616-7041-93f4-3d1e36ff4f82",
+      "role": "user",
+      "text": "QA_GOAL_OWNER_1113 reply OWNER_OK only",
+      "at": "2026-11-13T03:16:15.510Z",
+      "phase": null
+    },
+    {
+      "id": "msg_06e13f4f3bfad966016af68102e27887d0868a44eccea9a142",
+      "role": "assistant",
+      "text": "OWNER_OK",
+      "at": "2026-11-13T03:16:19.128Z",
+      "phase": "final_answer"
+    },
+    {
+      "id": "msg_01a1d2ed-92ed-74b1-a70c-35c9d2692e1c",
+      "role": "user",
+      "text": "QA_GOAL_POLL_FIXED reply POLL_OK only",
+      "at": "2026-11-13T03:22:27.437Z",
+      "phase": null
+    },
+    {
+      "id": "msg_06e13f4f3bfad966016af68275d17887d0bb703fbd898037a0",
+      "role": "assistant",
+      "text": "POLL_OK",
+      "at": "2026-11-13T03:22:30.140Z",
+      "phase": "final_answer"
+    }
+  ]
+}

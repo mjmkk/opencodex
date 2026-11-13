@@ -1,19 +1,34 @@
 import Foundation
 
 /// AGT-26 S6：首页以 Goal 为主轴。一个 Goal 下有思考线程、Master 和 Worker，子代理挂在各自主线程下面。
-/// 数据来自 `GET /v1/harness/tree`（Registry 只读投影）。真值在 Registry，客户端不推断角色。
+/// 数据来自 `GET /v1/harness/tree`：Linear 当前 Goal 父链 + Registry 正式成员的只读投影，客户端不推断角色。
 struct HarnessGoal: Identifiable, Equatable, Sendable {
     let id: String              // Linear Issue，例如 BOX-166
     let issueURL: URL?
     let members: [HarnessMember]
     /// Linear Issue 的标题（服务端从 Linear 取，可能没有）
     var issueTitle: String? = nil
+    var ownershipStatus: String? = nil
+    var workCount: Int = 0
+
+    var needsRelationshipReview: Bool { ownershipStatus == "unassigned" || ownershipStatus == "unavailable" }
+    var executionCount: Int { members.filter { $0.role != .thinker }.count }
+    var thinkers: [HarnessMember] { members.filter { $0.role == .thinker } }
+    var visibleThinkers: [HarnessMember] { Array(thinkers.prefix(3)) }
+    var workers: [HarnessMember] {
+        members.enumerated().filter { $0.element.role == .worker }
+            .sorted { (Self.rank($0.element), $0.offset) < (Self.rank($1.element), $1.offset) }.map(\.element)
+    }
+    private static func rank(_ member: HarnessMember) -> Int {
+        member.status == .needsYou ? 0 : member.status == .running ? 1 : 2
+    }
 
     var master: HarnessMember? { members.first { $0.role == .master } }
-    /// Goal 行上显示的标题：用线程名（Human 自己起的名字最好认）。
-    /// 顺序：Master 线程名 → 只有一条线程时用它的名字 → Linear Issue 标题 → Issue 号。Issue 号另外用小字显示
+    /// Goal 标题优先使用 Master 线程名，再退回 Linear Goal 标题和 Issue 号；旧响应保留单线程名称兼容。
     var title: String {
         if let m = master, let n = Self.threadName(m.title, goalId: id) { return n }
+        // 新版接口已经按真实 Goal 聚合，不能再拿某个 Worker 的标题冒充 Goal 名。
+        if ownershipStatus != nil { return issueTitle ?? id }
         let threads = members.filter { $0.role != .thinker }
         if threads.count == 1, let n = Self.threadName(threads[0].title, goalId: id) { return n }
         return issueTitle ?? id
@@ -55,6 +70,18 @@ struct HarnessMember: Identifiable, Equatable, Sendable {
     var subagents: [HarnessMember] = []
     /// needs_you 时在等什么：Node 从钩子事件里取的工具名和一行摘要（命令或文件路径）
     var waiting: Waiting?
+    struct WorkIssue: Equatable, Sendable, Identifiable {
+        var id: String
+        var title: String?
+        var role: String?
+        var url: URL? { URL(string: "https://linear.app/mjmk/issue/" + id) }
+    }
+    var workIssues: [WorkIssue] = []
+    var identityKey: String { [kind, host ?? "", id].joined(separator: "|") }
+    var externalConversationURL: URL? {
+        guard kind == "chatgpt", UUID(uuidString: id) != nil else { return nil }
+        return URL(string: "https://chatgpt.com/c/" + id)
+    }
 
     struct Waiting: Equatable, Sendable {
         let isPermission: Bool
@@ -66,7 +93,7 @@ struct HarnessMember: Identifiable, Equatable, Sendable {
         switch role {
         case .thinker: return "思考"
         case .master: return "Master"
-        case .worker: return "Worker"
+        case .worker: return workIssues.contains(where: { $0.role == "master" }) ? "工作负责人" : "Worker"
         case .subagent: return "子代理"
         }
     }
@@ -110,7 +137,9 @@ enum HarnessTreeDecoder {
             let members = (g["members"]?.arrayValue ?? []).compactMap { member($0) }
             guard members.contains(where: { $0.role == .master || $0.role == .worker }) else { return nil }
             return HarnessGoal(id: issue, issueURL: URL(string: "https://linear.app/mjmk/issue/" + issue),
-                               members: members, issueTitle: g["title"]?.stringValue)
+                               members: members, issueTitle: g["title"]?.stringValue,
+                               ownershipStatus: g["ownership_status"]?.stringValue,
+                               workCount: g["works"]?.arrayValue?.filter { $0.objectValue?["issue_id"]?.stringValue != issue }.count ?? 0)
         }
     }
 
@@ -121,6 +150,10 @@ enum HarnessTreeDecoder {
         var member = HarnessMember(id: id, role: role, kind: kind, host: m["host_id"]?.stringValue,
                                    title: m["title"]?.stringValue, model: m["model"]?.stringValue)
         member.status = status(m["status"]?.stringValue)
+        member.workIssues = (m["work_issues"]?.arrayValue ?? []).compactMap { value in
+            guard let w = value.objectValue, let id = w["issue_id"]?.stringValue else { return nil }
+            return .init(id: id, title: w["title"]?.stringValue, role: w["role"]?.stringValue)
+        }
         member.subagents = (m["subagents"]?.arrayValue ?? []).compactMap { Self.member($0, role: .subagent) }
         if member.status == .needsYou, let w = m["waiting"]?.objectValue {
             member.waiting = .init(isPermission: w["kind"]?.stringValue == "permission",

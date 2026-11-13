@@ -5,6 +5,7 @@ import SwiftUI
 /// - 抽屉打开时主区域稍微缩小、加圆角和遮罩，点遮罩或左滑关闭
 /// - 启动时回到上次打开的线程；推送和深链（opencodex://thread/<id>、opencodex://work）也在这里统一处理，打开的是同一个线程就不重复加载
 struct RootView: View {
+    @Environment(\.openURL) private var openURL
     // 启动时先用上次的 Goal 树：直接打开线程时马上知道它是 Codex 还是 Claude，可以立刻读对应的缓存
     @State private var goals: [HarnessGoal] = HarnessTreeCache.load() ?? []
     @State private var currentId: String? = UserDefaults.standard.string(forKey: "AGTOpenThread")
@@ -25,7 +26,9 @@ struct RootView: View {
                 drawer.frame(width: width)
                     .offset(x: (progress - 1) * width * 0.3)
                     .opacity(progress == 0 ? 0 : 0.4 + 0.6 * progress)
+                    .accessibilityHidden(progress == 0)
                 main
+                    .accessibilityHidden(drawerOpen)
                     .clipShape(RoundedRectangle(cornerRadius: progress > 0 ? 20 * progress + 0.01 : 0, style: .continuous))
                     .overlay {
                         Color.black.opacity(0.18 * progress).ignoresSafeArea()
@@ -40,7 +43,11 @@ struct RootView: View {
             .gesture(drawerGesture(width))
         }
         .sheet(isPresented: $showSettings, onDismiss: {
-            connectionScope = (try? MobileSyncEngine.scope()) ?? "unconfigured"
+            let scope = (try? MobileSyncEngine.scope()) ?? "unconfigured"
+            if connectionScope != scope {
+                connectionScope = scope
+                goals = HarnessTreeCache.load() ?? []
+            }
         }) { ConnectionSettingsView { showSettings = false } }
         .onAppear { if let id = MobileLifecycle.takePendingThread() { open(id) } }
         .onReceive(NotificationCenter.default.publisher(for: MobileLifecycle.openThreadNotification)) { note in
@@ -57,7 +64,11 @@ struct RootView: View {
 
     private var drawer: some View {
         NavigationStack {
-            HarnessHomeScreen(goals: $goals, currentId: currentId, openThread: { open($0.id) })
+            HarnessHomeScreen(goals: $goals, currentId: currentId, openThread: { member in
+                if let url = member.externalConversationURL { openURL(url) }
+                else { open(member.id) }
+            })
+                .id(connectionScope)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button { showSettings = true } label: { Image(systemName: "gearshape") }
@@ -74,8 +85,18 @@ struct RootView: View {
             Group {
                 if let id = currentId {
                     let (member, goal) = lookup(id)
-                    // 换线程时整页重建，不把上一个线程的内容和展开状态带过来
-                    ThreadScreen(member: member, goal: goal).id(id + "|" + connectionScope)
+                    if let url = member.externalConversationURL {
+                        ContentUnavailableView {
+                            Label(member.title ?? "思考线程", systemImage: "bubble.left")
+                        } description: {
+                            Text("在 ChatGPT 中查看和继续这段对话。")
+                        } actions: {
+                            Link("在 ChatGPT 打开", destination: url)
+                        }
+                    } else {
+                        // 换线程时整页重建，不把上一个线程的内容和展开状态带过来
+                        ThreadScreen(member: member, goal: goal).id(id + "|" + connectionScope)
+                    }
                 } else {
                     ContentUnavailableView("选一个线程", systemImage: "sidebar.left",
                         description: Text("从左侧打开 Goal 列表，点任意线程进入对话。"))
