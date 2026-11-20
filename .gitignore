@@ -5,8 +5,7 @@
 **/xcuserdata/
 **/*.xcuserstate
 DerivedData/
-.derived/
-.derived-device/
+.derived*/
 
 # Swift Package Manager local workspace state
 **/.swiftpm/
@@ -38,5 +37,3 @@ archive/
 codex-worker-mvp/data/*.db
 codex-worker-mvp/data/*.db-shm
 codex-worker-mvp/data/*.db-wal
-*.derived
-.derived-test/
