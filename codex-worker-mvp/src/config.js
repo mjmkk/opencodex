@@ -451,6 +451,7 @@ export function loadConfig(env = process.env, options = {}) {
   return {
     port: /** @type {number} */ (port),
     mobileApprovals: asPlainObject(fileConfig.mobileApprovals),
+    nativeRequests: asPlainObject(fileConfig.nativeRequests),
     host: asNonEmptyString(env.WORKER_HOST) || asNonEmptyString(fileConfig.host) || null,
     authToken: asNonEmptyString(env.WORKER_TOKEN) || asNonEmptyString(fileConfig.authToken) || null,
     configFilePath,

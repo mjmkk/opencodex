@@ -122,10 +122,10 @@ function createHarnessTreeRoutes({ dsn, namespace, python = '/usr/bin/python3', 
   });
 
   const nodeBin = '/opt/spirit/chatgpt-desktop/current/resources/cua_node/bin/node';
-  const readerCli = path.join(os.homedir(), 'scratch/agt-s6/harness-read-cli.mjs');
+  const readerCli = path.join(__dirname, 'harness-read-cli.mjs');
   // ---------- POST /v1/harness/send：Human 在手机上回复一条线程 ----------
   // 按 Registry 里这条线程的 kind 和 host 选投递方式，全部复用 AGT Node 已经在用的通道：
-  //   codex + spirit-master  → 本机 ~/scratch/agt-s2/enqueue.mjs（原生 queue，O_EXCL 持久化 once）
+  //   codex + spirit-master  → 本机 harness-enqueue.mjs（原生 queue，O_EXCL 持久化 once）
   //   codex + M1 Mac         → ssh mac-m1pro ~/.agt-node/queue/enqueue.mjs（同一套 once 守卫）
   //   claude + M1 Mac        → ssh mac-m1pro 调 deliver.py 的 deliver_claude（原生 inbox socket，带送达确认）
   // 其他组合（Ubuntu、remote-control 设备）还没有可写通道，明确返回 unsupported，不假装发出去了。
@@ -169,7 +169,7 @@ function createHarnessTreeRoutes({ dsn, namespace, python = '/usr/bin/python3', 
     const payload = JSON.stringify({ threadId: id, clientUserMessageId: 'agt-human-' + cmid, prompt: text,
       invocationId: 'mobile:' + cmid });
     if (m.kind === 'codex' && m.host === 'local') {
-      const r = await run(process.execPath, [path.join(os.homedir(), 'scratch/agt-s2/enqueue.mjs')], payload);
+      const r = await run(process.execPath, [path.join(__dirname, 'harness-enqueue.mjs')], payload);
       return queueResult(lastJson(r.out));
     }
     if (m.kind === 'codex' && m.host === 'mac-m1pro') {

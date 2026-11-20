@@ -14,6 +14,8 @@ import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
 import { WebSocketServer } from "ws";
 import { HttpError } from "./errors.js";
+import { nativeRequestRoute } from "./native-request-relay.js";
+import { nativeControlRoute } from "./native-control-route.js";
 
 // ==================== 常量定义 ====================
 
@@ -416,6 +418,12 @@ export function createHttpServer(options) {
       if (pathname !== "/health") {
         requireAuth(req, authToken);
       }
+
+      if (options.mobileRoutes && await options.mobileRoutes(req, res)) return;
+
+      // The same Bearer boundary covers native read/response forwarding.
+      if (await nativeRequestRoute(req, res, pathname, options.nativeRequests)) return;
+      if (await nativeControlRoute(req, res, pathname, service.nativeControl)) return;
 
       // ==================== API 路由 ====================
       const metrics = options.mobileMetricsDb;

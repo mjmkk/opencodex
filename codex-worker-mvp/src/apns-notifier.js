@@ -171,7 +171,7 @@ export class ApnsNotifier {
       aps: message.silent ? { "content-available": 1 } : {
         alert: { title: message.title, body: message.body },
         "thread-id": message.threadId,
-        category: message.quickResponse && device.clientScope ? "AGT_APPROVAL_SIMPLE" : (message.approvalId ? "AGT_APPROVAL" : "AGT_THREAD"),
+        category: message.source === 'native_request' ? 'AGT_NATIVE_REQUEST' : (message.quickResponse && device.clientScope ? "AGT_APPROVAL_SIMPLE" : (message.approvalId ? "AGT_APPROVAL" : "AGT_THREAD")),
         "mutable-content": 1,
         "interruption-level": "active",
       },
@@ -183,7 +183,7 @@ export class ApnsNotifier {
       approvalId: message.approvalId,
       source: message.source,
       clientScope: device.clientScope ?? null,
-      deepLink: message.source === "structured_approval" ? `opencodex://approvals/${encodeURIComponent(message.approvalId)}` : `opencodex://thread/${encodeURIComponent(message.threadId)}`,
+      deepLink: message.deepLink ?? (message.source === "structured_approval" ? `opencodex://approvals/${encodeURIComponent(message.approvalId)}` : `opencodex://thread/${encodeURIComponent(message.threadId)}`),
     };
     const response = await this.postJson(host, requestPath, {
       authorization,
@@ -285,6 +285,9 @@ export function notificationMessage(envelope, job, head = {}) {
   return {
     eventType, threadId, jobId: job.jobId, approvalId,
     source: envelope.payload?.source ?? "native",
+    deepLink: envelope.payload?.source === 'native_request' &&
+      typeof envelope.payload?.deepLink === 'string' && envelope.payload.deepLink.startsWith('opencodex://native-request/')
+      ? envelope.payload.deepLink : null,
     requestVersion: envelope.payload?.requestVersion ?? null,
     latestCursor: head?.latestCursor ?? null,
     silent: !approvalId && !completion,

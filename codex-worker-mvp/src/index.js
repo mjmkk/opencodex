@@ -16,6 +16,7 @@ import { JsonRpcClient } from "./json-rpc-client.js";
 import { SqliteStore } from "./sqlite-store.js";
 import { WorkerService } from "./worker-service.js";
 import { mobileApprovalBridge } from "./mobile-approval-bridge.js";
+import { nativeRequestRelay } from "./native-request-relay.js";
 import { ApnsNotifier } from "./apns-notifier.js";
 import { startApprovalNotifications } from "./mobile-notifications.js";
 import { LiveActivities } from "./live-activities.js";
@@ -144,6 +145,7 @@ async function main() {
   const server = createHttpServer({
     service,
     mobileApprovals: approvals,
+    nativeRequests: nativeRequestRelay(config.nativeRequests),
     mobileMetricsDb: store.db,
     liveActivities,
     authToken: config.authToken,
