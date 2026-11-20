@@ -194,59 +194,6 @@ extension CodexError {
     }
 }
 
-// MARK: - 可恢复错误
-
-/// 可恢复错误协议
-protocol RecoverableError: Error {
-    /// 是否可恢复
-    var isRecoverable: Bool { get }
-
-    /// 恢复策略
-    var recoveryStrategy: RecoveryStrategy { get }
-}
-
-/// 恢复策略
-public enum RecoveryStrategy: Sendable {
-    /// 重试
-    case retry
-    /// 重连
-    case reconnect
-    /// 拉取快照
-    case fetchSnapshot
-    /// 重新配置
-    case reconfigure
-    /// 无
-    case none
-}
-
-// MARK: - CodexError 恢复策略
-
-extension CodexError: RecoverableError {
-    var isRecoverable: Bool {
-        switch self {
-        case .connectionFailed, .timeout, .cursorExpired:
-            return true
-        case .unauthorized, .notConfigured:
-            return true
-        default:
-            return false
-        }
-    }
-
-    var recoveryStrategy: RecoveryStrategy {
-        switch self {
-        case .connectionFailed, .timeout:
-            return .reconnect
-        case .cursorExpired:
-            return .fetchSnapshot
-        case .unauthorized, .notConfigured:
-            return .reconfigure
-        default:
-            return .none
-        }
-    }
-}
-
 // MARK: - 瞬态错误
 
 extension CodexError {

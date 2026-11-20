@@ -1,4 +1,3 @@
-import ComposableArchitecture
 import CryptoKit
 import Foundation
 
@@ -11,7 +10,7 @@ public struct MobileSyncResult: Equatable, Sendable {
 }
 
 /// Repository boundary: business features see Thread history, never storage wire pages.
-public struct ThreadSyncClient: DependencyKey, Sendable {
+public struct ThreadSyncClient: Sendable {
     public var cached: @Sendable () async throws -> MobileSyncResult
     public var cachedHistory: @Sendable (Thread) async throws -> ThreadHistory?
     public var syncHistory: @Sendable (Thread, Bool) async throws -> ThreadHistory
@@ -27,7 +26,7 @@ public struct ThreadSyncClient: DependencyKey, Sendable {
             try await MobileSyncCache.shared?.mirrorBody(thread.threadId, scope: MobileSyncEngine.threadScope(for: thread))?.history
         },
         syncHistory: { thread, refresh in
-            @Dependency(\.apiClient) var api
+            let api = APIClient.live
             guard let namespace = thread.origin?.namespace else { throw CodexError.invalidState }
             // AGT-26 S6：打开线程只拉最新一段（tail），和本地缓存拼接，不再从第一页往后翻
             _ = try await MobileSyncEngine.shared.syncMirrorTail(thread.threadId, namespace: namespace, offline: !refresh, api: api)
@@ -35,26 +34,19 @@ public struct ThreadSyncClient: DependencyKey, Sendable {
             return cached.history
         },
         loadEarlier: { thread in
-            @Dependency(\.apiClient) var api
+            let api = APIClient.live
             guard let namespace = thread.origin?.namespace else { throw CodexError.invalidState }
             guard try await MobileSyncEngine.shared.loadEarlier(thread.threadId, namespace: namespace, api: api) else { return nil }
             return try await MobileSyncCache.shared?.mirrorBody(thread.threadId, scope: MobileSyncEngine.threadScope(for: thread))?.history
         },
         sync: { ids, background in
-            @Dependency(\.apiClient) var api
+            let api = APIClient.live
             return try await MobileSyncEngine.shared.sync(preferred: ids, background: background, api: api)
         },
         markRead: { try await MobileSyncCache.shared?.markRead($0, scope: MobileSyncEngine.threadScope()) },
         setPinned: { try await MobileSyncCache.shared?.setPinned($1, threadId: $0, scope: MobileSyncEngine.threadScope()) },
         selectThread: { try await MobileSyncCache.shared?.selectThread($0, scope: MobileSyncEngine.threadScope()) }
     )
-    public static let testValue: ThreadSyncClient = liveValue
-}
-extension DependencyValues {
-    public var threadSyncClient: ThreadSyncClient {
-        get { self[ThreadSyncClient.self] }
-        set { self[ThreadSyncClient.self] = newValue }
-    }
 }
 actor MobileSyncEngine {
     static let shared = MobileSyncEngine()

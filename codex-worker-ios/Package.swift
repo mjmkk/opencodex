@@ -18,8 +18,6 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../codex-activity-models"),
-        // TCA（The Composable Architecture，组合式架构库）
-        .package(url: "https://github.com/pointfreeco/swift-composable-architecture", exact: "1.26.0"),
         // MarkdownUI（完整 Markdown 渲染，支持 GitHub 风格 Markdown 的表格/任务列表）
         .package(url: "https://github.com/gonzalezreal/swift-markdown-ui.git", from: "2.0.2"),
         // GRDB（SQLite 封装）
@@ -30,7 +28,6 @@ let package = Package(
             name: "CodexWorker",
             dependencies: [
                 .product(name: "CodexActivityModels", package: "codex-activity-models"),
-                .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
                 .product(name: "MarkdownUI", package: "swift-markdown-ui"),
                 .product(name: "GRDB", package: "GRDB.swift"),
             ],
@@ -38,13 +35,6 @@ let package = Package(
             swiftSettings: [
                 .enableExperimentalFeature("StrictConcurrency")
             ]
-        ),
-        // 保留 CodexWorkerApp 源代码供 Xcode App 项目使用
-        // 注意：这是一个普通 target，不是 executable
-        .target(
-            name: "CodexWorkerApp",
-            dependencies: ["CodexWorker"],
-            path: "Sources/CodexWorkerApp"
         ),
         .testTarget(
             name: "CodexWorkerTests",

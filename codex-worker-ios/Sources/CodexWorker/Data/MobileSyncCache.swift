@@ -47,19 +47,6 @@ actor MobileSyncCache {
 
     // AGT-26 S6：Goal Overview 的缓存读写随旧 UI 一起删除（mobile_observer_snapshots 表保留，不做迁移）
 
-    func composer(threadId: String, scope: String) throws -> ComposerDraft? {
-        try db.read { db in
-            try Data.fetchOne(db, sql: "SELECT value FROM mobile_composer_drafts WHERE scope=? AND threadId=?", arguments: [scope,threadId])
-                .map { try JSONDecoder().decode(ComposerDraft.self, from: $0) }
-        }
-    }
-    func saveComposer(_ draft: ComposerDraft, threadId: String, scope: String) throws {
-        try db.write { db in
-            try db.execute(sql: "INSERT INTO mobile_composer_drafts(scope,threadId,value) VALUES(?,?,?) ON CONFLICT(scope,threadId) DO UPDATE SET value=excluded.value",
-                arguments: [scope,threadId,try JSONEncoder().encode(draft)])
-        }
-    }
-
     func nativeRequests(scope: String) throws -> [NativeRequestRecord] {
         try db.read { db in
             try Data.fetchAll(db, sql: "SELECT value FROM mobile_native_observations WHERE scope=?", arguments: [scope])
